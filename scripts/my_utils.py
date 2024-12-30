@@ -4,7 +4,8 @@ import cv2 as cv
 
 
 def visualize_map(pgm_data_in: Optional[np.ndarray]) -> None:
-    print("display map image")
+    ns = "utils"
+    print(f"[{ns}]: display map image")
 
     # check if the image is loaded
     if pgm_data_in is None:
@@ -15,7 +16,7 @@ def visualize_map(pgm_data_in: Optional[np.ndarray]) -> None:
     map_data = pgm_data_in.copy()
     height, width = map_data.shape[:2]
     updated_height, updated_width = height, width
-    print(f"Map size: {width}x{height}")
+    print(f"[{ns}]: Map size: {width}x{height}")
 
     # cv window
     w_name = "PGM Image"
@@ -39,4 +40,4 @@ def visualize_map(pgm_data_in: Optional[np.ndarray]) -> None:
             break
 
     cv.destroyAllWindows()
-    print("Image window closed.")
+    print(f"[{ns}]: Image window closed.")

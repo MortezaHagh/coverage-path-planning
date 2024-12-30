@@ -1,8 +1,6 @@
 """ get data and setting from files"""
 import os
-import sys
 import json
-import signal
 from typing import Optional
 from dataclasses import dataclass
 import yaml
@@ -12,6 +10,8 @@ import numpy as np
 
 @dataclass
 class Configs:
+    """ All configs """
+
     def __init__(self):
         # robor configs
         self.robot_radius = 0.5
@@ -28,11 +28,14 @@ class Configs:
 
 
 class ProcessorInputs:
+    """ Read map image, data and configs """
+    ns: str
     configs: Configs
     orig_map_arr: Optional[np.ndarray]
 
     def __init__(self, map_name="Map1"):
-        #
+        # init
+        self.ns = "Inp"
         configs = Configs()
         self.configs = None
         self.orig_map_arr = None
@@ -62,9 +65,13 @@ class ProcessorInputs:
         # self.visualize_map(map_arr)
 
     def visualize_map(self, pgm_data) -> None:
+        print(f"[{self.ns}]: visualizing")
+
+        # check if map is loaded
         if pgm_data is None:
-            print("Failed to load PGM file.")
+            print(f"[{self.ns}]: Failed to load PGM file.")
             return
+        #
         w_name = "PGM Image"
         cv.imshow(w_name, pgm_data)
         wait_time = 1  # milliseconds
@@ -75,15 +82,17 @@ class ProcessorInputs:
             if key >= 0 or c2:  # or c1:
                 break
         cv.destroyAllWindows()
-        print("Image window closed.")
+        print(f"[{self.ns}]: Image window closed.")
 
     def read_map_data(self, yaml_data: dict, map_data: Configs) -> None:
+        """ read map yaml file and update config object """
         map_data.origin = yaml_data["origin"]
         map_data.resolution = yaml_data["resolution"]
         map_data.free_thresh = yaml_data["free_thresh"]
         map_data.occupied_thresh = yaml_data["occupied_thresh"]
 
     def check_directory(self, folder_path, folder_name) -> None:
+        """ check if directory and map files exist """
         if not os.path.isdir(folder_path):
             print(f"Directory {folder_path} does not exist")
             print(f"Map folder [{folder_name}] does not exist")
@@ -98,12 +107,5 @@ class ProcessorInputs:
             json.dump(data, file, indent=4)
 
 
-def signal_handler():  # (sig, frame)
-    print('You pressed Ctrl+C!')
-    cv.destroyAllWindows()
-    sys.exit(0)
-
-
 if __name__ == "__main__":
     processor = ProcessorInputs("Map1")
-    signal.signal(signal.SIGINT, signal_handler)
