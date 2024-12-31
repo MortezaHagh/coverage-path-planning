@@ -31,8 +31,8 @@ class MapImageProcessor:
         # # visualize
         # self.visualize_map(self.processed_map_1)
 
-        #
-        self.select_crop()
+        # #
+        # self.select_crop()
 
     @property
     def configs(self) -> Configs:
@@ -74,8 +74,8 @@ class MapImageProcessor:
 
     def update_data(self):
         print(f"[{self.ns}]: loading map image data")
-        map_data = self.processed_map_1.copy()
-        self._omd.set_orig_map(map_data, self.configs.map_name)
+        map_arr = self.orig_map.copy()
+        self._omd.set_orig_map(map_arr, self.configs.map_name)
 
     def visualize_map(self, pgm_data_in: Optional[np.ndarray], disp_name: str = "Map") -> None:
         print(f"[{self.ns}]: display map image")

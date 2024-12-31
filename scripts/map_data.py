@@ -27,6 +27,7 @@ class MapData:
     """ map data """
     orig_map: np.ndarray
     up_map: np.ndarray
+    up_rgb_map: np.ndarray
 
     def __init__(self):
         self.ns = "MapData"
@@ -50,6 +51,7 @@ class MapData:
         #
         self.orig_map = None
         self.up_map = None
+        self.up_rgb_map = None
 
     def set_orig_map(self, map_data: np.ndarray, name: str = None):
         #
@@ -88,6 +90,7 @@ class MapData:
 
     def resize_map(self):
         self.up_map = cv.resize(self.orig_map, self.updated_wh, interpolation=cv.INTER_AREA)
+        self.up_rgb_map = cv.cvtColor(self.up_map, cv.COLOR_GRAY2BGR)
 
     def set_orig_center(self):
         self.orig_c_w = self.orig_w//2
@@ -98,15 +101,15 @@ class MapData:
         self.up_c_h = self.updated_h//2
 
     def point_to_map(self, x, y):
-        mx = (x - self.wind_h // 2) + self.orig_c_h
-        my = (y - self.wind_w // 2) + self.orig_c_w
-        # mx = (x - self.wind_h // 2) / self.zoom + self.orig_c_h
-        # my = (y - self.wind_w // 2) / self.zoom + self.orig_c_w
+        mx = (x - self.wind_w // 2) + self.up_c_w
+        my = (y - self.wind_h // 2) + self.up_c_h
+        # mx = (x - self.wind_w // 2) / self.zoom + self.orig_c_w
+        # my = (y - self.wind_h // 2) / self.zoom + self.orig_c_h
         return (mx, my)
 
     def point_to_up_map(self, x, y):
-        mx = (x - self.up_c_h // 2) + self.orig_c_h
-        my = (y - self.up_c_w // 2) + self.orig_c_w
+        mx = (x - self.up_c_w // 2) + self.orig_c_w
+        my = (y - self.up_c_h // 2) + self.orig_c_h
         return (mx, my)
 
 
@@ -148,7 +151,3 @@ def visualize_map(pgm_data_in: Optional[np.ndarray]) -> None:
 
     cv.destroyAllWindows()
     print(f"[{ns}]: Image window closed.")
-
-
-def mod_angle(theta):
-    return theta % (2 * np.pi)
