@@ -1,59 +1,31 @@
-from dataclasses import dataclass
 from typing import Optional
 import copy
 import numpy as np
 import cv2 as cv
-from process_input import Configs
-
-
-@dataclass
-class MapData:
-    """ map data """
-    orig_map_arr: np.ndarray
-
-    def __init__(self):
-        self.name = None
-        self.orig_height = None
-        self.orig_width = None
-        self.updated_height = None
-        self.updated_width = None
-        self.window_size = (1080, 1920)
-        self.zoom = None
-        #
-        self.orig_map_arr = None
+from map_data import MapData, Configs
 
 
 class MapImageProcessor:
     """ process map image """
-    _md = MapData()
-    orig_map_arr: np.ndarray
-
-    @property
-    def configs(self) -> Configs:
-        return self._configs
-
-    @property
-    def mdata(self) -> MapData:
-        return self._md
+    _omd = MapData
+    _orig_map: np.ndarray
 
     def __init__(self, map_arr: np.ndarray, configs: Configs):
 
-        # map data
-        self.ns = "IP"
-        self._md = MapData()
-
-        # init
-        self.orig_map_arr = None
-        self.processed_map_1 = None
-
         # read configs and eval original map arr
         self._configs = configs
-        self.orig_map_arr = map_arr
-        self._md.orig_map_arr = map_arr
+        self._orig_map = map_arr
         self.check_map(map_arr)
 
-        # initial processes on map imape
+        # init
+        self.ns = "IP"
+        self.processed_map_1 = None
+
+        # initial processes on map image - load data
         self.process_map()
+
+        # map data
+        self._omd = MapData()
         self.update_data()
 
         # # visualize
@@ -61,6 +33,18 @@ class MapImageProcessor:
 
         #
         self.select_crop()
+
+    @property
+    def configs(self) -> Configs:
+        return copy.deepcopy(self._configs)
+
+    @property
+    def mdata(self) -> MapData:
+        return copy.deepcopy(self._omd)
+
+    @property
+    def orig_map(self) -> np.ndarray:
+        return copy.deepcopy(self._orig_map)
 
     def check_map(self, image):
         """ check if map image is loaded """
@@ -79,7 +63,7 @@ class MapImageProcessor:
     def convert_to_binary(self):
         print(f"[{self.ns}]: converting image to binary")
         threshold = self.configs.occupied_thresh
-        _, binary_map = cv.threshold(self.orig_map_arr, threshold, 255, cv.THRESH_BINARY)
+        _, binary_map = cv.threshold(self._orig_map, threshold, 255, cv.THRESH_BINARY)
         return binary_map
 
     def remove_noise(self, binary_map, kernel_size=(3, 3)) -> np.ndarray:
@@ -89,36 +73,31 @@ class MapImageProcessor:
         return denoised_map
 
     def update_data(self):
-        # original map mage data
+        print(f"[{self.ns}]: loading map image data")
         map_data = self.processed_map_1.copy()
-        height, width = map_data.shape[:2]
-        self._md.orig_height = height
-        self._md.orig_width = width
-        self._md.updated_height, self._md.updated_width = height, width
-        print(f"[{self.ns}]: Map size: {width}x{height}")
+        self._omd.set_orig_map(map_data, self.configs.map_name)
 
     def visualize_map(self, pgm_data_in: Optional[np.ndarray], disp_name: str = "Map") -> None:
+        print(f"[{self.ns}]: display map image")
 
         # original map mage data
         map_data = pgm_data_in.copy()
         height, width = map_data.shape[:2]
-        updated_height, updated_width = height, width
-        print(f"[{self.ns}]: Map size: {width}x{height}")
+        updated_h, updated_w = height, width
+        print(f"[{self.ns}]: Map size [w,h]: {width}x{height}")
 
         # cv window
-        window_size = self._md.window_size
-        zoom = min(window_size[0]/height, window_size[1]/width)
-        zoom = min(window_size[0]/height, window_size[1]/width)
-        if zoom > 1.0:
-            updated_height = int(height * zoom)
-            updated_width = int(width * zoom)
-        updated_size = (updated_width, updated_height)
-        # canvas = np.zeros((*window_size, 3), np.uint8)
+        wind_hw = self._omd.wind_hw
+        zoom = min(wind_hw[0]/height, wind_hw[1]/width)
+        updated_h = int(height * zoom)
+        updated_w = int(width * zoom)
+        updated_wh = (updated_w, updated_h)
+        # canvas = np.zeros((*wind_hw, 3), np.uint8)
 
         # display map image
         # # WINDOW_NORMAL - WINDOW_GUI_NORMAL - WINDOW_AUTOSIZE - WINDOW_FREERATIO - WINDOW_FULLSCREEN
         cv.namedWindow(disp_name, cv.WINDOW_NORMAL)
-        resized_map = cv.resize(map_data, updated_size, interpolation=cv.INTER_AREA)
+        resized_map = cv.resize(map_data, updated_wh, interpolation=cv.INTER_AREA)
         cv.imshow(disp_name, resized_map)
 
         while True:
@@ -128,7 +107,7 @@ class MapImageProcessor:
                 break
 
         cv.destroyAllWindows()
-        print("Image window closed.")
+        print(f"[{self.ns}]: Image window closed.")
 
     def select_crop(self):
         corners = [
@@ -140,13 +119,11 @@ class MapImageProcessor:
         corners = np.array(corners)
         max_w, max_h = np.max(corners, axis=0)
         min_w, min_h = np.min(corners, axis=0)
-        print(max_w, max_h)
-        print(min_w, min_h)
 
         # eval vertices bound
-        max_w = min(max_w, self._md.updated_width)
+        max_w = min(max_w, self._omd.updated_w)
         min_w = max(min_w, 0)
-        max_h = min(max_h, self._md.updated_height)
+        max_h = min(max_h, self._omd.updated_h)
         min_h = max(min_h, 0)
 
         #

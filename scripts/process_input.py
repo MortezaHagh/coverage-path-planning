@@ -1,44 +1,26 @@
 """ get data and setting from files"""
 import os
 import json
+import copy
 from typing import Optional
-from dataclasses import dataclass
 import yaml
 import cv2 as cv
 import numpy as np
-
-
-@dataclass
-class Configs:
-    """ All configs """
-
-    def __init__(self):
-        # robor configs
-        self.robot_radius = 0.5
-        self.safe_distance = 0.2
-        # directions
-        self.map_name = None
-        self.map_path = None
-        self.data_dir = None
-        # map configs
-        self.origin = None
-        self.resolution = None
-        self.free_thresh = None
-        self.occupied_thresh = None
+from map_data import Configs
 
 
 class ProcessorInputs:
     """ Read map image, data and configs """
     ns: str
-    configs: Configs
-    orig_map_arr: Optional[np.ndarray]
+    _configs: Configs
+    _orig_map: Optional[np.ndarray]
 
     def __init__(self, map_name="Map1"):
         # init
         self.ns = "Inp"
         configs = Configs()
-        self.configs = None
-        self.orig_map_arr = None
+        self._configs = None
+        self._orig_map = None
 
         # define paths
         data_dir = "/home/morteza/Documents/00-CPP/00-CPP/Data"
@@ -57,12 +39,20 @@ class ProcessorInputs:
         configs.map_path = map_path
         configs.data_dir = data_dir
         self.read_map_data(map_yaml_data, configs)
-        self.configs = configs
+        self._configs = configs
 
         # read pgm file
         map_arr = cv.imread(pgm_file_path, cv.IMREAD_GRAYSCALE)
-        self.orig_map_arr = map_arr
+        self._orig_map = map_arr
         # self.visualize_map(map_arr)
+
+    @property
+    def configs(self) -> Configs:
+        return copy.deepcopy(self._configs)
+
+    @property
+    def orig_map(self) -> np.ndarray:
+        return copy.deepcopy(self._orig_map)
 
     def visualize_map(self, pgm_data) -> None:
         print(f"[{self.ns}]: visualizing")
