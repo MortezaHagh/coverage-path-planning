@@ -38,9 +38,13 @@ class Rectangle:
         self.vertices_t = tuple(vertices_a.tolist())
         self.vertices_a = vertices_a.reshape((-1, 1, 2))
 
-        # rotation point
+        # 4 points & rotation point
+        self.tl: tuple[int, int] = None
+        self.br: tuple[int, int] = None
+        self.tr: tuple[int, int] = None
+        self.bl: tuple[int, int] = None
         self.rot_point: tuple[int, int] = None
-        self.up_rotation_point()
+        self.up_all_points()
 
     def update_data(self, xc, yc, w, h, rot=0.0):
         self.width = w
@@ -62,7 +66,11 @@ class Rectangle:
         vertices_a = np.array(vertices_l, dtype=np.int32)
         self.vertices_t = tuple(vertices_a.tolist())
         self.vertices_a = vertices_a.reshape((-1, 1, 2))
-        # rotation point
+        # points
+        self.up_all_points()
+
+    def up_all_points(self):
+        self.up_4_points()
         self.up_rotation_point()
 
     def up_rotation_point(self):
@@ -70,11 +78,15 @@ class Rectangle:
         yr = - self.height / 2
         self.rot_point = self.rotate_point_i(xr, yr, self.rot)
 
-    def get_4_points(self):
+    def up_4_points(self):
         tl = self.rotate_point_i(-self.width / 2, -self.height / 2, self.rot)
         br = self.rotate_point_i(self.width / 2, self.height / 2, self.rot)
         tr = self.rotate_point_i(self.width / 2, -self.height / 2, self.rot)
         bl = self.rotate_point_i(-self.width / 2, self.height / 2, self.rot)
+        self.tl = tl
+        self.br = br
+        self.tr = tr
+        self.bl = bl
         return [tl, br, tr, bl]
 
     def rotate_point(self, dx, dy, rotation):
@@ -97,10 +109,12 @@ class VisualRectangle:
         self.line_width = 10
         self.point_radius = 40
         self.default_color = (0, 0, 255)
+        self.selected_color = (255, 255, 0)
         self.highlight_color = (255, 0, 0)
         self.highlight_color_fill = (255, 255, 255)
 
         #
+        self.selected = False
         self.highlight = False
 
         #
@@ -110,8 +124,7 @@ class VisualRectangle:
         self.rect = Rectangle(data=data)
 
     def is_in_box(self, x, y):
-        point = Point(x, y)
-        is_inside = self.rect.box.contains(point)
+        is_inside = self.is_in_rect(x, y)
         if is_inside:
             self.highlight = True
             return True
@@ -119,8 +132,16 @@ class VisualRectangle:
             self.highlight = False
             return False
 
+    def is_in_rect(self, x, y):
+        point = Point(x, y)
+        return self.rect.box.contains(point)
+
     def button_down(self, x, y):
-        pass
+        detected = self.detect(x, y)
+        if detected is not None:
+            self.point_highlight_type = detected
+        if detected == "rectangle":
+            self.selected = ~self.selected
 
     def button_up(self, x, y):
         self.point_highlight_type = None
@@ -128,6 +149,31 @@ class VisualRectangle:
 
     def button_move(self, x, y):
         print("move")
+
+    def detect(self, x, y):
+        detected = None
+        if self.is_in_rect(x, y):
+            if self.are_close(self.rect.tl, (x, y)):
+                detected = "top_left"
+            elif self.are_close(self.rect.tr, (x, y)):
+                detected = "top_right"
+            elif self.are_close(self.rect.br, (x, y)):
+                detected = "bottom_right"
+            elif self.are_close(self.rect.bl, (x, y)):
+                detected = "bottom_left"
+            elif self.are_close(self.rect.cp, (x, y)):
+                detected = "center"
+            elif self.are_close(self.rect.rot_point, (x, y)):
+                detected = "rotation_point"
+            else:
+                detected = "rectangle"
+        return detected
+
+    def are_close(self, p1, p2):
+        return self.cal_distance(p1, p2) < self.point_radius
+
+    def cal_distance(self, p1, p2):
+        return np.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
 
     def draw(self, img: np.ndarray):
         color = self.default_color
@@ -141,5 +187,9 @@ class VisualRectangle:
             # 4 points
             for vertex in self.rect.vertices_t:
                 cv.circle(img, vertex, self.point_radius, self.highlight_color, -1)
+
+        elif self.selected:
+            color = self.selected_color
+
         # draw box
         cv.polylines(img, [self.rect.vertices_a], True, color, self.line_width,)
