@@ -2,7 +2,7 @@ from typing import Optional
 import copy
 import numpy as np
 import cv2 as cv
-from map_data import MapData, Configs
+from scripts.map_data import MapData, Configs
 
 
 class MapImageProcessor:

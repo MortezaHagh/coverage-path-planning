@@ -1,7 +1,7 @@
-from map_data import MapData, Configs
-from process_input import ProcessorInputs
-from process_image import MapImageProcessor
-from event_handler import MainEventHandler
+from scripts.map_data import MapData, Configs
+from scripts.process_input import ProcessorInputs
+from scripts.process_image import MapImageProcessor
+from scripts.gui.main_event_hl import MainEventHandler
 
 
 def main():

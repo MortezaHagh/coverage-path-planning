@@ -6,7 +6,7 @@ from typing import Optional
 import yaml
 import cv2 as cv
 import numpy as np
-from map_data import Configs
+from scripts.map_data import Configs
 
 
 class ProcessorInputs:
