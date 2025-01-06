@@ -68,6 +68,15 @@ class VisualRectangle:
         else:
             self.highlight = False
 
+    def button_up(self):
+        pass
+
+    def button_down(self):
+        pass
+
+    def button_move(self, x, y):
+        pass
+
     def draw(self, img: np.ndarray):
         verts = self.rect.vertices2
         color = self.default_color
