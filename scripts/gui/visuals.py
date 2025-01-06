@@ -46,17 +46,24 @@ class Rectangle:
         self.rot_point: tuple[int, int] = None
         self.up_all_points()
 
-    def update_data(self, xc, yc, w, h, rot=0.0):
-        self.width = w
-        self.height = h
-        # cp
-        self.xc = xc
-        self.yc = yc
+    def update_data(self):
+        # # w, h
+        # self.width = w
+        # self.height = h
+        # # cp
+        # self.xc = xc
+        # self.yc = yc
+        # self.cp = (xc, yc)
+        #
+        xc = self.xc
+        yc = self.yc
+        w = self.width
+        h = self.height
         self.cp = (xc, yc)
         # cp_i
         self.xc_i = np.abs(xc).astype(int)
         self.yc_i = np.abs(yc).astype(int)
-        self.rot = mod_angle(rot)
+        # self.rot = mod_angle(rot)
         self.cp_i = (self.xc_i, self.yc_i)
         # create box
         bbox = box(xc - w / 2, yc - h / 2, xc + w / 2, yc + h / 2)
@@ -98,6 +105,11 @@ class Rectangle:
         xy = self.rotate_point(dx, dy, rotation)
         return tuple(xy.tolist())
 
+    def drag_center(self, x, y):
+        self.xc = x
+        self.yc = y
+        self.update_data()
+
 
 class VisualRectangle:
     rect: Rectangle
@@ -114,41 +126,57 @@ class VisualRectangle:
         self.highlight_color_fill = (255, 255, 255)
 
         #
-        self.selected = False
-        self.highlight = False
+        self.selected: bool = False
+        self.highlight: bool = False
 
         #
-        self.point_highlight_type = None
+        self.select_type: str = None
 
         #
         self.rect = Rectangle(data=data)
 
-    def is_in_box(self, x, y):
-        is_inside = self.is_in_rect(x, y)
-        if is_inside:
-            self.highlight = True
-            return True
-        else:
-            self.highlight = False
-            return False
-
-    def is_in_rect(self, x, y):
-        point = Point(x, y)
-        return self.rect.box.contains(point)
-
     def button_down(self, x, y):
         detected = self.detect(x, y)
         if detected is not None:
-            self.point_highlight_type = detected
+            self.select_type = detected
         if detected == "rectangle":
             self.selected = ~self.selected
 
     def button_up(self, x, y):
-        self.point_highlight_type = None
+        self.select_type = None
         # self.calculate_boundaries()
 
     def button_move(self, x, y):
-        print("move")
+        if self.select_type == "center":
+            self.drag_center(x, y)
+        elif self.select_type == "rotation_point":
+            self.drag_rotation(x, y)
+        elif self.select_type == "top_left":
+            self.drag_top_left(x, y)
+        elif self.select_type == "top_right":
+            self.drag_top_right(x, y)
+        elif self.select_type == "bottom_left":
+            self.drag_bottom_left(x, y)
+        elif self.select_type == "bottom_right":
+            self.drag_bottom_right(x, y)
+
+    def drag_center(self, x, y):
+        self.rect.drag_center(x, y)
+
+    def drag_rotation(self, x, y):
+        pass
+
+    def drag_top_left(self, x, y):
+        pass
+
+    def drag_top_right(self, x, y):
+        pass
+
+    def drag_bottom_left(self, x, y):
+        pass
+
+    def drag_bottom_right(self, x, y):
+        pass
 
     def detect(self, x, y):
         detected = None
@@ -168,6 +196,19 @@ class VisualRectangle:
             else:
                 detected = "rectangle"
         return detected
+
+    def is_in_box(self, x, y):
+        is_inside = self.is_in_rect(x, y)
+        if is_inside:
+            self.highlight = True
+            return True
+        else:
+            self.highlight = False
+            return False
+
+    def is_in_rect(self, x, y):
+        point = Point(x, y)
+        return self.rect.box.contains(point)
 
     def are_close(self, p1, p2):
         return self.cal_distance(p1, p2) < self.point_radius

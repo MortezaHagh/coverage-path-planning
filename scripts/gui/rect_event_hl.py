@@ -110,7 +110,6 @@ class RecEventHandler:
             if self.highlighted_ind is not None:
                 if self.highlighted_ind < len(self.objects):
                     self.selected_ind = self.highlighted_ind
-                    print(f"[{self.ns}]: Update selected_ind")  # todel todo
                 else:
                     print(f"[{self.ns}]: highlighted_ind >= len(self.objects)")
                     self.selected_ind = None
