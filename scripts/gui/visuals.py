@@ -26,11 +26,12 @@ class Rectangle:
         self.xc = xc
         self.yc = yc
         self.cp = (xc, yc)
+        self.rot = mod_angle(rot)
+        # self.theta = np.atan2(w/h) + rot
         #
         self.xc_i = np.abs(xc).astype(int)
         self.yc_i = np.abs(yc).astype(int)
         self.cp_i = (self.xc_i, self.yc_i)
-        self.rot = mod_angle(rot)
 
         # create box
         bbox = box(xc - w / 2, yc - h / 2, xc + w / 2, yc + h / 2)
@@ -67,7 +68,6 @@ class Rectangle:
         # cp_i
         self.xc_i = np.abs(xc).astype(int)
         self.yc_i = np.abs(yc).astype(int)
-        self.rot = mod_angle(self.rot)
         self.cp_i = (self.xc_i, self.yc_i)
         # create box
         bbox = box(xc - w / 2, yc - h / 2, xc + w / 2, yc + h / 2)
@@ -101,15 +101,6 @@ class Rectangle:
         self.bl = bl
         return [tl, br, tr, bl]
 
-    def rotate_point(self, dx, dy, rotation):
-        x_r = dx * np.cos(rotation) - dy * np.sin(rotation)
-        y_r = dx * np.sin(rotation) + dy * np.cos(rotation)
-        return np.array([x_r + self.xc, y_r + self.yc], dtype=np.int32)
-
-    def rotate_point_i(self, dx, dy, rotation):
-        xy = self.rotate_point(dx, dy, rotation)
-        return tuple(xy.tolist())
-
     def on_move(self, select_type: str, x, y):
         if select_type == "center":
             self.drag_center(x, y)
@@ -135,16 +126,40 @@ class Rectangle:
         self.update_data()
 
     def drag_top_left(self, x, y):
-        pass
+        self.xc = (x + self.br[0]) / 2
+        self.yc = (y + self.br[1]) / 2
+        tl = self.rotate_point_v2(x, y, -self.rot)
+        br = self.rotate_point_v2(self.br[0], self.br[1], -self.rot)
+        self.width = br[0] - tl[0]
+        self.height = br[1] - tl[1]
+        self.update_data()
 
     def drag_top_right(self, x, y):
-        pass
+        self.xc = (x + self.bl[0]) / 2
+        self.yc = (y + self.bl[1]) / 2
+        tr = self.rotate_point_v2(x, y, -self.rot)
+        bl = self.rotate_point_v2(self.bl[0], self.bl[1], -self.rot)
+        self.width = tr[0] - bl[0]
+        self.height = bl[1] - tr[1]
+        self.update_data()
 
     def drag_bottom_left(self, x, y):
-        pass
+        self.xc = (x + self.tr[0]) / 2
+        self.yc = (y + self.tr[1]) / 2
+        bl = self.rotate_point_v2(x, y, -self.rot)
+        tr = self.rotate_point_v2(self.tr[0], self.tr[1], -self.rot)
+        self.width = tr[0] - bl[0]
+        self.height = bl[1] - tr[1]
+        self.update_data()
 
     def drag_bottom_right(self, x, y):
-        pass
+        self.xc = (x + self.tl[0]) / 2
+        self.yc = (y + self.tl[1]) / 2
+        br = self.rotate_point_v2(x, y, -self.rot)
+        tl = self.rotate_point_v2(self.tl[0], self.tl[1], -self.rot)
+        self.width = br[0] - tl[0]
+        self.height = br[1] - tl[1]
+        self.update_data()
 
     def detect(self, x, y):
         detected = None
@@ -164,6 +179,22 @@ class Rectangle:
             else:
                 detected = "rectangle"
         return detected
+
+    def rotate_point(self, dx, dy, rotation):
+        x_r = dx * np.cos(rotation) - dy * np.sin(rotation)
+        y_r = dx * np.sin(rotation) + dy * np.cos(rotation)
+        return np.array([x_r + self.xc, y_r + self.yc], dtype=np.int32)
+
+    def rotate_point_v2(self, x, y, rotation):
+        x -= self.xc
+        y -= self.yc
+        x_r = x * np.cos(rotation) - y * np.sin(rotation)
+        y_r = x * np.sin(rotation) + y * np.cos(rotation)
+        return np.array([x_r + self.xc, y_r + self.yc], dtype=np.int32)
+
+    def rotate_point_i(self, dx, dy, rotation):
+        xy = self.rotate_point(dx, dy, rotation)
+        return tuple(xy.tolist())
 
     def is_in_rect(self, x, y):
         point = Point(x, y)
@@ -232,7 +263,7 @@ class VisualRectangle:
             # update color
             color = self.highlight_color
             # center
-            cv.circle(img, self.rect.cp, self.point_radius, self.highlight_color, -1)
+            cv.circle(img, self.rect.cp_i, self.point_radius, self.highlight_color, -1)
             # rotation point
             cv.circle(img, self.rect.rot_point, self.point_radius, self.highlight_color, -1)
             # 4 points
