@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+from shapely.affinity import rotate
 from shapely.geometry import box, Point
 from scripts.my_utils import mod_angle
 
@@ -10,6 +11,9 @@ class Rectangle:
     def __init__(self, data: list):
         #
         self.ns = "Rectangle"
+        self.point_radius = 40
+
+        #
         xc = data[0]
         yc = data[1]
         rot = data[4]
@@ -63,13 +67,14 @@ class Rectangle:
         # cp_i
         self.xc_i = np.abs(xc).astype(int)
         self.yc_i = np.abs(yc).astype(int)
-        # self.rot = mod_angle(rot)
+        self.rot = mod_angle(self.rot)
         self.cp_i = (self.xc_i, self.yc_i)
         # create box
         bbox = box(xc - w / 2, yc - h / 2, xc + w / 2, yc + h / 2)
-        self.box = bbox
+        rotated_bbox = rotate(bbox, np.rad2deg(self.rot), origin='center')
+        self.box = rotated_bbox
         # vertices
-        vertices_l = list(bbox.exterior.coords)
+        vertices_l = list(rotated_bbox.exterior.coords)
         vertices_a = np.array(vertices_l, dtype=np.int32)
         self.vertices_t = tuple(vertices_a.tolist())
         self.vertices_a = vertices_a.reshape((-1, 1, 2))
@@ -105,10 +110,70 @@ class Rectangle:
         xy = self.rotate_point(dx, dy, rotation)
         return tuple(xy.tolist())
 
+    def on_move(self, select_type: str, x, y):
+        if select_type == "center":
+            self.drag_center(x, y)
+        elif select_type == "rotation_point":
+            self.drag_rotation(x, y)
+        elif select_type == "top_left":
+            self.drag_top_left(x, y)
+        elif select_type == "top_right":
+            self.drag_top_right(x, y)
+        elif select_type == "bottom_left":
+            self.drag_bottom_left(x, y)
+        elif select_type == "bottom_right":
+            self.drag_bottom_right(x, y)
+
     def drag_center(self, x, y):
         self.xc = x
         self.yc = y
         self.update_data()
+
+    def drag_rotation(self, x, y):
+        sin_rot = (x - self.xc) / np.sqrt((x - self.xc) ** 2 + (y - self.yc) ** 2)
+        self.rot = np.arcsin(sin_rot)
+        self.update_data()
+
+    def drag_top_left(self, x, y):
+        pass
+
+    def drag_top_right(self, x, y):
+        pass
+
+    def drag_bottom_left(self, x, y):
+        pass
+
+    def drag_bottom_right(self, x, y):
+        pass
+
+    def detect(self, x, y):
+        detected = None
+        if self.is_in_rect(x, y):
+            if self.are_close(self.tl, (x, y)):
+                detected = "top_left"
+            elif self.are_close(self.tr, (x, y)):
+                detected = "top_right"
+            elif self.are_close(self.br, (x, y)):
+                detected = "bottom_right"
+            elif self.are_close(self.bl, (x, y)):
+                detected = "bottom_left"
+            elif self.are_close(self.cp, (x, y)):
+                detected = "center"
+            elif self.are_close(self.rot_point, (x, y)):
+                detected = "rotation_point"
+            else:
+                detected = "rectangle"
+        return detected
+
+    def is_in_rect(self, x, y):
+        point = Point(x, y)
+        return self.box.contains(point)
+
+    def are_close(self, p1, p2):
+        return self.cal_distance_t(p1, p2) < self.point_radius
+
+    def cal_distance_t(self, p1, p2):
+        return np.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
 
 
 class VisualRectangle:
@@ -136,7 +201,7 @@ class VisualRectangle:
         self.rect = Rectangle(data=data)
 
     def button_down(self, x, y):
-        detected = self.detect(x, y)
+        detected = self.rect.detect(x, y)
         if detected is not None:
             self.select_type = detected
         if detected == "rectangle":
@@ -147,74 +212,19 @@ class VisualRectangle:
         # self.calculate_boundaries()
 
     def button_move(self, x, y):
-        if self.select_type == "center":
-            self.drag_center(x, y)
-        elif self.select_type == "rotation_point":
-            self.drag_rotation(x, y)
-        elif self.select_type == "top_left":
-            self.drag_top_left(x, y)
-        elif self.select_type == "top_right":
-            self.drag_top_right(x, y)
-        elif self.select_type == "bottom_left":
-            self.drag_bottom_left(x, y)
-        elif self.select_type == "bottom_right":
-            self.drag_bottom_right(x, y)
-
-    def drag_center(self, x, y):
-        self.rect.drag_center(x, y)
-
-    def drag_rotation(self, x, y):
-        pass
-
-    def drag_top_left(self, x, y):
-        pass
-
-    def drag_top_right(self, x, y):
-        pass
-
-    def drag_bottom_left(self, x, y):
-        pass
-
-    def drag_bottom_right(self, x, y):
-        pass
+        self.rect.on_move(self.select_type, x, y)
 
     def detect(self, x, y):
-        detected = None
-        if self.is_in_rect(x, y):
-            if self.are_close(self.rect.tl, (x, y)):
-                detected = "top_left"
-            elif self.are_close(self.rect.tr, (x, y)):
-                detected = "top_right"
-            elif self.are_close(self.rect.br, (x, y)):
-                detected = "bottom_right"
-            elif self.are_close(self.rect.bl, (x, y)):
-                detected = "bottom_left"
-            elif self.are_close(self.rect.cp, (x, y)):
-                detected = "center"
-            elif self.are_close(self.rect.rot_point, (x, y)):
-                detected = "rotation_point"
-            else:
-                detected = "rectangle"
-        return detected
+        self.rect.detect(x, y)
 
     def is_in_box(self, x, y):
-        is_inside = self.is_in_rect(x, y)
+        is_inside = self.rect.is_in_rect(x, y)
         if is_inside:
             self.highlight = True
             return True
         else:
             self.highlight = False
             return False
-
-    def is_in_rect(self, x, y):
-        point = Point(x, y)
-        return self.rect.box.contains(point)
-
-    def are_close(self, p1, p2):
-        return self.cal_distance(p1, p2) < self.point_radius
-
-    def cal_distance(self, p1, p2):
-        return np.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
 
     def draw(self, img: np.ndarray):
         color = self.default_color
