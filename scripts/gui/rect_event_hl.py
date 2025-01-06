@@ -58,7 +58,6 @@ class RecEventHandler:
         #     return
         # self.vis_obj.is_in_box(x, y)
 
-        #
         highlighted: bool = False
         if self.selected_ind is None:
             if self.highlighted_ind is None:
@@ -87,8 +86,7 @@ class RecEventHandler:
         #     self.move_center(x, y)
 
     def on_lb_db_click(self, x, y, flags):
-        print(f"[{self.ns}]: lb_db clicked")
-        print(f"[{self.ns}]: [x,y], [{(x, y)}]")
+        print(f"[{self.ns}]: ldb: [x,y], [{(x, y)}]")
         params = [x, y, 200, 200, 0]
         vis_obj = VisualRectangle(data=params)
         self.vis_obj = vis_obj
@@ -103,10 +101,16 @@ class RecEventHandler:
         # if self.vis_obj.highlight:
         #     print("ooooooooooo")
 
+        # #
+        # print("highlighted_ind", self.highlighted_ind)
+        # print("selected_ind", self.selected_ind)
+
+        #
         if self.selected_ind is None:
             if self.highlighted_ind is not None:
                 if self.highlighted_ind < len(self.objects):
                     self.selected_ind = self.highlighted_ind
+                    print(f"[{self.ns}]: Update selected_ind")  # todel todo
                 else:
                     print(f"[{self.ns}]: highlighted_ind >= len(self.objects)")
                     self.selected_ind = None
@@ -135,8 +139,6 @@ class RecEventHandler:
             self.selected_ind = None
 
     def on_press(self, key):
-        print(f"[{self.ns}]: a key is down")
-
         if key == Key.ctrl:
             self.ctrl_down = True
         elif key == Key.esc or key == Key.enter:
@@ -146,7 +148,6 @@ class RecEventHandler:
             print(f"[{self.ns}]: crtls key is down")
 
     def on_release(self, key):
-        print(f"[{self.ns}]: key is released")
         if key == Key.esc or key == Key.enter:
             return False
 
