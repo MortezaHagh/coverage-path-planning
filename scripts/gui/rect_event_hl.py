@@ -7,7 +7,7 @@ from scripts.gui.visuals import VisualRectangle
 
 class RecEventHandler:
     img: np.ndarray
-    vis_obj: VisualRectangle
+    main_obj: VisualRectangle
     objects: list[VisualRectangle]
     #
     selected_ind: int
@@ -22,11 +22,9 @@ class RecEventHandler:
         self.cf = configs
         self.map_img = map_img
         self.canvas = np.zeros_like(map_img, dtype=np.uint8)
-        # self.md = map_data
-        # self.img = map_data.up_rgb_map
 
         #
-        self.vis_obj: VisualRectangle = None
+        self.main_obj: VisualRectangle = None
         self.objects: list[VisualRectangle] = []
 
         #
@@ -54,9 +52,9 @@ class RecEventHandler:
             self.on_button_up(x, y, flags)
 
     def on_mouse_move(self, x, y, flags):
-        # if self.vis_obj is None:
+        # if self.main_obj is None:
         #     return
-        # self.vis_obj.is_in_box(x, y)
+        # self.main_obj.is_in_box(x, y)
 
         highlighted: bool = False
         if self.selected_ind is None:
@@ -88,34 +86,38 @@ class RecEventHandler:
     def on_lb_db_click(self, x, y, flags):
         print(f"[{self.ns}]: ldb: [x,y], [{(x, y)}]")
         params = [x, y, 200, 200, 0]
-        vis_obj = VisualRectangle(data=params)
-        self.vis_obj = vis_obj
-        self.objects.append(vis_obj)
+        main_obj = VisualRectangle(data=params)
+        self.main_obj = main_obj
+        self.objects.append(main_obj)
+        self.main_obj = main_obj
         #
-        self.selected_ind = None
+        self.deselect()
         self.highlighted_ind = None
 
     def on_button_down(self, x, y, flags):
-        # if self.vis_obj is None:
-        #     return
-        # if self.vis_obj.highlight:
-        #     print("ooooooooooo")
-
         # #
         # print("highlighted_ind", self.highlighted_ind)
         # print("selected_ind", self.selected_ind)
 
         #
+        if self.highlighted_ind is not None:
+            if self.highlighted_ind >= len(self.objects):
+                print(f"[{self.ns}]: highlighted_ind >= len(self.objects)")
+                self.highlighted_ind = None
+
+        #
         if self.selected_ind is None:
             if self.highlighted_ind is not None:
-                if self.highlighted_ind < len(self.objects):
-                    self.selected_ind = self.highlighted_ind
-                else:
-                    print(f"[{self.ns}]: highlighted_ind >= len(self.objects)")
-                    self.selected_ind = None
+                self.selected_ind = self.highlighted_ind
             else:
                 self.selected_ind = None
-        #
+        else:
+            if self.highlighted_ind is not None:
+                if self.highlighted_ind != self.selected_ind:
+                    self.objects[self.selected_ind].deselect()
+                    self.selected_ind = self.highlighted_ind
+
+                #
         if self.selected_ind is not None:
             if self.selected_ind < len(self.objects):
                 self.update_history()
@@ -126,6 +128,7 @@ class RecEventHandler:
                 self.selected_ind = None
 
     def on_button_up(self, x, y, flags):
+        self.button_down = False
         if self.selected_ind is not None:
             try:
                 self.objects[self.selected_ind].button_up(x, y)
@@ -156,10 +159,25 @@ class RecEventHandler:
     def update_history(self):
         pass
 
+    def deselect(self):
+        if self.selected_ind is not None:
+            self.objects[self.selected_ind].deselect()
+            self.selected_ind = None
+
     def update_image(self):
         self.canvas[:, :] = self.map_img
-        if self.vis_obj is None:
+        if self.main_obj is None:
             return
         for ob in self.objects:
             ob.draw(self.canvas)
-        # self.vis_obj.draw(self.canvas)
+        # self.main_obj.draw(self.canvas)
+
+    def get_vis_objects(self, selected=False):
+        obj: VisualRectangle = None
+        if selected:
+            return [obj for obj in self.objects if obj.selected]
+        else:
+            return [obj for obj in self.objects]
+
+    def get_main_obj(self) -> VisualRectangle:
+        return self.main_obj

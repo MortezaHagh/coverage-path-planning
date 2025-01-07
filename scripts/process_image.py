@@ -1,3 +1,4 @@
+""" processing map pgm file """
 from typing import Optional
 import copy
 import numpy as np
@@ -6,7 +7,7 @@ from scripts.map_data import MapData, Configs
 
 
 class MapImageProcessor:
-    """ process map image """
+    """ process map pgm file """
     _omd = MapData
     _orig_map: np.ndarray
 

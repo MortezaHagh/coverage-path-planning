@@ -6,11 +6,13 @@ from scripts.my_utils import mod_angle
 
 
 class Rectangle:
+    rid: int
     bbox: box
 
-    def __init__(self, data: list):
+    def __init__(self, data: list, rid: int = 0):
         #
         self.ns = "Rectangle"
+        self.rid = rid
         self.point_radius = 40
 
         #
@@ -208,12 +210,16 @@ class Rectangle:
 
 
 class VisualRectangle:
+    rid: int = 0
     rect: Rectangle
 
     def __init__(self, data: list):
         self.ns = "VisualRectangle"
 
         # configs
+        self.rid = VisualRectangle.rid
+        VisualRectangle.rid += 1
+        #
         self.line_width = 10
         self.point_radius = 40
         self.default_color = (0, 0, 255)
@@ -229,7 +235,7 @@ class VisualRectangle:
         self.select_type: str = None
 
         #
-        self.rect = Rectangle(data=data)
+        self.rect = Rectangle(data=data, rid=self.rid)
 
     def button_down(self, x, y):
         detected = self.rect.detect(x, y)
@@ -244,6 +250,9 @@ class VisualRectangle:
 
     def button_move(self, x, y):
         self.rect.on_move(self.select_type, x, y)
+
+    def deselect(self):
+        self.selected = False
 
     def detect(self, x, y):
         self.rect.detect(x, y)

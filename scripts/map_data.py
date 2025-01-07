@@ -1,3 +1,4 @@
+""" Configs and MapData data classes """
 from dataclasses import dataclass
 from typing import Optional
 import numpy as np
@@ -24,7 +25,7 @@ class Configs:
 
 
 class MapData:
-    """ map data """
+    """ original and updated map data """
     orig_map: np.ndarray
     up_map: np.ndarray
     up_rgb_map: np.ndarray
@@ -80,9 +81,9 @@ class MapData:
         updated_h = int(self.orig_h * zoom)
         updated_w = int(self.orig_w * zoom)
         self.zoom = zoom
-        self.set_updated_wh(h=updated_h, w=updated_w)
+        self.set_updated_map_wh(h=updated_h, w=updated_w)
 
-    def set_updated_wh(self, w, h):
+    def set_updated_map_wh(self, w, h):
         self.updated_h = h
         self.updated_w = w
         self.updated_wh = (w, h)
