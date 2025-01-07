@@ -171,11 +171,14 @@ class RecEventHandler:
         # self.main_obj.draw(self.canvas)
 
     def get_vis_objects(self, selected=False):
-        obj: VisualRectangle = None
         if selected:
-            return [obj for obj in self.objects if obj.selected]
+            vos = [obj for obj in self.objects if obj.selected]
         else:
-            return [obj for obj in self.objects]
+            vos = self.objects
+        #
+        if not vos:
+            print(f"[{self.ns}]: There is no object to return!")
+        return vos
 
     def get_main_obj(self) -> VisualRectangle:
         if self.main_obj is None:

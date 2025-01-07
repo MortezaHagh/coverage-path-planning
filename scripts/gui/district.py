@@ -19,15 +19,14 @@ class District:
         self.md = map_data
         self.cfg = DistrictConfgs()
 
-        # init window
-        self.init_wind()
-
         #
         if self.cfg.whole_map:
             print(f"[{self.ns}]: whole map is selected as district for CPP!")
             return None
-        else:
-            print(f"[{self.ns}]: Selecting district for CPP ... ")
+        print(f"[{self.ns}]: Selecting district for CPP ... ")
+
+        # init window
+        self.init_wind()
 
         # init rectangle event handler
         rec_ev_hl = RecEventHandler(map_data.up_rgb_map)

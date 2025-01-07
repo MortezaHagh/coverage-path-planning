@@ -8,24 +8,30 @@ from scripts.my_utils import mod_angle
 class Rectangle:
     rid: int = 0
     bbox: box
+    vertices_t: tuple
+    vertices_a: np.ndarray
 
     def __init__(self, data: dict, rid: int = None):
         #
         self.ns = "Rectangle"
         self.point_radius = 40
 
-        # configs
+        # rid
         if rid is None:
             self.rid = Rectangle.rid
             Rectangle.rid += 1
         else:
             self.rid = rid
-        #
+
+        # inputs
         xc = data["xc"]
         yc = data["yc"]
         rot = data["rot"]
         w = data["w"]
         h = data["h"]
+        for v in data.values():
+            if v is None:
+                raise f"[{self.ns}]:  input data is None"
 
         #
         self.width = w
@@ -45,10 +51,10 @@ class Rectangle:
         self.box = bbox
 
         # vertices
-        vertices_l = list(bbox.exterior.coords)
-        vertices_a = np.array(vertices_l, dtype=np.int32)
-        self.vertices_t = tuple(vertices_a.tolist())
-        self.vertices_a = vertices_a.reshape((-1, 1, 2))
+        vertices_l = list(bbox.exterior.coords)[:4]
+        vertices_l = np.array(vertices_l, dtype=np.int32)
+        self.vertices_t = tuple(vertices_l.tolist())
+        self.vertices_a = vertices_l.reshape((-1, 1, 2))
 
         # 4 points & rotation point
         self.tl: tuple[int, int] = None
@@ -75,9 +81,10 @@ class Rectangle:
         self.box = rotated_bbox
         # vertices
         vertices_l = list(rotated_bbox.exterior.coords)
-        vertices_a = np.array(vertices_l, dtype=np.int32)
-        self.vertices_t = tuple(vertices_a.tolist())
-        self.vertices_a = vertices_a.reshape((-1, 1, 2))
+        vertices_l = np.array(vertices_l, dtype=np.int32)
+        self.vertices_l = vertices_l
+        self.vertices_t = tuple(vertices_l.tolist())
+        self.vertices_a = vertices_l.reshape((-1, 1, 2))
         # points
         self.up_all_points()
 
