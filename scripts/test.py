@@ -7,6 +7,17 @@ class Person():
     email: int = None
 
 
-Person1 = Person("Morteza")
-Person1.email = 123456
-print(Person1)
+class A:
+    def __init__(self):
+        self.a = "aa"
+
+
+obj = A()
+print(obj)
+print(obj.__class__)
+print(obj.__class__())
+
+obj2 = Person(name="Ali")
+print(obj2)
+print(obj2.__str__)
+print(obj2.__str__())

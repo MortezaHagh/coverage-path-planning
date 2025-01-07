@@ -9,18 +9,18 @@ import numpy as np
 from scripts.map_data import Configs
 
 
-class ProcessorInputs:
+class InputsProcessor:
     """ Read map image, data and configs """
     ns: str
-    _configs: Configs
-    _orig_map: Optional[np.ndarray]
+    __configs: Configs
+    __orig_map: Optional[np.ndarray]
 
     def __init__(self, map_name="Map1"):
         # init
         self.ns = "Inp"
         configs = Configs()
-        self._configs = None
-        self._orig_map = None
+        self.__configs = None
+        self.__orig_map = None
 
         # define paths
         data_dir = "/home/morteza/Documents/00-CPP/00-CPP/Data"
@@ -39,20 +39,42 @@ class ProcessorInputs:
         configs.map_path = map_path
         configs.data_dir = data_dir
         self.read_map_data(map_yaml_data, configs)
-        self._configs = configs
+        self.__configs = configs
 
         # read pgm file
         map_arr = cv.imread(pgm_file_path, cv.IMREAD_GRAYSCALE)
-        self._orig_map = map_arr
+        self.__orig_map = map_arr
         # self.visualize_map(map_arr)
 
     @property
     def configs(self) -> Configs:
-        return copy.deepcopy(self._configs)
+        return copy.deepcopy(self.__configs)
 
     @property
     def orig_map(self) -> np.ndarray:
-        return copy.deepcopy(self._orig_map)
+        return copy.deepcopy(self.__orig_map)
+
+    def read_map_data(self, yaml_data: dict, configs: Configs) -> None:
+        """ read map yaml file and update config object """
+        configs.origin = yaml_data["origin"]
+        configs.resolution = yaml_data["resolution"]
+        configs.free_thresh = yaml_data["free_thresh"]
+        configs.occupied_thresh = yaml_data["occupied_thresh"]
+
+    def check_directory(self, folder_path, folder_name) -> None:
+        """ check if directory and map files exist """
+        if not os.path.isdir(folder_path):
+            print(f"Directory {folder_path} does not exist")
+            print(f"Map folder [{folder_name}] does not exist")
+            raise FileNotFoundError(f"Directory {folder_path} does not exist")
+
+    def read_yaml(self, file_path):
+        with open(file_path, 'r') as file:
+            return yaml.safe_load(file)
+
+    def write_json(self, file_path, data) -> None:
+        with open(file_path, 'w') as file:
+            json.dump(data, file, indent=4)
 
     def visualize_map(self, pgm_data) -> None:
         print(f"[{self.ns}]: visualizing")
@@ -74,28 +96,6 @@ class ProcessorInputs:
         cv.destroyAllWindows()
         print(f"[{self.ns}]: Image window closed.")
 
-    def read_map_data(self, yaml_data: dict, map_data: Configs) -> None:
-        """ read map yaml file and update config object """
-        map_data.origin = yaml_data["origin"]
-        map_data.resolution = yaml_data["resolution"]
-        map_data.free_thresh = yaml_data["free_thresh"]
-        map_data.occupied_thresh = yaml_data["occupied_thresh"]
-
-    def check_directory(self, folder_path, folder_name) -> None:
-        """ check if directory and map files exist """
-        if not os.path.isdir(folder_path):
-            print(f"Directory {folder_path} does not exist")
-            print(f"Map folder [{folder_name}] does not exist")
-            raise FileNotFoundError(f"Directory {folder_path} does not exist")
-
-    def read_yaml(self, file_path):
-        with open(file_path, 'r') as file:
-            return yaml.safe_load(file)
-
-    def write_json(self, file_path, data) -> None:
-        with open(file_path, 'w') as file:
-            json.dump(data, file, indent=4)
-
 
 if __name__ == "__main__":
-    processor = ProcessorInputs("Map1")
+    processor = InputsProcessor("Map1")

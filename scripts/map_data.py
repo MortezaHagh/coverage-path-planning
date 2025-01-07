@@ -1,11 +1,9 @@
 """ Configs and MapData data classes """
-from dataclasses import dataclass
 from typing import Optional
 import numpy as np
 import cv2 as cv
 
 
-@dataclass
 class Configs:
     """ All configs """
 
@@ -24,7 +22,7 @@ class Configs:
         self.free_thresh = None
         self.occupied_thresh = None
         # district
-        self.whole_map = True
+        self.whole_map = True  # False True
 
 
 class MapData:

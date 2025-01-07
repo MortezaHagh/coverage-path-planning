@@ -67,7 +67,7 @@ class District:
         if not self.cf.whole_map:
             return self.rec_ev_hl.get_main_obj().get_rect()
 
-        #
+        # create district based on map data
         xc = self.md.up_c_w
         yc = self.md.up_c_h
         rot = 0

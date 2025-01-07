@@ -84,7 +84,7 @@ class RecEventHandler:
         #     self.move_center(x, y)
 
     def on_lb_db_click(self, x, y, flags):
-        print(f"[{self.ns}]: ldb: [x,y], [{(x, y)}]")
+        # print(f"[{self.ns}]: ldb: [x,y], [{(x, y)}]")
         params = {"xc": x, "yc": y, "rot": 0, "w": 200, "h": 200}
         main_obj = VisualRectangle(data=params)
         self.main_obj = main_obj

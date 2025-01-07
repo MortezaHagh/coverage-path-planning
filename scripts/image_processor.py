@@ -9,13 +9,13 @@ from scripts.map_data import MapData, Configs
 class MapImageProcessor:
     """ process map pgm file """
     _omd = MapData
-    _orig_map: np.ndarray
+    __orig_map: np.ndarray
 
     def __init__(self, map_arr: np.ndarray, configs: Configs):
 
         # read configs and eval original map arr
-        self._configs = configs
-        self._orig_map = map_arr
+        self.__configs = configs
+        self.__orig_map = map_arr
         self.check_map(map_arr)
 
         # init
@@ -37,7 +37,7 @@ class MapImageProcessor:
 
     @property
     def configs(self) -> Configs:
-        return copy.deepcopy(self._configs)
+        return copy.deepcopy(self.__configs)
 
     @property
     def mdata(self) -> MapData:
@@ -45,7 +45,7 @@ class MapImageProcessor:
 
     @property
     def orig_map(self) -> np.ndarray:
-        return copy.deepcopy(self._orig_map)
+        return copy.deepcopy(self.__orig_map)
 
     def check_map(self, image):
         """ check if map image is loaded """
@@ -64,7 +64,7 @@ class MapImageProcessor:
     def convert_to_binary(self):
         print(f"[{self.ns}]: converting image to binary")
         threshold = self.configs.occupied_thresh
-        _, binary_map = cv.threshold(self._orig_map, threshold, 255, cv.THRESH_BINARY)
+        _, binary_map = cv.threshold(self.__orig_map, threshold, 255, cv.THRESH_BINARY)
         return binary_map
 
     def remove_noise(self, binary_map, kernel_size=(3, 3)) -> np.ndarray:
