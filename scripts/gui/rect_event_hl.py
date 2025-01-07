@@ -85,7 +85,7 @@ class RecEventHandler:
 
     def on_lb_db_click(self, x, y, flags):
         print(f"[{self.ns}]: ldb: [x,y], [{(x, y)}]")
-        params = [x, y, 200, 200, 0]
+        params = {"xc": x, "yc": y, "rot": 0, "w": 200, "h": 200}
         main_obj = VisualRectangle(data=params)
         self.main_obj = main_obj
         self.objects.append(main_obj)

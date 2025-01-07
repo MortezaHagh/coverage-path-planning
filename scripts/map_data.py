@@ -10,18 +10,21 @@ class Configs:
     """ All configs """
 
     def __init__(self):
-        # robor configs
+        # robot configs
         self.robot_radius = 0.5
         self.safe_distance = 0.2
         # directions
         self.map_name = None
         self.map_path = None
         self.data_dir = None
+        self.district_folder = "District"
         # map configs
         self.origin = None
         self.resolution = None
         self.free_thresh = None
         self.occupied_thresh = None
+        # district
+        self.whole_map = True
 
 
 class MapData:

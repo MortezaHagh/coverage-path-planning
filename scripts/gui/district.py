@@ -21,6 +21,13 @@ class District:
         # init window
         self.init_wind()
 
+        #
+        if self.cf.whole_map:
+            print(f"[{self.ns}]: whole map is selected as district for CPP!")
+            return None
+        else:
+            print(f"[{self.ns}]: Selecting district for CPP ... ")
+
         # init rectangle event handler
         rec_ev_hl = RecEventHandler(map_data.up_rgb_map, configs)
         self.rec_ev_hl = rec_ev_hl
@@ -51,7 +58,20 @@ class District:
             listener.join()
 
     def get_district_vis(self) -> VisualRectangle:
+        if self.cf.whole_map:
+            print(f"[{self.ns}]: whole map is selected as district for CPP! There is no rec_ev_hl!")
+            return None
         return self.rec_ev_hl.get_main_obj()
 
     def get_district_rect(self) -> Rectangle:
-        return self.rec_ev_hl.get_main_obj().get_rect()
+        if not self.cf.whole_map:
+            return self.rec_ev_hl.get_main_obj().get_rect()
+
+        #
+        xc = self.md.up_c_w
+        yc = self.md.up_c_h
+        rot = 0
+        w = self.md.updated_w
+        h = self.md.updated_h
+        data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        return Rectangle(data)

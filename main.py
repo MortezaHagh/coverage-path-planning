@@ -2,6 +2,7 @@ from scripts.map_data import MapData, Configs
 from scripts.process_input import ProcessorInputs
 from scripts.process_image import MapImageProcessor
 from scripts.gui.district import District
+from scripts.gui.visuals import Rectangle
 
 
 def main():
@@ -14,10 +15,10 @@ def main():
     mp = MapImageProcessor(map_arr, configs)
     map_data: MapData = mp.mdata
 
-    #
+    # get district
     district = District(map_data=map_data, configs=configs)
-    rect = district.get_district_rect()
-    print(rect.rid)
+    district_rect: Rectangle = district.get_district_rect()
+    print(district_rect.rid)
 
     #
 

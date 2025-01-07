@@ -9,7 +9,7 @@ class Rectangle:
     rid: int = 0
     bbox: box
 
-    def __init__(self, data: list, rid: int = None):
+    def __init__(self, data: dict, rid: int = None):
         #
         self.ns = "Rectangle"
         self.point_radius = 40
@@ -21,11 +21,11 @@ class Rectangle:
         else:
             self.rid = rid
         #
-        xc = data[0]
-        yc = data[1]
-        rot = data[4]
-        w = data[2]
-        h = data[3]
+        xc = data["xc"]
+        yc = data["yc"]
+        rot = data["rot"]
+        w = data["w"]
+        h = data["h"]
 
         #
         self.width = w
@@ -137,7 +137,7 @@ class Rectangle:
 
 class VisualRectangle(Rectangle):
 
-    def __init__(self, data: list):
+    def __init__(self, data: dict):
         super().__init__(data=data)
         self.ns = "VisualRectangle"
 
@@ -279,5 +279,5 @@ class VisualRectangle(Rectangle):
         cv.polylines(img, [self.vertices_a], True, color, self.line_width,)
 
     def get_rect(self) -> Rectangle:
-        data = [self.xc, self.yc, self.rot, self.width, self.height]
+        data = {"xc": self.xc, "yc": self.yc, "rot": self.rot, "w": self.width, "h": self.height}
         return Rectangle(data, self.rid)
