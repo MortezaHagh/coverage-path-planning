@@ -6,19 +6,19 @@ from typing import Optional
 import yaml
 import cv2 as cv
 import numpy as np
-from scripts.map_data import Configs
+from scripts.configs import BConfigs
 
 
 class InputsProcessor:
     """ Read map image, data and configs """
     ns: str
-    __configs: Configs
+    __configs: BConfigs
     __orig_map: Optional[np.ndarray]
 
     def __init__(self, map_name="Map1"):
         # init
         self.ns = "Inp"
-        configs = Configs()
+        configs = BConfigs()
         self.__configs = None
         self.__orig_map = None
 
@@ -47,14 +47,14 @@ class InputsProcessor:
         # self.visualize_map(map_arr)
 
     @property
-    def configs(self) -> Configs:
+    def configs(self) -> BConfigs:
         return copy.deepcopy(self.__configs)
 
     @property
     def orig_map(self) -> np.ndarray:
         return copy.deepcopy(self.__orig_map)
 
-    def read_map_data(self, yaml_data: dict, configs: Configs) -> None:
+    def read_map_data(self, yaml_data: dict, configs: BConfigs) -> None:
         """ read map yaml file and update config object """
         configs.origin = yaml_data["origin"]
         configs.resolution = yaml_data["resolution"]

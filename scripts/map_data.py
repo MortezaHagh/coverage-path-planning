@@ -1,35 +1,16 @@
-""" Configs and MapData data classes """
+""" MapData data classes """
 from typing import Optional
 import numpy as np
 import cv2 as cv
 
 
-class Configs:
-    """ All configs """
-
-    def __init__(self):
-        # robot configs
-        self.robot_radius = 0.5
-        self.safe_distance = 0.2
-        # directions
-        self.map_name = None
-        self.map_path = None
-        self.data_dir = None
-        self.district_folder = "District"
-        # map configs
-        self.origin = None
-        self.resolution = None
-        self.free_thresh = None
-        self.occupied_thresh = None
-        # district
-        self.whole_map = True  # False True
-
-
 class MapData:
     """ original and updated map data """
     orig_map: np.ndarray
+    orig_bin_map: np.ndarray
     up_map: np.ndarray
     up_rgb_map: np.ndarray
+    up_bin_map: np.ndarray
 
     def __init__(self):
         self.ns = "MapData"
@@ -52,8 +33,14 @@ class MapData:
         self.zoom = None
         #
         self.orig_map = None
+        self.orig_bin_map = None
         self.up_map = None
         self.up_rgb_map = None
+        self.up_bin_map = None
+
+    def set_bin_map(self, bin_map):
+        self.orig_bin_map = bin_map
+        self.up_bin_map = cv.resize(self.orig_bin_map, self.updated_wh, interpolation=cv.INTER_AREA)
 
     def set_orig_map(self, map_data: np.ndarray, name: str = None):
         #
@@ -64,6 +51,7 @@ class MapData:
         self.set_map_hw()
         self.set_wind_wh()
         self.resize_map()
+        self.create_rgb_map()
         self.set_orig_center()
         self.set_updated_center()
 
@@ -92,6 +80,8 @@ class MapData:
 
     def resize_map(self):
         self.up_map = cv.resize(self.orig_map, self.updated_wh, interpolation=cv.INTER_AREA)
+
+    def create_rgb_map(self):
         self.up_rgb_map = cv.cvtColor(self.up_map, cv.COLOR_GRAY2BGR)
 
     def set_orig_center(self):

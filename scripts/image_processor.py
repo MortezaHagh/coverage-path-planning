@@ -3,7 +3,8 @@ from typing import Optional
 import copy
 import numpy as np
 import cv2 as cv
-from scripts.map_data import MapData, Configs
+from scripts.configs import BConfigs
+from scripts.map_data import MapData
 
 
 class MapImageProcessor:
@@ -11,7 +12,7 @@ class MapImageProcessor:
     _omd = MapData
     __orig_map: np.ndarray
 
-    def __init__(self, map_arr: np.ndarray, configs: Configs):
+    def __init__(self, map_arr: np.ndarray, configs: BConfigs):
 
         # read configs and eval original map arr
         self.__configs = configs
@@ -22,12 +23,13 @@ class MapImageProcessor:
         self.ns = "IP"
         self.processed_map_1 = None
 
-        # initial processes on map image - load data
-        self.process_map()
-
         # map data
         self._omd = MapData()
         self.update_data()
+
+        # initial processes on map image - load data
+        self.process_map()
+        self._omd.set_bin_map(self.processed_map_1)
 
         # # visualize
         # self.visualize_map(self.processed_map_1)
@@ -36,16 +38,8 @@ class MapImageProcessor:
         # self.select_crop()
 
     @property
-    def configs(self) -> Configs:
-        return copy.deepcopy(self.__configs)
-
-    @property
     def mdata(self) -> MapData:
         return copy.deepcopy(self._omd)
-
-    @property
-    def orig_map(self) -> np.ndarray:
-        return copy.deepcopy(self.__orig_map)
 
     def check_map(self, image):
         """ check if map image is loaded """
@@ -53,6 +47,11 @@ class MapImageProcessor:
             raise ValueError("Image not found or the format is not supported")
         if len(image.shape) > 2:
             raise ValueError("Image must be grayscale")
+
+    def update_data(self):
+        print(f"[{self.ns}]: loading map image data")
+        map_arr = self.__orig_map.copy()
+        self._omd.set_orig_map(map_arr, self.__configs.map_name)
 
     def process_map(self) -> None:
         print(f"[{self.ns}]: first processing of the map image")
@@ -63,7 +62,7 @@ class MapImageProcessor:
 
     def convert_to_binary(self):
         print(f"[{self.ns}]: converting image to binary")
-        threshold = self.configs.occupied_thresh
+        threshold = self.__configs.occupied_thresh
         _, binary_map = cv.threshold(self.__orig_map, threshold, 255, cv.THRESH_BINARY)
         return binary_map
 
@@ -72,11 +71,6 @@ class MapImageProcessor:
         kernel = np.ones(kernel_size, np.uint8)
         denoised_map = cv.morphologyEx(binary_map, cv.MORPH_OPEN, kernel)
         return denoised_map
-
-    def update_data(self):
-        print(f"[{self.ns}]: loading map image data")
-        map_arr = self.orig_map.copy()
-        self._omd.set_orig_map(map_arr, self.configs.map_name)
 
     def visualize_map(self, pgm_data_in: Optional[np.ndarray], disp_name: str = "Map") -> None:
         print(f"[{self.ns}]: display map image")

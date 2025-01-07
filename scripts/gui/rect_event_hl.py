@@ -1,7 +1,6 @@
 from pynput.keyboard import Key
 import cv2 as cv
 import numpy as np
-from scripts.map_data import Configs
 from scripts.gui.visuals import VisualRectangle
 
 
@@ -13,13 +12,12 @@ class RecEventHandler:
     selected_ind: int
     highlighted_ind: int
 
-    def __init__(self, map_img: np.ndarray, configs: Configs):
+    def __init__(self, map_img: np.ndarray):
         #
         self.ns = "RecEventHandler"
         self.wind_name = "Select"
 
         #
-        self.cf = configs
         self.map_img = map_img
         self.canvas = np.zeros_like(map_img, dtype=np.uint8)
 
@@ -180,4 +178,6 @@ class RecEventHandler:
             return [obj for obj in self.objects]
 
     def get_main_obj(self) -> VisualRectangle:
+        if self.main_obj is None:
+            raise f"[{self.ns}]: main object is has not created!"
         return self.main_obj

@@ -59,13 +59,6 @@ class Rectangle:
         self.up_all_points()
 
     def update_data(self):
-        # # w, h
-        # self.width = w
-        # self.height = h
-        # # cp
-        # self.xc = xc
-        # self.yc = yc
-        # self.cp = (xc, yc)
         #
         xc = self.xc
         yc = self.yc
