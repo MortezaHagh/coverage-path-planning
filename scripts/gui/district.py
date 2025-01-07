@@ -43,8 +43,6 @@ class District:
         listener_thread.join()
         cv.destroyAllWindows()
 
-        #
-
     def init_wind(self):
         cv.namedWindow(self.wind_name, cv.WINDOW_GUI_NORMAL)
 
@@ -56,4 +54,4 @@ class District:
         return self.rec_ev_hl.get_main_obj()
 
     def get_district_rect(self) -> Rectangle:
-        return self.rec_ev_hl.get_main_obj().rect
+        return self.rec_ev_hl.get_main_obj().get_rect()

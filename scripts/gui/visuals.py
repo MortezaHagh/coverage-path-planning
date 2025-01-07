@@ -6,15 +6,20 @@ from scripts.my_utils import mod_angle
 
 
 class Rectangle:
-    rid: int
+    rid: int = 0
     bbox: box
 
-    def __init__(self, data: list, rid: int = 0):
+    def __init__(self, data: list, rid: int = None):
         #
         self.ns = "Rectangle"
-        self.rid = rid
         self.point_radius = 40
 
+        # configs
+        if rid is None:
+            self.rid = Rectangle.rid
+            Rectangle.rid += 1
+        else:
+            self.rid = rid
         #
         xc = data[0]
         yc = data[1]
@@ -103,7 +108,98 @@ class Rectangle:
         self.bl = bl
         return [tl, br, tr, bl]
 
-    def on_move(self, select_type: str, x, y):
+    def rotate_point(self, dx, dy, rotation):
+        x_r = dx * np.cos(rotation) - dy * np.sin(rotation)
+        y_r = dx * np.sin(rotation) + dy * np.cos(rotation)
+        return np.array([x_r + self.xc, y_r + self.yc], dtype=np.int32)
+
+    def rotate_point_v2(self, x, y, rotation):
+        x -= self.xc
+        y -= self.yc
+        x_r = x * np.cos(rotation) - y * np.sin(rotation)
+        y_r = x * np.sin(rotation) + y * np.cos(rotation)
+        return np.array([x_r + self.xc, y_r + self.yc], dtype=np.int32)
+
+    def rotate_point_i(self, dx, dy, rotation):
+        xy = self.rotate_point(dx, dy, rotation)
+        return tuple(xy.tolist())
+
+    def is_in_rect(self, x, y):
+        point = Point(x, y)
+        return self.box.contains(point)
+
+    def are_close(self, p1, p2):
+        return self.cal_distance_t(p1, p2) < self.point_radius
+
+    def cal_distance_t(self, p1, p2):
+        return np.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
+
+
+class VisualRectangle(Rectangle):
+
+    def __init__(self, data: list):
+        super().__init__(data=data)
+        self.ns = "VisualRectangle"
+
+        #
+        self.line_width = 10
+        self.point_radius = 40
+        self.default_color = (0, 0, 255)
+        self.selected_color = (255, 255, 0)
+        self.highlight_color = (255, 0, 0)
+        self.highlight_color_fill = (255, 255, 255)
+
+        #
+        self.selected: bool = False
+        self.highlight: bool = False
+
+        #
+        self.select_type: str = None
+
+    def deselect(self):
+        self.selected = False
+
+    def is_in_box(self, x, y):
+        is_inside = self.is_in_rect(x, y)
+        if is_inside:
+            self.highlight = True
+            return True
+        else:
+            self.highlight = False
+            return False
+
+    def detect(self, x, y):
+        detected = None
+        if self.is_in_rect(x, y):
+            if self.are_close(self.tl, (x, y)):
+                detected = "top_left"
+            elif self.are_close(self.tr, (x, y)):
+                detected = "top_right"
+            elif self.are_close(self.br, (x, y)):
+                detected = "bottom_right"
+            elif self.are_close(self.bl, (x, y)):
+                detected = "bottom_left"
+            elif self.are_close(self.cp, (x, y)):
+                detected = "center"
+            elif self.are_close(self.rot_point, (x, y)):
+                detected = "rotation_point"
+            else:
+                detected = "rectangle"
+        return detected
+
+    def button_down(self, x, y):
+        detected = self.detect(x, y)
+        if detected is not None:
+            self.select_type = detected
+        if detected == "rectangle":
+            self.selected = ~self.selected
+
+    def button_up(self, x, y):
+        self.select_type = None
+        # self.calculate_boundaries()
+
+    def button_move(self, x, y):
+        select_type = self.select_type
         if select_type == "center":
             self.drag_center(x, y)
         elif select_type == "rotation_point":
@@ -163,124 +259,25 @@ class Rectangle:
         self.height = br[1] - tl[1]
         self.update_data()
 
-    def detect(self, x, y):
-        detected = None
-        if self.is_in_rect(x, y):
-            if self.are_close(self.tl, (x, y)):
-                detected = "top_left"
-            elif self.are_close(self.tr, (x, y)):
-                detected = "top_right"
-            elif self.are_close(self.br, (x, y)):
-                detected = "bottom_right"
-            elif self.are_close(self.bl, (x, y)):
-                detected = "bottom_left"
-            elif self.are_close(self.cp, (x, y)):
-                detected = "center"
-            elif self.are_close(self.rot_point, (x, y)):
-                detected = "rotation_point"
-            else:
-                detected = "rectangle"
-        return detected
-
-    def rotate_point(self, dx, dy, rotation):
-        x_r = dx * np.cos(rotation) - dy * np.sin(rotation)
-        y_r = dx * np.sin(rotation) + dy * np.cos(rotation)
-        return np.array([x_r + self.xc, y_r + self.yc], dtype=np.int32)
-
-    def rotate_point_v2(self, x, y, rotation):
-        x -= self.xc
-        y -= self.yc
-        x_r = x * np.cos(rotation) - y * np.sin(rotation)
-        y_r = x * np.sin(rotation) + y * np.cos(rotation)
-        return np.array([x_r + self.xc, y_r + self.yc], dtype=np.int32)
-
-    def rotate_point_i(self, dx, dy, rotation):
-        xy = self.rotate_point(dx, dy, rotation)
-        return tuple(xy.tolist())
-
-    def is_in_rect(self, x, y):
-        point = Point(x, y)
-        return self.box.contains(point)
-
-    def are_close(self, p1, p2):
-        return self.cal_distance_t(p1, p2) < self.point_radius
-
-    def cal_distance_t(self, p1, p2):
-        return np.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
-
-
-class VisualRectangle:
-    rid: int = 0
-    rect: Rectangle
-
-    def __init__(self, data: list):
-        self.ns = "VisualRectangle"
-
-        # configs
-        self.rid = VisualRectangle.rid
-        VisualRectangle.rid += 1
-        #
-        self.line_width = 10
-        self.point_radius = 40
-        self.default_color = (0, 0, 255)
-        self.selected_color = (255, 255, 0)
-        self.highlight_color = (255, 0, 0)
-        self.highlight_color_fill = (255, 255, 255)
-
-        #
-        self.selected: bool = False
-        self.highlight: bool = False
-
-        #
-        self.select_type: str = None
-
-        #
-        self.rect = Rectangle(data=data, rid=self.rid)
-
-    def button_down(self, x, y):
-        detected = self.rect.detect(x, y)
-        if detected is not None:
-            self.select_type = detected
-        if detected == "rectangle":
-            self.selected = ~self.selected
-
-    def button_up(self, x, y):
-        self.select_type = None
-        # self.calculate_boundaries()
-
-    def button_move(self, x, y):
-        self.rect.on_move(self.select_type, x, y)
-
-    def deselect(self):
-        self.selected = False
-
-    def detect(self, x, y):
-        self.rect.detect(x, y)
-
-    def is_in_box(self, x, y):
-        is_inside = self.rect.is_in_rect(x, y)
-        if is_inside:
-            self.highlight = True
-            return True
-        else:
-            self.highlight = False
-            return False
-
     def draw(self, img: np.ndarray):
         color = self.default_color
         if self.highlight:
             # update color
             color = self.highlight_color
             # center
-            cv.circle(img, self.rect.cp_i, self.point_radius, self.highlight_color, -1)
+            cv.circle(img, self.cp_i, self.point_radius, self.highlight_color, -1)
             # rotation point
-            cv.circle(img, self.rect.rot_point, self.point_radius, self.highlight_color, -1)
+            cv.circle(img, self.rot_point, self.point_radius, self.highlight_color, -1)
             # 4 points
-            for vertex in self.rect.vertices_t:
+            for vertex in self.vertices_t:
                 cv.circle(img, vertex, self.point_radius, self.highlight_color, -1)
 
         elif self.selected:
             color = self.selected_color
 
         # draw box
-        cv.polylines(img, [self.rect.vertices_a], True, color, self.line_width,)
+        cv.polylines(img, [self.vertices_a], True, color, self.line_width,)
+
+    def get_rect(self) -> Rectangle:
+        data = [self.xc, self.yc, self.rot, self.width, self.height]
+        return Rectangle(data, self.rid)
