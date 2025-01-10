@@ -1,5 +1,5 @@
 # from dataclasses import dataclass
-
+import copy
 
 # @dataclass
 # class Person():
@@ -22,8 +22,17 @@
 # print(obj2.__str__)
 # print(obj2.__str__())
 
-a = [1, 2, 3]
-for i, v in enumerate(a):
-    v = 1
+# a = [1, 2, 3]
+# for i, v in enumerate(a):
+#     v = 1
 
-print(a)
+
+def up(ab: dict):
+    for val in ab.values():
+        val = 0
+
+
+ab = {"a": 1, "b": 2}
+up_ab = up(ab)
+print(ab)
+print(up_ab)

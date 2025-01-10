@@ -23,7 +23,7 @@ def main():
     print(district_rect.rid)
 
     # Process Space
-    SpaceAnalyzer(map_data=map_data, configs=bconfigs, district_rect=district_rect)
+    SpaceAnalyzer(map_data=map_data, bconfigs=bconfigs, district_rect=district_rect)
 
 
 if __name__ == "__main__":

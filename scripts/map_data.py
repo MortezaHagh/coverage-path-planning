@@ -36,6 +36,13 @@ class MapData:
         self.up_map = None
         self.up_rgb_map = None
         self.up_bin_map = None
+        #
+        self.resolution = None
+        self.up_resolution = None
+
+    def set_resolution(self, res):
+        self.resolution = res
+        self.up_resolution = self.resolution / self.zoom
 
     def set_bin_map(self, bin_map):
         self.orig_bin_map = bin_map

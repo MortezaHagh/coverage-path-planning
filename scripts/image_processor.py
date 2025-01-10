@@ -9,7 +9,7 @@ from scripts.map_data import MapData
 
 class MapImageProcessor:
     """ process map pgm file """
-    _omd = MapData
+    _map_data = MapData
     __orig_map: np.ndarray
 
     def __init__(self, map_arr: np.ndarray, configs: BConfigs):
@@ -21,25 +21,28 @@ class MapImageProcessor:
 
         # init
         self.ns = "IP"
-        self.processed_map_1 = None
+        self.processed_map = None
 
         # map data
-        self._omd = MapData()
-        self.update_data()
+        self._map_data = MapData()
+        self.set_map_data()
 
         # initial processes on map image - load data
         self.process_map()
-        self._omd.set_bin_map(self.processed_map_1)
+        self._map_data.set_bin_map(self.processed_map)
+
+        # add other data to map_data
+        self.complete_data()
 
         # # visualize
-        # self.visualize_map(self.processed_map_1)
+        # self.visualize_map(self.processed_map)
 
         # #
         # self.select_crop()
 
     @property
     def mdata(self) -> MapData:
-        return copy.deepcopy(self._omd)
+        return copy.deepcopy(self._map_data)
 
     def check_map(self, image):
         """ check if map image is loaded """
@@ -48,22 +51,22 @@ class MapImageProcessor:
         if len(image.shape) > 2:
             raise ValueError("Image must be grayscale")
 
-    def update_data(self):
+    def set_map_data(self):
         print(f"[{self.ns}]: loading map image data")
         map_arr = self.__orig_map.copy()
-        self._omd.set_orig_map(map_arr, self.__configs.map_name)
+        self._map_data.set_orig_map(map_arr, self.__configs.map_name)
 
     def process_map(self) -> None:
         print(f"[{self.ns}]: first processing of the map image")
         binary_map = self.convert_to_binary()
         denoised_map = self.remove_noise(binary_map)
-        self.processed_map_1 = denoised_map
+        self.processed_map = denoised_map
         print(f"[{self.ns}]: Binary-denoised image created.")
 
     def convert_to_binary(self):
         print(f"[{self.ns}]: converting image to binary")
-        threshold = self.__configs.occupied_thresh
-        _, binary_map = cv.threshold(self.__orig_map, threshold, 255, cv.THRESH_BINARY)
+        # threshold = self.__configs.occupied_thresh
+        _, binary_map = cv.threshold(self.__orig_map, 220, 255, cv.THRESH_BINARY)
         return binary_map
 
     def remove_noise(self, binary_map, kernel_size=(3, 3)) -> np.ndarray:
@@ -71,6 +74,9 @@ class MapImageProcessor:
         kernel = np.ones(kernel_size, np.uint8)
         denoised_map = cv.morphologyEx(binary_map, cv.MORPH_OPEN, kernel)
         return denoised_map
+
+    def complete_data(self):
+        self._map_data.set_resolution(self.__configs.resolution)
 
     def visualize_map(self, pgm_data_in: Optional[np.ndarray], disp_name: str = "Map") -> None:
         print(f"[{self.ns}]: display map image")
@@ -82,7 +88,7 @@ class MapImageProcessor:
         print(f"[{self.ns}]: Map size [w,h]: {width}x{height}")
 
         # cv window
-        wind_hw = self._omd.wind_hw
+        wind_hw = self._map_data.wind_hw
         zoom = min(wind_hw[0]/height, wind_hw[1]/width)
         updated_h = int(height * zoom)
         updated_w = int(width * zoom)
@@ -116,11 +122,11 @@ class MapImageProcessor:
         min_w, min_h = np.min(corners, axis=0)
 
         # eval vertices bound
-        max_w = min(max_w, self._omd.updated_w)
+        max_w = min(max_w, self._map_data.updated_w)
         min_w = max(min_w, 0)
-        max_h = min(max_h, self._omd.updated_h)
+        max_h = min(max_h, self._map_data.updated_h)
         min_h = max(min_h, 0)
 
         #
-        cropped_map = copy.copy(self.processed_map_1[min_h:max_h, min_w:max_w])
+        cropped_map = copy.copy(self.processed_map[min_h:max_h, min_w:max_w])
         self.visualize_map(cropped_map, "cropped")

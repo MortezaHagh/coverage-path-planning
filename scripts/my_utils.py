@@ -7,9 +7,9 @@ def mod_angle(theta):
     return theta % (2 * np.pi)
 
 
-def visualize_map(pgm_data_in: Optional[np.ndarray]) -> None:
+def visualize_map(pgm_data_in: Optional[np.ndarray], name=None) -> None:
     ns = "utils"
-    print(f"[{ns}]: display map image")
+    # print(f"[{ns}]: display map image")
 
     # check if the image is loaded
     if pgm_data_in is None:
@@ -20,10 +20,12 @@ def visualize_map(pgm_data_in: Optional[np.ndarray]) -> None:
     map_data = pgm_data_in.copy()
     height, width = map_data.shape[:2]
     updated_h, updated_w = height, width
-    print(f"[{ns}]: Map size: {width}x{height}")
+    # print(f"[{ns}]: Map size: {width}x{height}")
 
     # cv window
-    w_name = "PGM Image"
+    w_name = name
+    if name is None:
+        w_name = "PGM Image"
     wind_hw = (1080, 1920)
     zoom = min(wind_hw[0]/height, wind_hw[1]/width)
     if zoom > 1.0:
@@ -44,4 +46,4 @@ def visualize_map(pgm_data_in: Optional[np.ndarray]) -> None:
             break
 
     cv.destroyAllWindows()
-    print(f"[{ns}]: Image window closed.")
+    # print(f"[{ns}]: Image window closed.")
