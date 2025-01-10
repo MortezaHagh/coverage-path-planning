@@ -20,7 +20,6 @@ def main():
     # Create District
     district = District(map_data=map_data)
     district_rect: Rectangle = district.get_district_rect()
-    print(district_rect.rid)
 
     # Process Space
     SpaceAnalyzer(map_data=map_data, bconfigs=bconfigs, district_rect=district_rect)

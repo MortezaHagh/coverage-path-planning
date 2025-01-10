@@ -1,8 +1,8 @@
 import os
 import copy
+from typing import Optional
 import cv2 as cv
 import numpy as np
-from typing import Optional
 from scripts.map_data import MapData
 from scripts.gui.visuals import Rectangle
 from scripts.my_utils import visualize_map
@@ -17,6 +17,7 @@ class SpaceAnalyzer:
 
     def __init__(self, map_data: MapData, bconfigs: BConfigs, district_rect: Rectangle):
         self.ns = "SpaceAnalyzer"
+        print(f"[{self.ns}]: Analyzing space for creating free space.")
 
         # analyzed space path
         self.res_path = os.path.join(bconfigs.map_path, bconfigs.district_folder)
@@ -33,13 +34,18 @@ class SpaceAnalyzer:
         self.vertices = np.array(district_rect.vertices_t, dtype=np.int32)  # district vertices
 
         # attributes
-        self.c_hw_l: dict[str:int] = None
+        self.c_hw_l: dict[str:int] = None  # cropped hw limits
+        self.free_space_selected = False
+        self.free_space_point = [0, 0]
 
         #
         self.select_space()
 
         # #
         # zone = MapInfo(free_space_map, available_map, zone_coordinates, mapPgm.shape, mapOrigin)
+
+        # final
+        print(f"[{self.ns}]: ----------------------------------------------- ")
 
     def select_space(self):
         # print(f"[{self.ns}]: vertices:", self.vertices)
@@ -50,9 +56,29 @@ class SpaceAnalyzer:
         # Find Free Space
         free_map = self.detect_free_space(out_mask)
         free_map_disp = cv.addWeighted(cropped_map, 0.4, free_map, 0.6, 0)
-        visualize_map(free_map_disp, "free_map_disp")
+        # visualize_map(free_map_disp, "free_map_disp")
+
+        # select free space
+        self.select_free_space(free_map_disp)
+
+    def select_free_space(self, free_map_disp: np.ndarray):
+        print(f"[{self.ns}]: selecting the free space ...")
+        win_name = "select free space"
+        cv.namedWindow(win_name, cv.WINDOW_NORMAL)
+        cv.setMouseCallback(win_name, self.select_point)
+        cv.imshow(win_name, free_map_disp)
+        while not self.free_space_selected:
+            cv.waitKey(1)
+        cv.destroyAllWindows()
+        print(self.free_space_point)
+
+    def select_point(self, event, x, y, _, __):
+        if event == cv.EVENT_LBUTTONDOWN:
+            self.free_space_point = [x, y]
+            self.free_space_selected = True
 
     def detect_free_space(self, out_mask: np.ndarray, map_main: Optional[np.ndarray] = None):
+        print(f"[{self.ns}]: detecting all free spaces in the cropped map")
         # current map
         if map_main is None:
             map_main = self.binary_map
@@ -103,6 +129,8 @@ class SpaceAnalyzer:
         return free_map
 
     def crop_map(self):
+        print(f"[{self.ns}]: cropting map based on the district rectangle.")
+
         # bounds
         wh_max = np.max(self.vertices, axis=0)
         wh_min = np.min(self.vertices, axis=0)

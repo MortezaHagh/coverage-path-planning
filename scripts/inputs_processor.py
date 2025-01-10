@@ -17,10 +17,11 @@ class InputsProcessor:
 
     def __init__(self, map_name="Map1"):
         # init
-        self.ns = "Inp"
+        self.ns = "InputsProcessor"
         configs = BConfigs()
         self.__configs = None
         self.__orig_map = None
+        print(f"[{self.ns}]: processing inputs.")
 
         # define paths
         data_dir = "/home/morteza/Documents/00-CPP/00-CPP/Data"
@@ -45,6 +46,9 @@ class InputsProcessor:
         map_arr = cv.imread(pgm_file_path, cv.IMREAD_GRAYSCALE)
         self.__orig_map = map_arr
         # self.visualize_map(map_arr)
+
+        # final
+        print(f"[{self.ns}]: ----------------------------------------------- ")
 
     @property
     def configs(self) -> BConfigs:

@@ -14,6 +14,7 @@ class District:
         #
         self.ns = "District"
         self.wind_name = "Select"
+        print(f"[{self.ns}]: Creating district for CPP.")
 
         #
         self.md = map_data
@@ -49,6 +50,9 @@ class District:
         #
         listener_thread.join()
         cv.destroyAllWindows()
+
+        # final
+        print(f"[{self.ns}]: ----------------------------------------------- ")
 
     def init_wind(self):
         cv.namedWindow(self.wind_name, cv.WINDOW_GUI_NORMAL)

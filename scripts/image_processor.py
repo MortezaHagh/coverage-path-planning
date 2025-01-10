@@ -20,8 +20,9 @@ class MapImageProcessor:
         self.check_map(map_arr)
 
         # init
-        self.ns = "IP"
+        self.ns = "MapImageProcessor"
         self.processed_map = None
+        print(f"[{self.ns}]: processing map image.")
 
         # map data
         self._map_data = MapData()
@@ -39,6 +40,9 @@ class MapImageProcessor:
 
         # #
         # self.select_crop()
+
+        # final
+        print(f"[{self.ns}]: ----------------------------------------------- ")
 
     @property
     def mdata(self) -> MapData:
