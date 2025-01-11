@@ -56,10 +56,57 @@ class SpaceAnalyzer:
         # Find Free Space
         free_map = self.detect_free_space(out_mask)
         free_map_disp = cv.addWeighted(cropped_map, 0.4, free_map, 0.6, 0)
-        # visualize_map(free_map_disp, "free_map_disp")
 
         # select free space
         self.select_free_space(free_map_disp)
+        selected_free_space = self.detect_selected_free_space(cropped_map)
+        visualize_map(selected_free_space, "selected_free_space")
+
+    def detect_selected_free_space(self, f_map: np.ndarray):
+        """
+        find all contours in the image and selects contour which contains selected point.
+        each contour will be separate free space.
+        returns: map with contour which contains the selected point
+        """
+        print(f"[{self.ns}]: selecting the opne space based on the selecting point")
+
+        # get contours
+        contours, hierarchy = cv.findContours(f_map, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)  # pylint: disable=W0612
+        if len(contours) == 0:
+            print(f"[{self.ns}]: contours is empty")
+            return f_map
+
+        # find selected_contour
+        for contour in contours:
+            if cv.pointPolygonTest(contour, self.free_space_point, True) >= 0:
+                selected_contour = contour
+                break
+        else:
+            # Find largest countour if the selection do not point to any countour
+            if len(contours) != 0:
+                largest_contour_ind = max(range(len(contours)), key=lambda i: cv.contourArea(contours[i]))
+                selected_contour = contours[largest_contour_ind]
+
+        # # display contours
+        # color_image = cv.cvtColor(f_map, cv.COLOR_GRAY2BGR)
+        # cv.drawContours(color_image, contours, -1, (0, 0, 255), thickness=2)
+        # cv.imshow("Contours in Red", color_image)
+        # cv.waitKey(0)
+        # cv.destroyAllWindows()
+
+        # detect selected_free_space
+        s_free_space = np.zeros_like(f_map)
+        cv.drawContours(s_free_space, [selected_contour], 0, 255, cv.FILLED)
+        selected_free_space = cv.bitwise_and(f_map, s_free_space)
+
+        # # display other free spaces
+        # o_free_space = cv.bitwise_not(s_free_space)
+        # o_free_space = cv.bitwise_and(f_map, o_free_space)
+        # selected_free_space_disp = cv.addWeighted(f_map, 1.0, o_free_space, -0.5, 0)
+        # visualize_map(selected_free_space_disp, "selected_free_space_disp")
+        # visualize_map(selected_free_space, "selected_free_space")
+
+        return selected_free_space
 
     def select_free_space(self, free_map_disp: np.ndarray):
         print(f"[{self.ns}]: selecting the free space ...")
