@@ -29,6 +29,7 @@ class SpaceAnalyzer:
         # configs
         self.bcfg = bconfigs
         self.scfg = SpaceConfigs()
+        self.simple = True
 
         # inputs
         self.binary_map = map_data.up_bin_map     # binary map
@@ -57,10 +58,17 @@ class SpaceAnalyzer:
     def select_space(self):
 
         # crop map
-        self.crop_map()
+        map_cropped = self.crop_map(self.binary_map)
+        self.map_cropped = map_cropped
+        self.cropped_mask = np.ones_like(map_cropped) * FREE_COST
 
-        # Find Free Space
-        map_free_dis_f = self.distance_filter()
+        if self.simple:
+            # simple version
+            map_dilated, _ = self.dilate_map(map_i=self.binary_map, radius_m=self.scfg.free_space_obst_dist)
+            map_free_dis_f = self.crop_map(map_dilated)
+        else:
+            # Find Free Space
+            map_free_dis_f = self.distance_filter()
 
         # select free space
         self.select_free_space(map_free_dis_f)
@@ -164,7 +172,7 @@ class SpaceAnalyzer:
         # visualize_map(map_free_dis_f, "map_free_dis_f")
         return map_free_dis_f
 
-    def crop_map(self) -> tuple[np.ndarray, np.ndarray]:
+    def crop_map(self, map_i: np.ndarray) -> np.ndarray:
         print(f"[{self.ns}]: cropping map based on the district rectangle.")
 
         # bounds
@@ -180,16 +188,12 @@ class SpaceAnalyzer:
         # self.cleaningZoneBBox = [h_min, h_max, w_min, w_max]
 
         # cropped map and vertices
-        map_cropped = copy.copy(self.binary_map[c_hw_l["h_min"]:c_hw_l["h_max"], c_hw_l["w_min"]:c_hw_l["w_max"]])
+        map_cropped = copy.copy(map_i[c_hw_l["h_min"]:c_hw_l["h_max"], c_hw_l["w_min"]:c_hw_l["w_max"]])
         cropped_vertices = np.zeros_like(self.vertices)
         for i, v in enumerate(self.vertices):
             cropped_vertices[i] = np.array([v[0] - w_min, v[1] - h_min])
-        self.map_cropped = map_cropped
 
-        # outside mask
-        self.cropped_mask = np.ones_like(map_cropped) * FREE_COST  # FREE_COST: white pixels
-
-        # return map_cropped, cropped_mask
+        return map_cropped
 
     def apply_hw_limits(self, hw_limits) -> dict:
         updated_hw = copy.copy(hw_limits)
@@ -207,8 +211,9 @@ class SpaceAnalyzer:
 
     def dilate_map(self, map_i: np.ndarray, radius_m: float) -> tuple[np.ndarray, np.ndarray]:
         radius_px = int(np.ceil(radius_m / self.map_data.up_resolution))
-        kernel = np.ones((2*radius_px + 1, 2*radius_px + 1), dtype=np.uint8)
-        map_dilated = cv.dilate(map_i, kernel)
+        kernel_size = 2*radius_px + 1
+        kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (kernel_size, kernel_size))
+        map_dilated = cv.erode(map_i, kernel)
         new_occupied_area = cv.subtract(map_i, map_dilated)
         occ_new_added_inds = new_occupied_area == FREE_COST
         return map_dilated, occ_new_added_inds
