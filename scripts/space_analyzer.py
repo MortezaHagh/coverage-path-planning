@@ -78,6 +78,21 @@ class SpaceAnalyzer:
         #
         self.final_space_data(map_free_dis_f, map_free_selected)
 
+    # def detect_narrow(self, map_i: np.ndarray):
+    #     # Define kernel for morphological analysis
+    #     kernel = np.ones((3, 3), np.uint8)
+
+    #     # Find edges using a Sobel filter
+    #     sobel_x = cv.Sobel(binary_map, cv.CV_64F, 1, 0, ksize=3)
+    #     sobel_y = cv.Sobel(binary_map, cv.CV_64F, 0, 1, ksize=3)
+    #     edges = cv.magnitude(sobel_x, sobel_y)
+
+    #     # Normalize edges to binary
+    #     edges_binary = (edges > 50).astype(np.uint8) * 255
+
+    #     # Optional: Use morphological closing to consolidate edges
+    #     edges_cleaned = cv.morphologyEx(edges_binary, cv.MORPH_CLOSE, kernel)
+
     def seperate_selected_free_space(self, c_map: np.ndarray) -> np.ndarray:
         """ selecting open space from candidates based on the clicked point.
         find all contours in the image and selects contour which contains selected point.
@@ -94,6 +109,9 @@ class SpaceAnalyzer:
         if len(contours) == 0:
             print(f"[{self.ns}]: contours is empty")
             return c_map
+
+        #
+        self.display_contour(contours)
 
         # find selected_contour
         print(f"[{self.ns}]: number of contours (free islands): {len(contours)}")
@@ -240,3 +258,26 @@ class SpaceAnalyzer:
 
         #
         visualize_map(viz_rgb, "viz_rgb")
+
+    def display_contour(self, c):
+        """
+        Display all contours from findContours, each contour with a different color.
+
+        Args:
+            c (list): List of contours.
+        """
+        # Create an empty image to draw contours
+        contour_img = np.zeros_like(self.map_cropped)
+        contour_img_rgb = cv.cvtColor(contour_img, cv.COLOR_GRAY2BGR)
+
+        # Generate random colors for each contour
+        colors = [tuple(np.random.randint(0, 255, 3).tolist()) for _ in range(len(c))]
+
+        # Draw each contour with a different color
+        for i, contour in enumerate(c):
+            cv.drawContours(contour_img_rgb, [contour], -1, colors[i], 2)
+
+        # Display the image with contours
+        cv.imshow("Contours", contour_img_rgb)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
