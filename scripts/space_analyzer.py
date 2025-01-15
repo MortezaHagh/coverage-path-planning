@@ -3,6 +3,7 @@ import copy
 from typing import Optional
 import cv2 as cv
 import numpy as np
+from scipy.ndimage import maximum_filter
 from scripts.map_data import MapData
 from scripts.gui.visuals import Rectangle
 from scripts.my_utils import visualize_map
@@ -62,6 +63,9 @@ class SpaceAnalyzer:
         self.map_cropped = map_cropped
         self.cropped_mask = np.ones_like(map_cropped) * FREE_COST
 
+        # self.detect_narrow(map_cropped)
+        # return
+
         if self.simple:
             # simple version
             map_dilated, _ = self.dilate_map(map_i=self.binary_map, radius_m=self.scfg.free_space_obst_dist)
@@ -73,25 +77,27 @@ class SpaceAnalyzer:
         # select free space
         self.select_free_space(map_free_dis_f)
         map_free_selected = self.seperate_selected_free_space(map_free_dis_f)
-        # visualize_map(map_free_selected, "map_free_selected")
+        visualize_map(map_free_selected, "map_free_selected")
+
+        # remove islands
+        map_island_f = self.remove_islands(map_free_selected)
 
         #
-        self.final_space_data(map_free_dis_f, map_free_selected)
+        self.final_space_data(map_free_dis_f, map_island_f)
 
-    # def detect_narrow(self, map_i: np.ndarray):
-    #     # Define kernel for morphological analysis
-    #     kernel = np.ones((3, 3), np.uint8)
+    def remove_islands(self, map_i: np.ndarray) -> np.ndarray:
+        contours, hierarchy = cv.findContours(map_i, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+        if len(contours) == 0:
+            return map_i
 
-    #     # Find edges using a Sobel filter
-    #     sobel_x = cv.Sobel(binary_map, cv.CV_64F, 1, 0, ksize=3)
-    #     sobel_y = cv.Sobel(binary_map, cv.CV_64F, 0, 1, ksize=3)
-    #     edges = cv.magnitude(sobel_x, sobel_y)
+        # remove area of a contour with parent contour
+        map_island_f = np.ones_like(map_i) * FREE_COST
+        for i, element in enumerate(hierarchy[0]):
 
-    #     # Normalize edges to binary
-    #     edges_binary = (edges > 50).astype(np.uint8) * 255
-
-    #     # Optional: Use morphological closing to consolidate edges
-    #     edges_cleaned = cv.morphologyEx(edges_binary, cv.MORPH_CLOSE, kernel)
+            if (element[3] != -1):
+                cv.drawContours(map_island_f, [contours[i]], 0, OCCUPIED_COST, cv.FILLED)
+        map_island_f = cv.bitwise_and(map_i, map_island_f)
+        return map_island_f
 
     def seperate_selected_free_space(self, c_map: np.ndarray) -> np.ndarray:
         """ selecting open space from candidates based on the clicked point.
@@ -110,8 +116,8 @@ class SpaceAnalyzer:
             print(f"[{self.ns}]: contours is empty")
             return c_map
 
-        #
-        self.display_contour(contours)
+        # # display contours
+        # self.display_contour(contours)
 
         # find selected_contour
         print(f"[{self.ns}]: number of contours (free islands): {len(contours)}")
@@ -250,16 +256,20 @@ class SpaceAnalyzer:
         free_other_inds = map_free_other == FREE_COST
 
         #
-        viz = np.zeros_like(self.cropped_mask) + 255
+        free_selected_inds = map_free_dis_f == FREE_COST
+
+        #
+        viz = np.zeros_like(self.cropped_mask) + 0
         viz_rgb = cv.cvtColor(viz, cv.COLOR_GRAY2BGR)
-        viz_rgb[occ_cropped_inds] = [0, 0, 0]
+        # viz_rgb[occ_cropped_inds] = [0, 0, 0]
+        viz_rgb[free_selected_inds] = [250, 250, 250]
         viz_rgb[occ_new_added_inds] = [250, 0, 0]
         viz_rgb[free_other_inds] = [250, 250, 0]
 
         #
         visualize_map(viz_rgb, "viz_rgb")
 
-    def display_contour(self, c):
+    def display_contour(self, c) -> None:
         """
         Display all contours from findContours, each contour with a different color.
 

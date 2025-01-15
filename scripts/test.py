@@ -114,3 +114,48 @@
 # cv.waitKey(0)
 # cv.destroyAllWindows()
 # # ----------------------------------------------------------------------------
+
+
+#  def detect_narrow(self, map_i: np.ndarray):
+#     #
+#     dist_transform = cv.distanceTransform(map_i, cv.DIST_L2, 5)
+#     visualize_map(dist_transform, "dist_transform")
+#     norm_dist = cv.normalize(dist_transform, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX, dtype=cv.CV_8U)
+#     visualize_map(norm_dist, "norm_dist")
+#     # dist_trans_float = norm_dist.astype(np.uint8)
+#     # visualize_map(dist_trans_float, "dist_trans_float")
+
+#     neighborhood_size = 3
+#     local_max = maximum_filter(norm_dist, size=neighborhood_size) == norm_dist
+#     local_max_m = np.zeros_like(norm_dist)
+#     local_max_m[local_max] = norm_dist[local_max]
+#     visualize_map(local_max_m, "local_max_m")
+
+#     local_max_binary = local_max.astype(np.uint8) * 255
+#     visualize_map(local_max_binary, "local_max_binary")
+
+#     # Optional: Mask out the maxima that are not free cells
+#     # (Use binary_map to ensure maxima are within free space)
+#     local_max_binary = cv.bitwise_and(local_max_binary, map_i)
+#     visualize_map(local_max_binary, "local_max_binary")
+
+#     # kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+#     # lap_f = cv.filter2D(dist_trans_float, -1, kernel)
+#     # visualize_map(lap_f, "lap_f")
+
+#     # # Step 3: Apply morphological operations to refine passage candidates
+#     # kernel = np.ones((3, 3), np.uint8)
+#     # lap_f = cv.morphologyEx(dist_trans_float, cv.MORPH_CLOSE, kernel)
+#     # visualize_map(lap_f, "lap_f")
+
+#     # laplacian = cv.Laplacian(lap_f, cv.CV_64F)
+#     # visualize_map(laplacian, "laplacian")
+
+#     # norm_lap = cv.normalize(laplacian, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX, dtype=cv.CV_8U)
+#     # visualize_map(norm_lap, "norm_lap")
+
+#     # min_lap = np.amin(norm_lap)
+#     # print("min_lap", min_lap)
+#     # test = np.zeros_like(norm_lap)
+#     # test[norm_lap < min_lap + 50] = 255
+#     # visualize_map(test, "test")

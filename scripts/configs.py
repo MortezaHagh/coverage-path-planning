@@ -18,7 +18,7 @@ class BConfigs:
 
 class DistrictConfgs:
     def __init__(self):
-        self.whole_map = False  # False True
+        self.whole_map = True  # False True
 
 
 class SpaceConfigs:
