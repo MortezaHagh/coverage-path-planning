@@ -3,11 +3,10 @@ import copy
 from typing import Optional
 import cv2 as cv
 import numpy as np
-from scipy.ndimage import maximum_filter
 from scripts.map_data import MapData
 from scripts.gui.visuals import Rectangle
-from scripts.my_utils import visualize_map
 from scripts.configs import BConfigs, SpaceConfigs
+from scripts.my_utils import visualize_map_s  # visualize_map
 
 FREE_COST = 255
 OCCUPIED_COST = 0
@@ -15,9 +14,12 @@ OCCUPIED_COST = 0
 
 class SpaceAnalyzer:
     map_data: MapData
-    binary_map: np.ndarray
     vertices: np.ndarray
-    # district_rect: Rectangle
+    hw_bd: dict
+    fs_selected_point: tuple[float, float]
+    binary_map: np.ndarray
+    map_cropped: np.ndarray
+    cropped_mask: np.ndarray
 
     def __init__(self, map_data: MapData, bconfigs: BConfigs, district_rect: Rectangle):
         self.ns = "SpaceAnalyzer"
@@ -35,19 +37,19 @@ class SpaceAnalyzer:
         # inputs
         self.binary_map = map_data.up_bin_map     # binary map
         self.map_data = map_data
-        self.district_rect = district_rect
         self.vertices = np.array(district_rect.vertices_t, dtype=np.int32)  # district vertices
+        # self.district_rect = district_rect
 
         # attributes
-        self.c_hw_l: dict[str:int] = None       # cropped hw limits
-        self.free_space_selected = False
-        self.free_space_point = [0, 0]
+        self.hw_bd: dict[str:int] = None       # cropped hw limits
+        self.is_fs_point_selected = False
+        self.fs_selected_point = None
 
         #
         self.map_cropped: np.ndarray = None
         self.cropped_mask: np.ndarray = None
 
-        #
+        # ================
         self.select_space()
 
         # #
@@ -56,34 +58,43 @@ class SpaceAnalyzer:
         # final
         print(f"[{self.ns}]: ----------------------------------------------- ")
 
-    def select_space(self):
+    def select_space(self) -> None:
 
-        # crop map
+        # crop map and mask
         map_cropped = self.crop_map(self.binary_map)
         self.map_cropped = map_cropped
         self.cropped_mask = np.ones_like(map_cropped) * FREE_COST
 
-        # self.detect_narrow(map_cropped)
-        # return
-
+        # detect workspace (based on robot size and distance conditions)
         if self.simple:
-            # simple version
+            # simple version - dilate obstacles
             map_dilated, _ = self.dilate_map(map_i=self.binary_map, radius_m=self.scfg.free_space_obst_dist)
-            map_free_dis_f = self.crop_map(map_dilated)
+            map_ws = self.crop_map(map_dilated)
         else:
-            # Find Free Space
-            map_free_dis_f = self.distance_filter()
+            # apply distance conditions using distance transform
+            map_ws = self.distance_filter()
 
-        # select free space
-        self.select_free_space(map_free_dis_f)
-        map_free_selected = self.seperate_selected_free_space(map_free_dis_f)
-        visualize_map(map_free_selected, "map_free_selected")
+        # select free space point
+        self.select_free_space(map_ws)
+        map_wfs = self.seperate_selected_free_space(map_ws)
 
         # remove islands
-        map_island_f = self.remove_islands(map_free_selected)
+        map_fs_rif = self.remove_islands(map_wfs)
+        visualize_map_s(map_fs_rif, "map_fs_rif")
 
         #
-        self.final_space_data(map_free_dis_f, map_island_f)
+        fs_bb = self.get_fs_bb(map_fs_rif)
+        self.final_space_data(map_ws, map_fs_rif, fs_bb)
+
+    def get_fs_bb(self, map_i: np.ndarray) -> dict:
+        radius_px = int(np.ceil(self.scfg.free_space_obst_dist / self.map_data.up_resolution))
+        kernel_size = 2*radius_px + 1
+        kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (kernel_size, kernel_size))
+        map_dilated = cv.dilate(map_i, kernel)
+        map_dilated = np.where(map_dilated > 0, 255, 0).astype(np.uint8)
+        bbd = self.find_bounding_box(map_dilated)
+        bbd = self.apply_hw_limits(bbd)
+        return bbd
 
     def remove_islands(self, map_i: np.ndarray) -> np.ndarray:
         contours, hierarchy = cv.findContours(map_i, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
@@ -91,13 +102,13 @@ class SpaceAnalyzer:
             return map_i
 
         # remove area of a contour with parent contour
-        map_island_f = np.ones_like(map_i) * FREE_COST
+        map_fs_rif = np.ones_like(map_i) * FREE_COST
         for i, element in enumerate(hierarchy[0]):
-
-            if (element[3] != -1):
-                cv.drawContours(map_island_f, [contours[i]], 0, OCCUPIED_COST, cv.FILLED)
-        map_island_f = cv.bitwise_and(map_i, map_island_f)
-        return map_island_f
+            if element[3] != -1:
+                cv.drawContours(map_fs_rif, [contours[i]], 0, OCCUPIED_COST, cv.FILLED)
+                cv.drawContours(map_fs_rif, [contours[i]], 0, FREE_COST, 1)
+        map_fs_rif = cv.bitwise_and(map_i, map_fs_rif)
+        return map_fs_rif
 
     def seperate_selected_free_space(self, c_map: np.ndarray) -> np.ndarray:
         """ selecting open space from candidates based on the clicked point.
@@ -122,7 +133,7 @@ class SpaceAnalyzer:
         # find selected_contour
         print(f"[{self.ns}]: number of contours (free islands): {len(contours)}")
         for contour in contours:
-            if cv.pointPolygonTest(contour, self.free_space_point, True) >= 0:
+            if cv.pointPolygonTest(contour, self.fs_selected_point, True) >= 0:
                 selected_contour = contour
                 break
         else:
@@ -134,11 +145,11 @@ class SpaceAnalyzer:
         # detect selected_free_space
         selected_free_space = np.zeros_like(c_map)
         cv.drawContours(selected_free_space, [selected_contour], 0, FREE_COST, cv.FILLED)
-        map_free_selected = cv.bitwise_and(c_map, selected_free_space)
+        map_fs = cv.bitwise_and(c_map, selected_free_space)
 
         #
         print(f"[{self.ns}]: free space is selected.")
-        return map_free_selected
+        return map_fs
 
     def select_free_space(self, map_i: np.ndarray) -> None:
         print(f"[{self.ns}]: selecting the free space ...")
@@ -147,7 +158,7 @@ class SpaceAnalyzer:
         cv.namedWindow(win_name, cv.WINDOW_NORMAL)
         cv.setMouseCallback(win_name, self.select_point)
         cv.imshow(win_name, free_map_disp)
-        while not self.free_space_selected:
+        while not self.is_fs_point_selected:
             cv.waitKey(1)
         cv.destroyAllWindows()
 
@@ -164,14 +175,14 @@ class SpaceAnalyzer:
         # Additional distance is necessary to check if any obstacle isn't just outside of the zone border
         dist_from_occ_px = int(np.ceil(dist_from_occ_m / self.map_data.up_resolution))
         e_min_obst_dist = dist_from_occ_px * self.scfg.scaler_os_search
-        e_hw_l = copy.copy(self.c_hw_l)
+        e_hw_l = copy.copy(self.hw_bd)
         e_hw_l["w_min"] -= e_min_obst_dist
         e_hw_l["h_min"] -= e_min_obst_dist
         e_hw_l["w_max"] += e_min_obst_dist
         e_hw_l["h_max"] += e_min_obst_dist
         e_hw_l = self.apply_hw_limits(e_hw_l)
-        d_h_min = self.c_hw_l["h_min"] - e_hw_l["h_min"]
-        d_w_min = self.c_hw_l["w_min"] - e_hw_l["w_min"]
+        d_h_min = self.hw_bd["h_min"] - e_hw_l["h_min"]
+        d_w_min = self.hw_bd["w_min"] - e_hw_l["w_min"]
 
         # expanded cropped map for distance calculation
         e_c_map = map_full[e_hw_l["h_min"]:e_hw_l["h_max"], e_hw_l["w_min"]:e_hw_l["w_max"]]
@@ -189,12 +200,12 @@ class SpaceAnalyzer:
         dist_trans = dist_trans[d_h_min:d_h_min+n_h, d_w_min:d_w_min+n_w]
 
         # free map
-        map_free_dis_f = copy.copy(self.cropped_mask)
-        map_free_dis_f[dist_trans < norm_dist_from_occ_px] = OCCUPIED_COST
+        map_ws = copy.copy(self.cropped_mask)
+        map_ws[dist_trans < norm_dist_from_occ_px] = OCCUPIED_COST
 
         #
-        # visualize_map(map_free_dis_f, "map_free_dis_f")
-        return map_free_dis_f
+        # visualize_map(map_ws, "map_ws")
+        return map_ws
 
     def crop_map(self, map_i: np.ndarray) -> np.ndarray:
         print(f"[{self.ns}]: cropping map based on the district rectangle.")
@@ -207,16 +218,19 @@ class SpaceAnalyzer:
 
         # corners
         hw_limits = {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
-        c_hw_l = self.apply_hw_limits(hw_limits)
-        self.c_hw_l = c_hw_l
+        hw_bd = self.apply_hw_limits(hw_limits)
+        self.hw_bd = hw_bd
         # self.cleaningZoneBBox = [h_min, h_max, w_min, w_max]
 
         # cropped map and vertices
-        map_cropped = copy.copy(map_i[c_hw_l["h_min"]:c_hw_l["h_max"], c_hw_l["w_min"]:c_hw_l["w_max"]])
+        map_cropped = copy.copy(map_i[hw_bd["h_min"]:hw_bd["h_max"], hw_bd["w_min"]:hw_bd["w_max"]])
         cropped_vertices = np.zeros_like(self.vertices)
         for i, v in enumerate(self.vertices):
             cropped_vertices[i] = np.array([v[0] - w_min, v[1] - h_min])
 
+        # ensure binary
+        map_cropped = map_cropped.astype(np.uint8)
+        _, map_cropped = cv.threshold(map_cropped, 1, 255, cv.THRESH_BINARY)
         return map_cropped
 
     def apply_hw_limits(self, hw_limits) -> dict:
@@ -230,44 +244,18 @@ class SpaceAnalyzer:
 
     def select_point(self, event, x, y, _, __) -> None:
         if event == cv.EVENT_LBUTTONDOWN:
-            self.free_space_point = [x, y]
-            self.free_space_selected = True
+            self.fs_selected_point = (x, y)
+            self.is_fs_point_selected = True
 
     def dilate_map(self, map_i: np.ndarray, radius_m: float) -> tuple[np.ndarray, np.ndarray]:
         radius_px = int(np.ceil(radius_m / self.map_data.up_resolution))
         kernel_size = 2*radius_px + 1
         kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (kernel_size, kernel_size))
         map_dilated = cv.erode(map_i, kernel)
+        map_dilated = np.where(map_dilated > 0, 255, 0).astype(np.uint8)
         new_occupied_area = cv.subtract(map_i, map_dilated)
         occ_new_added_inds = new_occupied_area == FREE_COST
         return map_dilated, occ_new_added_inds
-
-    def final_space_data(self, map_free_dis_f: np.ndarray = None, map_free_selected: np.ndarray = None):
-        print(f"[{self.ns}]: Visualizing workspace.")
-        #
-        occ_cropped_inds = self.map_cropped == OCCUPIED_COST
-
-        #
-        new_occupied_area = cv.subtract(self.map_cropped, map_free_dis_f)
-        occ_new_added_inds = new_occupied_area == FREE_COST
-
-        #
-        map_free_other = cv.subtract(map_free_dis_f, map_free_selected)
-        free_other_inds = map_free_other == FREE_COST
-
-        #
-        free_selected_inds = map_free_dis_f == FREE_COST
-
-        #
-        viz = np.zeros_like(self.cropped_mask) + 0
-        viz_rgb = cv.cvtColor(viz, cv.COLOR_GRAY2BGR)
-        # viz_rgb[occ_cropped_inds] = [0, 0, 0]
-        viz_rgb[free_selected_inds] = [250, 250, 250]
-        viz_rgb[occ_new_added_inds] = [250, 0, 0]
-        viz_rgb[free_other_inds] = [250, 250, 0]
-
-        #
-        visualize_map(viz_rgb, "viz_rgb")
 
     def display_contour(self, c) -> None:
         """
@@ -291,3 +279,56 @@ class SpaceAnalyzer:
         cv.imshow("Contours", contour_img_rgb)
         cv.waitKey(0)
         cv.destroyAllWindows()
+
+    def find_bounding_box(self, map_i: np.ndarray) -> dict:
+        free_cells = np.where(map_i == 255)
+        if free_cells[0].size == 0:
+            return None
+
+        # Compute the bounding box
+        h_min, h_max = free_cells[0].min(), free_cells[0].max()
+        w_min, w_max = free_cells[1].min(), free_cells[1].max()
+        hw = {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
+        return hw
+
+    def add_rectangle_bd(self, map_i: np.ndarray, hw_bd: dict, color=None):
+        print("hw_bd", hw_bd)
+        map_with_rect = cv.rectangle(
+            map_i.copy(),
+            (hw_bd["w_min"], hw_bd["h_min"]),  # Top-left corner
+            (hw_bd["w_max"], hw_bd["h_max"]),  # Bottom-right corner
+            color,  # Color of the rectangle (gray)
+            2  # Thickness of the rectangle
+        )
+        return map_with_rect
+
+    def final_space_data(self, map_ws: np.ndarray = None, map_fs: np.ndarray = None, fs_bb: dict = None) -> None:
+        print(f"[{self.ns}]: Visualizing workspace.")
+        # #
+        # occ_cropped_inds = self.map_cropped == OCCUPIED_COST
+
+        #
+        new_occupied_area = cv.subtract(self.map_cropped, map_ws)
+        occ_new_added_inds = new_occupied_area == FREE_COST
+
+        #
+        map_free_other = cv.subtract(map_ws, map_fs)
+        free_other_inds = map_free_other == FREE_COST
+
+        #
+        free_selected_inds = map_ws == FREE_COST
+
+        #
+        viz = np.zeros_like(self.cropped_mask) + 0
+        viz_rgb = cv.cvtColor(viz, cv.COLOR_GRAY2BGR)
+        # viz_rgb[occ_cropped_inds] = [0, 0, 0]
+        viz_rgb[free_selected_inds] = [250, 250, 250]
+        viz_rgb[occ_new_added_inds] = [250, 0, 0]
+        viz_rgb[free_other_inds] = [250, 250, 0]
+
+        #
+        if fs_bb:
+            viz_rgb = self.add_rectangle_bd(viz_rgb, fs_bb, color=[0, 0, 250])
+
+        #
+        visualize_map_s(viz_rgb, "viz_rgb")

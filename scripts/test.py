@@ -1,3 +1,8 @@
+# from scipy.ndimage import maximum_filter
+
+# map_island_f = map_island_f.astype(np.uint8)
+# _, map_island_f = cv.threshold(map_island_f, 1, 255, cv.THRESH_BINARY)
+
 
 # neighbh_mask_size = 3
 # robot_r_px = int(np.ceil(0.5 * self.scfg.robot_circumscribed_r / self.map_data.up_resolution))

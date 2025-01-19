@@ -47,3 +47,11 @@ def visualize_map(pgm_data_in: Optional[np.ndarray], name=None) -> None:
 
     cv.destroyAllWindows()
     # print(f"[{ns}]: Image window closed.")
+
+
+def visualize_map_s(pgm_data_in: Optional[np.ndarray], w_name=None) -> None:
+    if w_name is None:
+        w_name = "PGM Image"
+    cv.imshow(w_name, pgm_data_in)
+    cv.waitKey()
+    cv.destroyAllWindows()
