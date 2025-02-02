@@ -82,7 +82,6 @@ class Rectangle:
         # vertices
         vertices_l = list(rotated_bbox.exterior.coords)
         vertices_l = np.array(vertices_l, dtype=np.int32)
-        self.vertices_l = vertices_l
         self.vertices_t = tuple(vertices_l.tolist())
         self.vertices_a = vertices_l.reshape((-1, 1, 2))
         # points

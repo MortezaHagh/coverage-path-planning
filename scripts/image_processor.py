@@ -9,28 +9,27 @@ from scripts.map_data import MapData
 
 class MapImageProcessor:
     """ process map pgm file """
-    _map_data = MapData
+    __map_data = MapData
     __orig_map: np.ndarray
 
     def __init__(self, map_arr: np.ndarray, configs: BConfigs):
+
+        # init
+        self.ns = "MapImageProcessor"
+        print(f"[{self.ns}]: processing map image.")
 
         # read configs and eval original map arr
         self.__configs = configs
         self.__orig_map = map_arr
         self.check_map(map_arr)
 
-        # init
-        self.ns = "MapImageProcessor"
-        self.processed_map = None
-        print(f"[{self.ns}]: processing map image.")
-
         # map data
-        self._map_data = MapData()
+        self.__map_data = MapData()
         self.set_map_data()
 
         # initial processes on map image - load data
-        self.process_map()
-        self._map_data.set_bin_map(self.processed_map)
+        processed_map = self.process_map()
+        self.__map_data.set_bin_map(processed_map)
 
         # add other data to map_data
         self.complete_data()
@@ -38,15 +37,12 @@ class MapImageProcessor:
         # # visualize
         # self.visualize_map(self.processed_map)
 
-        # #
-        # self.select_crop()
-
         # final
         print(f"[{self.ns}]: ----------------------------------------------- ")
 
     @property
     def mdata(self) -> MapData:
-        return copy.deepcopy(self._map_data)
+        return copy.deepcopy(self.__map_data)
 
     def check_map(self, image):
         """ check if map image is loaded """
@@ -58,14 +54,14 @@ class MapImageProcessor:
     def set_map_data(self):
         print(f"[{self.ns}]: loading map image data")
         map_arr = self.__orig_map.copy()
-        self._map_data.set_orig_map(map_arr, self.__configs.map_name)
+        self.__map_data.set_orig_map(map_arr, self.__configs.map_name)
 
-    def process_map(self) -> None:
+    def process_map(self) -> np.ndarray:
         print(f"[{self.ns}]: first processing of the map image")
         binary_map = self.convert_to_binary()
         denoised_map = self.remove_noise(binary_map)
-        self.processed_map = denoised_map
         print(f"[{self.ns}]: Binary-denoised image created.")
+        return denoised_map
 
     def convert_to_binary(self):
         print(f"[{self.ns}]: converting image to binary")
@@ -80,7 +76,7 @@ class MapImageProcessor:
         return denoised_map
 
     def complete_data(self):
-        self._map_data.set_resolution(self.__configs.resolution)
+        self.__map_data.set_resolution(self.__configs.resolution)
 
     def visualize_map(self, pgm_data_in: Optional[np.ndarray], disp_name: str = "Map") -> None:
         print(f"[{self.ns}]: display map image")
@@ -92,15 +88,13 @@ class MapImageProcessor:
         print(f"[{self.ns}]: Map size [w,h]: {width}x{height}")
 
         # cv window
-        wind_hw = self._map_data.wind_hw
+        wind_hw = self.__map_data.wind_hw
         zoom = min(wind_hw[0]/height, wind_hw[1]/width)
         updated_h = int(height * zoom)
         updated_w = int(width * zoom)
         updated_wh = (updated_w, updated_h)
-        # canvas = np.zeros((*wind_hw, 3), np.uint8)
 
         # display map image
-        # # WINDOW_NORMAL - WINDOW_GUI_NORMAL - WINDOW_AUTOSIZE - WINDOW_FREERATIO - WINDOW_FULLSCREEN
         cv.namedWindow(disp_name, cv.WINDOW_NORMAL)
         resized_map = cv.resize(map_data, updated_wh, interpolation=cv.INTER_AREA)
         cv.imshow(disp_name, resized_map)
@@ -113,24 +107,3 @@ class MapImageProcessor:
 
         cv.destroyAllWindows()
         print(f"[{self.ns}]: Image window closed.")
-
-    def select_crop(self):
-        corners = [
-            [0, 0],
-            [300, 0],
-            [300, 200],
-            [0, 200],
-        ]
-        corners = np.array(corners)
-        max_w, max_h = np.max(corners, axis=0)
-        min_w, min_h = np.min(corners, axis=0)
-
-        # eval vertices bound
-        max_w = min(max_w, self._map_data.updated_w)
-        min_w = max(min_w, 0)
-        max_h = min(max_h, self._map_data.updated_h)
-        min_h = max(min_h, 0)
-
-        #
-        cropped_map = copy.copy(self.processed_map[min_h:max_h, min_w:max_w])
-        self.visualize_map(cropped_map, "cropped")

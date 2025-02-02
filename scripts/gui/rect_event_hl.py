@@ -21,15 +21,15 @@ class RecEventHandler:
         self.map_img = map_img
         self.canvas = np.zeros_like(map_img, dtype=np.uint8)
 
-        #
+        # visualization objects
         self.main_obj: VisualRectangle = None
         self.objects: list[VisualRectangle] = []
 
-        #
+        # selected and highlighted objects indices
         self.selected_ind: int = None
         self.highlighted_ind: int = None
 
-        #
+        # keybord and mouse events
         self.ctrl_down = False
         self.button_down = False
 
@@ -85,7 +85,6 @@ class RecEventHandler:
         # print(f"[{self.ns}]: ldb: [x,y], [{(x, y)}]")
         params = {"xc": x, "yc": y, "rot": 0, "w": 200, "h": 200}
         main_obj = VisualRectangle(data=params)
-        self.main_obj = main_obj
         self.objects.append(main_obj)
         self.main_obj = main_obj
         #

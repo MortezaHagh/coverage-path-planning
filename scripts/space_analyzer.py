@@ -33,6 +33,7 @@ class SpaceAnalyzer:
         self.bcfg = bconfigs
         self.scfg = SpaceConfigs()
         self.simple = True
+        self.plot_main = True
 
         # inputs
         self.binary_map = map_data.up_bin_map     # binary map
@@ -49,7 +50,7 @@ class SpaceAnalyzer:
         self.map_cropped: np.ndarray = None
         self.cropped_mask: np.ndarray = None
 
-        # ================
+        # ========================================
         self.select_space()
 
         # #
@@ -82,11 +83,16 @@ class SpaceAnalyzer:
         map_fs_rif = self.remove_islands(map_wfs)
         visualize_map_s(map_fs_rif, "map_fs_rif")
 
-        #
+        # vizualize processed space
         fs_bb = self.get_fs_bb(map_fs_rif)
         self.final_space_data(map_ws, map_fs_rif, fs_bb)
 
+        # save selected free space
+        cv.imwrite(self.res_path + "/" + "freeSpace.png", map_fs_rif)
+
     def get_fs_bb(self, map_i: np.ndarray) -> dict:
+        """get free selected bounding box
+        """
         radius_px = int(np.ceil(self.scfg.free_space_obst_dist / self.map_data.up_resolution))
         kernel_size = 2*radius_px + 1
         kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (kernel_size, kernel_size))
@@ -292,7 +298,9 @@ class SpaceAnalyzer:
         return hw
 
     def add_rectangle_bd(self, map_i: np.ndarray, hw_bd: dict, color=None):
-        print("hw_bd", hw_bd)
+        # print("hw_bd", hw_bd)
+        if not color:
+            color = [0, 0, 250]
         map_with_rect = cv.rectangle(
             map_i.copy(),
             (hw_bd["w_min"], hw_bd["h_min"]),  # Top-left corner
@@ -320,15 +328,24 @@ class SpaceAnalyzer:
 
         #
         viz = np.zeros_like(self.cropped_mask) + 0
-        viz_rgb = cv.cvtColor(viz, cv.COLOR_GRAY2BGR)
-        # viz_rgb[occ_cropped_inds] = [0, 0, 0]
-        viz_rgb[free_selected_inds] = [250, 250, 250]
-        viz_rgb[occ_new_added_inds] = [250, 0, 0]
-        viz_rgb[free_other_inds] = [250, 250, 0]
+        sel_rgb = cv.cvtColor(viz, cv.COLOR_GRAY2BGR)
+        # sel_rgb[occ_cropped_inds] = [0, 0, 0]
+        sel_rgb[free_selected_inds] = [250, 250, 250]
+        sel_rgb[occ_new_added_inds] = [250, 0, 0]
+        sel_rgb[free_other_inds] = [250, 250, 0]
 
         #
         if fs_bb:
-            viz_rgb = self.add_rectangle_bd(viz_rgb, fs_bb, color=[0, 0, 250])
+            sel_rgb = self.add_rectangle_bd(sel_rgb, fs_bb, color=[0, 0, 250])
 
         #
-        visualize_map_s(viz_rgb, "viz_rgb")
+        if self.plot_main:
+            h, w = self.map_cropped.shape
+            x, y = self.hw_bd["h_min"], self.hw_bd["w_min"]
+            map_main_rgb = cv.cvtColor(self.binary_map, cv.COLOR_GRAY2BGR)
+            map_main_rgb[x:x+h, y:y+w] = sel_rgb
+        else:
+            map_main_rgb = sel_rgb
+
+        #
+        visualize_map_s(map_main_rgb, "viz_rgb")

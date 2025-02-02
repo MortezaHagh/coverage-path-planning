@@ -13,7 +13,7 @@ class District:
     def __init__(self, map_data: MapData):
         #
         self.ns = "District"
-        self.wind_name = "Select"
+        self.wind_name = "Select District"
         print(f"[{self.ns}]: Creating district for CPP.")
 
         #
@@ -72,9 +72,9 @@ class District:
             return self.rec_ev_hl.get_main_obj().get_rect()
 
         # create district based on map data
+        rot = 0
         xc = self.md.up_c_w
         yc = self.md.up_c_h
-        rot = 0
         w = self.md.updated_w
         h = self.md.updated_h
         data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}

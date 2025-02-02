@@ -1,8 +1,7 @@
-""" get data and setting from files"""
+""" get data and setting from input files"""
 import os
 import json
 import copy
-from typing import Optional
 import yaml
 import cv2 as cv
 import numpy as np
@@ -10,40 +9,38 @@ from scripts.configs import BConfigs
 
 
 class InputsProcessor:
-    """ Read map image, data and configs """
+    """ Read input map image, data and configs """
     ns: str
+    map_name: str
+    paths: dict = {}
     __configs: BConfigs
-    __orig_map: Optional[np.ndarray]
+    __orig_map: np.ndarray
 
     def __init__(self, map_name="Map1"):
         # init
         self.ns = "InputsProcessor"
-        configs = BConfigs()
-        self.__configs = None
+        self.map_name = map_name
+        self.__configs = BConfigs()
         self.__orig_map = None
+        self.paths["data"] = "/home/morteza/Documents/00-CPP/00-CPP/Data"
         print(f"[{self.ns}]: processing inputs.")
+        print(f"[{self.ns}]: map name: {map_name}")
 
         # define paths
-        data_dir = "/home/morteza/Documents/00-CPP/00-CPP/Data"
-        map_path = os.path.join(data_dir, map_name)
-        yaml_file_path = os.path.join(map_path, "merge.yaml")
-        json_file_path = os.path.join(map_path, "merge.json")
-        pgm_file_path = os.path.join(map_path, "merge.pgm")
+        self.set_paths()
 
-        # check directory - read yaml file and write json file
-        self.check_directory(map_path, map_name)
-        map_yaml_data = self.read_yaml(yaml_file_path)
-        self.write_json(json_file_path, map_yaml_data)
+        # check directory
+        self.check_directory()
+
+        # read yaml file and write json file
+        map_yaml_data = self.read_yaml(self.paths["yaml"])
+        self.write_json(self.paths["json"], map_yaml_data)
 
         # complete configs from yaml data
-        configs.map_name = map_name
-        configs.map_path = map_path
-        configs.data_dir = data_dir
-        self.read_map_data(map_yaml_data, configs)
-        self.__configs = configs
+        self.set_configs(map_yaml_data)
 
         # read pgm file
-        map_arr = cv.imread(pgm_file_path, cv.IMREAD_GRAYSCALE)
+        map_arr = cv.imread(self.paths["pgm"], cv.IMREAD_GRAYSCALE)
         self.__orig_map = map_arr
         # self.visualize_map(map_arr)
 
@@ -58,19 +55,21 @@ class InputsProcessor:
     def orig_map(self) -> np.ndarray:
         return copy.deepcopy(self.__orig_map)
 
-    def read_map_data(self, yaml_data: dict, configs: BConfigs) -> None:
+    def set_configs(self, yaml_data: dict) -> None:
         """ read map yaml file and update config object """
-        configs.origin = yaml_data["origin"]
-        configs.resolution = yaml_data["resolution"]
-        configs.free_thresh = yaml_data["free_thresh"]
-        configs.occupied_thresh = yaml_data["occupied_thresh"]
+        self.__configs.map_name = self.map_name
+        self.__configs.data_dir = self.paths["data"]
+        self.__configs.map_path = self.paths["map"]
+        self.__configs.origin = yaml_data["origin"]
+        self.__configs.resolution = yaml_data["resolution"]
+        self.__configs.free_thresh = yaml_data["free_thresh"]
+        self.__configs.occupied_thresh = yaml_data["occupied_thresh"]
 
-    def check_directory(self, folder_path, folder_name) -> None:
+    def check_directory(self) -> None:
         """ check if directory and map files exist """
-        if not os.path.isdir(folder_path):
-            print(f"Directory {folder_path} does not exist")
-            print(f"Map folder [{folder_name}] does not exist")
-            raise FileNotFoundError(f"Directory {folder_path} does not exist")
+        if not os.path.isdir(self.paths["map"]):
+            print(f"Directory {self.paths['map']} does not exist")
+            raise FileNotFoundError(f"Directory {self.paths['map']} does not exist")
 
     def read_yaml(self, file_path):
         with open(file_path, 'r') as file:
@@ -79,6 +78,12 @@ class InputsProcessor:
     def write_json(self, file_path, data) -> None:
         with open(file_path, 'w') as file:
             json.dump(data, file, indent=4)
+
+    def set_paths(self) -> None:
+        self.paths["map"] = os.path.join(self.paths["data"], self.map_name)
+        self.paths["yaml"] = os.path.join(self.paths["map"], "merge.yaml")
+        self.paths["json"] = os.path.join(self.paths["map"], "merge.json")
+        self.paths["pgm"] = os.path.join(self.paths["map"], "merge.pgm")
 
     def visualize_map(self, pgm_data) -> None:
         print(f"[{self.ns}]: visualizing")
@@ -90,7 +95,7 @@ class InputsProcessor:
         #
         w_name = "PGM Image"
         cv.imshow(w_name, pgm_data)
-        wait_time = 1  # milliseconds
+        wait_time = 10  # milliseconds
         while True:
             key = cv.waitKey(wait_time)
             # c1 = key & 0xFF == ord('q')
@@ -98,7 +103,6 @@ class InputsProcessor:
             if key >= 0 or c2:  # or c1:
                 break
         cv.destroyAllWindows()
-        print(f"[{self.ns}]: Image window closed.")
 
 
 if __name__ == "__main__":

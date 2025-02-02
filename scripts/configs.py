@@ -1,7 +1,10 @@
 
 """ All configs """
 
+import dataclasses
 
+
+@dataclasses.dataclass
 class BConfigs:
     def __init__(self):
         # map configs
@@ -16,11 +19,13 @@ class BConfigs:
         self.district_folder = "District"
 
 
+@dataclasses.dataclass
 class DistrictConfgs:
     def __init__(self):
-        self.whole_map = True  # False True
+        self.whole_map = False  # False True
 
 
+@dataclasses.dataclass
 class SpaceConfigs:
     def __init__(self):
         # robot configs
