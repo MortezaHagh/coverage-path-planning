@@ -104,9 +104,9 @@
 # # ----------------------------------------------------------------------------
 
 # # path of points with distance equal to x ------------------------------------
-# # Get cells with distance equal to free_space_obst_dist_lim_px and make them red
+# # Get cells with distance equal to ws_r_dist_lim_px and make them red
 # dist_trans_rgb = cv.cvtColor(dist_trans, cv.COLOR_GRAY2BGR)
-# red_cells = dist_trans == free_space_obst_dist_lim_px
+# red_cells = dist_trans == ws_r_dist_lim_px
 # dist_trans_rgb[red_cells] = [0, 0, 255]
 # visualize_map(dist_trans_rgb, "dist_trans_rgb_red")
 # # ----------------------------------------------------------------------------

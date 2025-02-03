@@ -1,3 +1,4 @@
+*.png
 __pycache__/
 .vscode/
 coverage_path_planning/

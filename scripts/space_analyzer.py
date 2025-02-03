@@ -69,31 +69,38 @@ class SpaceAnalyzer:
         # detect workspace (based on robot size and distance conditions)
         if self.simple:
             # simple version - dilate obstacles
-            map_dilated, _ = self.dilate_map(map_i=self.binary_map, radius_m=self.scfg.free_space_obst_dist)
-            map_ws = self.crop_map(map_dilated)
+            map_dilated_ws = self.dilate_erode_map(map_i=self.binary_map, radius_m=self.scfg.ws_r_dist, erode=True)
+            map_dilated_cleaning = self.dilate_erode_map(map_i=self.binary_map, radius_m=self.scfg.cleaning_dist, erode=True)
+            map_ws = self.crop_map(map_dilated_ws)
+            map_cleaning = self.crop_map(map_dilated_cleaning)
         else:
             # apply distance conditions using distance transform
             map_ws = self.distance_filter()
+            map_cleaning = self.distance_filter()  # todo
 
         # select free space point
         self.select_free_space(map_ws)
-        map_wfs = self.seperate_selected_free_space(map_ws)
+        map_sws = self.seperate_selected_free_space(map_ws)  # selected work space
 
         # remove islands
-        map_fs_rif = self.remove_islands(map_wfs)
-        visualize_map_s(map_fs_rif, "map_fs_rif")
+        map_sws_rif = self.remove_islands(map_sws)
+        # visualize_map_s(map_sws_rif, "map_sws_rif", False)
+
+        # get cleaning space
+        map_sws_rif_cleaning = self.dilate_erode_map(map_i=map_sws_rif, radius_m=self.scfg.effective_cleaning_r, erode=False)
+        # visualize_map_s(map_sws_rif_cleaning, "map_sws_rif_cleaning")
+        bb_sws_rif_cleaning = self.get_freespace_bb(map_sws_rif_cleaning)
 
         # vizualize processed space
-        fs_bb = self.get_fs_bb(map_fs_rif)
-        self.final_space_data(map_ws, map_fs_rif, fs_bb)
+        self.final_space_data(map_cleaning, map_sws_rif_cleaning, bb_sws_rif_cleaning)
 
         # save selected free space
-        cv.imwrite(self.res_path + "/" + "freeSpace.png", map_fs_rif)
+        cv.imwrite(self.res_path + "/" + "map_sws_rif_cleaning.png", map_sws_rif_cleaning)
 
-    def get_fs_bb(self, map_i: np.ndarray) -> dict:
+    def get_freespace_bb(self, map_i: np.ndarray) -> dict:
         """get free selected bounding box
         """
-        radius_px = int(np.ceil(self.scfg.free_space_obst_dist / self.map_data.up_resolution))
+        radius_px = int(np.ceil(self.scfg.ws_r_dist / self.map_data.up_resolution))
         kernel_size = 2*radius_px + 1
         kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (kernel_size, kernel_size))
         map_dilated = cv.dilate(map_i, kernel)
@@ -169,7 +176,7 @@ class SpaceAnalyzer:
         cv.destroyAllWindows()
 
     def distance_filter(self, map_full: Optional[np.ndarray] = None) -> np.ndarray:
-        return self.detect_free_spaces_dist_occ(map_full=map_full, dist_from_occ_m=self.scfg.free_space_obst_dist)
+        return self.detect_free_spaces_dist_occ(map_full=map_full, dist_from_occ_m=self.scfg.ws_r_dist)
 
     def detect_free_spaces_dist_occ(self, map_full: Optional[np.ndarray] = None, dist_from_occ_m: float = 0.0) -> np.ndarray:
         print(f"[{self.ns}]: detecting all free spaces conidering distance {dist_from_occ_m} from obstacles.")
@@ -253,15 +260,18 @@ class SpaceAnalyzer:
             self.fs_selected_point = (x, y)
             self.is_fs_point_selected = True
 
-    def dilate_map(self, map_i: np.ndarray, radius_m: float) -> tuple[np.ndarray, np.ndarray]:
+    def dilate_erode_map(self, map_i: np.ndarray, radius_m: float, erode: False) -> tuple[np.ndarray, np.ndarray]:
         radius_px = int(np.ceil(radius_m / self.map_data.up_resolution))
         kernel_size = 2*radius_px + 1
         kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (kernel_size, kernel_size))
-        map_dilated = cv.erode(map_i, kernel)
+        if erode:
+            map_dilated = cv.erode(map_i, kernel)
+        else:
+            map_dilated = cv.dilate(map_i, kernel)
         map_dilated = np.where(map_dilated > 0, 255, 0).astype(np.uint8)
-        new_occupied_area = cv.subtract(map_i, map_dilated)
-        occ_new_added_inds = new_occupied_area == FREE_COST
-        return map_dilated, occ_new_added_inds
+        # new_occupied_area = cv.subtract(map_i, map_dilated)
+        # occ_new_added_inds = new_occupied_area == FREE_COST
+        return map_dilated
 
     def display_contour(self, c) -> None:
         """
@@ -310,6 +320,12 @@ class SpaceAnalyzer:
         )
         return map_with_rect
 
+    def convert_image_to_map(self, point):
+        point_in_map = [0, 0]  # meters
+        point_in_map[0] = np.round(point[0] * self.map_data.up_resolution + self.bcfg.origin[0], 4)
+        point_in_map[1] = np.round(point[1] * self.map_data.up_resolution + self.bcfg.origin[1], 4)
+        return point_in_map
+
     def final_space_data(self, map_ws: np.ndarray = None, map_fs: np.ndarray = None, fs_bb: dict = None) -> None:
         print(f"[{self.ns}]: Visualizing workspace.")
         # #
@@ -327,25 +343,40 @@ class SpaceAnalyzer:
         free_selected_inds = map_ws == FREE_COST
 
         #
-        viz = np.zeros_like(self.cropped_mask) + 0
-        sel_rgb = cv.cvtColor(viz, cv.COLOR_GRAY2BGR)
-        # sel_rgb[occ_cropped_inds] = [0, 0, 0]
-        sel_rgb[free_selected_inds] = [250, 250, 250]
-        sel_rgb[occ_new_added_inds] = [250, 0, 0]
-        sel_rgb[free_other_inds] = [250, 250, 0]
+        map_viz = np.zeros_like(self.cropped_mask) + 0
+        map_viz = cv.cvtColor(map_viz, cv.COLOR_GRAY2BGR)
+        # map_viz[occ_cropped_inds] = [0, 0, 0]
+        map_viz[free_selected_inds] = [250, 250, 250]
+        map_viz[occ_new_added_inds] = [250, 0, 0]
+        map_viz[free_other_inds] = [250, 250, 0]
 
         #
+        h_c, w_c = self.map_cropped.shape
         if fs_bb:
-            sel_rgb = self.add_rectangle_bd(sel_rgb, fs_bb, color=[0, 0, 250])
+            map_viz = self.add_rectangle_bd(map_viz, fs_bb, color=[0, 0, 250])
+            hw_bd_crop = {"h_min": 0, "w_min": 0, "h_max": h_c, "w_max": w_c}
+            map_viz = self.add_rectangle_bd(map_viz, hw_bd_crop, color=[0, 250, 0])
 
         #
         if self.plot_main:
-            h, w = self.map_cropped.shape
             x, y = self.hw_bd["h_min"], self.hw_bd["w_min"]
-            map_main_rgb = cv.cvtColor(self.binary_map, cv.COLOR_GRAY2BGR)
-            map_main_rgb[x:x+h, y:y+w] = sel_rgb
+            map_main_viz = cv.cvtColor(self.binary_map, cv.COLOR_GRAY2BGR)
+            map_main_viz[x:x+h_c, y:y+w_c] = map_viz
         else:
-            map_main_rgb = sel_rgb
+            map_main_viz = map_viz
+
+        # vis robot
+        sh = 17
+        alpha = 0.5
+        shape_main_viz = self.binary_map.shape
+        pose = (shape_main_viz[1]//2 - sh, shape_main_viz[0]//2 + sh)
+        radius_px_1 = int(np.ceil(self.scfg.ws_r_dist / self.map_data.up_resolution))
+        radius_px_2 = int(np.ceil(self.scfg.effective_cleaning_r / self.map_data.up_resolution))
+        overlay = map_main_viz.copy()
+        cv.circle(overlay, pose, radius_px_1, [0, 250, 0], -1)
+        cv.circle(overlay, pose, radius_px_2, [0, 0, 250], -1)
+        map_main_viz = cv.addWeighted(overlay, alpha, map_main_viz, 1 - alpha, 0)
 
         #
-        visualize_map_s(map_main_rgb, "viz_rgb")
+        visualize_map_s(map_main_viz, "map_viz")
+        cv.imwrite(self.res_path + "/" + "map_main_viz.png", map_main_viz)

@@ -35,10 +35,24 @@ class SpaceConfigs:
         # distance thresholds
         self.wf_safe_dist = 0.1  # wf distance
         self.os_safe_dist = 0.2  # safe distance of os path from obstacles
-        self.wf_min_obst_dist = self.robot_radius + self.wf_safe_dist  # distance of the wf path from walls and obstacles
-        self.os_min_obst_dist = self.robot_radius + self.os_safe_dist  # min distance of the os path from walls and obstacles
-        self.free_space_obst_dist = round(max(self.wf_min_obst_dist, self.os_min_obst_dist), 2)
+        self.ws_dist = max(self.wf_safe_dist, self.os_safe_dist)
         #
+        self.wf_r_dist = self.robot_radius + self.wf_safe_dist  # distance of the wf path from walls and obstacles
+        self.os_r_dist = self.robot_radius + self.os_safe_dist  # min distance of the os path from walls and obstacles
+        self.ws_r_dist = self.ws_dist + self.robot_radius
+        #
+        self.effective_cleaning_c = 0.8
+        self.effective_cleaning_r = self.robot_radius * self.effective_cleaning_c
+        #
+        self.cleaning_dist = self.ws_dist + (self.robot_radius - self.effective_cleaning_r)
+        # other
         self.scaler_os_search = 2
         #
         self.black = 50
+
+
+if __name__ == "__main__":
+    s_cfgs = SpaceConfigs()
+    print("ws_r_dist", s_cfgs.ws_r_dist)
+    print("cleaning_dist", s_cfgs.cleaning_dist)
+    print("effective_cleaning_r", s_cfgs.effective_cleaning_r)
