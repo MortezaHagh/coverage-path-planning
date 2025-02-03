@@ -11,7 +11,7 @@ from scripts.space_analyzer import SpaceAnalyzer
 
 def main():
     #  process inputs: configs and map
-    inp_processor = InputsProcessor("Map2")
+    inp_processor = InputsProcessor("Map1")
     orig_map: np.ndarray = inp_processor.orig_map
     b_configs: BConfigs = inp_processor.configs
 

@@ -1,5 +1,6 @@
 import os
 import copy
+import json
 from typing import Optional
 import cv2 as cv
 import numpy as np
@@ -94,13 +95,23 @@ class SpaceAnalyzer:
         # vizualize processed space
         self.final_space_data(map_cleaning, map_sws_rif_cleaning, bb_sws_rif_cleaning)
 
+        # save district
+        self.save_district(map_sws_rif_cleaning)
+
+    def save_district(self, map_i: np.ndarray) -> None:
         # save selected free space
-        cv.imwrite(self.res_path + "/" + "map_sws_rif_cleaning.png", map_sws_rif_cleaning)
+        cv.imwrite(self.res_path + "/" + "map_sws_rif_cleaning.png", map_i)
+
+        # district data
+        district = {"coords_pix": self.hw_bd, "up_resolution": self.map_data.up_resolution}
+        with open(self.res_path + "/" + "district.json", "w") as f:
+            json_object = json.dumps(district, indent=4)
+            f.write(json_object)
 
     def get_freespace_bb(self, map_i: np.ndarray) -> dict:
         """get free selected bounding box
         """
-        radius_px = int(np.ceil(self.scfg.ws_r_dist / self.map_data.up_resolution))
+        radius_px = int(np.ceil(self.scfg.cleaning_dist / self.map_data.up_resolution))
         kernel_size = 2*radius_px + 1
         kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (kernel_size, kernel_size))
         map_dilated = cv.dilate(map_i, kernel)
@@ -331,15 +342,15 @@ class SpaceAnalyzer:
         # #
         # occ_cropped_inds = self.map_cropped == OCCUPIED_COST
 
-        #
+        # new occupied area - dilated
         new_occupied_area = cv.subtract(self.map_cropped, map_ws)
         occ_new_added_inds = new_occupied_area == FREE_COST
 
-        #
+        # map free other - now occupied - no access
         map_free_other = cv.subtract(map_ws, map_fs)
         free_other_inds = map_free_other == FREE_COST
 
-        #
+        # final free space
         free_selected_inds = map_ws == FREE_COST
 
         #
