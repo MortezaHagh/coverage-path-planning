@@ -6,6 +6,8 @@ from scripts.my_utils import mod_angle
 
 
 class Rectangle:
+    """ Rectangle class
+    """
     rid: int = 0
     bbox: box
     vertices_t: tuple

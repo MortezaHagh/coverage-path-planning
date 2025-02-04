@@ -1,19 +1,37 @@
 """ MapData data classes """
 import numpy as np
 import cv2 as cv
+from scripts.configs import BConfigs
 
 
 class MapData:
     """ original and updated map data """
-    orig_map: np.ndarray
-    orig_bin_map: np.ndarray
-    up_map: np.ndarray
-    up_rgb_map: np.ndarray
-    up_bin_map: np.ndarray
+    bcfg: BConfigs  # base configs
+    name: str  # map name
+    orig_h: int  # original height
+    orig_w: int  # original width
+    orig_c_w: int  # original center width
+    orig_c_h: int  # original center height
+    updated_h: int  # updated height
+    updated_w: int  # updated width
+    updated_wh: tuple[int, int]  # updated width and height tuple
+    up_c_w: int  # updated center width
+    up_c_h: int  # updated center height
+    origin_m: tuple[int, int]  # origin in meters
+    #
+    orig_map: np.ndarray  # original grayscale map
+    orig_bin_map: np.ndarray  # original binary map
+    up_map: np.ndarray  # updated grayscale map
+    up_rgb_map: np.ndarray  # updated rgb map
+    up_bin_map: np.ndarray  # updated binary map
+    #
+    resolution: float  # original resolution
+    up_resolution: float  # updated resolution
 
     def __init__(self):
         self.ns = "MapData"
         #
+        self.bcfg = None
         self.name = None
         self.orig_h = None
         self.orig_w = None
@@ -24,6 +42,7 @@ class MapData:
         self.updated_wh = None
         self.up_c_w = None
         self.up_c_h = None
+        self.origin_m = None
         #
         self.wind_hw = (1080, 1920)
         self.wind_h = None
@@ -40,6 +59,14 @@ class MapData:
         self.resolution = None
         self.up_resolution = None
 
+    def set_basic_configs(self, bcfg: BConfigs, name: str = None):
+        if name:
+            name = self.name
+        self.bcfg = bcfg
+
+    def set_origin_m(self, origin_m: tuple[float, float]):
+        self.origin_m = origin_m
+
     def set_resolution(self, res):
         self.resolution = res
         self.up_resolution = self.resolution / self.zoom
@@ -48,11 +75,8 @@ class MapData:
         self.orig_bin_map = bin_map
         self.up_bin_map = cv.resize(self.orig_bin_map, self.updated_wh, interpolation=cv.INTER_AREA)
 
-    def set_orig_map(self, map_data: np.ndarray, name: str = None):
-        #
-        self.name = name
+    def set_orig_map(self, map_data: np.ndarray):
         self.orig_map = map_data
-
         #
         self.set_map_hw()
         self.set_wind_wh()
@@ -109,3 +133,9 @@ class MapData:
         mx = (x - self.up_c_w // 2) + self.orig_c_w
         my = (y - self.up_c_h // 2) + self.orig_c_h
         return (mx, my)
+
+    def convert_map_to_world(self, p_m: tuple[int, int]) -> tuple[float, float]:
+        """[x, y] [w, h] from map (pixels) to world (meters)"""
+        p_w_0 = p_m[0] * self.up_resolution + self.orig_w
+        p_w_1 = p_m[1] * self.up_resolution + self.orig_h
+        return (p_w_0, p_w_1)

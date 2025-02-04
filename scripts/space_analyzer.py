@@ -6,8 +6,9 @@ import cv2 as cv
 import numpy as np
 from scripts.map_data import MapData
 from scripts.gui.visuals import Rectangle
-from scripts.configs import BConfigs, SpaceConfigs
-from scripts.my_utils import visualize_map_s  # visualize_map
+from scripts.configs import SpaceConfigs
+from scripts.my_utils import visualize_map_s
+from scripts.district import ZoneMapData
 
 FREE_COST = 255
 OCCUPIED_COST = 0
@@ -21,17 +22,17 @@ class SpaceAnalyzer:
     binary_map: np.ndarray
     map_cropped: np.ndarray
     cropped_mask: np.ndarray
+    __zone_map: ZoneMapData
 
-    def __init__(self, map_data: MapData, bconfigs: BConfigs, district_rect: Rectangle):
+    def __init__(self, map_data: MapData, rectangle: Rectangle):
         self.ns = "SpaceAnalyzer"
         print(f"[{self.ns}]: Analyzing space for creating free space.")
 
         # analyzed space path
-        self.res_path = os.path.join(bconfigs.map_path, bconfigs.district_folder)
+        self.res_path = os.path.join(map_data.bcfg.map_path, map_data.bcfg.district_folder)
         os.makedirs(self.res_path, exist_ok=True)
 
         # configs
-        self.bcfg = bconfigs
         self.scfg = SpaceConfigs()
         self.simple = True
         self.plot_main = True
@@ -39,8 +40,8 @@ class SpaceAnalyzer:
         # inputs
         self.binary_map = map_data.up_bin_map     # binary map
         self.map_data = map_data
-        self.vertices = np.array(district_rect.vertices_t, dtype=np.int32)  # district vertices
-        # self.district_rect = district_rect
+        self.vertices = np.array(rectangle.vertices_t, dtype=np.int32)  # district vertices
+        self.__zone_map = None
 
         # attributes
         self.hw_bd: dict[str:int] = None       # cropped hw limits
@@ -52,15 +53,16 @@ class SpaceAnalyzer:
         self.cropped_mask: np.ndarray = None
 
         # ========================================
-        self.select_space()
-
-        # #
-        # zone = MapInfo(free_space_map, available_map, zone_coordinates, mapPgm.shape, mapOrigin)
+        self.create_district_maps()
 
         # final
         print(f"[{self.ns}]: ----------------------------------------------- ")
 
-    def select_space(self) -> None:
+    @property
+    def zone_map(self) -> ZoneMapData:
+        return copy.deepcopy(self.__zone_map)
+
+    def create_district_maps(self) -> None:
 
         # crop map and mask
         map_cropped = self.crop_map(self.binary_map)
@@ -88,24 +90,39 @@ class SpaceAnalyzer:
         # visualize_map_s(map_sws_rif, "map_sws_rif", False)
 
         # get cleaning space
+        map_sws_rif_orig = self.dilate_erode_map(map_i=map_sws_rif, radius_m=self.scfg.ws_r_dist, erode=False)
         map_sws_rif_cleaning = self.dilate_erode_map(map_i=map_sws_rif, radius_m=self.scfg.effective_cleaning_r, erode=False)
-        # visualize_map_s(map_sws_rif_cleaning, "map_sws_rif_cleaning")
         bb_sws_rif_cleaning = self.get_freespace_bb(map_sws_rif_cleaning)
+        # visualize_map_s(map_sws_rif_cleaning, "map_sws_rif_cleaning")
+
+        # create district object
+        self.create_district(map_sws_rif_orig, map_sws_rif_cleaning)
 
         # vizualize processed space
         self.final_space_data(map_cleaning, map_sws_rif_cleaning, bb_sws_rif_cleaning)
 
         # save district
-        self.save_district(map_sws_rif_cleaning)
+        self.save_district_data(map_sws_rif_orig, map_sws_rif_cleaning)
 
-    def save_district(self, map_i: np.ndarray) -> None:
+    def create_district(self, map_orig: np.ndarray, map_cleaning: np.ndarray) -> None:
+        zone_map = ZoneMapData()
+        zone_map.set_map_data(self.map_data)
+        zone_map.set_map_orig(map_orig)
+        zone_map.set_map_cleaning(map_cleaning)
+        zone_map.set_bb_px(self.hw_bd)
+        self.__zone_map = zone_map
+
+    def save_district_data(self, map_orig: np.ndarray, map_cleaning: np.ndarray) -> None:
         # save selected free space
-        cv.imwrite(self.res_path + "/" + "map_sws_rif_cleaning.png", map_i)
+        cv.imwrite(self.res_path + "/" + "district_orig.png", map_orig)
+        cv.imwrite(self.res_path + "/" + "district_cleaning.png", map_cleaning)
 
-        # district data
-        district = {"coords_pix": self.hw_bd, "up_resolution": self.map_data.up_resolution}
+        # zone data
+        zone_map_data = {"coords_px": self.hw_bd}
+        zone_map_data["up_resolution"] = self.map_data.up_resolution
+        zone_map_data["origin_m"] = self.map_data.origin_m
         with open(self.res_path + "/" + "district.json", "w") as f:
-            json_object = json.dumps(district, indent=4)
+            json_object = json.dumps(zone_map_data, indent=4)
             f.write(json_object)
 
     def get_freespace_bb(self, map_i: np.ndarray) -> dict:
@@ -331,11 +348,11 @@ class SpaceAnalyzer:
         )
         return map_with_rect
 
-    def convert_image_to_map(self, point):
-        point_in_map = [0, 0]  # meters
-        point_in_map[0] = np.round(point[0] * self.map_data.up_resolution + self.bcfg.origin[0], 4)
-        point_in_map[1] = np.round(point[1] * self.map_data.up_resolution + self.bcfg.origin[1], 4)
-        return point_in_map
+    def convert_map_to_world(self, p_m: tuple[int, int]) -> tuple[float, float]:  # todo todel
+        """[x, y] [w, h] from map (pixels) to world (meters)"""
+        p_w_0 = np.round(p_m[0] * self.map_data.up_resolution + self.map_data.origin_m[0], 4)
+        p_w_1 = np.round(p_m[1] * self.map_data.up_resolution + self.map_data.origin_m[1], 4)
+        return (p_w_0, p_w_1)
 
     def final_space_data(self, map_ws: np.ndarray = None, map_fs: np.ndarray = None, fs_bb: dict = None) -> None:
         print(f"[{self.ns}]: Visualizing workspace.")

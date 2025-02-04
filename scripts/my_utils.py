@@ -8,7 +8,7 @@ def mod_angle(theta):
 
 
 def visualize_map(pgm_data_in: Optional[np.ndarray], name=None) -> None:
-    ns = "utils"
+    # ns = "utils"
     # print(f"[{ns}]: display map image")
 
     # check if the image is loaded
@@ -52,6 +52,7 @@ def visualize_map(pgm_data_in: Optional[np.ndarray], name=None) -> None:
 def visualize_map_s(pgm_data_in: Optional[np.ndarray], w_name=None, wait=True) -> None:
     if w_name is None:
         w_name = "PGM Image"
+    cv.namedWindow(w_name, cv.WINDOW_NORMAL)
     cv.imshow(w_name, pgm_data_in)
     if wait:
         cv.waitKey()

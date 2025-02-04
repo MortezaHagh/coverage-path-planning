@@ -60,7 +60,7 @@ class InputsProcessor:
         self.__configs.map_name = self.map_name
         self.__configs.data_dir = self.paths["data"]
         self.__configs.map_path = self.paths["map"]
-        self.__configs.origin = yaml_data["origin"]
+        self.__configs.origin_m = yaml_data["origin"]
         self.__configs.resolution = yaml_data["resolution"]
         self.__configs.free_thresh = yaml_data["free_thresh"]
         self.__configs.occupied_thresh = yaml_data["occupied_thresh"]

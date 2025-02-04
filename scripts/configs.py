@@ -8,7 +8,7 @@ import dataclasses
 class BConfigs:
     def __init__(self):
         # map configs
-        self.origin = None
+        self.origin_m = None
         self.resolution = None
         self.free_thresh = None
         self.occupied_thresh = None
@@ -22,7 +22,7 @@ class BConfigs:
 @dataclasses.dataclass
 class DistrictConfgs:
     def __init__(self):
-        self.whole_map = False  # False True
+        self.whole_map = True  # False True
 
 
 @dataclasses.dataclass

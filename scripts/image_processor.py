@@ -12,14 +12,14 @@ class MapImageProcessor:
     __map_data = MapData
     __orig_map: np.ndarray
 
-    def __init__(self, map_arr: np.ndarray, configs: BConfigs):
+    def __init__(self, map_arr: np.ndarray, bconfigs: BConfigs):
 
         # init
         self.ns = "MapImageProcessor"
         print(f"[{self.ns}]: processing map image.")
 
         # read configs and eval original map arr
-        self.__configs = configs
+        self.__bcfg = bconfigs
         self.__orig_map = map_arr
         self.check_map(map_arr)
 
@@ -54,7 +54,9 @@ class MapImageProcessor:
     def set_map_data(self):
         print(f"[{self.ns}]: loading map image data")
         map_arr = self.__orig_map.copy()
-        self.__map_data.set_orig_map(map_arr, self.__configs.map_name)
+        self.__map_data.set_basic_configs(self.__bcfg, self.__bcfg.map_name)
+        self.__map_data.set_origin_m(self.__bcfg.origin_m)
+        self.__map_data.set_orig_map(map_arr)
 
     def process_map(self) -> np.ndarray:
         print(f"[{self.ns}]: first processing of the map image")
@@ -65,7 +67,7 @@ class MapImageProcessor:
 
     def convert_to_binary(self):
         print(f"[{self.ns}]: converting image to binary")
-        # threshold = self.__configs.occupied_thresh
+        # threshold = self.__bcfg.occupied_thresh
         _, binary_map = cv.threshold(self.__orig_map, 220, 255, cv.THRESH_BINARY)
         return binary_map
 
@@ -76,7 +78,7 @@ class MapImageProcessor:
         return denoised_map
 
     def complete_data(self):
-        self.__map_data.set_resolution(self.__configs.resolution)
+        self.__map_data.set_resolution(self.__bcfg.resolution)
 
     def visualize_map(self, pgm_data_in: Optional[np.ndarray], disp_name: str = "Map") -> None:
         print(f"[{self.ns}]: display map image")
