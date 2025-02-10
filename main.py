@@ -2,10 +2,10 @@
 import numpy as np
 from scripts.base.configs import BConfigs
 from scripts.base.map_data import MapData
+from scripts.gui.visuals import Rectangle
 from scripts.base.inputs_processor import InputsProcessor
 from scripts.base.image_processor import MapImageProcessor
 from scripts.gui.create_district import DistrictGen
-from scripts.gui.visuals import Rectangle
 from scripts.base.space_analyzer import SpaceAnalyzer
 from scripts.district import DistrictData
 
@@ -27,7 +27,8 @@ def main():
 
     # Process Space - Initialize District
     spa = SpaceAnalyzer(map_data=map_data, rectangle=district_rect)
-    DistrictData(spa.zone_map_data)
+    spa.create_local_map_ws_selection()
+    DistrictData(spa)
     print(f"[{ns}]: zone_map.hw:", spa.zone_map_data.hw)
 
 
