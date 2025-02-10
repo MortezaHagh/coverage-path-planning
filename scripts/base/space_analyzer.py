@@ -53,7 +53,7 @@ class SpaceAnalyzer:
         self.cropped_mask: np.ndarray = None
 
         # ========================================
-        self.create_district_maps()
+        self.create_local_map_ws()
 
         # final
         print(f"[{self.ns}]: ----------------------------------------------- ")
@@ -62,7 +62,7 @@ class SpaceAnalyzer:
     def zone_map_data(self) -> ZoneMapData:
         return copy.deepcopy(self.__zone_map_data)
 
-    def create_district_maps(self) -> None:
+    def create_local_map_ws(self) -> None:
 
         # crop map and mask
         map_cropped = self.crop_map(self.binary_map)
@@ -268,6 +268,11 @@ class SpaceAnalyzer:
         cropped_vertices = np.zeros_like(self.vertices)
         for i, v in enumerate(self.vertices):
             cropped_vertices[i] = np.array([v[0] - w_min, v[1] - h_min])
+
+        #
+        mask = np.ones_like(map_cropped) * OCCUPIED_COST
+        cv.fillPoly(mask, [cropped_vertices], FREE_COST)
+        map_cropped = cv.bitwise_and(map_cropped, mask)
 
         # ensure binary
         map_cropped = map_cropped.astype(np.uint8)

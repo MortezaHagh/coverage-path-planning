@@ -50,6 +50,7 @@ class Rectangle:
 
         # create box
         bbox = box(xc - w / 2, yc - h / 2, xc + w / 2, yc + h / 2)
+        bbox = rotate(bbox, np.rad2deg(self.rot), origin='center')
         self.box = bbox
 
         # vertices
