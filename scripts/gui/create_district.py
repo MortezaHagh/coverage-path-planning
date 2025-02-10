@@ -1,8 +1,8 @@
 import threading
 from pynput.keyboard import Listener
 import cv2 as cv
-from scripts.map_data import MapData
-from scripts.configs import DistrictConfgs
+from scripts.base.map_data import MapData
+from scripts.base.configs import DistrictConfgs
 from scripts.gui.rect_event_hl import RecEventHandler
 from scripts.gui.visuals import Rectangle, VisualRectangle
 

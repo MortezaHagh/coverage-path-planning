@@ -1,7 +1,7 @@
 """ MapData data classes """
 import numpy as np
 import cv2 as cv
-from scripts.configs import BConfigs
+from scripts.base.configs import BConfigs
 
 
 class MapData:

@@ -1,0 +1,31 @@
+<mxfile host="65bd71144e">
+    <diagram id="-ojF3WQpcmlekAffjkCv" name="Page-1">
+        <mxGraphModel dx="707" dy="606" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="9" value="&lt;div style=&quot;background-color: rgb(31, 31, 31); font-family: &amp;quot;Droid Sans Mono&amp;quot;, &amp;quot;monospace&amp;quot;, monospace; font-weight: normal; font-size: 12px; line-height: 16px;&quot;&gt;&lt;font color=&quot;#4ec9b0&quot;&gt;district [DistrictData]&lt;/font&gt;&lt;/div&gt;" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="60" y="230" width="500" height="340" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="&lt;div style=&quot;color: rgb(204, 204, 204); background-color: rgb(31, 31, 31); font-family: &amp;quot;Droid Sans Mono&amp;quot;, &amp;quot;monospace&amp;quot;, monospace; line-height: 16px;&quot;&gt;&lt;span style=&quot;color: #9cdcfe;&quot;&gt;district_map_data&lt;/span&gt;: &lt;span style=&quot;color: #4ec9b0;&quot;&gt;ZoneMapData&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;arcSize=5;" vertex="1" parent="9">
+                    <mxGeometry x="20" y="50" width="190" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="zones :&lt;br&gt;list[&lt;b&gt;ZoneData&lt;/b&gt;]" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="9">
+                    <mxGeometry x="240" y="45" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="&lt;span style=&quot;color: rgb(78, 201, 176); font-family: &amp;quot;Droid Sans Mono&amp;quot;, &amp;quot;monospace&amp;quot;, monospace; font-weight: 400; text-align: left; background-color: rgb(31, 31, 31);&quot;&gt;ZoneMapData&lt;/span&gt;" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="210" y="760" width="230" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="&lt;div style=&quot;color: rgb(204, 204, 204); font-family: &amp;quot;Droid Sans Mono&amp;quot;, &amp;quot;monospace&amp;quot;, monospace; text-align: left;&quot;&gt;&lt;span style=&quot;color: rgb(156, 220, 254);&quot;&gt;map_data&lt;/span&gt;:&amp;nbsp;&lt;span style=&quot;color: rgb(78, 201, 176);&quot;&gt;MapData&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;color: rgb(204, 204, 204); font-family: &amp;quot;Droid Sans Mono&amp;quot;, &amp;quot;monospace&amp;quot;, monospace; text-align: left;&quot;&gt;&lt;span style=&quot;color: rgb(156, 220, 254);&quot;&gt;map_orig&lt;/span&gt;:&amp;nbsp;&lt;span style=&quot;color: rgb(78, 201, 176);&quot;&gt;np&lt;/span&gt;.&lt;span style=&quot;color: rgb(78, 201, 176);&quot;&gt;ndarray&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;color: rgb(204, 204, 204); font-family: &amp;quot;Droid Sans Mono&amp;quot;, &amp;quot;monospace&amp;quot;, monospace; text-align: left;&quot;&gt;&lt;span style=&quot;color: rgb(156, 220, 254);&quot;&gt;map_cleaning&lt;/span&gt;:&amp;nbsp;&lt;span style=&quot;color: rgb(78, 201, 176);&quot;&gt;np&lt;/span&gt;.&lt;span style=&quot;color: rgb(78, 201, 176);&quot;&gt;ndarray&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;color: rgb(204, 204, 204); font-family: &amp;quot;Droid Sans Mono&amp;quot;, &amp;quot;monospace&amp;quot;, monospace; text-align: left;&quot;&gt;&lt;span style=&quot;color: rgb(156, 220, 254);&quot;&gt;hw&lt;/span&gt;:&amp;nbsp;&lt;span style=&quot;color: rgb(78, 201, 176);&quot;&gt;tuple&lt;/span&gt;[&lt;span style=&quot;color: rgb(78, 201, 176);&quot;&gt;int&lt;/span&gt;,&amp;nbsp;&lt;span style=&quot;color: rgb(78, 201, 176);&quot;&gt;int&lt;/span&gt;]&lt;/div&gt;&lt;div style=&quot;color: rgb(204, 204, 204); font-family: &amp;quot;Droid Sans Mono&amp;quot;, &amp;quot;monospace&amp;quot;, monospace; text-align: left;&quot;&gt;&lt;span style=&quot;color: rgb(156, 220, 254);&quot;&gt;bb_px&lt;/span&gt;:&amp;nbsp;&lt;span style=&quot;color: rgb(78, 201, 176);&quot;&gt;dict&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="13">
+                    <mxGeometry x="10" y="40" width="200" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="ZoneData" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="80" y="590" width="210" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="&lt;span style=&quot;color: rgb(78, 201, 176); font-family: &amp;quot;Droid Sans Mono&amp;quot;, &amp;quot;monospace&amp;quot;, monospace; background-color: rgb(31, 31, 31);&quot;&gt;ZoneMapData&lt;br&gt;paths&lt;br&gt;...&lt;br&gt;&lt;/span&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="630" width="100" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

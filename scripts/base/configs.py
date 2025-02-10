@@ -22,7 +22,7 @@ class BConfigs:
 @dataclasses.dataclass
 class DistrictConfgs:
     def __init__(self):
-        self.whole_map = True  # False True
+        self.whole_map = False  # False True
 
 
 @dataclasses.dataclass

@@ -1,4 +1,4 @@
-from scripts.configs import SpaceConfigs  # BConfigs
+from scripts.base.configs import SpaceConfigs  # BConfigs
 from scripts.district import District
 
 

@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 from shapely.affinity import rotate
 from shapely.geometry import box, Point
-from scripts.my_utils import mod_angle
+from scripts.base.my_utils import mod_angle
 
 
 class Rectangle:

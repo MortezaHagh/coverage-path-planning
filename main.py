@@ -1,12 +1,12 @@
 """ Main function to run the program """
 import numpy as np
-from scripts.configs import BConfigs
-from scripts.map_data import MapData
-from scripts.inputs_processor import InputsProcessor
-from scripts.image_processor import MapImageProcessor
+from scripts.base.configs import BConfigs
+from scripts.base.map_data import MapData
+from scripts.base.inputs_processor import InputsProcessor
+from scripts.base.image_processor import MapImageProcessor
 from scripts.gui.create_district import DistrictGen
 from scripts.gui.visuals import Rectangle
-from scripts.space_analyzer import SpaceAnalyzer
+from scripts.base.space_analyzer import SpaceAnalyzer
 from scripts.district import DistrictData
 
 
@@ -27,8 +27,8 @@ def main():
 
     # Process Space - Initialize District
     spa = SpaceAnalyzer(map_data=map_data, rectangle=district_rect)
-    DistrictData(spa.zone_map)
-    print(f"[{ns}]: zone_map.hw:", spa.zone_map.hw)
+    DistrictData(spa.zone_map_data)
+    print(f"[{ns}]: zone_map.hw:", spa.zone_map_data.hw)
 
 
 if __name__ == "__main__":

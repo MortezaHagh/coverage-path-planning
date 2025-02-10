@@ -3,8 +3,8 @@ from typing import Optional
 import copy
 import numpy as np
 import cv2 as cv
-from scripts.configs import BConfigs
-from scripts.map_data import MapData
+from scripts.base.configs import BConfigs
+from scripts.base.map_data import MapData
 
 
 class MapImageProcessor:

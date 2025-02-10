@@ -1,5 +1,6 @@
 import numpy as np
-from scripts.map_data import MapData
+from scripts.base.map_data import MapData
+from scripts.gui.visuals import Rectangle
 
 
 class ZoneMapData:
@@ -30,7 +31,29 @@ class ZoneMapData:
 
 
 class DistrictData:
-    main_zone_map: ZoneMapData
+    district_map_data: ZoneMapData
 
-    def __init__(self, main_zone_map: ZoneMapData):
-        self.main_zone_map = main_zone_map
+    def __init__(self, district_map_data: ZoneMapData):
+        self.district_map_data = district_map_data
+
+    # get zones rectangles
+    # get zones map data
+    # apply wf path on zones
+    # apply cpp on zones
+
+    def create_zone_rectangles(self):
+        height, width = self.main_zone_map.hw
+        x1 = width//2
+        y1 = height//4
+        x2 = width//2
+        y2 = 3*height//4
+        w1 = width
+        h1 = height//2
+        w2 = width
+        h2 = height//2
+        data1 = {"xc": x1, "yc": y1, "rot": 0, "w": w1, "h": h1}
+        data2 = {"xc": x2, "yc": y2, "rot": 0, "w": w2, "h": h2}
+        rect1 = Rectangle(data1)
+        rect2 = Rectangle(data2)
+
+        return rect1, rect2

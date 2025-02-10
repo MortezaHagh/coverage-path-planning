@@ -5,7 +5,7 @@ import copy
 import yaml
 import cv2 as cv
 import numpy as np
-from scripts.configs import BConfigs
+from scripts.base.configs import BConfigs
 
 
 class InputsProcessor:

@@ -4,10 +4,10 @@ import json
 from typing import Optional
 import cv2 as cv
 import numpy as np
-from scripts.map_data import MapData
+from scripts.base.map_data import MapData
 from scripts.gui.visuals import Rectangle
-from scripts.configs import SpaceConfigs
-from scripts.my_utils import visualize_map_s
+from scripts.base.configs import SpaceConfigs
+from scripts.base.my_utils import visualize_map_s
 from scripts.district import ZoneMapData
 
 FREE_COST = 255
@@ -22,7 +22,7 @@ class SpaceAnalyzer:
     binary_map: np.ndarray
     map_cropped: np.ndarray
     cropped_mask: np.ndarray
-    __zone_map: ZoneMapData
+    __zone_map_data: ZoneMapData
 
     def __init__(self, map_data: MapData, rectangle: Rectangle):
         self.ns = "SpaceAnalyzer"
@@ -41,7 +41,7 @@ class SpaceAnalyzer:
         self.binary_map = map_data.up_bin_map     # binary map
         self.map_data = map_data
         self.vertices = np.array(rectangle.vertices_t, dtype=np.int32)  # district vertices
-        self.__zone_map = None
+        self.__zone_map_data = None
 
         # attributes
         self.hw_bd: dict[str:int] = None       # cropped hw limits
@@ -59,8 +59,8 @@ class SpaceAnalyzer:
         print(f"[{self.ns}]: ----------------------------------------------- ")
 
     @property
-    def zone_map(self) -> ZoneMapData:
-        return copy.deepcopy(self.__zone_map)
+    def zone_map_data(self) -> ZoneMapData:
+        return copy.deepcopy(self.__zone_map_data)
 
     def create_district_maps(self) -> None:
 
@@ -105,12 +105,12 @@ class SpaceAnalyzer:
         self.save_district_data(map_sws_rif_orig, map_sws_rif_cleaning)
 
     def create_district(self, map_orig: np.ndarray, map_cleaning: np.ndarray) -> None:
-        zone_map = ZoneMapData()
-        zone_map.set_map_data(self.map_data)
-        zone_map.set_map_orig(map_orig)
-        zone_map.set_map_cleaning(map_cleaning)
-        zone_map.set_bb_px(self.hw_bd)
-        self.__zone_map = zone_map
+        zone_map_data = ZoneMapData()
+        zone_map_data.set_map_data(self.map_data)
+        zone_map_data.set_map_orig(map_orig)
+        zone_map_data.set_map_cleaning(map_cleaning)
+        zone_map_data.set_bb_px(self.hw_bd)
+        self.__zone_map_data = zone_map_data
 
     def save_district_data(self, map_orig: np.ndarray, map_cleaning: np.ndarray) -> None:
         # save selected free space
