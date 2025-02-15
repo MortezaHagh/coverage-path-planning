@@ -12,18 +12,22 @@ class ZoneMapData:
     map_orig: np.ndarray
     map_sf_orig: np.ndarray
     map_cleaning: np.ndarray
+    map_ws: np.ndarray
     map_viz: np.ndarray
     hw: tuple[int, int]
     bb_px: dict
+    chw: dict
 
     def __init__(self, ind: int = 0):
         self.ind = ind
         self.map_orig = None
         self.map_sf_orig = None
         self.map_cleaning = None
+        self.map_ws = None
         self.map_viz = None
         self.hw = None
         self.bb_px = None
+        self.chw = None
 
     def set_ind(self, ind: int):
         self.ind = ind
@@ -33,6 +37,9 @@ class ZoneMapData:
 
     def set_map_orig(self, map_orig: np.ndarray):
         self.map_orig = map_orig
+
+    def set_map_ws(self, map_ws: np.ndarray):
+        self.map_ws = map_ws
 
     def set_map_sf_orig(self, map_sf_orig: np.ndarray):
         self.map_sf_orig = map_sf_orig
@@ -46,6 +53,9 @@ class ZoneMapData:
 
     def set_bb_px(self, bb_px: dict):
         self.bb_px = bb_px
+        h = bb_px["h_max"] - bb_px["h_min"]
+        w = bb_px["w_max"] - bb_px["w_min"]
+        self.chw = {"h": bb_px["h_min"] + h//2, "w": bb_px["w_min"]+w//2}
 
     # todo
     # def make_frame(self, value: int = 0):

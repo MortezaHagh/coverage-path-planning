@@ -44,7 +44,7 @@ class SpaceConfigs:
         self.effective_cleaning_c = 0.8
         self.effective_cleaning_r = self.robot_radius * self.effective_cleaning_c
         #
-        self.cleaning_dist = self.ws_dist + (self.robot_radius - self.effective_cleaning_r)
+        self.uncleaned_dist = self.ws_dist + (self.robot_radius - self.effective_cleaning_r)
         # other
         self.scaler_os_search = 2
         #
@@ -54,5 +54,5 @@ class SpaceConfigs:
 if __name__ == "__main__":
     s_cfgs = SpaceConfigs()
     print("ws_r_dist", s_cfgs.ws_r_dist)
-    print("cleaning_dist", s_cfgs.cleaning_dist)
+    print("cleaning_dist", s_cfgs.uncleaned_dist)
     print("effective_cleaning_r", s_cfgs.effective_cleaning_r)

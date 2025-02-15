@@ -43,10 +43,10 @@ class DistrictData:
 
     def create_zone_rectangles(self) -> list[Rectangle]:
         height, width = self.dmd.hw
-        x1 = width//2
-        y1 = height//4
-        x2 = width//2
-        y2 = 3*height//4
+        x1 = self.dmd.chw["w"]
+        y1 = self.dmd.chw["h"] - height//4
+        x2 = self.dmd.chw["w"]
+        y2 = self.dmd.chw["h"] + height//4
         w1 = width
         h1 = height//2
         w2 = width
