@@ -2,6 +2,7 @@ import os
 import json
 import cv2 as cv
 import numpy as np
+from scripts.gui.visuals import Rectangle
 from scripts.base.map_data import MapData
 from scripts.base.my_utils import visualize_map_s
 
@@ -9,6 +10,7 @@ from scripts.base.my_utils import visualize_map_s
 class ZoneMapData:
     ind: int
     map_data: MapData
+    rectangle: Rectangle
     map_orig: np.ndarray
     map_sf_orig: np.ndarray
     map_cleaning: np.ndarray
@@ -20,6 +22,8 @@ class ZoneMapData:
 
     def __init__(self, ind: int = 0):
         self.ind = ind
+        self.map_data = None
+        self.rectangle = None
         self.map_orig = None
         self.map_sf_orig = None
         self.map_cleaning = None
@@ -34,6 +38,9 @@ class ZoneMapData:
 
     def set_map_data(self, map_data: MapData):
         self.map_data = map_data
+
+    def set_rectangle(self, rectangle: Rectangle):
+        self.rectangle = rectangle
 
     def set_map_orig(self, map_orig: np.ndarray):
         self.map_orig = map_orig
@@ -53,9 +60,6 @@ class ZoneMapData:
 
     def set_bb_px(self, bb_px: dict):
         self.bb_px = bb_px
-        h = bb_px["h_max"] - bb_px["h_min"]
-        w = bb_px["w_max"] - bb_px["w_min"]
-        self.chw = {"h": bb_px["h_min"] + h//2, "w": bb_px["w_min"]+w//2}
 
     # todo
     # def make_frame(self, value: int = 0):

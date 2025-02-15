@@ -22,6 +22,7 @@ class SpaceAnalyzer:
     bb: bounding box
     """
     map_data: MapData
+    rectangle: Rectangle
     vertices: np.ndarray
     hw_bd: dict
     fs_selected_point: tuple[float, float]
@@ -53,6 +54,7 @@ class SpaceAnalyzer:
         # inputs
         self.binary_map_0 = map_data.up_bin_map     # binary map
         self.basic_map_data = map_data
+        self.rectangle = rectangle
         self.vertices = np.array(rectangle.vertices_t, dtype=np.int32)  # district vertices
         self.__zone_map_data = None
 
@@ -157,6 +159,7 @@ class SpaceAnalyzer:
     def create_district(self) -> None:
         zone_map_data = ZoneMapData()
         zone_map_data.set_map_data(self.basic_map_data)
+        zone_map_data.set_rectangle(self.rectangle)
         zone_map_data.set_map_orig(self.map_c_orig)
         zone_map_data.set_map_ws(self.map_7_c_ws_sf_f)
         zone_map_data.set_map_sf_orig(self.map_10_c_ws_sf_f_orig)
@@ -297,9 +300,6 @@ class SpaceAnalyzer:
         hw_limits = {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
         hw_bd = self.apply_hw_limits(hw_limits)
         self.hw_bd = hw_bd
-        h = hw_bd["h_max"] - hw_bd["h_min"]
-        w = hw_bd["w_max"] - hw_bd["w_min"]
-        self.chw = {"h": h_min + h//2, "w": w_min+w//2}
 
     def crop_map(self, map_i: np.ndarray) -> np.ndarray:
         # print(f"[{self.ns}]: cropping map based on the district rectangle.")

@@ -1,4 +1,5 @@
 from copy import deepcopy
+import numpy as np
 from scripts.zone import ZoneMapData
 from scripts.gui.visuals import Rectangle
 from scripts.base.space_analyzer import SpaceAnalyzer
@@ -42,17 +43,17 @@ class DistrictData:
             zone_map_datas.append(zmd)
 
     def create_zone_rectangles(self) -> list[Rectangle]:
-        height, width = self.dmd.hw
-        x1 = self.dmd.chw["w"]
-        y1 = self.dmd.chw["h"] - height//4
-        x2 = self.dmd.chw["w"]
-        y2 = self.dmd.chw["h"] + height//4
-        w1 = width
-        h1 = height//2
-        w2 = width
-        h2 = height//2
-        data1 = {"xc": x1, "yc": y1, "rot": 0, "w": w1, "h": h1}
-        data2 = {"xc": x2, "yc": y2, "rot": 0, "w": w2, "h": h2}
+        rect = self.dmd.rectangle
+        dx1 = -np.sin(rect.rot) * (rect.height//4)
+        dy1 = np.cos(rect.rot) * (rect.height//4)
+        xc1 = rect.xc + dx1
+        yc1 = rect.yc + dy1
+        dx2 = np.sin(rect.rot) * (rect.height//4)
+        dy2 = -np.cos(rect.rot) * (rect.height//4)
+        xc2 = rect.xc + dx2
+        yc2 = rect.yc + dy2
+        data1 = {"xc": xc1, "yc": yc1, "rot": rect.rot, "w": rect.width, "h": rect.height//2}
+        data2 = {"xc": xc2, "yc": yc2, "rot": rect.rot, "w": rect.width, "h": rect.height//2}
         rect1 = Rectangle(data1)
         rect2 = Rectangle(data2)
         return [rect1, rect2]
