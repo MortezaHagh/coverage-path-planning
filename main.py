@@ -1,4 +1,5 @@
 """ Main function to run the program """
+import sys
 import numpy as np
 from scripts.base.configs import BConfigs
 from scripts.base.map_data import MapData
@@ -7,13 +8,19 @@ from scripts.base.inputs_processor import InputsProcessor
 from scripts.base.image_processor import MapImageProcessor
 from scripts.gui.create_district import DistrictGen
 from scripts.base.space_analyzer import SpaceAnalyzer
-from scripts.district import DistrictData
+from scripts.district.district import DistrictData
 
 
 def main():
     ns = "main"
+    if len(sys.argv) < 2:
+        print(f"[{ns}] Usage: python main.py <map_name>")
+        map_name = "Map1"
+    else:
+        map_name = sys.argv[1]
+
     #  process inputs: configs and map
-    inp_processor = InputsProcessor("Map1")
+    inp_processor = InputsProcessor(map_name)
     orig_map: np.ndarray = inp_processor.orig_map
     b_configs: BConfigs = inp_processor.configs
 

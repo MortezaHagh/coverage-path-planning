@@ -1,3 +1,4 @@
+import copy
 import cv2 as cv
 import numpy as np
 from shapely.affinity import rotate
@@ -9,6 +10,7 @@ class Rectangle:
     """ Rectangle class
     """
     rid: int = 0
+    data: dict
     bbox: box
     vertices_t: tuple
     vertices_a: np.ndarray
@@ -36,6 +38,7 @@ class Rectangle:
                 raise f"[{self.ns}]:  input data is None"
 
         #
+        self.__data = data
         self.width = w
         self.height = h
         self.xc = xc
@@ -67,6 +70,10 @@ class Rectangle:
         self.rot_point: tuple[int, int] = None
         self.up_all_points()
 
+    @property
+    def data(self) -> dict:
+        return copy.copy(self.__data)
+
     def update_data(self):
         #
         xc = self.xc
@@ -74,6 +81,7 @@ class Rectangle:
         w = self.width
         h = self.height
         self.cp = (xc, yc)
+        self.__data = {"xc": xc, "yc": yc, "rot": self.rot, "w": w, "h": h}
         # cp_i
         self.xc_i = np.abs(xc).astype(int)
         self.yc_i = np.abs(yc).astype(int)

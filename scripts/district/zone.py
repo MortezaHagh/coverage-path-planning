@@ -18,7 +18,8 @@ class ZoneMapData:
     map_viz: np.ndarray
     hw: tuple[int, int]
     bb_px: dict
-    chw: dict
+    vertices: np.ndarray
+    rect_data: dict
 
     def __init__(self, ind: int = 0):
         self.ind = ind
@@ -31,7 +32,8 @@ class ZoneMapData:
         self.map_viz = None
         self.hw = None
         self.bb_px = None
-        self.chw = None
+        self.vertices = None
+        self.rect_data = None
 
     def set_ind(self, ind: int):
         self.ind = ind
@@ -60,6 +62,12 @@ class ZoneMapData:
 
     def set_bb_px(self, bb_px: dict):
         self.bb_px = bb_px
+
+    def set_vertices(self, vertices: np.ndarray):
+        self.vertices = vertices
+
+    def set_rect_data(self, rect_data: dict):
+        self.rect_data = rect_data
 
     # todo
     # def make_frame(self, value: int = 0):

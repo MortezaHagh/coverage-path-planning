@@ -1,5 +1,5 @@
 from scripts.base.configs import SpaceConfigs  # BConfigs
-from scripts.district import District
+from scripts.district.district import District
 
 
 class WF:

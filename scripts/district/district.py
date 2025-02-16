@@ -1,7 +1,7 @@
 from copy import deepcopy
 import numpy as np
-from scripts.zone import ZoneMapData
 from scripts.gui.visuals import Rectangle
+from scripts.district.zone import ZoneMapData
 from scripts.base.space_analyzer import SpaceAnalyzer
 # from scripts.base.my_utils import visualize_map_s
 
