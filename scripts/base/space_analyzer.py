@@ -27,8 +27,8 @@ class SpaceAnalyzer:
     vertices: np.ndarray
     hw_bd: dict
     hw_bd_local: dict
-    final_rect_data: dict
-    final_vertices = np.ndarray
+    final_rect_data: dict  # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+    final_vertices = np.ndarray  # vertices: [(x, y), ...]
     fs_selected_point: tuple[float, float]
     binary_map: np.ndarray              # original base binary map
     cropped_mask: np.ndarray            # mask for cropped map
@@ -108,8 +108,8 @@ class SpaceAnalyzer:
 
         # free space bounding box
         rect = self.get_final_freespace_rect(self.map_10_c_ws_sf_f_orig)
-        self.final_rect_data = rect["rect_data"]
-        self.final_vertices = rect["vertices"]
+        self.final_rect_data = rect["rect_data"]  # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        self.final_vertices = rect["vertices"]  # vertices: [(x, y), ...]
 
         # final map visualization
         self.map_viz = self.final_space_data()
@@ -193,8 +193,10 @@ class SpaceAnalyzer:
         map_dilated = cv.dilate(map_i, kernel)
         map_dilated = np.where(map_dilated > 0, 255, 0).astype(np.uint8)
         rect = self.find_bounding_rect(map_dilated)
-        # {"vertices": vertices, "rect_data": data}
         # bbd = self.apply_hw_limits(bbd) # todo todel
+        # {"vertices": vertices, "rect_data": data}
+        # vertices: [(x, y), ...]
+        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
         return rect
 
     def remove_islands(self, map_i: np.ndarray) -> np.ndarray:
@@ -413,9 +415,11 @@ class SpaceAnalyzer:
         # Combine all contours to get the minimum area rectangle
         all_points = np.vstack(contours)
         rect: tuple = cv.minAreaRect(all_points)  # rect = (center, (width, height), angle)
-        data = {"xc": rect[0][0], "yc": rect[0][1], "rot": rect[2], "w": rect[1][0], "h": rect[1][1]}
+        data = {"xc": rect[0][0], "yc": rect[0][1], "rot": np.deg2rad(rect[2]), "w": rect[1][0], "h": rect[1][1]}
         vertices: np.ndarray = cv.boxPoints(rect)
         vertices = np.int32(vertices)
+        # vertices: [(x, y), ...]
+        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
         return {"vertices": vertices, "rect_data": data}
 
     def add_rectangle(self, map_i: np.ndarray, vertices: np.ndarray, color=None, thickness: int = 6) -> np.ndarray:

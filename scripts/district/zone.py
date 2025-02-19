@@ -1,5 +1,6 @@
 import os
 import json
+import copy
 import cv2 as cv
 import numpy as np
 from scripts.gui.visuals import Rectangle
@@ -18,8 +19,8 @@ class ZoneMapData:
     map_viz: np.ndarray
     hw: tuple[int, int]
     bb_px: dict
-    vertices: np.ndarray
-    rect_data: dict
+    vertices: np.ndarray  # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+    _rect_data: dict  # vertices: [(x, y), ...]
 
     def __init__(self, ind: int = 0):
         self.ind = ind
@@ -33,7 +34,11 @@ class ZoneMapData:
         self.hw = None
         self.bb_px = None
         self.vertices = None
-        self.rect_data = None
+        self._rect_data = None
+
+    @property
+    def rect_data(self) -> int:
+        return copy.copy(self._rect_data)
 
     def set_ind(self, ind: int):
         self.ind = ind
@@ -64,10 +69,12 @@ class ZoneMapData:
         self.bb_px = bb_px
 
     def set_vertices(self, vertices: np.ndarray):
+        # vertices: [(x, y), ...]
         self.vertices = vertices
 
-    def set_rect_data(self, rect_data: dict):
-        self.rect_data = rect_data
+    def set_rect_data(self, rect_data_t: dict):
+        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        self._rect_data = rect_data_t
 
     # todo
     # def make_frame(self, value: int = 0):

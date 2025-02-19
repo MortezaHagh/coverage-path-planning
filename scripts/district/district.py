@@ -25,7 +25,7 @@ class DistrictData:
         # # zones
         zone_map_datas: list[ZoneMapData] = []
         # create zones rectangles
-        zone_rectangles: list[Rectangle] = self.create_zone_rectangles()
+        zone_rectangles: list[Rectangle] = self.create_zone_rectangles_2()
         # create zone ws maps
         for i, zr in enumerate(zone_rectangles):
             # create zone map data
@@ -42,7 +42,7 @@ class DistrictData:
             # append zone map data
             zone_map_datas.append(zmd)
 
-    def create_zone_rectangles(self) -> list[Rectangle]:
+    def create_zone_rectangles_1(self) -> list[Rectangle]:
         rect = self.dmd.rectangle
         dx1 = -np.sin(rect.rot) * (rect.height//4)
         dy1 = np.cos(rect.rot) * (rect.height//4)
@@ -54,6 +54,25 @@ class DistrictData:
         yc2 = rect.yc + dy2
         data1 = {"xc": xc1, "yc": yc1, "rot": rect.rot, "w": rect.width, "h": rect.height//2}
         data2 = {"xc": xc2, "yc": yc2, "rot": rect.rot, "w": rect.width, "h": rect.height//2}
+        rect1 = Rectangle(data1)
+        rect2 = Rectangle(data2)
+        return [rect1, rect2]
+
+    def create_zone_rectangles_2(self) -> list[Rectangle]:
+        data = self.dmd.rect_data
+        h = data["h"]
+        w = data["w"]
+        rot = data["rot"]
+        dx1 = -np.sin(rot) * (h//4)
+        dy1 = np.cos(rot) * (h//4)
+        xc1 = data["xc"] + dx1
+        yc1 = data["yc"] + dy1
+        dx2 = np.sin(rot) * (h//4)
+        dy2 = -np.cos(rot) * (h//4)
+        xc2 = data["xc"] + dx2
+        yc2 = data["yc"] + dy2
+        data1 = {"xc": xc1, "yc": yc1, "rot": rot, "w": w, "h": h//2}
+        data2 = {"xc": xc2, "yc": yc2, "rot": rot, "w": w, "h": h//2}
         rect1 = Rectangle(data1)
         rect2 = Rectangle(data2)
         return [rect1, rect2]
