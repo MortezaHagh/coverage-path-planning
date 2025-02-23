@@ -58,7 +58,7 @@ class DistrictGen:
         cv.namedWindow(self.__wind_name, cv.WINDOW_GUI_NORMAL)
 
     def key_listener(self, handler: RecEventHandler):
-        with Listener(on_press=handler.on_press, on_release=handler.on_release) as listener:
+        with Listener(on_press=handler.on_key_press, on_release=handler.on_key_release) as listener:
             listener.join()
 
     def get_district_vis(self) -> VisualRectangle:

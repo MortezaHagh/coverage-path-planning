@@ -18,7 +18,7 @@ class DistrictData:
         self.dmd.visualize()
 
         # save district data
-        base_path = self.dmd.map_data.bcfg.district_folder
+        base_path = self.dmd.orig_map_data.bcfg.district_folder
         district_path = base_path + "/District"
         self.dmd.save_data(district_path)
 

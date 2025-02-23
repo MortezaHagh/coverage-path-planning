@@ -5,7 +5,7 @@ from scripts.gui.visuals import VisualRectangle
 
 
 class RecEventHandler:
-    img: np.ndarray
+    __map_img: np.ndarray
     main_obj: VisualRectangle
     objects: list[VisualRectangle]
     #
@@ -137,7 +137,7 @@ class RecEventHandler:
         else:
             self.selected_ind = None
 
-    def on_press(self, key):
+    def on_key_press(self, key):
         if key == Key.ctrl:
             self.__ctrl_down = True
         elif key == Key.esc or key == Key.enter:
@@ -146,7 +146,7 @@ class RecEventHandler:
         if key == Key.ctrl:
             print(f"[{self.__ns}]: crtls key is down")
 
-    def on_release(self, key):
+    def on_key_release(self, key):
         if key == Key.esc or key == Key.enter:
             return False
 

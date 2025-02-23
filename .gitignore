@@ -5,3 +5,4 @@ __pycache__/
 coverage_path_planning/
 venv/
 todo
+*.png

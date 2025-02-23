@@ -8,24 +8,33 @@ from scripts.base.map_data import MapData
 from scripts.base.my_utils import visualize_map_s
 
 
+def convert_to_native(data: dict) -> dict:
+    return {k: int(v) if isinstance(v, (np.integer, int))
+            else float(round(v, 2)) if isinstance(v, (np.floating, float))
+            else v
+            for k, v in data.items()}
+
+
 class ZoneMapData:
     ind: int
-    map_data: MapData
-    rectangle: Rectangle
+    orig_map_data: MapData
+    orig_rectangle: Rectangle
+    rect_data: dict
     map_orig: np.ndarray
     map_sf_orig: np.ndarray
     map_cleaning: np.ndarray
     map_ws: np.ndarray
     map_viz: np.ndarray
     hw: tuple[int, int]
-    bb_px: dict
-    vertices: np.ndarray  # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-    _rect_data: dict  # vertices: [(x, y), ...]
+    bb_px: dict                   # {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
+    final_vertices: np.ndarray    # vertices: [(x, y), ...]
+    _final_rect_data: dict        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
 
     def __init__(self, ind: int = 0):
         self.ind = ind
-        self.map_data = None
-        self.rectangle = None
+        self.orig_map_data = None
+        self.orig_rectangle = None
+        self.rect_data = None
         self.map_orig = None
         self.map_sf_orig = None
         self.map_cleaning = None
@@ -33,21 +42,25 @@ class ZoneMapData:
         self.map_viz = None
         self.hw = None
         self.bb_px = None
-        self.vertices = None
-        self._rect_data = None
+        self.final_vertices = None
+        self._final_rect_data = None
 
     @property
-    def rect_data(self) -> int:
-        return copy.copy(self._rect_data)
+    def final_rect_data(self) -> int:
+        return copy.copy(self._final_rect_data)
 
     def set_ind(self, ind: int):
         self.ind = ind
 
-    def set_map_data(self, map_data: MapData):
-        self.map_data = map_data
+    def set_orig_map_data(self, map_data: MapData):
+        self.orig_map_data = map_data
 
-    def set_rectangle(self, rectangle: Rectangle):
-        self.rectangle = rectangle
+    def set_orig_rectangle(self, rectangle: Rectangle):
+        self.orig_rectangle = rectangle
+
+    def set_rect_data(self, rect_data_t: dict):
+        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        self.rect_data = rect_data_t
 
     def set_map_orig(self, map_orig: np.ndarray):
         self.map_orig = map_orig
@@ -68,24 +81,16 @@ class ZoneMapData:
     def set_bb_px(self, bb_px: dict):
         self.bb_px = bb_px
 
-    def set_vertices(self, vertices: np.ndarray):
+    def set_final_vertices(self, vertices: np.ndarray):
         # vertices: [(x, y), ...]
-        self.vertices = vertices
+        self.final_vertices = vertices
 
-    def set_rect_data(self, rect_data_t: dict):
+    def set_final_rect_data(self, rect_data_t: dict):
         # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-        self._rect_data = rect_data_t
-
-    # todo
-    # def make_frame(self, value: int = 0):
-    #     """ make frame of the map_cleaning as value (default = 0) """
-    #     self.map_cleaning[:, 0] = value
-    #     self.map_cleaning[:, -1] = value
-    #     self.map_cleaning[0, :] = value
-    #     self.map_cleaning[-1, :] = value
+        self._final_rect_data = rect_data_t
 
     def save_data(self, path: str) -> None:
-        res_path = os.path.join(self.map_data.bcfg.map_path, path)
+        res_path = os.path.join(self.orig_map_data.bcfg.map_path, path)
         os.makedirs(res_path, exist_ok=True)
         #
         cv.imwrite(res_path + "/" + "local_map_1_orig.png", self.map_orig)
@@ -93,9 +98,13 @@ class ZoneMapData:
         cv.imwrite(res_path + "/" + "local_map_3_cleaning.png", self.map_cleaning)
         cv.imwrite(res_path + "/" + "local_map_4_viz.png", self.map_viz)
         #
-        zone_map_data = {"coords_px": self.bb_px}
-        zone_map_data["up_resolution"] = self.map_data.up_resolution
-        zone_map_data["origin_m"] = self.map_data.origin_m
+        zone_map_data = dict()
+        zone_map_data["origin_m"] = self.orig_map_data.origin_m
+        zone_map_data["up_resolution"] = self.orig_map_data.up_resolution
+        zone_map_data["bb_px"] = self.bb_px
+        zone_map_data["rect_data"] = convert_to_native(self.rect_data)
+        zone_map_data["final_rect_data"] = convert_to_native(self.final_rect_data)
+
         with open(res_path + "/" + "local_map.json", "w") as f:
             json_object = json.dumps(zone_map_data, indent=4)
             f.write(json_object)

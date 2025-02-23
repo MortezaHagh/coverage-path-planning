@@ -69,7 +69,7 @@ class MapData:
 
     def set_resolution(self, res):
         self.resolution = res
-        self.up_resolution = self.resolution / self.zoom
+        self.up_resolution = round(self.resolution / self.zoom, 4)
 
     def set_bin_map(self, bin_map):
         self.orig_bin_map = bin_map
@@ -134,7 +134,7 @@ class MapData:
         my = (y - self.up_c_h // 2) + self.orig_c_h
         return (mx, my)
 
-    def convert_map_to_world(self, p_m: tuple[int, int]) -> tuple[float, float]:
+    def convert_map_to_world(self, p_m: tuple[int, int]) -> tuple[float, float]:  # todo todel
         """[x, y] [w, h] from map (pixels) to world (meters)"""
         p_w_0 = p_m[0] * self.up_resolution + self.orig_w
         p_w_1 = p_m[1] * self.up_resolution + self.orig_h
