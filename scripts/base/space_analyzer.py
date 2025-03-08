@@ -120,7 +120,7 @@ class SpaceAnalyzer:
         self.map_viz = self.final_space_data()
 
         # create district object
-        self.create_district()
+        self.create_zone_map_data()
 
     def create_local_map_ws_selection(self) -> None:
 
@@ -171,9 +171,9 @@ class SpaceAnalyzer:
         self.map_viz = self.final_space_data()
 
         # create district object
-        self.create_district()
+        self.create_zone_map_data()
 
-    def create_district(self) -> None:
+    def create_zone_map_data(self) -> None:
         zone_map_data = ZoneMapData()
         zone_map_data.set_orig_map_data(self.orig_map_data)
         zone_map_data.set_orig_rectangle(self.orig_rectangle)
@@ -199,7 +199,6 @@ class SpaceAnalyzer:
         map_dilated = cv.dilate(map_i, kernel)
         map_dilated = np.where(map_dilated > 0, 255, 0).astype(np.uint8)
         local_rect = self.find_bounding_rect(map_dilated)
-        # bbd = self.apply_hw_limits(bbd) # todo todel
         # {"vertices": vertices, "rect_data": data}
         # vertices: [(x, y), ...]
         # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
@@ -386,13 +385,14 @@ class SpaceAnalyzer:
             self.is_fs_point_selected = True
 
     def dilate_erode_map(self, map_i: np.ndarray, radius_m: float, erode: False) -> tuple[np.ndarray, np.ndarray]:
-        radius_px = int(np.ceil(radius_m / self.orig_map_data.up_resolution))
+        radius_px = int(radius_m / self.orig_map_data.up_resolution)
         kernel_size = 2*radius_px + 1
         kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (kernel_size, kernel_size))
+        # kernel = np.ones((kernel_size, kernel_size), np.uint8)
         if erode:
-            map_dilated = cv.erode(map_i, kernel)
+            map_dilated = cv.erode(map_i, kernel, iterations=1)
         else:
-            map_dilated = cv.dilate(map_i, kernel)
+            map_dilated = cv.dilate(map_i, kernel, iterations=1)
         map_dilated = np.where(map_dilated > 0, 255, 0).astype(np.uint8)
         # new_occupied_area = cv.subtract(map_i, map_dilated)
         # occ_new_added_inds = new_occupied_area == FREE_COST
@@ -428,7 +428,11 @@ class SpaceAnalyzer:
         # Combine all contours to get the minimum area rectangle
         all_points = np.vstack(contours)
         rect: tuple = cv.minAreaRect(all_points)  # rect = (center, (width, height), angle)
-        data = {"xc": rect[0][0], "yc": rect[0][1], "rot": np.deg2rad(rect[2]), "w": rect[1][0], "h": rect[1][1]}
+        xc = int(rect[0][0])
+        yc = int(rect[0][1])
+        w = int(rect[1][0])
+        h = int(rect[1][1])
+        data = {"xc": xc, "yc": yc, "rot": np.deg2rad(rect[2]), "w": w, "h": h}
         vertices: np.ndarray = cv.boxPoints(rect)
         vertices = np.int32(vertices)
         # vertices: [(x, y), ...]
@@ -465,7 +469,7 @@ class SpaceAnalyzer:
         infeasible_area_inds = infeasible_area == FREE_COST
 
         #
-        uncleanind_area = cv.subtract(self.map_3_c_dilated_cleaning, self.map_4_c_dilated_ws)
+        uncleanind_area = cv.subtract(self.map_c_orig, self.map_3_c_dilated_cleaning)
         uncleanind_area_inds = uncleanind_area == FREE_COST
 
         # inaccessible (but free)
@@ -481,7 +485,7 @@ class SpaceAnalyzer:
         # map_viz[occ_cropped_inds] = [0, 0, 0]
         map_viz[free_selected_inds] = [250, 250, 250]
         map_viz[infeasible_area_inds] = [250, 0, 0]
-        map_viz[uncleanind_area_inds] = [0, 250, 0]
+        map_viz[uncleanind_area_inds] = [0, 200, 0]
         map_viz[inaccessible_area_inds] = [250, 250, 0]
 
         #
@@ -504,15 +508,19 @@ class SpaceAnalyzer:
             map_main_viz = map_viz
 
         # vis robot
-        sh = 17
+        sh_x = 130
+        sh_y = 25
         alpha = 0.5
         shape_main_viz = self.binary_map_0.shape
-        pose = (shape_main_viz[1]//2 - sh, shape_main_viz[0]//2 + sh)
+        pose = (shape_main_viz[1]//2+sh_x - sh_y, shape_main_viz[0]//2 + sh_y)
         radius_px_1 = int(np.ceil(self.scfg.ws_r_dist / self.orig_map_data.up_resolution))
-        radius_px_2 = int(np.ceil(self.scfg.effective_cleaning_r / self.orig_map_data.up_resolution))
+        radius_px_2 = int(np.ceil(self.scfg.robot_radius / self.orig_map_data.up_resolution))
+        radius_px_3 = int(np.ceil(self.scfg.effective_cleaning_r / self.orig_map_data.up_resolution))
         overlay = map_main_viz.copy()
         cv.circle(overlay, pose, radius_px_1, [0, 250, 0], -1)
         cv.circle(overlay, pose, radius_px_2, [0, 0, 250], -1)
+        cv.circle(overlay, pose, radius_px_3, [250, 100, 0], -1)
+        cv.circle(overlay, pose, 5, [250, 250, 250], -1)
         map_main_viz = cv.addWeighted(overlay, alpha, map_main_viz, 1 - alpha, 0)
 
         #

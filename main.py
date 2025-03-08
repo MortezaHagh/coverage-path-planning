@@ -32,11 +32,13 @@ def main():
     district_g = DistrictGen(map_data=map_data)
     district_rect: Rectangle = district_g.get_district_rect()
 
-    # Process Space - Initialize District
+    # Process Space - Initialize District and Zone maps
     spa = SpaceAnalyzer(map_data=map_data, rectangle=district_rect)
     spa.create_local_map_ws_selection()
     DistrictData(spa)
-    print(f"[{ns}]: zone_map.hw:", spa.zone_map_data.hw)
+
+    #
+    print(f"[{ns}]: resolution:", spa.orig_map_data.up_resolution)
 
 
 if __name__ == "__main__":

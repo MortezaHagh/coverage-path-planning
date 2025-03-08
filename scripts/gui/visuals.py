@@ -35,7 +35,7 @@ class Rectangle:
         h = data["h"]
         for v in data.values():
             if v is None:
-                raise f"[{self.ns}]:  input data is None"
+                raise ValueError(f"[{self.ns}]:  input data is None")
 
         #
         self.__data = data
@@ -86,6 +86,7 @@ class Rectangle:
         self.xc_i = np.abs(xc).astype(int)
         self.yc_i = np.abs(yc).astype(int)
         self.cp_i = (self.xc_i, self.yc_i)
+        # self.__data = {"xc": self.xc_i, "yc": self.yc_i, "rot": self.rot, "w": w, "h": h}
         # create box
         bbox = box(xc - w / 2, yc - h / 2, xc + w / 2, yc + h / 2)
         rotated_bbox = rotate(bbox, np.rad2deg(self.rot), origin='center')
@@ -105,13 +106,13 @@ class Rectangle:
     def up_rotation_point(self):
         xr = 0
         yr = - self.height / 2
-        self.rot_point = self.rotate_point_i(xr, yr, self.rot)
+        self.rot_point = self.rotate_point_t(xr, yr, self.rot)
 
     def up_4_points(self):
-        tl = self.rotate_point_i(-self.width / 2, -self.height / 2, self.rot)
-        br = self.rotate_point_i(self.width / 2, self.height / 2, self.rot)
-        tr = self.rotate_point_i(self.width / 2, -self.height / 2, self.rot)
-        bl = self.rotate_point_i(-self.width / 2, self.height / 2, self.rot)
+        tl = self.rotate_point_t(-self.width / 2, -self.height / 2, self.rot)
+        br = self.rotate_point_t(self.width / 2, self.height / 2, self.rot)
+        tr = self.rotate_point_t(self.width / 2, -self.height / 2, self.rot)
+        bl = self.rotate_point_t(-self.width / 2, self.height / 2, self.rot)
         self.tl = tl
         self.br = br
         self.tr = tr
@@ -130,7 +131,7 @@ class Rectangle:
         y_r = x * np.sin(rotation) + y * np.cos(rotation)
         return np.array([x_r + self.xc, y_r + self.yc], dtype=np.int32)
 
-    def rotate_point_i(self, dx, dy, rotation):
+    def rotate_point_t(self, dx, dy, rotation):
         xy = self.rotate_point(dx, dy, rotation)
         return tuple(xy.tolist())
 
@@ -234,8 +235,8 @@ class VisualRectangle(Rectangle):
         self.update_data()
 
     def drag_top_left(self, x, y):
-        self.xc = (x + self.br[0]) / 2
-        self.yc = (y + self.br[1]) / 2
+        self.xc = int((x + self.br[0]) / 2)
+        self.yc = int((y + self.br[1]) / 2)
         tl = self.rotate_point_v2(x, y, -self.rot)
         br = self.rotate_point_v2(self.br[0], self.br[1], -self.rot)
         self.width = br[0] - tl[0]
@@ -243,8 +244,8 @@ class VisualRectangle(Rectangle):
         self.update_data()
 
     def drag_top_right(self, x, y):
-        self.xc = (x + self.bl[0]) / 2
-        self.yc = (y + self.bl[1]) / 2
+        self.xc = int((x + self.bl[0]) / 2)
+        self.yc = int((y + self.bl[1]) / 2)
         tr = self.rotate_point_v2(x, y, -self.rot)
         bl = self.rotate_point_v2(self.bl[0], self.bl[1], -self.rot)
         self.width = tr[0] - bl[0]
@@ -252,8 +253,8 @@ class VisualRectangle(Rectangle):
         self.update_data()
 
     def drag_bottom_left(self, x, y):
-        self.xc = (x + self.tr[0]) / 2
-        self.yc = (y + self.tr[1]) / 2
+        self.xc = int((x + self.tr[0]) / 2)
+        self.yc = int((y + self.tr[1]) / 2)
         bl = self.rotate_point_v2(x, y, -self.rot)
         tr = self.rotate_point_v2(self.tr[0], self.tr[1], -self.rot)
         self.width = tr[0] - bl[0]
@@ -261,8 +262,8 @@ class VisualRectangle(Rectangle):
         self.update_data()
 
     def drag_bottom_right(self, x, y):
-        self.xc = (x + self.tl[0]) / 2
-        self.yc = (y + self.tl[1]) / 2
+        self.xc = int((x + self.tl[0]) / 2)
+        self.yc = int((y + self.tl[1]) / 2)
         br = self.rotate_point_v2(x, y, -self.rot)
         tl = self.rotate_point_v2(self.tl[0], self.tl[1], -self.rot)
         self.width = br[0] - tl[0]
