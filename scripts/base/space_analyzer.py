@@ -48,7 +48,7 @@ class SpaceAnalyzer:
 
     def __init__(self, map_data: MapData, rectangle: Rectangle):
         self.ns = "SpaceAnalyzer"
-        print(f"[{self.ns}]: Analyzing space for creating free space [local map].")
+        print(f"[{self.ns}]: Step: Analyzing space for creating free space [local map]")
 
         # configs
         self.scfg = SpaceConfigs()
@@ -172,6 +172,7 @@ class SpaceAnalyzer:
 
         # create district object
         self.create_zone_map_data()
+        print(f"[{self.ns}]: ----------------------------------------------- ")
 
     def create_zone_map_data(self) -> None:
         zone_map_data = ZoneMapData()

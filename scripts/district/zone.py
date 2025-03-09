@@ -19,16 +19,16 @@ class ZoneMapData:
     ind: int
     orig_map_data: MapData
     orig_rectangle: Rectangle
-    rect_data: dict
+    rect_data: dict               # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+    bb_px: dict                   # {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
+    final_vertices: np.ndarray    # vertices: [(x, y), ...]
+    _final_rect_data: dict        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+    hw: tuple[int, int]
     map_orig: np.ndarray
     map_sf_orig: np.ndarray
     map_cleaning: np.ndarray
     map_ws: np.ndarray
     map_viz: np.ndarray
-    hw: tuple[int, int]
-    bb_px: dict                   # {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
-    final_vertices: np.ndarray    # vertices: [(x, y), ...]
-    _final_rect_data: dict        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
 
     def __init__(self, ind: int = 0):
         self.ind = ind
@@ -79,6 +79,7 @@ class ZoneMapData:
         self.map_viz = map_viz
 
     def set_bb_px(self, bb_px: dict):
+        # cropped hw limits
         self.bb_px = bb_px
 
     def set_final_vertices(self, vertices: np.ndarray):

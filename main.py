@@ -9,6 +9,7 @@ from scripts.base.image_processor import MapImageProcessor
 from scripts.gui.create_district import DistrictGen
 from scripts.base.space_analyzer import SpaceAnalyzer
 from scripts.district.district import DistrictData
+from scripts.district.coverage_path_planning import CPPSimple
 
 
 def main():
@@ -32,10 +33,16 @@ def main():
     district_g = DistrictGen(map_data=map_data)
     district_rect: Rectangle = district_g.get_district_rect()
 
-    # Process Space - Initialize District and Zone maps
+    # Process Space - Initialize District Map Data
     spa = SpaceAnalyzer(map_data=map_data, rectangle=district_rect)
     spa.create_local_map_ws_selection()
-    DistrictData(spa)
+
+    # Create District Data and Zone Map Data
+    district_data = DistrictData(spa)
+    district_data.create_zones()
+
+    # coverage path planning
+    CPPSimple(district_data)
 
     #
     print(f"[{ns}]: resolution:", spa.orig_map_data.up_resolution)

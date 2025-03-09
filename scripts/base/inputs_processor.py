@@ -23,7 +23,7 @@ class InputsProcessor:
         self.__configs = BConfigs()
         self.__orig_map = None
         self.paths["data"] = "/home/morteza/Documents/00-CPP/00-CPP/Data"
-        print(f"[{self.ns}]: processing inputs.")
+        print(f"[{self.ns}]: Step: processing inputs")
         print(f"[{self.ns}]: map name: {map_name}")
 
         # define paths

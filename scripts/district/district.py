@@ -8,19 +8,24 @@ from scripts.base.space_analyzer import SpaceAnalyzer
 
 class ZoneData:
     zone_map_data: ZoneMapData
+    path: list[tuple[int, int]]
 
     def __init__(self):
         self.zone_map_data = None
+        self.path = None
 
 
 class DistrictData:
-    dmd: ZoneMapData  # district_map_data
+    spa_obj: SpaceAnalyzer      # space_analyzer
+    dmd: ZoneMapData            # district_map_data
+    zone_datas: list[ZoneData]  # zones
 
     def __init__(self, spa: SpaceAnalyzer):
         self.ns = "DistrictData"
+        print(f"[{self.ns}]: Step: creating district data")
 
         # main district map data
-        print(f"[{self.ns}]: creating district data")
+        self.spa_obj = spa
         self.dmd = spa.zone_map_data
         self.dmd.visualize()
 
@@ -29,27 +34,33 @@ class DistrictData:
         district_path = base_path + "/District"
         self.dmd.save_data(district_path)
 
-        # # zones
-        zone_datas: list[ZoneData] = []
+        # create zones
+        self.zone_datas: list[ZoneData] = []
+        # self.create_zones()
+
+    def create_zones(self):
+        print(f"[{self.ns}]: Step: creating zone map data")
         # create zones rectangles
         zone_rectangles: list[Rectangle] = self.create_zone_rectangles_2()
         # create zone ws maps
         for i, zr in enumerate(zone_rectangles):
             # create zone map data
             print(f"[{self.ns}]: creating map data for zone [{i}]")
-            z_spa = deepcopy(spa)
+            z_spa: SpaceAnalyzer = deepcopy(self.spa_obj)
             z_spa.update_by_rectangle(zr)
             zmd = z_spa.zone_map_data  # zone_map_data
             zmd.set_ind(i)
 
             # save zone data
+            base_path = self.dmd.orig_map_data.bcfg.district_folder
             zone_path = base_path + f"/Zone_{i}"
             zmd.save_data(zone_path)
 
             # append zone map data
             zd = ZoneData()
             zd.zone_map_data = zmd
-            zone_datas.append(zd)
+            self.zone_datas.append(zd)
+        print(f"[{self.ns}]: ----------------------------------------------- ")
 
     def create_zone_rectangles_1(self) -> list[Rectangle]:
         rect = self.dmd.rectangle
@@ -85,9 +96,3 @@ class DistrictData:
         rect1 = Rectangle(data1)
         rect2 = Rectangle(data2)
         return [rect1, rect2]
-
-    # TODO:
-    # get zones rectangles
-    # get zones map data
-    # apply wf path on zones
-    # apply cpp on zones
