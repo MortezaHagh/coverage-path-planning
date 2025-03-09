@@ -1,5 +1,5 @@
 # from scripts.base.configs import SpaceConfigs  # BConfigs
-from scripts.district.district import DistrictData
+from scripts.district.district import DistrictData, ZoneData
 
 
 class CPPSimple:
@@ -11,11 +11,14 @@ class CPPSimple:
 
         #
         self.district = district
+        self.cpp_simple()
 
     def cpp_simple(self):
         print(f"[{self.ns}]: coverage path planning")
-        # for each zone
-        for i, zd in enumerate(self.district.zone_datas):
-            print(f"[{self.ns}]: zone [{i}]")
-            # path planning
+
+        # for each zone # list[ZoneData]
+        for zd in self.district.zone_datas:
             self.zone_cpp(zd)
+
+    def zone_cpp(self, zd: ZoneData):
+        print(f"[{self.ns}]: cpp for zone [{zd.zone_map_data.ind}]")

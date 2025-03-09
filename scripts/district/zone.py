@@ -35,15 +35,15 @@ class ZoneMapData:
         self.orig_map_data = None
         self.orig_rectangle = None
         self.rect_data = None
+        self.bb_px = None
+        self.final_vertices = None
+        self._final_rect_data = None
+        self.hw = None
         self.map_orig = None
         self.map_sf_orig = None
         self.map_cleaning = None
         self.map_ws = None
         self.map_viz = None
-        self.hw = None
-        self.bb_px = None
-        self.final_vertices = None
-        self._final_rect_data = None
 
     @property
     def final_rect_data(self) -> int:

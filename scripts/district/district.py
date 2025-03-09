@@ -63,17 +63,20 @@ class DistrictData:
         print(f"[{self.ns}]: ----------------------------------------------- ")
 
     def create_zone_rectangles_1(self) -> list[Rectangle]:
-        rect = self.dmd.rectangle
-        dx1 = -np.sin(rect.rot) * (rect.height//4)
-        dy1 = np.cos(rect.rot) * (rect.height//4)
-        xc1 = int(rect.xc + dx1)
-        yc1 = int(rect.yc + dy1)
-        dx2 = np.sin(rect.rot) * (rect.height//4)
-        dy2 = -np.cos(rect.rot) * (rect.height//4)
-        xc2 = int(rect.xc + dx2)
-        yc2 = int(rect.yc + dy2)
-        data1 = {"xc": xc1, "yc": yc1, "rot": rect.rot, "w": rect.width, "h": rect.height//2}
-        data2 = {"xc": xc2, "yc": yc2, "rot": rect.rot, "w": rect.width, "h": rect.height//2}
+        data = self.dmd.rect_data
+        h = data["h"]
+        w = data["w"]
+        rot = data["rot"]
+        dx1 = -np.sin(rot) * (h//4)
+        dy1 = np.cos(rot) * (h//4)
+        xc1 = int(data["xc"] + dx1)
+        yc1 = int(data["yc"] + dy1)
+        dx2 = np.sin(rot) * (h//4)
+        dy2 = -np.cos(rot) * (h//4)
+        xc2 = int(data["xc"] + dx2)
+        yc2 = int(data["yc"] + dy2)
+        data1 = {"xc": xc1, "yc": yc1, "rot": rot, "w": w, "h": h//2}
+        data2 = {"xc": xc2, "yc": yc2, "rot": rot, "w": w, "h": h//2}
         rect1 = Rectangle(data1)
         rect2 = Rectangle(data2)
         return [rect1, rect2]
