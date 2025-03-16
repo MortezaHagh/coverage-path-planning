@@ -16,6 +16,7 @@ class BConfigs:
         self.map_name = None
         self.map_path = None
         self.data_dir = None
+        self.district_dir = None
         self.district_folder = "District"
 
 
@@ -30,8 +31,8 @@ class SpaceConfigs:
     def __init__(self):
         # robot configs
         self.robot_radius = 0.5
-        self.robot_circumscribed_r = 0.5
-        self.robot_circumscribed_d = self.robot_circumscribed_r * 2
+        # self.robot_circumscribed_r = 0.5
+        # self.robot_circumscribed_d = self.robot_circumscribed_r * 2
         # distance thresholds
         self.wf_safe_dist = 0.1  # wf distance
         self.os_safe_dist = 0.2  # safe distance of os path from obstacles
@@ -41,18 +42,24 @@ class SpaceConfigs:
         self.os_r_dist = self.robot_radius + self.os_safe_dist  # min distance of the os path from walls and obstacles
         self.ws_r_dist = self.ws_dist + self.robot_radius
         #
-        self.effective_cleaning_c = 0.8
-        self.effective_cleaning_r = self.robot_radius * self.effective_cleaning_c
-        #
-        self.uncleaned_dist = self.ws_dist + (self.robot_radius - self.effective_cleaning_r)
+        self.cleaning_c = 0.8
+        self.cleaning_r = self.robot_radius * self.cleaning_c
+        self.uncleaned_dist = self.ws_dist + (self.robot_radius - self.cleaning_r)
         # other
         self.scaler_os_search = 2
-        #
         self.black = 50
+
+
+@dataclasses.dataclass
+class PlanningConfigs:
+    def __init__(self):
+        self.min_path_overlap = 0.1
+        self.min_wp_dist = 0.4
+        self.margin = 0.2
 
 
 if __name__ == "__main__":
     s_cfgs = SpaceConfigs()
     print("ws_r_dist", s_cfgs.ws_r_dist)
     print("cleaning_dist", s_cfgs.uncleaned_dist)
-    print("effective_cleaning_r", s_cfgs.effective_cleaning_r)
+    print("cleaning_r", s_cfgs.cleaning_r)

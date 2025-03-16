@@ -59,6 +59,7 @@ class InputsProcessor:
         """ read map yaml file and update config object """
         self.__configs.map_name = self.map_name
         self.__configs.data_dir = self.paths["data"]
+        self.__configs.district_dir = self.paths["district"]
         self.__configs.map_path = self.paths["map"]
         self.__configs.origin_m = yaml_data["origin"]
         self.__configs.resolution = yaml_data["resolution"]
@@ -81,6 +82,7 @@ class InputsProcessor:
 
     def set_paths(self) -> None:
         self.paths["map"] = os.path.join(self.paths["data"], self.map_name)
+        self.paths["district"] = os.path.join(self.paths["map"], self.__configs.district_folder)
         self.paths["yaml"] = os.path.join(self.paths["map"], "merge.yaml")
         self.paths["json"] = os.path.join(self.paths["map"], "merge.json")
         self.paths["pgm"] = os.path.join(self.paths["map"], "merge.pgm")

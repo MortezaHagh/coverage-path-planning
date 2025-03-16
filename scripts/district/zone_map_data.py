@@ -1,0 +1,134 @@
+import os
+import json
+import copy
+import cv2 as cv
+import numpy as np
+from scripts.gui.visuals import Rectangle
+from scripts.base.map_data import MapData
+from scripts.base.my_utils import visualize_map_s
+
+
+def convert_to_native(data: dict) -> dict:
+    return {k: int(v) if isinstance(v, (np.integer, int))
+            else float(round(v, 2)) if isinstance(v, (np.floating, float))
+            else v
+            for k, v in data.items()}
+
+
+class ZoneMapData:
+    """ZoneMapData class to store zone map data
+        values are in pixel by default
+    """
+    ind: int
+    reslolution: float           # resolution m/px
+    orig_map_data: MapData
+    orig_rectangle: Rectangle
+    rectangle: Rectangle
+    rect_data: dict                     # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+    vertices: list[tuple[int, int]]     # vertices: [(x, y), ...]
+    hw_bd_px: dict                      # for map not rectangle {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
+    final_vertices: np.ndarray          # vertices: [(x, y), ...]
+    _final_rect_data: dict              # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+    hw_px: tuple[int, int]
+    map_orig: np.ndarray
+    map_sf_orig: np.ndarray
+    map_cleaning: np.ndarray
+    map_ws: np.ndarray
+    map_viz: np.ndarray
+
+    def __init__(self, ind: int = 0):
+        self.ind = ind
+        self.reslolution = None
+        self.orig_map_data = None
+        self.orig_rectangle = None
+        self.rectangle = None
+        self.rect_data = None
+        self.vertices = None
+        self.hw_bd_px = None
+        self.final_vertices = None
+        self._final_rect_data = None
+        self.hw_px = None
+        self.map_orig = None
+        self.map_sf_orig = None
+        self.map_cleaning = None
+        self.map_ws = None
+        self.map_viz = None
+
+    @property
+    def final_rect_data(self) -> int:
+        return copy.copy(self._final_rect_data)
+
+    def set_ind(self, ind: int):
+        self.ind = ind
+
+    def set_orig_map_data(self, map_data: MapData):
+        self.orig_map_data = map_data
+        self.reslolution = map_data.up_resolution
+
+    def set_orig_rectangle(self, rectangle: Rectangle):
+        self.orig_rectangle = rectangle
+
+    def set_rectangle(self, rectangle: Rectangle):
+        self.rectangle = rectangle
+
+    def set_rect_data(self, rect_data_t: dict, vertices: list[tuple[int, int]]):
+        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        # vertices: [(x, y), ...]
+        self.rect_data = rect_data_t
+        self.vertices = vertices
+
+    def set_map_orig(self, map_orig: np.ndarray):
+        self.map_orig = map_orig
+
+    def set_map_ws(self, map_ws: np.ndarray):
+        self.map_ws = map_ws
+
+    def set_map_sf_orig(self, map_sf_orig: np.ndarray):
+        self.map_sf_orig = map_sf_orig
+
+    def set_map_cleaning(self, map_cleaning: np.ndarray):
+        self.map_cleaning = map_cleaning
+        self.hw_px = map_cleaning.shape
+
+    def set_map_viz(self, map_viz: np.ndarray):
+        self.map_viz = map_viz
+
+    def set_hw_bd_px(self, hw_bd_px: dict):
+        # cropped hw limits
+        self.hw_bd_px = hw_bd_px
+
+    def set_final_vertices(self, vertices: np.ndarray):
+        # vertices: [(x, y), ...]
+        self.final_vertices = vertices
+
+    def set_final_rect_data(self, rect_data_t: dict):
+        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        self._final_rect_data = rect_data_t
+
+    def save_data(self, path: str) -> None:
+        res_path = os.path.join(self.orig_map_data.bcfg.district_dir, path)
+        os.makedirs(res_path, exist_ok=True)
+        #
+        cv.imwrite(res_path + "/" + "local_map_1_orig.png", self.map_orig)
+        cv.imwrite(res_path + "/" + "local_map_2_sf_orig.png", self.map_sf_orig)
+        cv.imwrite(res_path + "/" + "local_map_3_cleaning.png", self.map_cleaning)
+        cv.imwrite(res_path + "/" + "local_map_4_viz.png", self.map_viz)
+        #
+        zone_map_data = dict()
+        zone_map_data["origin_m"] = self.orig_map_data.origin_m
+        zone_map_data["up_resolution"] = self.orig_map_data.up_resolution
+        zone_map_data["hw_bd_px"] = self.hw_bd_px
+        zone_map_data["rect_data"] = convert_to_native(self.rect_data)
+        zone_map_data["final_rect_data"] = convert_to_native(self.final_rect_data)
+
+        with open(res_path + "/" + "local_map.json", "w") as f:
+            json_object = json.dumps(zone_map_data, indent=4)
+            f.write(json_object)
+
+    def visualize(self, case: str = "cleaning"):
+        if case == "cleaning":
+            visualize_map_s(self.map_cleaning, f"zone_{self.ind}_{case}")
+        elif case == "viz":
+            visualize_map_s(self.map_viz, f"zone_{self.ind}_{case}")
+        else:
+            visualize_map_s(self.map_orig, f"zone_{self.ind}_{'orig'}")

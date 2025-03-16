@@ -8,6 +8,7 @@ from scripts.base.my_utils import mod_angle
 
 class Rectangle:
     """ Rectangle class
+        all data in pixels
     """
     rid: int = 0
     data: dict

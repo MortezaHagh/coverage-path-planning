@@ -1,7 +1,7 @@
 import copy
 import cv2 as cv
 import numpy as np
-from scripts.district.zone import ZoneMapData
+from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.map_data import MapData
 from scripts.gui.visuals import Rectangle
 from scripts.base.configs import SpaceConfigs
@@ -21,15 +21,17 @@ class SpaceAnalyzer:
     f: filtered (island detection)
     bb: bounding box
     """
+    space_type: str
     scfg: SpaceConfigs
     orig_map_data: MapData
     orig_rectangle: Rectangle
-    rect_data: dict                 # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-    vertices: np.ndarray
-    hw_bd: dict                     # {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
-    hw_bd_local: dict               # {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
-    final_rect_data: dict           # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-    final_vertices = np.ndarray     # vertices: [(x, y), ...]
+    rectangle: Rectangle
+    rect_data: dict                     # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+    vertices: list[tuple[int, int]]     # vertices  [(x, y), ...]
+    hw_bd: dict                         # for map not rectangle {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
+    hw_bd_local: dict                   # {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
+    final_rect_data: dict               # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+    final_vertices = list[tuple[int, int]]         # vertices: [(x, y), ...]
     fs_selected_point: tuple[float, float]
     __zone_map_data: ZoneMapData
     cropped_mask: np.ndarray                # mask for cropped map
@@ -52,12 +54,14 @@ class SpaceAnalyzer:
 
         # configs
         self.scfg = SpaceConfigs()
+        self.space_type = "District"  # District, Zone
         self.simple = True
         self.plot_main = True
 
         # inputs
         self.orig_map_data = map_data
         self.orig_rectangle = rectangle
+        self.rectangle = rectangle
         self.rect_data = rectangle.data
         self.vertices = np.array(rectangle.vertices_t, dtype=np.int32)  # district vertices
         self.binary_map_0 = map_data.up_bin_map     # binary map
@@ -100,6 +104,8 @@ class SpaceAnalyzer:
 
     def update_by_rectangle(self, rectangle: Rectangle) -> None:
         """ update the generated space and maps based on new frame [rectangle]"""
+        self.space_type = "Zone"
+        self.rectangle = rectangle
         self.vertices = np.array(rectangle.vertices_t, dtype=np.int32)
         self.rect_data = rectangle.data
         self.get_vertices_data()
@@ -156,14 +162,14 @@ class SpaceAnalyzer:
 
         # get cleaning space
         self.map_8_ws_sf_f_orig = self.dilate_erode_map(map_i=map_6_ws_sf_f, radius_m=self.scfg.ws_r_dist, erode=False)
-        self.map_9_ws_sf_f_cleaning = self.dilate_erode_map(map_i=map_6_ws_sf_f, radius_m=self.scfg.effective_cleaning_r, erode=False)
+        self.map_9_ws_sf_f_cleaning = self.dilate_erode_map(map_i=map_6_ws_sf_f, radius_m=self.scfg.cleaning_r, erode=False)
 
         # maps
         self.map_10_c_ws_sf_f_orig = self.crop_map(self.map_8_ws_sf_f_orig)
         self.map_11_c_ws_sf_f_cleaning = self.crop_map(self.map_9_ws_sf_f_cleaning)
 
         # free space bounding box
-        rect = self.get_final_freespace_rect(self.map_10_c_ws_sf_f_orig)
+        rect = self.get_final_freespace_rect(self.map_7_c_ws_sf_f)
         self.final_rect_data = rect["rect_data"]    # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
         self.final_vertices = rect["vertices"]      # vertices: [(x, y), ...]
 
@@ -178,13 +184,14 @@ class SpaceAnalyzer:
         zone_map_data = ZoneMapData()
         zone_map_data.set_orig_map_data(self.orig_map_data)
         zone_map_data.set_orig_rectangle(self.orig_rectangle)
-        zone_map_data.set_rect_data(self.rect_data)
+        zone_map_data.set_rectangle(self.rectangle)
+        zone_map_data.set_rect_data(self.rect_data, self.vertices)
         zone_map_data.set_map_orig(self.map_c_orig)
         zone_map_data.set_map_ws(self.map_7_c_ws_sf_f)
         zone_map_data.set_map_sf_orig(self.map_10_c_ws_sf_f_orig)
         zone_map_data.set_map_cleaning(self.map_11_c_ws_sf_f_cleaning)
         zone_map_data.set_map_viz(self.map_viz)
-        zone_map_data.set_bb_px(self.hw_bd)
+        zone_map_data.set_hw_bd_px(self.hw_bd)
         zone_map_data.set_final_vertices(self.final_vertices)    # vertices: [(x, y), ...]
         zone_map_data.set_final_rect_data(self.final_rect_data)  # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
         self.__zone_map_data = zone_map_data
@@ -194,12 +201,15 @@ class SpaceAnalyzer:
         Returns:
             dict: {"vertices": vertices, "rect_data": data}
         """
-        radius_px = int(np.ceil(self.scfg.uncleaned_dist / self.orig_map_data.up_resolution))
-        kernel_size = 2*radius_px + 1
-        kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (kernel_size, kernel_size))
-        map_dilated = cv.dilate(map_i, kernel)
-        map_dilated = np.where(map_dilated > 0, 255, 0).astype(np.uint8)
-        local_rect = self.find_bounding_rect(map_dilated)
+        do_dialate = False
+        final_map = map_i.copy()
+        if do_dialate:
+            radius_px = int(np.ceil(self.scfg.uncleaned_dist / self.orig_map_data.up_resolution))
+            kernel_size = 2*radius_px + 1
+            kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (kernel_size, kernel_size))
+            final_map = cv.dilate(map_i, kernel)
+            final_map = np.where(final_map > 0, 255, 0).astype(np.uint8)
+        local_rect = self.find_bounding_rect(final_map)
         # {"vertices": vertices, "rect_data": data}
         # vertices: [(x, y), ...]
         # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
@@ -433,7 +443,12 @@ class SpaceAnalyzer:
         yc = int(rect[0][1])
         w = int(rect[1][0])
         h = int(rect[1][1])
-        data = {"xc": xc, "yc": yc, "rot": np.deg2rad(rect[2]), "w": w, "h": h}
+        rot_deg = rect[2]
+        if h > w:
+            w, h = h, w
+            rot_deg += 90
+
+        data = {"xc": xc, "yc": yc, "rot": np.deg2rad(rot_deg), "w": w, "h": h}
         vertices: np.ndarray = cv.boxPoints(rect)
         vertices = np.int32(vertices)
         # vertices: [(x, y), ...]
@@ -509,20 +524,22 @@ class SpaceAnalyzer:
             map_main_viz = map_viz
 
         # vis robot
-        sh_x = 130
-        sh_y = 25
-        alpha = 0.5
-        shape_main_viz = self.binary_map_0.shape
-        pose = (shape_main_viz[1]//2+sh_x - sh_y, shape_main_viz[0]//2 + sh_y)
-        radius_px_1 = int(np.ceil(self.scfg.ws_r_dist / self.orig_map_data.up_resolution))
-        radius_px_2 = int(np.ceil(self.scfg.robot_radius / self.orig_map_data.up_resolution))
-        radius_px_3 = int(np.ceil(self.scfg.effective_cleaning_r / self.orig_map_data.up_resolution))
-        overlay = map_main_viz.copy()
-        cv.circle(overlay, pose, radius_px_1, [0, 250, 0], -1)
-        cv.circle(overlay, pose, radius_px_2, [0, 0, 250], -1)
-        cv.circle(overlay, pose, radius_px_3, [250, 100, 0], -1)
-        cv.circle(overlay, pose, 5, [250, 250, 250], -1)
-        map_main_viz = cv.addWeighted(overlay, alpha, map_main_viz, 1 - alpha, 0)
+        viz_robot = False
+        if viz_robot:
+            sh_x = 130
+            sh_y = 25
+            alpha = 0.5
+            shape_main_viz = self.binary_map_0.shape
+            pose = (shape_main_viz[1]//2+sh_x - sh_y, shape_main_viz[0]//2 + sh_y)
+            radius_px_1 = int(np.ceil(self.scfg.ws_r_dist / self.orig_map_data.up_resolution))
+            radius_px_2 = int(np.ceil(self.scfg.robot_radius / self.orig_map_data.up_resolution))
+            radius_px_3 = int(np.ceil(self.scfg.cleaning_r / self.orig_map_data.up_resolution))
+            overlay = map_main_viz.copy()
+            cv.circle(overlay, pose, radius_px_1, [0, 250, 0], -1)
+            cv.circle(overlay, pose, radius_px_2, [0, 0, 250], -1)
+            cv.circle(overlay, pose, radius_px_3, [250, 100, 0], -1)
+            cv.circle(overlay, pose, 5, [250, 250, 250], -1)
+            map_main_viz = cv.addWeighted(overlay, alpha, map_main_viz, 1 - alpha, 0)
 
         #
         # visualize_map_s(map_main_viz, "map_viz")

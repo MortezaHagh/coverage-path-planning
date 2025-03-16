@@ -39,10 +39,16 @@ def main():
 
     # Create District Data and Zone Map Data
     district_data = DistrictData(spa)
-    district_data.create_zones()
+    # district_data.create_zones()
+
+    # create zones high level
+    district_data.create_zones_hl()
 
     # coverage path planning
     CPPSimple(district_data)
+
+    # add os path to map_hl
+    district_data.add_os_path_map_hl()
 
     #
     print(f"[{ns}]: resolution:", spa.orig_map_data.up_resolution)

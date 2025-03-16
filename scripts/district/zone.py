@@ -1,119 +1,62 @@
-import os
-import json
-import copy
-import cv2 as cv
 import numpy as np
-from scripts.gui.visuals import Rectangle
-from scripts.base.map_data import MapData
-from scripts.base.my_utils import visualize_map_s
+import cv2 as cv
+from scripts.district.zone_map_data import ZoneMapData
+from scripts.base.configs import SpaceConfigs
 
 
-def convert_to_native(data: dict) -> dict:
-    return {k: int(v) if isinstance(v, (np.integer, int))
-            else float(round(v, 2)) if isinstance(v, (np.floating, float))
-            else v
-            for k, v in data.items()}
-
-
-class ZoneMapData:
+class ZoneData:
     ind: int
-    orig_map_data: MapData
-    orig_rectangle: Rectangle
-    rect_data: dict               # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-    bb_px: dict                   # {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
-    final_vertices: np.ndarray    # vertices: [(x, y), ...]
-    _final_rect_data: dict        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-    hw: tuple[int, int]
-    map_orig: np.ndarray
-    map_sf_orig: np.ndarray
-    map_cleaning: np.ndarray
-    map_ws: np.ndarray
-    map_viz: np.ndarray
+    zone_map_data: ZoneMapData
+    map_hl: np.ndarray
+    os_path_m: list[tuple[float, float]]
+    cleaning_area: float
 
-    def __init__(self, ind: int = 0):
+    def __init__(self, ind: int = None):
         self.ind = ind
-        self.orig_map_data = None
-        self.orig_rectangle = None
-        self.rect_data = None
-        self.bb_px = None
-        self.final_vertices = None
-        self._final_rect_data = None
-        self.hw = None
-        self.map_orig = None
-        self.map_sf_orig = None
-        self.map_cleaning = None
-        self.map_ws = None
-        self.map_viz = None
+        self.zone_map_data = None
+        self.map_hl = None
+        self.os_path_m = []
 
-    @property
-    def final_rect_data(self) -> int:
-        return copy.copy(self._final_rect_data)
-
-    def set_ind(self, ind: int):
-        self.ind = ind
-
-    def set_orig_map_data(self, map_data: MapData):
-        self.orig_map_data = map_data
-
-    def set_orig_rectangle(self, rectangle: Rectangle):
-        self.orig_rectangle = rectangle
-
-    def set_rect_data(self, rect_data_t: dict):
-        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-        self.rect_data = rect_data_t
-
-    def set_map_orig(self, map_orig: np.ndarray):
-        self.map_orig = map_orig
-
-    def set_map_ws(self, map_ws: np.ndarray):
-        self.map_ws = map_ws
-
-    def set_map_sf_orig(self, map_sf_orig: np.ndarray):
-        self.map_sf_orig = map_sf_orig
-
-    def set_map_cleaning(self, map_cleaning: np.ndarray):
-        self.map_cleaning = map_cleaning
-        self.hw = map_cleaning.shape
-
-    def set_map_viz(self, map_viz: np.ndarray):
-        self.map_viz = map_viz
-
-    def set_bb_px(self, bb_px: dict):
-        # cropped hw limits
-        self.bb_px = bb_px
-
-    def set_final_vertices(self, vertices: np.ndarray):
-        # vertices: [(x, y), ...]
-        self.final_vertices = vertices
-
-    def set_final_rect_data(self, rect_data_t: dict):
-        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-        self._final_rect_data = rect_data_t
-
-    def save_data(self, path: str) -> None:
-        res_path = os.path.join(self.orig_map_data.bcfg.map_path, path)
-        os.makedirs(res_path, exist_ok=True)
         #
-        cv.imwrite(res_path + "/" + "local_map_1_orig.png", self.map_orig)
-        cv.imwrite(res_path + "/" + "local_map_2_sf_orig.png", self.map_sf_orig)
-        cv.imwrite(res_path + "/" + "local_map_3_cleaning.png", self.map_cleaning)
-        cv.imwrite(res_path + "/" + "local_map_4_viz.png", self.map_viz)
+        self.scfg = SpaceConfigs()
+
+        # statistics - todo
+        self.cleaning_area = None
+
+    def create_map_hl(self):
+        """create map high level"""
+        map_hl = self.zone_map_data.map_viz.copy()
+        vertices = self.zone_map_data.vertices
+        self.map_hl = cv.polylines(map_hl, [vertices], isClosed=True, color=(100, 0, 150), thickness=4)
+        self.save_map_hl()
+
+    def save_map_hl(self):
+        base_path = self.zone_map_data.orig_map_data.bcfg.district_dir
+        map_hl_path = base_path + f"/Zone_{self.ind}"
+        cv.imwrite(map_hl_path + "/" + "map_hl.png", self.map_hl)
+
+    def add_os_path_map_hl(self):
+        path = self.os_path_m
+        for (p1, p2) in zip(path[:-1], path[1:]):
+            p1 = self.point_m_to_px(p1)
+            p2 = self.point_m_to_px(p2)
+            self.map_hl = cv.line(self.map_hl, p1, p2, (0, 255, 10), 2)
         #
-        zone_map_data = dict()
-        zone_map_data["origin_m"] = self.orig_map_data.origin_m
-        zone_map_data["up_resolution"] = self.orig_map_data.up_resolution
-        zone_map_data["bb_px"] = self.bb_px
-        zone_map_data["rect_data"] = convert_to_native(self.rect_data)
-        zone_map_data["final_rect_data"] = convert_to_native(self.final_rect_data)
+        # vis robot
+        alpha = 0.1
+        pose = self.point_m_to_px(path[0])
+        radius_px_1 = int(np.ceil(self.scfg.ws_r_dist / self.zone_map_data.orig_map_data.up_resolution))
+        radius_px_2 = int(np.ceil(self.scfg.robot_radius / self.zone_map_data.orig_map_data.up_resolution))
+        radius_px_3 = int(np.ceil(self.scfg.cleaning_r / self.zone_map_data.orig_map_data.up_resolution))
+        overlay = self.map_hl.copy()
+        cv.circle(overlay, pose, radius_px_1, [0, 250, 250], -1)
+        cv.circle(overlay, pose, radius_px_2, [0, 0, 250], -1)
+        cv.circle(overlay, pose, radius_px_3, [250, 100, 0], -1)
+        cv.circle(overlay, pose, 5, [250, 250, 250], -1)
+        self.map_hl = cv.addWeighted(overlay, alpha, self.map_hl, 1 - alpha, 0)
+        #
+        self.save_map_hl()
 
-        with open(res_path + "/" + "local_map.json", "w") as f:
-            json_object = json.dumps(zone_map_data, indent=4)
-            f.write(json_object)
-
-    def visualize(self, case: str = "cleaning"):
-        if case == "cleaning":
-            visualize_map_s(self.map_cleaning, f"zone_{self.ind}_{case}")
-        elif case == "viz":
-            visualize_map_s(self.map_viz, f"zone_{self.ind}_{case}")
-        else:
-            visualize_map_s(self.map_orig, f"zone_{self.ind}_{'orig'}")
+    def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
+        res = self.zone_map_data.reslolution
+        return (int(p[0] / res), int(p[1] / res))

@@ -1,24 +1,18 @@
 from copy import deepcopy
+import cv2 as cv
 import numpy as np
 from scripts.gui.visuals import Rectangle
-from scripts.district.zone import ZoneMapData
+from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.space_analyzer import SpaceAnalyzer
-# from scripts.base.my_utils import visualize_map_s
-
-
-class ZoneData:
-    zone_map_data: ZoneMapData
-    path: list[tuple[int, int]]
-
-    def __init__(self):
-        self.zone_map_data = None
-        self.path = None
+from scripts.district.zone import ZoneData
 
 
 class DistrictData:
     spa_obj: SpaceAnalyzer      # space_analyzer
     dmd: ZoneMapData            # district_map_data
     zone_datas: list[ZoneData]  # zones
+    #
+    map_hl: np.ndarray          # map high level
 
     def __init__(self, spa: SpaceAnalyzer):
         self.ns = "DistrictData"
@@ -27,16 +21,20 @@ class DistrictData:
         # main district map data
         self.spa_obj = spa
         self.dmd = spa.zone_map_data
-        self.dmd.visualize()
+        # self.dmd.visualize()
 
         # save district data
-        base_path = self.dmd.orig_map_data.bcfg.district_folder
-        district_path = base_path + "/District"
-        self.dmd.save_data(district_path)
+        self.save_init_district_data()
 
-        # create zones
-        self.zone_datas: list[ZoneData] = []
-        # self.create_zones()
+        # attributes
+        self.map_hl = None  # map info: containing zones rect, paths, ...
+        self.zone_datas: list[ZoneData] = []  # zones
+
+    def create_zones_hl(self):
+        """create all zones in the district and create map_hl (high level)"""
+        self.create_zones()
+        self.create_map_hl()
+        self.save_map_hl()
 
     def create_zones(self):
         print(f"[{self.ns}]: Step: creating zone map data")
@@ -52,15 +50,49 @@ class DistrictData:
             zmd.set_ind(i)
 
             # save zone data
-            base_path = self.dmd.orig_map_data.bcfg.district_folder
-            zone_path = base_path + f"/Zone_{i}"
+            zone_path = f"Zone_{i}"
             zmd.save_data(zone_path)
 
             # append zone map data
-            zd = ZoneData()
+            zd = ZoneData(i)
             zd.zone_map_data = zmd
             self.zone_datas.append(zd)
         print(f"[{self.ns}]: ----------------------------------------------- ")
+
+    def save_init_district_data(self):
+        district_path = "District"
+        self.dmd.save_data(district_path)
+
+    def create_map_hl(self):
+        map_hl = self.dmd.map_viz.copy()
+        self.map_hl = map_hl
+        # display zones rectangles
+        for zd in self.zone_datas:
+            vertices = zd.zone_map_data.vertices
+            self.map_hl = cv.polylines(self.map_hl, [vertices], isClosed=True, color=(100, 0, 150), thickness=4)
+            # for zone
+            zd.create_map_hl()
+
+    def save_map_hl(self):
+        base_path = self.dmd.orig_map_data.bcfg.district_dir
+        map_hl_path = base_path + "/District"
+        cv.imwrite(map_hl_path + "/" + "map_hl.png", self.map_hl)
+
+    def add_os_path_map_hl(self):
+        """add os path of all zones to map_hl"""
+        for zd in self.zone_datas:
+            path = zd.os_path_m
+            for (p1, p2) in zip(path[:-1], path[1:]):
+                p1 = self.point_m_to_px(p1)
+                p2 = self.point_m_to_px(p2)
+                self.map_hl = cv.line(self.map_hl, p1, p2, (0, 255, 10), 4)
+                # for zone
+                zd.add_os_path_map_hl()
+        self.save_map_hl()
+
+    def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
+        res = self.dmd.reslolution
+        return (int(p[0] / res), int(p[1] / res))
 
     def create_zone_rectangles_1(self) -> list[Rectangle]:
         data = self.dmd.rect_data
@@ -82,7 +114,7 @@ class DistrictData:
         return [rect1, rect2]
 
     def create_zone_rectangles_2(self) -> list[Rectangle]:
-        data = self.dmd.rect_data
+        data = self.dmd.final_rect_data
         h = data["h"]
         w = data["w"]
         rot = data["rot"]
