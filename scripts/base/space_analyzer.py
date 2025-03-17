@@ -1,12 +1,11 @@
 import copy
 import cv2 as cv
 import numpy as np
-from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.map_data import MapData
 from scripts.gui.visuals import Rectangle
 from scripts.base.configs import SpaceConfigs
-# from scripts.base.my_utils import visualize_map_s
-
+from scripts.district.zone_map_data import ZoneMapData
+from scripts.spa.spa_utils import find_circumscribed_rectangle, find_inscribed_rotated_rectangle
 FREE_COST = 255
 OCCUPIED_COST = 0
 
@@ -102,6 +101,8 @@ class SpaceAnalyzer:
     def zone_map_data(self) -> ZoneMapData:
         return copy.deepcopy(self.__zone_map_data)
 
+    # ==========================================================================
+
     def update_by_rectangle(self, rectangle: Rectangle) -> None:
         """ update the generated space and maps based on new frame [rectangle]"""
         self.space_type = "Zone"
@@ -118,7 +119,7 @@ class SpaceAnalyzer:
         self.map_11_c_ws_sf_f_cleaning = self.crop_and_frame(self.map_9_ws_sf_f_cleaning)
 
         # free space bounding box
-        rect = self.get_final_freespace_rect(self.map_10_c_ws_sf_f_orig)
+        rect = self.get_final_freespace_rect(self.map_11_c_ws_sf_f_cleaning)
         self.final_rect_data = rect["rect_data"]    # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
         self.final_vertices = rect["vertices"]      # vertices: [(x, y), ...]
 
@@ -169,7 +170,7 @@ class SpaceAnalyzer:
         self.map_11_c_ws_sf_f_cleaning = self.crop_map(self.map_9_ws_sf_f_cleaning)
 
         # free space bounding box
-        rect = self.get_final_freespace_rect(self.map_7_c_ws_sf_f)
+        rect = self.get_final_freespace_rect(self.map_10_c_ws_sf_f_orig)
         self.final_rect_data = rect["rect_data"]    # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
         self.final_vertices = rect["vertices"]      # vertices: [(x, y), ...]
 
@@ -186,14 +187,13 @@ class SpaceAnalyzer:
         zone_map_data.set_orig_rectangle(self.orig_rectangle)
         zone_map_data.set_rectangle(self.rectangle)
         zone_map_data.set_rect_data(self.rect_data, self.vertices)
+        zone_map_data.set_final_rect_data(self.final_rect_data, self.final_vertices)
         zone_map_data.set_map_orig(self.map_c_orig)
         zone_map_data.set_map_ws(self.map_7_c_ws_sf_f)
         zone_map_data.set_map_sf_orig(self.map_10_c_ws_sf_f_orig)
         zone_map_data.set_map_cleaning(self.map_11_c_ws_sf_f_cleaning)
         zone_map_data.set_map_viz(self.map_viz)
         zone_map_data.set_hw_bd_px(self.hw_bd)
-        zone_map_data.set_final_vertices(self.final_vertices)    # vertices: [(x, y), ...]
-        zone_map_data.set_final_rect_data(self.final_rect_data)  # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
         self.__zone_map_data = zone_map_data
 
     def get_final_freespace_rect(self, map_i: np.ndarray) -> dict:
@@ -201,6 +201,7 @@ class SpaceAnalyzer:
         Returns:
             dict: {"vertices": vertices, "rect_data": data}
         """
+        # dilate
         do_dialate = False
         final_map = map_i.copy()
         if do_dialate:
@@ -209,6 +210,8 @@ class SpaceAnalyzer:
             kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (kernel_size, kernel_size))
             final_map = cv.dilate(map_i, kernel)
             final_map = np.where(final_map > 0, 255, 0).astype(np.uint8)
+
+        #
         local_rect = self.find_bounding_rect(final_map)
         # {"vertices": vertices, "rect_data": data}
         # vertices: [(x, y), ...]
@@ -221,6 +224,18 @@ class SpaceAnalyzer:
         data["yc"] += self.hw_bd["h_min"]
         rect = {"vertices": vertices, "rect_data": local_rect["rect_data"]}
         return rect
+
+    def find_bounding_rect(self, map_i: np.ndarray) -> dict:
+        if self.space_type == "District":
+            sol = find_circumscribed_rectangle(map_i)
+        else:
+            sol = find_inscribed_rotated_rectangle(map_i)
+            # vertices: [(x, y), ...]
+            # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+            # sol: {"vertices": vertices, "rect_data": data}
+        return sol
+
+    # ==========================================================================
 
     def remove_islands(self, map_i: np.ndarray) -> np.ndarray:
         contours, hierarchy = cv.findContours(map_i, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
@@ -333,6 +348,8 @@ class SpaceAnalyzer:
         # visualize_map(map_ws, "map_ws")
         return map_ws
 
+    # ==========================================================================
+
     def get_vertices_data(self) -> dict:
         wh_max = np.max(self.vertices, axis=0)
         wh_min = np.min(self.vertices, axis=0)
@@ -381,6 +398,15 @@ class SpaceAnalyzer:
         # map_i[-1, :] = value
         return map_i
 
+    def add_rectangle_bd(self, map_i: np.ndarray, hw_bd: dict, color=None, thickness: int = 6) -> np.ndarray:
+        if not color:
+            color = [0, 0, 250]
+        map_with_rect = cv.rectangle(map_i.copy(),
+                                     (hw_bd["w_min"], hw_bd["h_min"]),  # Top-left corner
+                                     (hw_bd["w_max"], hw_bd["h_max"]),  # Bottom-right corner
+                                     color, thickness)
+        return map_with_rect
+
     def apply_hw_limits(self, hw_limits) -> dict:
         updated_hw = copy.copy(hw_limits)
         w_min = max(0, updated_hw["w_min"])
@@ -389,6 +415,8 @@ class SpaceAnalyzer:
         h_max = min(updated_hw["h_max"], self.orig_map_data.updated_h-1)
         updated_hw = {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
         return updated_hw
+
+    # ==========================================================================
 
     def select_point(self, event, x, y, _, __) -> None:
         if event == cv.EVENT_LBUTTONDOWN:
@@ -432,49 +460,11 @@ class SpaceAnalyzer:
         cv.waitKey(0)
         cv.destroyAllWindows()
 
-    def find_bounding_rect(self, map_i: np.ndarray) -> dict:
-        # Find contours of the free cells
-        contours, _ = cv.findContours(map_i, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-
-        # Combine all contours to get the minimum area rectangle
-        all_points = np.vstack(contours)
-        rect: tuple = cv.minAreaRect(all_points)  # rect = (center, (width, height), angle)
-        xc = int(rect[0][0])
-        yc = int(rect[0][1])
-        w = int(rect[1][0])
-        h = int(rect[1][1])
-        rot_deg = rect[2]
-        if h > w:
-            w, h = h, w
-            rot_deg += 90
-
-        data = {"xc": xc, "yc": yc, "rot": np.deg2rad(rot_deg), "w": w, "h": h}
-        vertices: np.ndarray = cv.boxPoints(rect)
-        vertices = np.int32(vertices)
-        # vertices: [(x, y), ...]
-        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-        return {"vertices": vertices, "rect_data": data}
-
     def add_rectangle(self, map_i: np.ndarray, vertices: np.ndarray, color=None, thickness: int = 6) -> np.ndarray:
         if not color:
             color = [0, 0, 250]
         map_with_rect = cv.polylines(map_i, [vertices], isClosed=True, color=color, thickness=thickness)
         return map_with_rect
-
-    def add_rectangle_bd(self, map_i: np.ndarray, hw_bd: dict, color=None, thickness: int = 6) -> np.ndarray:
-        if not color:
-            color = [0, 0, 250]
-        map_with_rect = cv.rectangle(map_i.copy(),
-                                     (hw_bd["w_min"], hw_bd["h_min"]),  # Top-left corner
-                                     (hw_bd["w_max"], hw_bd["h_max"]),  # Bottom-right corner
-                                     color, thickness)
-        return map_with_rect
-
-    def convert_map_to_world(self, p_m: tuple[int, int]) -> tuple[float, float]:  # todo todel
-        """[x, y] [w, h] from map (pixels) to world (meters)"""
-        p_w_0 = np.round(p_m[0] * self.orig_map_data.up_resolution + self.orig_map_data.origin_m[0], 4)
-        p_w_1 = np.round(p_m[1] * self.orig_map_data.up_resolution + self.orig_map_data.origin_m[1], 4)
-        return (p_w_0, p_w_1)
 
     def final_space_data(self) -> None:
         # #
@@ -519,7 +509,7 @@ class SpaceAnalyzer:
             # plot final rectangle
             if self.final_vertices is not None:
                 # Perimeter rectangle on free space
-                map_main_viz = self.add_rectangle(map_main_viz, self.final_vertices, color=[0, 0, 250], thickness=4)
+                map_main_viz = self.add_rectangle(map_main_viz, self.final_vertices, color=[0, 0, 200], thickness=4)
         else:
             map_main_viz = map_viz
 

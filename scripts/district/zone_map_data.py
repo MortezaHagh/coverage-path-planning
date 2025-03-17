@@ -24,6 +24,7 @@ class ZoneMapData:
     orig_map_data: MapData
     orig_rectangle: Rectangle
     rectangle: Rectangle
+    final_rectangle: Rectangle
     rect_data: dict                     # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
     vertices: list[tuple[int, int]]     # vertices: [(x, y), ...]
     hw_bd_px: dict                      # for map not rectangle {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
@@ -42,6 +43,7 @@ class ZoneMapData:
         self.orig_map_data = None
         self.orig_rectangle = None
         self.rectangle = None
+        self.final_rectangle = None
         self.rect_data = None
         self.vertices = None
         self.hw_bd_px = None
@@ -97,13 +99,12 @@ class ZoneMapData:
         # cropped hw limits
         self.hw_bd_px = hw_bd_px
 
-    def set_final_vertices(self, vertices: np.ndarray):
-        # vertices: [(x, y), ...]
-        self.final_vertices = vertices
-
-    def set_final_rect_data(self, rect_data_t: dict):
+    def set_final_rect_data(self, rect_data_t: dict, vertices: list[tuple[int, int]]):
         # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        # vertices: [(x, y), ...]
         self._final_rect_data = rect_data_t
+        self.final_vertices = vertices
+        self.final_rectangle = Rectangle(self.final_rect_data)
 
     def save_data(self, path: str) -> None:
         res_path = os.path.join(self.orig_map_data.bcfg.district_dir, path)

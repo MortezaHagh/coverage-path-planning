@@ -49,7 +49,7 @@ class CPPSimple:
         cleaning_d = self.cleaning_width - self.min_overlap_w   # cleaning diameter
 
         # zone rectangle
-        rd = zd.zone_map_data.rect_data  # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        rd = zd.zone_map_data.final_rect_data  # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
         resol = zd.zone_map_data.reslolution
 
         # w, h in meters
@@ -72,10 +72,11 @@ class CPPSimple:
         # _p: planning
         n_lines = np.ceil(h_m / cleaning_d)                     # number of lines
         cleaning_d = h_m / n_lines                              # width of each cleaning line
+        cleaning_r = cleaning_d / 2                             # cleaning radius
 
         # xy min max planning
-        x_min_p = x_min + margin + cleaning_d / 2
-        y_min_p = y_min + margin + cleaning_d / 2
+        x_min_p = x_min + margin + cleaning_r / 2  # * (np.sqrt(2)/2)
+        y_min_p = y_min + margin + cleaning_r
         # x_max_p = w - margin - w_l_p / 2
         # y_max_p = h - margin - w_l_p / 2
 
@@ -84,7 +85,7 @@ class CPPSimple:
         n_points = int(n_lines * 2)
 
         # dy dy
-        dx = w_m - cleaning_d / 2
+        dx = w_m - cleaning_r / 2  # * (np.sqrt(2)/2)
         dy = cleaning_d
 
         base_path = [init_point]
@@ -111,9 +112,9 @@ class CPPSimple:
 
     def post_process_os_path(self, zd: ZoneData):
         os_path = zd.os_path_m
-        rect_data = zd.zone_map_data.rect_data
+        rect_data = zd.zone_map_data.final_rect_data
         rot = rect_data["rot"]
-        tl = zd.zone_map_data.rectangle.tl
+        tl = zd.zone_map_data.final_rectangle.tl
         resol = zd.zone_map_data.reslolution
         x_0, y_0 = tl[0]*resol, tl[1]*resol  # first vertex (from which rot is calculated)
         # rotate

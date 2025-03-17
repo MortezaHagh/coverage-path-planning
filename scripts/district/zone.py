@@ -43,15 +43,15 @@ class ZoneData:
             self.map_hl = cv.line(self.map_hl, p1, p2, (0, 255, 10), 2)
         #
         # vis robot
-        alpha = 0.1
+        alpha = 0.2
         pose = self.point_m_to_px(path[0])
         radius_px_1 = int(np.ceil(self.scfg.ws_r_dist / self.zone_map_data.orig_map_data.up_resolution))
         radius_px_2 = int(np.ceil(self.scfg.robot_radius / self.zone_map_data.orig_map_data.up_resolution))
         radius_px_3 = int(np.ceil(self.scfg.cleaning_r / self.zone_map_data.orig_map_data.up_resolution))
         overlay = self.map_hl.copy()
-        cv.circle(overlay, pose, radius_px_1, [0, 250, 250], -1)
+        cv.circle(overlay, pose, radius_px_1, [200, 200, 250], -1)
         cv.circle(overlay, pose, radius_px_2, [0, 0, 250], -1)
-        cv.circle(overlay, pose, radius_px_3, [250, 100, 0], -1)
+        cv.circle(overlay, pose, radius_px_3, [100, 0, 100], -1)
         cv.circle(overlay, pose, 5, [250, 250, 250], -1)
         self.map_hl = cv.addWeighted(overlay, alpha, self.map_hl, 1 - alpha, 0)
         #
