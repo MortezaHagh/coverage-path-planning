@@ -229,6 +229,7 @@ class SpaceAnalyzer:
         if self.space_type == "District":
             sol = find_circumscribed_rectangle(map_i)
         else:
+            # sol = find_circumscribed_rectangle(map_i)
             sol = find_inscribed_rotated_rectangle(map_i)
             # vertices: [(x, y), ...]
             # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
