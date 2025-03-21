@@ -94,7 +94,10 @@ class MapData:
     def set_wind_wh(self, wind_hw=None):
         if wind_hw is None:
             wind_hw = self.wind_hw
+        if (self.orig_h > wind_hw[0]) or (self.orig_w > wind_hw[1]):
+            self.wind_hw = (self.orig_h, self.orig_w)
         self.wind_h, self.wind_w = self.wind_hw
+
         #
         zoom = min(self.wind_h/self.orig_h, self.wind_w/self.orig_w)
         updated_h = int(self.orig_h * zoom)
