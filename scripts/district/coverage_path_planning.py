@@ -85,7 +85,7 @@ class CPPSimple:
         n_points = int(n_lines * 2)
 
         # dy dy
-        dx = w_m - cleaning_r / 2  # * (np.sqrt(2)/2)
+        dx = w_m - margin - cleaning_r / 2  # * (np.sqrt(2)/2)
         dy = cleaning_d
 
         base_path = [init_point]
