@@ -3,7 +3,7 @@ import cv2 as cv
 import numpy as np
 from scripts.gui.visuals import Rectangle
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.base.space_analyzer import SpaceAnalyzer
+from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.zone import ZoneData
 
 

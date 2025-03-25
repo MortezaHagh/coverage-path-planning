@@ -7,7 +7,7 @@ from scripts.gui.visuals import Rectangle
 from scripts.base.inputs_processor import InputsProcessor
 from scripts.base.image_processor import MapImageProcessor
 from scripts.gui.create_district import DistrictGen
-from scripts.base.space_analyzer import SpaceAnalyzer
+from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.district import DistrictData
 from scripts.district.coverage_path_planning import CPPSimple
 
