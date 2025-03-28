@@ -16,8 +16,10 @@ class Event:
         self.next_ind: int = None
         self.xy = v
         #
-        self.hit_y: float = None
-        self.hit_event: Event = None
+        self.hit_up_y: float = None
+        self.hit_down_y: float = None
+        self.hit_up_event: Event = None
+        self.hit_down_event: Event = None
 
     def set_s_ind(self, ind: int):
         self.s_ind = ind
@@ -119,8 +121,8 @@ class TrapezoidalDecomposition:
         self.b_obstacle = Obstacle(0, self.b_poly)
         self.b_obstacle.inverse_event_types()
         # create obstacles polygons
-        p1 = Polygon([(40, 60), (70, 60), (70, 70), (50, 80), (40, 70)])
-        p2 = Polygon([(30, 30), (40, 20), (60, 30), (60, 50), (30, 50)])
+        p1 = Polygon([(40, 60), (70, 60), (80, 66), (70, 70), (50, 80), (40, 70)])
+        p2 = Polygon([(30, 30), (40, 20), (60, 30), (70, 40), (60, 50), (30, 50)])
         self.polygons = [p1, p2]
 
     def create_obstacles(self):
@@ -141,8 +143,11 @@ class TrapezoidalDecomposition:
             if base_e.obst_ind == 0:
                 continue
 
-            hit_y: float = math.inf
-            hit_event: Event = None
+            #
+            hit_up_y: float = math.inf
+            hit_down_y: float = -math.inf
+            hit_up_event: Event = None
+            hit_down_event: Event = None
 
             # # iterate over events
             for e in self.events[i+1:]:
@@ -151,19 +156,30 @@ class TrapezoidalDecomposition:
                     continue
 
                 #
-                y: float = None
-                success: bool = False
+                y_up: float = None
+                y_down: float = None
+                success_up: bool = False
+                success_down: bool = False
                 if base_e.etype == 'up':
-                    success, y = self.evel_event_up(base_e, e, hit_y)
+                    success_up, y_up = self.evel_event_up(base_e, e, hit_up_y)
                 elif base_e.etype == 'down':
-                    success, y = self.eval_event_down(base_e, e, hit_y)
-                if success:
-                    hit_y = y
-                    hit_event = e
+                    success_down, y_down = self.eval_event_down(base_e, e, hit_down_y)
+                elif base_e.etype == 'updown':
+                    success_up, y_up = self.evel_event_up(base_e, e, hit_up_y)
+                    success_down, y_down = self.eval_event_down(base_e, e, hit_down_y)
+                #
+                if success_up:
+                    hit_up_y = y_up
+                    hit_up_event = e
+                if success_down:
+                    hit_down_y = y_down
+                    hit_down_event = e
 
             #
-            base_e.hit_y = hit_y
-            base_e.hit_event = hit_event
+            base_e.hit_up_y = hit_up_y
+            base_e.hit_up_event = hit_up_event
+            base_e.hit_down_y = hit_down_y
+            base_e.hit_down_event = hit_down_event
 
     def evel_event_up(self, base_e: Event, e: Event, y_hit: float) -> bool:
         # based even type is "up"
@@ -202,10 +218,13 @@ class TrapezoidalDecomposition:
         if e.etype == 'down':
             return False, None
 
+        if base_e.sd_ind == 4 and e.sd_ind == 13:
+            pass
+
         # reach to higher updown event
         if e.etype == 'updown':
             new_y_hit = e.xy[1]
-            if e.xy[0] == base_e.xy[0] and new_y_hit < y_hit:
+            if e.xy[0] == base_e.xy[0] and new_y_hit > y_hit:
                 return True, new_y_hit
             else:
                 return False, None
@@ -224,7 +243,7 @@ class TrapezoidalDecomposition:
         # incline
         theta = math.atan2(e.xy[1] - e2.xy[1], e.xy[0] - e2.xy[0])
         new_y_hit = math.tan(theta) * (base_e.xy[0] - e2.xy[0]) + e2.xy[1]
-        if new_y_hit < y_hit:
+        if new_y_hit > y_hit:
             return True, new_y_hit
         #
         return False, None
@@ -240,36 +259,41 @@ class TrapezoidalDecomposition:
                 return True
         return False
 
+    def visualize_boarder_events(self):
+        # plot boarder polygon
+        x, y = self.b_poly.exterior.xy
+        plt.plot(x, y, color='black', linewidth=2)
+        #
+        for e in self.b_obstacle.events:
+            text1 = f"{e.etype}"
+            text2 = f"{e.s_ind}-{e.ind}--[{e.prev_ind},{e.next_ind}]"
+            plt.text(e.xy[0], e.xy[1], text1, fontsize=12, color='blue')
+            plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
+
     def visualize(self):
         # plot boarder
         plt.subplot(111)
-
-        # # plot boarder polygon
-        # x, y = self.b_poly.exterior.xy
-        # plt.plot(x, y, color='black', linewidth=2)
 
         # plot obstacles
         for obs in self.obstacles:
             x, y = obs.poly.exterior.xy
             plt.plot(x, y, color='red', linewidth=1)
 
-        # # display boarder_events
-        # for e in self.b_obstacle.events:
-        #     text1 = f"{e.etype}"
-        #     text2 = f"{e.s_ind}-{e.ind}--[{e.prev_ind},{e.next_ind}]"
-        #     plt.text(e.xy[0], e.xy[1], text1, fontsize=12, color='blue')
-        #     plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
-
         # display events
         for e in self.events:
-            text1 = f"{e.sd_ind}-{e.etype}"
-            text2 = f"{e.s_ind}-{e.ind}--[{e.prev_ind},{e.next_ind}]"
-            plt.text(e.xy[0], e.xy[1], text1, fontsize=12, color='blue')
-            plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
+            # text1 = f"{e.sd_ind}-{e.etype}"
+            # plt.text(e.xy[0], e.xy[1], text1, fontsize=12, color='blue')
+            # text2 = f"{e.s_ind}-{e.ind}--[{e.prev_ind},{e.next_ind}]"
+            # plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
             #
-            if e.hit_event is not None:
-                print(e.xy[0], e.hit_y, e.etype)
-                plt.plot(e.xy[0], e.hit_y, 'o', color='black', markersize=5)
+            if e.hit_up_event is not None:
+                print(e.xy[0], e.hit_up_y, e.etype)
+                plt.plot(e.xy[0], e.hit_up_y, 'o', color='black', markersize=5)
+                plt.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_up_y], '--', color='orange', linewidth=1)
+            if e.hit_down_event is not None:
+                print(e.xy[0], e.hit_down_y, e.etype)
+                plt.plot(e.xy[0], e.hit_down_y, 'o', color='black', markersize=5)
+                plt.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_down_y], '--', color='orange', linewidth=1)
 
         #
         plt.show()
