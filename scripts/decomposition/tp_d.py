@@ -1,11 +1,13 @@
 """ Trapezoidal decomposition """
+import math
 from shapely import Polygon, Point
 import matplotlib.pyplot as plt
 
 
 class Event:
     def __init__(self, obst_ind, ind, v):
-        self.etype: str = "normal"
+        self.etype: str = "updown"
+        self.c_etype: str = "updown"
         self.obst_ind: int = obst_ind
         self.ind: int = ind         # index in the obstacle (ccw)
         self.s_ind: int = None      # sorted index in the obstacles events
@@ -13,6 +15,9 @@ class Event:
         self.prev_ind: int = None
         self.next_ind: int = None
         self.xy = v
+        #
+        self.hit_y: float = None
+        self.hit_event: Event = None
 
     def set_s_ind(self, ind: int):
         self.s_ind = ind
@@ -50,8 +55,8 @@ class Obstacle:
         self.s_events = sorted(self.events, key=lambda e: (e.xy[0], e.xy[1]))
         for i, e in enumerate(self.s_events):
             e.set_s_ind(i)
-            prev_ind = (self.s_events[i].ind - 1) % self.n_v
-            next_ind = (self.s_events[i].ind + 1) % self.n_v
+            prev_ind = (self.s_events[i].ind - 1) % (self.n_v-1)
+            next_ind = (self.s_events[i].ind + 1) % (self.n_v-1)
             e.set_prev_ind(prev_ind)
             e.set_next_ind(next_ind)
 
@@ -62,12 +67,11 @@ class Obstacle:
             # Check if the point in +y direction is inside or on the boundary of the obstacle
             if self.poly.contains(Point(x, y + step)) or self.poly.touches(Point(x, y + step)):
                 e.etype = 'down'
+                e.c_etype = 'up'
             # Check if the point in -y direction is inside or on the boundary of the obstacle
             elif self.poly.contains(Point(x, y - step)) or self.poly.touches(Point(x, y - step)):
                 e.etype = 'up'
-            # If neither point is inside or on the boundary of the obstacle
-            else:
-                e.etype = 'updown'
+                e.c_etype = 'down'
 
     def process_events_2(self):
         for i, e1 in enumerate(self.events):
@@ -77,6 +81,9 @@ class Obstacle:
 
     def inverse_event_types(self):
         for e in self.events:
+            temp = e.prev_ind
+            e.prev_ind = e.next_ind
+            e.next_ind = temp
             if e.etype == 'up':
                 e.etype = 'down'
             elif e.etype == 'down':
@@ -102,6 +109,8 @@ class TrapezoidalDecomposition:
         self.create_polygons()
         self.create_obstacles()
         self.create_events()
+        #
+        self.decompose()
         self.visualize()
 
     def create_polygons(self):
@@ -125,6 +134,111 @@ class TrapezoidalDecomposition:
         self.events = sorted(all_events, key=lambda e: (e.xy))
         for i, e in enumerate(self.events):
             e.set_sd_ind(i)
+
+    def decompose(self):
+        for i, base_e in enumerate(self.events):
+            # check if the event is from boarder
+            if base_e.obst_ind == 0:
+                continue
+
+            hit_y: float = math.inf
+            hit_event: Event = None
+
+            # # iterate over events
+            for e in self.events[i+1:]:
+                # check if the event is from the same obstacle
+                if base_e.obst_ind == e.obst_ind:
+                    continue
+
+                #
+                y: float = None
+                success: bool = False
+                if base_e.etype == 'up':
+                    success, y = self.evel_event_up(base_e, e, hit_y)
+                elif base_e.etype == 'down':
+                    success, y = self.eval_event_down(base_e, e, hit_y)
+                if success:
+                    hit_y = y
+                    hit_event = e
+
+            #
+            base_e.hit_y = hit_y
+            base_e.hit_event = hit_event
+
+    def evel_event_up(self, base_e: Event, e: Event, y_hit: float) -> bool:
+        # based even type is "up"
+        if e.etype == 'up':
+            return False, None
+
+        # reach to higher updown event
+        if e.etype == 'updown':
+            new_y_hit = e.xy[1]
+            if e.xy[0] == base_e.xy[0] and new_y_hit < y_hit:
+                return True, new_y_hit
+            else:
+                return False, None
+
+        # type is "down"
+        # edge = e1-e
+        e1_ind = e.prev_ind
+        e1 = self.obstacles[e.obst_ind].events[e1_ind]
+
+        # check coordinates
+        if e1.xy[0] > base_e.xy[0]:
+            return False, None
+        if e1.xy[1] < base_e.xy[1] and e.xy[1] < base_e.xy[1]:
+            return False, None
+
+        # incline
+        theta = math.atan2(e.xy[1] - e1.xy[1], e.xy[0] - e1.xy[0])
+        new_y_hit = math.tan(theta) * (base_e.xy[0] - e1.xy[0]) + e1.xy[1]
+        if new_y_hit < y_hit:
+            return True, new_y_hit
+        #
+        return False, None
+
+    def eval_event_down(self, base_e: Event, e: Event, y_hit: float) -> bool:
+        # based even type is "down"
+        if e.etype == 'down':
+            return False, None
+
+        # reach to higher updown event
+        if e.etype == 'updown':
+            new_y_hit = e.xy[1]
+            if e.xy[0] == base_e.xy[0] and new_y_hit < y_hit:
+                return True, new_y_hit
+            else:
+                return False, None
+
+        # type is "up"
+        # edge = e1-e
+        e2_ind = e.next_ind
+        e2 = self.obstacles[e.obst_ind].events[e2_ind]
+
+        # check coordinates
+        if e2.xy[0] > base_e.xy[0]:
+            return False, None
+        if e2.xy[1] > base_e.xy[1] and e.xy[1] > base_e.xy[1]:
+            return False, None
+
+        # incline
+        theta = math.atan2(e.xy[1] - e2.xy[1], e.xy[0] - e2.xy[0])
+        new_y_hit = math.tan(theta) * (base_e.xy[0] - e2.xy[0]) + e2.xy[1]
+        if new_y_hit < y_hit:
+            return True, new_y_hit
+        #
+        return False, None
+
+    def eval_types(self, c_etype: str, etype: str) -> bool:
+        if c_etype == 'updown':
+            return True
+        if c_etype == 'up':
+            if etype == 'down':
+                return True
+        elif c_etype == 'down':
+            if etype == 'up':
+                return True
+        return False
 
     def visualize(self):
         # plot boarder
@@ -152,6 +266,10 @@ class TrapezoidalDecomposition:
             text2 = f"{e.s_ind}-{e.ind}--[{e.prev_ind},{e.next_ind}]"
             plt.text(e.xy[0], e.xy[1], text1, fontsize=12, color='blue')
             plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
+            #
+            if e.hit_event is not None:
+                print(e.xy[0], e.hit_y, e.etype)
+                plt.plot(e.xy[0], e.hit_y, 'o', color='black', markersize=5)
 
         #
         plt.show()
