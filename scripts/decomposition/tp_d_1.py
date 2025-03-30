@@ -155,6 +155,7 @@ class TrapezoidalDecomposition:
         self.obstacles: list[Obstacle] = []
         self.events: list[Event] = []
         self.trapezoids: list[Polygon] = []
+        self.n_events: int = 0
 
     def initiate(self):
         self.create_polygons()
@@ -181,6 +182,7 @@ class TrapezoidalDecomposition:
 
     def create_events(self):
         all_events = [event for obstacle in self.obstacles for event in obstacle.events]
+        self.n_events = len(all_events)
         # self.events = all_events
         self.events = sorted(all_events, key=lambda e: (e.xy))
         for i, e in enumerate(self.events):
@@ -313,17 +315,6 @@ class TrapezoidalDecomposition:
             return True, new_y_hit
         #
         return False, None
-
-    def eval_types(self, c_etype: str, etype: str) -> bool:
-        if c_etype == 'updown':
-            return True
-        if c_etype == 'up':
-            if etype == 'down':
-                return True
-        elif c_etype == 'down':
-            if etype == 'up':
-                return True
-        return False
 
     def visualize_boarder_events(self):
         # plot boarder polygon
