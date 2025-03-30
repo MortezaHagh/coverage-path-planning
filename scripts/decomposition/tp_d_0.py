@@ -287,11 +287,9 @@ class TrapezoidalDecomposition:
             # plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
             #
             if e.hit_up_event is not None:
-                print(e.xy[0], e.hit_up_y, e.etype)
                 plt.plot(e.xy[0], e.hit_up_y, 'o', color='black', markersize=5)
                 plt.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_up_y], '--', color='orange', linewidth=1)
             if e.hit_down_event is not None:
-                print(e.xy[0], e.hit_down_y, e.etype)
                 plt.plot(e.xy[0], e.hit_down_y, 'o', color='black', markersize=5)
                 plt.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_down_y], '--', color='orange', linewidth=1)
 
