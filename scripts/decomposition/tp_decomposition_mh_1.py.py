@@ -173,6 +173,7 @@ class TrapezoidalDecomposition:
         self.create_events()
         #
         self.decompose_all()
+        self.create_final_trapezoids()
         self.visualize()
 
     def create_polygons(self):
@@ -332,6 +333,14 @@ class TrapezoidalDecomposition:
             return True, new_y_hit
         #
         return False, None
+
+    def create_final_trapezoids(self):
+        base_e = self.events[self.n_events-2]
+        hit_up_event = self.events[self.n_events-1]
+        hit_down_event = self.events[self.n_events-3]
+        hit_up_y = hit_up_event.xy[1]
+        hit_down_y = hit_down_event.xy[1]
+        self.create_trapezoid(base_e, hit_up_event, hit_down_event, hit_up_y, hit_down_y)
 
     def visualize_boarder_events(self):
         # plot boarder polygon
