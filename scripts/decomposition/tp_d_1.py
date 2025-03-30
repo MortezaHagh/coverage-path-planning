@@ -188,71 +188,64 @@ class TrapezoidalDecomposition:
 
     def decompose_all(self):
         for i, base_e in enumerate(self.events):
-            # check if the event is from boarder
-            if base_e.obst_ind == 0:
+            # Skip border and vertical events
+            if base_e.obst_ind == 0 or base_e.vertical:
                 continue
 
-            #
-            if base_e.vertical:
+            # find hits of the sweeping line at the base event
+            hit_up_y, hit_down_y, hit_up_event, hit_down_event = self.expand_hit(base_e, i)
+
+            # Update base event with hit results
+            base_e.hit_up_y, base_e.hit_up_event = hit_up_y, hit_up_event
+            base_e.hit_down_y, base_e.hit_down_event = hit_down_y, hit_down_event
+
+            # Create trapezoids based on event type
+            self.create_trapezoid(base_e, hit_up_event, hit_down_event, hit_up_y, hit_down_y)
+
+    def expand_hit(self, base_e: Event, base_i: int):
+        # Initialize hit variables
+        hit_up_y, hit_down_y = math.inf, -math.inf
+        hit_up_event, hit_down_event = None, None
+
+        # Iterate over events
+        for e in self.events[base_i+1:]:
+            # Skip events from the same obstacle or fake events
+            if base_e.obst_ind == e.obst_ind or e.fake:
                 continue
 
-            #
-            hit_up_y: float = math.inf
-            hit_down_y: float = -math.inf
-            hit_up_event: Event = None
-            hit_down_event: Event = None
+            # Evaluate event based on base_e type
+            success_up, y_up = False, None
+            success_down, y_down = False, None
 
-            # # iterate over events
-            for e in self.events[i+1:]:
-                # check if the event is from the same obstacle
-                if base_e.obst_ind == e.obst_ind:
-                    continue
+            if base_e.etype in ('up', 'updown'):
+                success_up, y_up = self.evel_event_up(base_e, e, hit_up_y)
+            if base_e.etype in ('down', 'updown'):
+                success_down, y_down = self.eval_event_down(base_e, e, hit_down_y)
 
-                #
-                if e.fake:
-                    continue
+            # Update hit variables if successful
+            if success_up:
+                hit_up_y, hit_up_event = y_up, e
+            if success_down:
+                hit_down_y, hit_down_event = y_down, e
+        #
+        return hit_up_y, hit_down_y, hit_up_event, hit_down_event
 
-                #
-                y_up: float = None
-                y_down: float = None
-                success_up: bool = False
-                success_down: bool = False
-                if base_e.etype == 'up':
-                    success_up, y_up = self.evel_event_up(base_e, e, hit_up_y)
-                elif base_e.etype == 'down':
-                    success_down, y_down = self.eval_event_down(base_e, e, hit_down_y)
-                elif base_e.etype == 'updown':
-                    success_up, y_up = self.evel_event_up(base_e, e, hit_up_y)
-                    success_down, y_down = self.eval_event_down(base_e, e, hit_down_y)
-                #
-                if success_up:
-                    hit_up_y = y_up
-                    hit_up_event = e
-                if success_down:
-                    hit_down_y = y_down
-                    hit_down_event = e
-
-            #
-            base_e.hit_up_y = hit_up_y
-            base_e.hit_up_event = hit_up_event
-            base_e.hit_down_y = hit_down_y
-            base_e.hit_down_event = hit_down_event
-            # hit_up_event.hitted_event = base_e
-            # hit_down_event.hitted_event = base_e
-            #
-            if base_e.etype == 'updown':
-                trap = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e, hit_down_event.endp_up_e, (base_e.xy[0], hit_down_y)]
-                self.trapezoids.append(Polygon(trap))
-                hit_up_event.set_endpoint_down_edge((base_e.xy[0], hit_up_event.endp_down_e[1]))
-                hit_down_event.set_endpoint_up_edge((base_e.xy[0], hit_down_event.endp_up_e[1]))
-            elif base_e.etype == 'up':
-                trap = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e, base_e.endp_up_e]
-                self.trapezoids.append(Polygon(trap))
-                hit_up_event.set_endpoint_down_edge((base_e.xy[0], hit_up_event.endp_down_e[1]))
-            elif base_e.etype == 'down':
-                trap = [base_e.xy, base_e.endp_down_e, hit_down_event.endp_up_e, (base_e.xy[0], hit_down_y)]
-                self.trapezoids.append(Polygon(trap))
-                hit_down_event.set_endpoint_up_edge((base_e.xy[0], hit_down_event.endp_up_e[1]))
+    def create_trapezoid(self, base_e: Event, hit_up_event: Event, hit_down_event: Event, hit_up_y: float, hit_down_y: float):
+        trap = None
+        if base_e.etype == 'updown' and hit_up_event and hit_down_event:
+            trap = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e, hit_down_event.endp_up_e, (base_e.xy[0], hit_down_y)]
+            hit_up_event.set_endpoint_down_edge((base_e.xy[0], hit_up_event.endp_down_e[1]))
+            hit_down_event.set_endpoint_up_edge((base_e.xy[0], hit_down_event.endp_up_e[1]))
+        elif base_e.etype == 'up' and hit_up_event:
+            trap = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e, base_e.endp_up_e]
+            hit_up_event.set_endpoint_down_edge((base_e.xy[0], hit_up_event.endp_down_e[1]))
+        elif base_e.etype == 'down' and hit_down_event:
+            trap = [base_e.xy, base_e.endp_down_e, hit_down_event.endp_up_e, (base_e.xy[0], hit_down_y)]
+            hit_down_event.set_endpoint_up_edge((base_e.xy[0], hit_down_event.endp_up_e[1]))
+        if trap:
+            self.trapezoids.append(Polygon(trap))
+        else:
+            raise ValueError("Invalid trapezoid creation")
 
     def evel_event_up(self, base_e: Event, e: Event, y_hit: float) -> bool:
         # based even type is "up"
