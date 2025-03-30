@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 
 class Event:
     def __init__(self, obst_ind, ind, v):
-        self.etype: str = "updown"
+        self.etype: str = "updown"      # up, down, updown
+        self.etype_2: str = "normal"    # normal, out, in
         self.c_etype: str = "updown"
         self.fake: bool = False
         self.vertical: bool = False
@@ -95,6 +96,15 @@ class Obstacle:
             else:
                 e.set_endpoint_up_edge(self.events[e.next_ind].xy)
                 e.set_endpoint_down_edge(self.events[e.prev_ind].xy)
+                # set type 2
+                if not e.fake:
+                    x = e.xy[0]
+                    x_next = self.events[e.next_ind].xy[0]
+                    x_prev = self.events[e.prev_ind].xy[0]
+                    if x > x_next and x > x_prev:
+                        e.etype_2 = "out"
+                    elif x < x_next and x < x_prev:
+                        e.etype_2 = "in"
 
     def process_events_types_2(self):
         for i, e1 in enumerate(self.events):
@@ -233,20 +243,27 @@ class TrapezoidalDecomposition:
         return hit_up_y, hit_down_y, hit_up_event, hit_down_event
 
     def create_trapezoid(self, base_e: Event, hit_up_event: Event, hit_down_event: Event, hit_up_y: float, hit_down_y: float):
-        trap = None
+        trap1, trap2 = None, None
         if base_e.etype == 'updown' and hit_up_event and hit_down_event:
-            trap = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e, hit_down_event.endp_up_e, (base_e.xy[0], hit_down_y)]
+            if base_e.etype_2 == 'out':
+                trap1 = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e, base_e.endp_up_e]
+                trap2 = [base_e.xy, (base_e.xy[0], hit_down_y), hit_down_event.endp_up_e, base_e.endp_down_e]
+            else:
+                trap1 = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e,
+                         hit_down_event.endp_up_e, (base_e.xy[0], hit_down_y)]
             hit_up_event.set_endpoint_down_edge((base_e.xy[0], hit_up_event.endp_down_e[1]))
             hit_down_event.set_endpoint_up_edge((base_e.xy[0], hit_down_event.endp_up_e[1]))
         elif base_e.etype == 'up' and hit_up_event:
-            trap = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e, base_e.endp_up_e]
+            trap1 = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e, base_e.endp_up_e]
             hit_up_event.set_endpoint_down_edge((base_e.xy[0], hit_up_event.endp_down_e[1]))
         elif base_e.etype == 'down' and hit_down_event:
-            trap = [base_e.xy, base_e.endp_down_e, hit_down_event.endp_up_e, (base_e.xy[0], hit_down_y)]
+            trap1 = [base_e.xy, base_e.endp_down_e, hit_down_event.endp_up_e, (base_e.xy[0], hit_down_y)]
             hit_down_event.set_endpoint_up_edge((base_e.xy[0], hit_down_event.endp_up_e[1]))
-        if trap:
-            self.trapezoids.append(Polygon(trap))
-        else:
+        if trap1:
+            self.trapezoids.append(Polygon(trap1))
+        if trap2:
+            self.trapezoids.append(Polygon(trap2))
+        if trap1 is None and trap2 is None:
             raise ValueError("Invalid trapezoid creation")
 
     def evel_event_up(self, base_e: Event, e: Event, y_hit: float) -> bool:
