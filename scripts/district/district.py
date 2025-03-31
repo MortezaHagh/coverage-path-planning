@@ -70,6 +70,9 @@ class DistrictData:
         for zd in self.zone_datas:
             vertices = zd.zone_map_data.vertices
             self.map_hl = cv.polylines(self.map_hl, [vertices], isClosed=True, color=(100, 0, 150), thickness=4)
+            final_vertices = zd.zone_map_data.final_vertices
+            self.map_hl = cv.polylines(self.map_hl, [final_vertices], isClosed=True, color=(100, 0, 250), thickness=4)
+
             # for zone
             zd.create_map_hl()
 

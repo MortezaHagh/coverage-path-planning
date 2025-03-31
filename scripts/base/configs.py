@@ -55,7 +55,7 @@ class PlanningConfigs:
     def __init__(self):
         self.min_path_overlap = 0.1
         self.min_wp_dist = 0.4
-        self.margin = 0.2
+        self.margin = 0.05
 
 
 if __name__ == "__main__":

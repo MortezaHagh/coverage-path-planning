@@ -5,7 +5,8 @@ from scripts.base.map_data import MapData
 from scripts.gui.visuals import Rectangle
 from scripts.base.configs import SpaceConfigs
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.spa.spa_utils import find_circumscribed_rectangle, find_inscribed_rotated_rectangle
+from scripts.spa.spa_utils import find_circumscribed_rectangle  # , find_inscribed_rotated_rectangle
+from scripts.spa.inscribed_rectangle_histogram import find_inscribed_rotated_rectangle
 FREE_COST = 255
 OCCUPIED_COST = 0
 
@@ -119,7 +120,8 @@ class SpaceAnalyzer:
         self.map_11_c_ws_sf_f_cleaning = self.crop_and_frame(self.map_9_ws_sf_f_cleaning)
 
         # free space bounding box
-        rect = self.get_final_freespace_rect(self.map_11_c_ws_sf_f_cleaning)
+        # rect = self.get_final_freespace_rect(self.map_11_c_ws_sf_f_cleaning)
+        rect = self.get_final_freespace_rect(self.map_7_c_ws_sf_f)
         self.final_rect_data = rect["rect_data"]    # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
         self.final_vertices = rect["vertices"]      # vertices: [(x, y), ...]
 
@@ -216,6 +218,11 @@ class SpaceAnalyzer:
         # {"vertices": vertices, "rect_data": data}
         # vertices: [(x, y), ...]
         # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+
+        #
+        if local_rect is None:
+            print(f"[{self.ns}, get_final_freespace_rect]: Failed to find a valid rectangle")
+            return {"vertices": None, "rect_data": None}
 
         # local to global rectangle
         vertices = local_rect["vertices"] + np.array([self.hw_bd["w_min"], self.hw_bd["h_min"]])
