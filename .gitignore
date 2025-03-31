@@ -1,8 +1,10 @@
-*.png
-Data/
+#*.png
+Data/Map3
+Data/Map4
+*.json
+*.pgm
 __pycache__/
 .vscode/
 coverage_path_planning/
 venv/
 todo
-*.png
