@@ -1,9 +1,10 @@
 import numpy as np
 from scripts.district.district import DistrictData, ZoneData
-from scripts.planning.base_coverage_pp import CoverageBase
+from scripts.planning.base_coverage_pp import CoveragePPBase
 
 
-class CPPSimple(CoverageBase):
+class CoveragePP(CoveragePPBase):
+    """ CPPSimple"""
 
     def __init__(self, district: DistrictData):
         super().__init__(district)
@@ -84,15 +85,12 @@ class CPPSimple(CoverageBase):
                 dx = -1 * dx
             base_path.append((new_x, new_y))
 
-        # base_path = base_path
-        path_x = (xy[0] for xy in base_path)
-        path_y = (xy[1] for xy in base_path)
+        # # base_path = base_path
+        # path_x = (xy[0] for xy in base_path)
+        # path_y = (xy[1] for xy in base_path)
 
+        # save path to zone data
         zd.os_path_m = base_path
-
-        # todo
-        # change coordinate frame to zone
-        # translation and rotation of the rectangle
 
     def post_process_os_path(self, zd: ZoneData):
         os_path = zd.os_path_m

@@ -199,6 +199,7 @@ class TrapezoidalDecomposition:
         for i, e in enumerate(self.events):
             e.set_sd_ind(i)
 
+    # decompose_all ============================================================
     def decompose_all(self):
         for i, base_e in enumerate(self.events):
             # Skip border and vertical events

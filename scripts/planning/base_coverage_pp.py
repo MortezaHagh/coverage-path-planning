@@ -3,11 +3,11 @@ from scripts.base.configs import SpaceConfigs, PlanningConfigs
 from scripts.district.district import DistrictData, ZoneData
 
 
-class CoverageBase:
+class CoveragePPBase:
     district: DistrictData  # main district data
 
     def __init__(self, district: DistrictData):
-        self.ns = "CoveragePP"
+        self.ns = "CoveragePPBase"
         print(f"[{self.ns}]: Step: coverage path planning")
 
         # main district data

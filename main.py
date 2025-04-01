@@ -10,7 +10,8 @@ from scripts.base.image_processor import MapImageProcessor
 from scripts.gui.create_district import DistrictGen
 from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.district import DistrictData
-from scripts.planning.coverage_pp_1_mh import CPPSimple
+from scripts.planning.coverage_pp_2_tp_decompose_1 import CoveragePP
+# from scripts.planning.coverage_pp_1_mh import CoveragePP
 
 
 def main():
@@ -46,10 +47,10 @@ def main():
     district_data.create_zones_hl()
 
     # coverage path planning
-    CPPSimple(district_data)
+    CoveragePP(district_data)
 
-    # add os path to map_hl
-    district_data.add_os_path_map_hl()
+    # # add os path to map_hl
+    # district_data.add_os_path_map_hl()
 
     # display map_hl
     map_hl = district_data.map_hl
