@@ -366,12 +366,12 @@ class TrapezoidalDecomposition:
         for e in self.events:
             # if e.vertical:
             #     continue
-            text1 = f"{e.sd_ind}-{e.etype}"
+            text1 = f"{e.sd_ind}"
+            # text1 = f"{e.sd_ind}-[t1:{e.etype}]-[t2:{e.etype_2}]"
             plt.text(e.xy[0], e.xy[1], text1, fontsize=12, color='blue')
             # text2 = f"{e.s_ind}-{e.ind}--[{e.prev_ind},{e.next_ind}]"
             # text2 = f"{e.ind}--[{e.prev_ind},{e.next_ind}]"
             # plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
-            #
             plt.plot(e.xy[0], e.xy[1], 'o', color='purple', markersize=5)
             if e.hit_up_event is not None:
                 plt.plot(e.xy[0], e.hit_up_y, 'o', color='black', markersize=5)

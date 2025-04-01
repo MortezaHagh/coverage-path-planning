@@ -1,6 +1,7 @@
 """ Main function to run the program """
 import sys
 import numpy as np
+import cv2 as cv
 from scripts.base.configs import BConfigs
 from scripts.base.map_data import MapData
 from scripts.gui.visuals import Rectangle
@@ -9,7 +10,7 @@ from scripts.base.image_processor import MapImageProcessor
 from scripts.gui.create_district import DistrictGen
 from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.district import DistrictData
-from scripts.district.coverage_path_planning import CPPSimple
+from scripts.planning.coverage_pp_1_mh import CPPSimple
 
 
 def main():
@@ -50,6 +51,11 @@ def main():
     # add os path to map_hl
     district_data.add_os_path_map_hl()
 
+    # display map_hl
+    map_hl = district_data.map_hl
+    cv.imshow("map_hl", map_hl)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
     #
     print(f"[{ns}]: resolution:", spa.orig_map_data.up_resolution)
 

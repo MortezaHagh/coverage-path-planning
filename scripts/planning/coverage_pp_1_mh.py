@@ -1,37 +1,19 @@
 import numpy as np
-from scripts.base.configs import SpaceConfigs, PlanningConfigs
 from scripts.district.district import DistrictData, ZoneData
+from scripts.planning.base_coverage_pp import CoverageBase
 
 
-class CPPSimple:
-    district: DistrictData  # main district data
+class CPPSimple(CoverageBase):
 
     def __init__(self, district: DistrictData):
+        super().__init__(district)
         self.ns = "CPPSimple"
         print(f"[{self.ns}]: Step: coverage path planning")
 
-        # main district data
-        self.district = district
-
-        # # parameters and configurations
-        self.scfgs = SpaceConfigs()
-        self.pcfgs = PlanningConfigs()
-
-        # ---------------------------------------------
-        # robot params
-        self.robot_width = self.scfgs.robot_radius
-        self.min_overlap_w = self.pcfgs.min_path_overlap
-        self.cleaning_width = 2*self.scfgs.cleaning_r
-        # map params
-        self.resolution = district.dmd.reslolution
-        # planning configs
-        self.min_points_distance = self.pcfgs.min_wp_dist
-        # ---------------------------------------------
-
         # coverage path planning for all zones
-        self.cpp_simple()
+        self.coverage_planning()
 
-    def cpp_simple(self):
+    def coverage_planning(self):
         print(f"[{self.ns}]: simple coverage path planning")
 
         # for each zone # list[ZoneData]
