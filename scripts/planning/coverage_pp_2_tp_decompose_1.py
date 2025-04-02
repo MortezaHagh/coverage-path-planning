@@ -1,30 +1,101 @@
+import os
+import cv2 as cv
 import numpy as np
 from shapely import Polygon, Point
+from scripts.district.zone_map_data import ZoneMapData
 from scripts.district.district import DistrictData, ZoneData
 from scripts.planning.base_coverage_pp import CoveragePPBase
 from scripts.decomposition.tp_decomposition_mh_f import TrapezoidalDecomposition
 
 
 class Decomposition:
-    def __init__(self, zone: ZoneData):
+    def __init__(self, zmd: ZoneMapData):
         self.ns = "Decomposition"
-        zd = zone.zone_map_data
-        self.zmap = zd.map_ws
+
         #
         self.tpd = TrapezoidalDecomposition()
 
         # set bounding polygon
-        self.create_bounding(zd.vertices)
+        self.create_bounding(zmd)
 
-        #
         # set obstacle polygons
+        self.create_obstacle_polygons(zmd)
 
         #
         self.tpd.initiate()
 
-    def create_bounding(self, vertices: list):
-        b_poly = Polygon(vertices)
+    def create_bounding(self, zmd: ZoneMapData):
+        # b_poly = Polygon(zmd.vertices)
+        y_max = max(zmd.vertices, key=lambda x: x[1])[1]
+
+        #
+        contours, _ = cv.findContours(zmd.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+        biggest_contour = max(contours, key=cv.contourArea)
+
+        # check mid distance
+        skip = set()
+        mid_dist = 100
+        for i, p1 in enumerate(biggest_contour):
+            if i in skip:
+                continue
+            for j in range(i+1, len(biggest_contour)):
+                if j in skip:
+                    continue
+                dist = np.linalg.norm(p1 - biggest_contour[j])
+                if dist < mid_dist:
+                    skip.add(j)
+        filtered_c = [biggest_contour[i] for i in range(len(biggest_contour)) if i not in skip]
+        # filtered_c.reverse()
+        b_poly = Polygon([Point(p[0][0], y_max-p[0][1]) for p in filtered_c])
+
         self.tpd.set_bounding_polygon(b_poly)
+
+    def create_obstacle_polygons(self, zmd: ZoneMapData):
+        # get obstacle contours inside the biggest contour from map imag
+        contours, hierarchy = cv.findContours(zmd.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+        # get the biggest contour
+        biggest_contour = max(contours, key=cv.contourArea)
+
+        # get the obstacle contours
+        obs_contours = []
+        for i, element in enumerate(hierarchy[0]):
+            if element[3] != -1:
+                obs_contours.append(contours[i])
+
+        #
+        if len(obs_contours) == 0:
+            print(f"[{self.ns}]: no obstacle contours found")
+            return
+
+        # #
+        # x_o = min(zmd.vertices, key=lambda x: x[0])[0]
+        y_max = max(zmd.vertices, key=lambda x: x[1])[1]
+
+        # obstacle polygons
+        obs_polys = []
+        skip = set()
+        for c in obs_contours:
+
+            # check mid distance
+            mid_dist = 40
+            for i, p1 in enumerate(c):
+                if i in skip:
+                    continue
+                for j in range(i+1, len(c)):
+                    if i in skip:
+                        continue
+                    dist = np.linalg.norm(p1 - c[j])
+                    if dist < mid_dist:
+                        skip.add(j)
+            filtered_c = [c[i] for i in range(len(c)) if i not in skip]
+            filtered_c.reverse()
+
+            # get the polygon
+            poly = Polygon([Point(p[0][0], y_max-p[0][1]) for p in filtered_c])
+            obs_polys.append(poly)
+
+        # set obstacle polygons
+        self.tpd.set_obstacle_polygons(obs_polys)
 
 
 class CoveragePP(CoveragePPBase):
@@ -35,8 +106,12 @@ class CoveragePP(CoveragePPBase):
         self.ns = "TrapDecCPP"
         print(f"[{self.ns}]: Step: coverage path planning")
 
+        #
+        self.decompositions: list[Decomposition] = []
+
         # coverage path planning for all zones
         self.trap_dec_cpp()
+        self.save_decomposition()
 
     def trap_dec_cpp(self):
         print(f"[{self.ns}]: start trap_dec_cpp for all zones")
@@ -47,15 +122,22 @@ class CoveragePP(CoveragePPBase):
         # 4-save decomposed trapezoids and coverage paths
 
         # for each zone # list[ZoneData]
-        all_tpd = []
         for zd in self.district.zone_datas:
-            tpd = Decomposition(zd)
-            all_tpd.append(tpd)
+            tpd = Decomposition(zd.zone_map_data)
+            self.decompositions.append(tpd)
 
             # 1-trapezoidal decomposition for zone map
             # 2-coverage path planning for each trapezoid
             # 3-merge coverage paths
             # 4-save decomposed trapezoids and coverage paths
+
+    def save_decomposition(self):
+        base_path = self.district.dmd.orig_map_data.bcfg.district_dir
+        for i, zd in enumerate(self.district.zone_datas):
+            dec_path = base_path + f"/Zone_{zd.ind}"
+            dec_path = os.path.join(dec_path, 'decomposition')
+            # os.makedirs(dec_path, exist_ok=True)
+            self.decompositions[i].tpd.fig.savefig(dec_path + ".png", format="png", dpi=400)
 
     def coverage_planning(self):
         print(f"[{self.ns}]: simple coverage path planning")

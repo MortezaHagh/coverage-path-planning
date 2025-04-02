@@ -18,7 +18,7 @@ def main():
     ns = "main"
     if len(sys.argv) < 2:
         print(f"[{ns}] Usage: python main.py <map_name>")
-        map_name = "Map2"
+        map_name = "Map1"
     else:
         map_name = sys.argv[1]
 
@@ -52,11 +52,11 @@ def main():
     # # add os path to map_hl
     # district_data.add_os_path_map_hl()
 
-    # display map_hl
-    map_hl = district_data.map_hl
-    cv.imshow("map_hl", map_hl)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
+    # # display map_hl
+    # map_hl = district_data.map_hl
+    # cv.imshow("map_hl", map_hl)
+    # cv.waitKey(0)
+    # cv.destroyAllWindows()
     #
     print(f"[{ns}]: resolution:", spa.orig_map_data.up_resolution)
 

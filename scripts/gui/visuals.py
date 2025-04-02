@@ -15,6 +15,7 @@ class Rectangle:
     bbox: box
     vertices_t: tuple
     vertices_a: np.ndarray
+    vertices_ccw: np.ndarray
 
     def __init__(self, data: dict, rid: int = None):
         #
@@ -118,7 +119,7 @@ class Rectangle:
         self.br = br
         self.tr = tr
         self.bl = bl
-        return [tl, br, tr, bl]
+        self.vertices_ccw = np.array([bl, br, tr, tl], dtype=np.int32)
 
     def rotate_point(self, dx, dy, rotation):
         x_r = dx * np.cos(rotation) - dy * np.sin(rotation)

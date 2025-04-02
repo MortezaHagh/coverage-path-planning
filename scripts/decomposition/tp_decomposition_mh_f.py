@@ -1,23 +1,22 @@
 """ Trapezoidal decomposition """
 import math
-from shapely import Polygon, Point
+from shapely import Polygon
 import matplotlib.pyplot as plt
 
 
 class Event:
     def __init__(self, obst_ind, ind, v):
-        self.etype: str = "updown"      # up, down, updown
+        self.xy = v
+        self.etype: str = "normal"      # up, down, updown, cornero, corneri
         self.etype_2: str = "normal"    # normal, out, in
-        self.c_etype: str = "updown"
-        self.fake: bool = False
-        self.vertical: bool = False
+        self.c_etype: str = "normal"
+        #
         self.obst_ind: int = obst_ind
         self.ind: int = ind         # index in the obstacle (ccw)
         self.s_ind: int = None      # sorted index in the obstacles events
         self.sd_ind: int = None     # sorted index in the decomposition
         self.prev_ind: int = None
         self.next_ind: int = None
-        self.xy = v
         #
         self.hit_up_y: float = None
         self.hit_down_y: float = None
@@ -28,7 +27,13 @@ class Event:
         self.endp_up_e: tuple[float, float] = None
         self.endp_down_e: tuple[float, float] = None
         #
+        self.concave = False
+        self.convex = True
+        self.skip_sweep = False
         self.done = False
+        self.fake: bool = False
+        self.vertical: bool = False
+        #
 
     def set_s_ind(self, ind: int):
         self.s_ind = ind
@@ -62,6 +67,7 @@ class Obstacle:
         self.create_events()
         self.create_fake_events()
         self.create_sorted_events()
+        self.eval_concave()
         if self.ind == 0:
             self.process_events_bounding()
         else:
@@ -71,107 +77,6 @@ class Obstacle:
     def create_events(self):
         vertices = self.poly.exterior.coords[:-1]
         self.events = [Event(self.ind, i, v) for i, v in enumerate(vertices)]
-
-    def create_sorted_events(self):
-        self.s_events = sorted(self.events, key=lambda e: (e.xy[0], e.xy[1]))
-        for i, e in enumerate(self.s_events):
-            e.set_s_ind(i)
-            prev_ind = (self.s_events[i].ind - 1) % (self.n_v)
-            next_ind = (self.s_events[i].ind + 1) % (self.n_v)
-            e.set_prev_ind(prev_ind)
-            e.set_next_ind(next_ind)
-
-    def process_events_types_1(self):
-        for e in self.events:
-            if e.fake:
-                continue
-            #
-            x, y = e.xy
-            step = 1.0  # Set step size as a parameter
-            # Check if the point in +y direction is inside or on the boundary of the obstacle
-            if self.poly.contains(Point(x, y + step)) or self.poly.touches(Point(x, y + step)):
-                e.etype = 'down'
-                e.c_etype = 'up'
-                e.set_endpoint_down_edge(self.events[e.prev_ind].xy)
-            # Check if the point in -y direction is inside or on the boundary of the obstacle
-            elif self.poly.contains(Point(x, y - step)) or self.poly.touches(Point(x, y - step)):
-                e.etype = 'up'
-                e.c_etype = 'down'
-                e.set_endpoint_up_edge(self.events[e.next_ind].xy)
-            else:
-                e.set_endpoint_up_edge(self.events[e.next_ind].xy)
-                e.set_endpoint_down_edge(self.events[e.prev_ind].xy)
-                # set type 2
-                if not e.fake:
-                    x = e.xy[0]
-                    x_next = self.events[e.next_ind].xy[0]
-                    x_prev = self.events[e.prev_ind].xy[0]
-                    if x > x_next and x > x_prev:
-                        e.etype_2 = "out"
-                    elif x < x_next and x < x_prev:
-                        e.etype_2 = "in"
-
-    def process_events_types_2(self):
-        for i, e1 in enumerate(self.events):
-            for e2 in self.events[i+1:]:
-                if e1.xy[0] == e2.xy[0]:
-                    e1.etype, e2.etype = ('up', 'down') if (e1.xy[1] > e2.xy[1]) else ('down', 'up')
-
-    def process_events_bounding(self):
-        for e in self.events:
-            if e.fake:
-                continue
-            #
-            x, y = e.xy
-            step = 1.0  # Set step size as a parameter
-            case_1, case_2, case_3 = False, False, False
-            # Check if the point in +y direction is inside or on the boundary of the obstacle
-            if self.poly.contains(Point(x, y + step)) or self.poly.touches(Point(x, y + step)):
-                case_1 = True
-            # Check if the point in -y direction is inside or on the boundary of the obstacle
-            if self.poly.contains(Point(x, y - step)) or self.poly.touches(Point(x, y - step)):
-                case_2 = True
-            if case_1 and case_2:
-                case_3 = True
-
-            if case_3:
-                e.set_endpoint_up_edge(self.events[e.next_ind].xy)
-                e.set_endpoint_down_edge(self.events[e.prev_ind].xy)
-                # set type 2
-                if not e.fake:
-                    x = e.xy[0]
-                    x_next = self.events[e.next_ind].xy[0]
-                    x_prev = self.events[e.prev_ind].xy[0]
-                    if x > x_next and x > x_prev:
-                        e.etype_2 = "out"
-                    elif x < x_next and x < x_prev:
-                        e.etype_2 = "in"
-            elif case_1:
-                e.etype = 'up'
-                e.c_etype = 'down'
-                e.set_endpoint_down_edge(self.events[e.prev_ind].xy)
-            elif case_2:
-                e.etype = 'down'
-                e.c_etype = 'up'
-                e.set_endpoint_up_edge(self.events[e.next_ind].xy)
-
-    def inverse_event_types(self):
-        for e in self.events:
-            temp = e.prev_ind
-            e.prev_ind = e.next_ind
-            e.next_ind = temp
-            #
-            # if e.etype == 'up':
-            #     e.etype = 'down'
-            # elif e.etype == 'down':
-            #     e.etype = 'up'
-            #
-            # swpap endpoints
-            e.endp_up_e, e.endp_down_e = e.endp_down_e, e.endp_up_e
-
-    def print_events(self):
-        for e in self.events:
-            print(f"Event {e.ind}: {e.xy} {e.etype}")
 
     def create_fake_events(self):
         n_fake = 0
@@ -199,6 +104,177 @@ class Obstacle:
         self.n_v = len(self.events)
         self.events = sorted(self.events, key=lambda e: (e.ind))
 
+    def create_sorted_events(self):
+        self.s_events = sorted(self.events, key=lambda e: (e.xy[0], e.xy[1]))
+        for i, e in enumerate(self.s_events):
+            e.set_s_ind(i)
+            prev_ind = (self.s_events[i].ind - 1) % (self.n_v)
+            next_ind = (self.s_events[i].ind + 1) % (self.n_v)
+            e.set_prev_ind(prev_ind)
+            e.set_next_ind(next_ind)
+
+    def eval_concave(self) -> bool:
+        for e in self.events:
+            x, y = e.xy
+            prev_x, prev_y = self.events[e.prev_ind].xy
+            next_x, next_y = self.events[e.next_ind].xy
+            # Check if the event is concave
+            e.concave = (prev_x - x) * (next_y - y) - (prev_y - y) * (next_x - x) > 0
+            e.convex = not e.concave
+
+    def process_events_bounding(self):
+        for e in self.events:
+            # swap prev and next indices
+            e.prev_ind, e.next_ind = e.next_ind, e.prev_ind
+
+            # x, y, preve, nexte
+            x, y = e.xy
+            next_e = self.events[e.next_ind]
+            prev_e = self.events[e.prev_ind]
+
+            # set in-out for fake events
+            if e.fake:
+                if prev_e.xy[1] > y:
+                    e.etype_2 = 'out'
+                else:
+                    e.etype_2 = 'in'
+                e.skip_sweep = True
+                continue
+
+            # detect event types: up, down, updown, in, out
+            if x < prev_e.xy[0] and x < next_e.xy[0]:
+                e.etype = 'updown'
+                e.etype_2 = 'in'
+            elif x > prev_e.xy[0] and x > next_e.xy[0]:
+                e.etype = 'updown'
+                e.etype_2 = 'out'
+            elif prev_e.xy[0] < x < next_e.xy[0]:
+                e.etype = 'down'
+            elif next_e.xy[0] < x < prev_e.xy[0]:
+                e.etype = 'up'
+            elif x == prev_e.xy[0]:
+                if y > prev_e.xy[1]:
+                    e.etype = 'down'
+                else:
+                    e.etype = 'up'
+            elif x == next_e.xy[0]:
+                if y < next_e.xy[1]:
+                    e.etype = 'up'
+                else:
+                    e.etype = 'down'
+            else:
+                raise ValueError("Invalid event type [in-out]")
+
+            # set endpoints
+            if e.etype == 'updown':
+                e.c_etype = 'updown'
+                e.set_endpoint_down_edge(prev_e.xy)
+                e.set_endpoint_up_edge(next_e.xy)
+            elif e.etype == 'up':
+                e.c_etype = 'down'
+                e.set_endpoint_up_edge(next_e.xy)
+            elif e.etype == 'down':
+                e.c_etype = 'up'
+                e.set_endpoint_down_edge(prev_e.xy)
+            else:
+                raise ValueError("Invalid event type [e.etype]")
+
+            # detect skipped sweep events
+            if e.etype_2 == 'in':
+                if e.convex:
+                    e.skip_sweep = True
+                else:
+                    e.etype = "corneri"
+            elif e.etype_2 == 'out' and e.convex:
+                e.etype = "cornero"
+            #
+            if e.vertical:
+                e.skip_sweep = True
+
+    def process_events_types_1(self):
+        for e in self.events:
+            # x, y, preve, nexte
+            x, y = e.xy
+            next_e = self.events[e.next_ind]
+            prev_e = self.events[e.prev_ind]
+
+            # set in-out for fake events
+            if e.fake:
+                if next_e.xy[1] > e.xy[1]:
+                    e.etype_2 = 'out'
+                else:
+                    e.etype_2 = 'in'
+                continue
+
+            # detect event types: up, down, updown, in, out
+            if x < prev_e.xy[0] and x < next_e.xy[0]:
+                e.etype = 'updown'
+                e.etype_2 = 'in'
+            elif x > prev_e.xy[0] and x > next_e.xy[0]:
+                e.etype = 'updown'
+                e.etype_2 = 'out'
+            elif prev_e.xy[0] < x < next_e.xy[0]:
+                e.etype = 'down'
+            elif next_e.xy[0] < x < prev_e.xy[0]:
+                e.etype = 'up'
+            elif x == prev_e.xy[0]:
+                if y > prev_e.xy[1]:
+                    e.etype = 'down'
+                else:
+                    e.etype = 'up'
+            elif x == next_e.xy[0]:
+                if y < next_e.xy[1]:
+                    e.etype = 'down'
+                else:
+                    e.etype = 'up'
+            else:
+                raise ValueError("Invalid event type [in-out]")
+
+            # set endpoints
+            if e.etype == 'updown':
+                e.c_etype = 'updown'
+                e.set_endpoint_down_edge(prev_e.xy)
+                e.set_endpoint_up_edge(next_e.xy)
+            elif e.etype == 'up':
+                e.c_etype = 'down'
+                e.set_endpoint_up_edge(next_e.xy)
+            elif e.etype == 'down':
+                e.c_etype = 'up'
+                e.set_endpoint_down_edge(prev_e.xy)
+            else:
+                raise ValueError("Invalid event type [e.etype]")
+
+            # detect skipped sweep events
+            if e.etype_2 == 'in':
+                if e.concave:
+                    e.skip_sweep = True
+                else:
+                    e.etype = "corneri"
+                # e.skip_sweep = True
+            elif e.etype_2 == 'out' and e.concave:
+                e.etype = "cornero"
+            #
+            if e.vertical:
+                e.skip_sweep = True
+
+    def inverse_event_types(self):
+        for e in self.events:
+            temp = e.prev_ind
+            e.prev_ind = e.next_ind
+            e.next_ind = temp
+            #
+            # if e.etype == 'up':
+            #     e.etype = 'down'
+            # elif e.etype == 'down':
+            #     e.etype = 'up'
+            #
+            # swpap endpoints
+            e.endp_up_e, e.endp_down_e = e.endp_down_e, e.endp_up_e
+
+    def print_events(self):
+        for e in self.events:
+            print(f"Event {e.ind}: {e.xy} {e.etype}")
+
 # TrapezoidalDecomposition =============================================================================================
 
 
@@ -211,19 +287,21 @@ class TrapezoidalDecomposition:
         self.events: list[Event] = []
         self.trapezoids: list[Polygon] = []
         self.n_events: int = 0
+        #
+        self.fig = None
 
     def initiate(self):
         self.create_obstacles()
         self.create_events()
         #
         self.decompose_all()
-        self.create_final_trapezoids()
+        # self.create_final_trapezoids()
         self.visualize()
 
     def set_bounding_polygon(self, poly: Polygon):
         self.b_poly = poly
         self.b_obstacle = Obstacle(0, self.b_poly)
-        self.b_obstacle.inverse_event_types()
+        # self.b_obstacle.inverse_event_types()
 
     def set_obstacle_polygons(self, polygons: list[Polygon]):
         self.polygons = polygons
@@ -244,13 +322,19 @@ class TrapezoidalDecomposition:
     # decompose_all ============================================================
     def decompose_all(self):
         for i, base_e in enumerate(self.events[1:]):
-            #
             ind = i + 1
+
+            if base_e.sd_ind == 15:
+                pass
+
+            # condition 1
+            # if base_e.obst_ind == 0 and base_e.etype_2 == 'in':
             if base_e.xy[0] == self.events[0].xy[0]:
                 continue
 
+            # condition 2
             # Skip border and vertical events
-            if base_e.vertical or base_e.done:
+            if base_e.skip_sweep or base_e.done:
                 continue
 
             # find hits of the sweeping line at the base event
@@ -260,15 +344,8 @@ class TrapezoidalDecomposition:
             base_e.hit_up_y, base_e.hit_up_event = hit_up_y, hit_up_event
             base_e.hit_down_y, base_e.hit_down_event = hit_down_y, hit_down_event
 
-            # update done status of the hit events
-            if hit_up_event is not None:
-                if hit_up_event.xy[0] == base_e.xy[0]:
-                    if hit_up_event.etype == 'down':
-                        hit_up_event.done = True
-            if hit_down_event is not None:
-                if hit_down_event.xy[0] == base_e.xy[0]:
-                    if hit_down_event.etype == 'up':
-                        hit_down_event.done = True
+            # Update done status of the hit events
+            self.eval_done_status(base_e, hit_up_event, hit_down_event)
 
             # Create trapezoids based on event type
             self.create_trapezoid(base_e, hit_up_event, hit_down_event, hit_up_y, hit_down_y)
@@ -278,19 +355,25 @@ class TrapezoidalDecomposition:
         hit_up_y, hit_down_y = math.inf, -math.inf
         hit_up_event, hit_down_event = None, None
 
+        #
+        if base_e.etype == "cornero":
+            return hit_up_y, hit_down_y, hit_up_event, hit_down_event
+
         # Iterate over events
         for e in self.events[base_i+1:]:
+            # condition 3
             # Skip events from the same obstacle or fake events
             if (base_e.obst_ind != 0 and base_e.obst_ind == e.obst_ind) or e.fake:
                 continue
+            # if (base_e.obst_ind==0 and)
 
             # Evaluate event based on base_e type
             success_up, y_up = False, None
             success_down, y_down = False, None
 
-            if base_e.etype in ('up', 'updown'):
+            if base_e.etype in ('up', 'updown', 'corneri'):
                 success_up, y_up = self.evel_event_up(base_e, e, hit_up_y)
-            if base_e.etype in ('down', 'updown'):
+            if base_e.etype in ('down', 'updown', 'corneri'):
                 success_down, y_down = self.eval_event_down(base_e, e, hit_down_y)
 
             # Update hit variables if successful
@@ -301,12 +384,45 @@ class TrapezoidalDecomposition:
         #
         return hit_up_y, hit_down_y, hit_up_event, hit_down_event
 
+    def eval_done_status(self, base_e: Event, hit_up_event: Event, hit_down_event: Event):
+        # update done status of the hit events
+        if hit_up_event is not None:
+            if hit_up_event.xy[0] == base_e.xy[0]:
+                if hit_up_event.etype == 'down':
+                    hit_up_event.done = True
+        if hit_down_event is not None:
+            if hit_down_event.xy[0] == base_e.xy[0]:
+                if hit_down_event.etype == 'up':
+                    hit_down_event.done = True
+        # todo updown events
+
     def create_trapezoid(self, base_e: Event, hit_up_event: Event, hit_down_event: Event, hit_up_y: float, hit_down_y: float):
+        #
+        if not (hit_up_y or hit_down_y):
+            print("base_e", base_e.sd_ind, base_e.etype, base_e.etype_2)
+            print((" ===== create_trapezoid: hit_down_y and hit_up_y are None"))
+            return
+
+        if base_e.etype == "cornero":
+            trap1 = [base_e.xy, base_e.endp_down_e, base_e.endp_up_e]
+            self.trapezoids.append(Polygon(trap1))
+            return
+
+        #
+        if not (hit_up_event or hit_down_event):
+            print("base_e", base_e.sd_ind, base_e.etype, base_e.etype_2)
+            print((" ===== create_trapezoid: hit_up_event and hit_down_event are None"))
+            return
+        #
         trap1, trap2 = None, None
-        if base_e.etype == 'updown' and hit_up_event and hit_down_event:
+        if base_e.etype in ('updown', 'corneri'):  # and hit_up_event and hit_down_event: # todo
             if base_e.etype_2 == 'out':
-                trap1 = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e, base_e.endp_up_e]
-                trap2 = [base_e.xy, (base_e.xy[0], hit_down_y), hit_down_event.endp_up_e, base_e.endp_down_e]
+                if hit_up_event:
+                    trap1 = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e, base_e.endp_up_e]
+                if hit_down_event:
+                    trap2 = [base_e.xy, (base_e.xy[0], hit_down_y), hit_down_event.endp_up_e, base_e.endp_down_e]
+                if not (hit_up_event or hit_down_event):
+                    print((" ===== updown: hit_up_event and hit_down_event are None"))
             else:
                 trap1 = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e,
                          hit_down_event.endp_up_e, (base_e.xy[0], hit_down_y)]
@@ -322,8 +438,9 @@ class TrapezoidalDecomposition:
             self.trapezoids.append(Polygon(trap1))
         if trap2:
             self.trapezoids.append(Polygon(trap2))
+        #
         if trap1 is None and trap2 is None:
-            print(("Invalid trapezoid creation"))
+            print(("===== Invalid trapezoid creation"))
             # raise ValueError("Invalid trapezoid creation")
 
     def evel_event_up(self, base_e: Event, e: Event, y_hit: float) -> bool:
@@ -336,8 +453,8 @@ class TrapezoidalDecomposition:
             new_y_hit = e.xy[1]
             if e.xy[0] == base_e.xy[0] and new_y_hit < y_hit:
                 return True, new_y_hit
-            else:
-                return False, None
+            # else: # todo
+            #     return False, None
 
         # type is "down"
         # edge = e1-e
@@ -345,6 +462,8 @@ class TrapezoidalDecomposition:
         e1 = self.obstacles[e.obst_ind].events[e1_ind]
 
         # check coordinates
+        if e1.sd_ind == base_e.sd_ind:
+            return False, None
         if e1.xy[0] > base_e.xy[0]:
             return False, None
         if e1.xy[1] < base_e.xy[1] and e.xy[1] < base_e.xy[1]:
@@ -363,9 +482,6 @@ class TrapezoidalDecomposition:
         if e.etype == 'down':
             return False, None
 
-        if base_e.sd_ind == 4 and e.sd_ind == 13:
-            pass
-
         # reach to higher updown event
         if e.etype == 'updown':
             new_y_hit = e.xy[1]
@@ -380,6 +496,8 @@ class TrapezoidalDecomposition:
         e2 = self.obstacles[e.obst_ind].events[e2_ind]
 
         # check coordinates
+        if e2.sd_ind == base_e.sd_ind:
+            return False, None
         if e2.xy[0] > base_e.xy[0]:
             return False, None
         if e2.xy[1] > base_e.xy[1] and e.xy[1] > base_e.xy[1]:
@@ -414,12 +532,13 @@ class TrapezoidalDecomposition:
 
     def visualize(self):
         # plot boarder
-        plt.subplot(111)
+        fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+        ax.set_aspect('equal', adjustable='box')
 
         # plot obstacles
         for obs in self.obstacles:
             x, y = obs.poly.exterior.xy
-            plt.plot(x, y, color='red', linewidth=1)
+            ax.plot(x, y, color='red', linewidth=1)
 
         # display events
         for e in self.events:
@@ -427,12 +546,14 @@ class TrapezoidalDecomposition:
             #     continue
 
             # texts
-            text1 = f"{e.sd_ind}"
-            # text1 = f"{e.sd_ind}-[t1:{e.etype}]-[t2:{e.etype_2}]"
-            plt.text(e.xy[0], e.xy[1], text1, fontsize=12, color='blue')
+            ct = "concave" if e.concave else "convex"
+            # text1 = f"{e.sd_ind}-{ct}"
+            # text1 = f"{e.sd_ind}-[t1:{e.etype}]-[t2:{e.etype_2}]--{ct}"
+            text1 = f"{e.sd_ind}-{e.etype}-{e.etype_2}-{ct}"
+            plt.text(e.xy[0], e.xy[1], text1, fontsize=10, color='blue')
             # text2 = f"{e.s_ind}-{e.ind}--[{e.prev_ind},{e.next_ind}]"
-            # # text2 = f"{e.ind}--[{e.prev_ind},{e.next_ind}]"
-            # plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
+            # text2 = f"{e.ind}--[{e.prev_ind},{e.next_ind}]"
+            # plt.text(e.xy[0], e.xy[1]-15, text2, fontsize=12, color='green')
 
             #
             plt.plot(e.xy[0], e.xy[1], 'o', color='purple', markersize=8)
@@ -449,6 +570,7 @@ class TrapezoidalDecomposition:
             plt.fill(x, y, alpha=0.5, fc='yellow', ec='black', linewidth=1)
 
         #
+        self.fig = fig
         plt.show()
 
 
@@ -462,7 +584,7 @@ def create_bounding():
 def create_polygons():
     # create obstacles polygons
     p1 = Polygon([(40, 60), (70, 60), (80, 66), (70, 70), (50, 80), (40, 70)])
-    p2 = Polygon([(30, 30), (40, 20), (60, 30), (70, 40), (60, 50), (30, 50)])
+    p2 = Polygon([(30, 30), (40, 20), (60, 30), (70, 40), (60, 50), (30, 50), (20, 40)])
     return [p1, p2]
 
 
