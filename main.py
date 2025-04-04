@@ -1,7 +1,7 @@
 """ Main function to run the program """
 import sys
-import numpy as np
 import cv2 as cv
+import numpy as np
 from scripts.base.configs import BConfigs
 from scripts.base.map_data import MapData
 from scripts.gui.visuals import Rectangle

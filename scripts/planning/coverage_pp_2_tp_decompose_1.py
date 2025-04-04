@@ -34,7 +34,7 @@ class Decomposition:
 
         # check mid distance
         skip = set()
-        mid_dist = 100
+        mid_dist = 20
         for i, p1 in enumerate(biggest_contour):
             if i in skip:
                 continue
@@ -77,7 +77,7 @@ class Decomposition:
         for c in obs_contours:
 
             # check mid distance
-            mid_dist = 40
+            mid_dist = 20
             for i, p1 in enumerate(c):
                 if i in skip:
                     continue
