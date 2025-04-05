@@ -1,0 +1,421 @@
+""" obstacles for decomposition """
+from shapely import Polygon, Point
+from scripts.decomposition.events import Event
+
+
+class Obstacle:
+    def __init__(self, ind: int, poly: Polygon):
+        self.ns = "Obstacle"
+        self.ind: int = ind
+        self.poly: Polygon = poly
+        self.events: list[Event] = []
+        self.s_events: list[Event] = []
+        self.n_v: int = len(self.poly.exterior.coords)-1
+        #
+        self.create_events()
+        self.eval_events_line()
+        self.create_fake_events()
+        self.create_sorted_events()
+        self.eval_concave()
+        if self.ind == 0:
+            self.process_events_bounding()
+        else:
+            self.process_events_types_1()
+        self.process_fake_events()
+        # self.print_events()
+
+    def create_events(self):
+        vertices = self.poly.exterior.coords[:-1]
+        self.events = [Event(self.ind, i, v) for i, v in enumerate(vertices)]
+
+    def eval_events_line(self):
+        rem = []
+        for i, e in enumerate(self.events[0:self.n_v-2]):
+            if i in rem:
+                continue
+            i1 = i+1
+            i2 = i+2
+            dx1 = e.xy[0] - self.events[i1].xy[0]
+            dx2 = e.xy[0] - self.events[i2].xy[0]
+            if dx1 == 0 and dx2 == 0:
+                rem.append(i1)
+                while dx2 == 0:
+                    rem.append(i2)
+                    i2 += 1
+                    dx2 = self.events[i2].xy[0] - e.xy[0]
+                rem.pop()
+
+        # update events
+        ie = 0
+        events = []
+        for i, e in enumerate(self.events):
+            if i not in rem:
+                e.ind = ie
+                events.append(e)
+                ie += 1
+        self.events = events
+        self.n_v = len(self.events)
+        # update poly
+        self.poly = Polygon([Point(e.xy[0], e.xy[1]) for e in self.events])
+
+    def create_fake_events(self):
+        new_events = []
+        for i, e in enumerate(self.events[:self.n_v]):
+            new_events.append(e)
+            j = i+1
+            if j == self.n_v:
+                j = 0
+            e2 = self.events[j]
+            if e.xy[0] == e2.xy[0]:
+                e.vertical = True
+                e2.vertical = True
+                xy = (e.xy[0], (e.xy[1] + e2.xy[1]) / 2)
+                # create fake event
+                fake_event = Event(self.ind, j, xy)
+                fake_event.etype = 'updown'
+                fake_event.c_etype = 'updown'
+                fake_event.fake = True
+                if j == 0:
+                    new_events.insert(0, fake_event)
+                else:
+                    new_events.append(fake_event)
+        # add fake events to the events list
+        for i, e in enumerate(new_events):
+            e.ind = i
+
+        # sort based on ind
+        self.events = new_events  # sorted(new_events, key=lambda e: (e.ind))
+        self.n_v = len(self.events)
+
+    def create_sorted_events(self):
+        self.s_events = sorted(self.events, key=lambda e: (e.xy[0], e.xy[1]))
+        for i, e in enumerate(self.s_events):
+            e.set_s_ind(i)
+            prev_ind = (self.s_events[i].ind - 1) % (self.n_v)
+            next_ind = (self.s_events[i].ind + 1) % (self.n_v)
+            e.set_prev_ind(prev_ind)
+            e.set_next_ind(next_ind)
+
+    def eval_concave(self) -> bool:
+        for e in self.events:
+            x, y = e.xy
+            prev_x, prev_y = self.events[e.prev_ind].xy
+            next_x, next_y = self.events[e.next_ind].xy
+            # Check if the event is concave
+            e.concave = (prev_x - x) * (next_y - y) - (prev_y - y) * (next_x - x) > 0
+            e.convex = not e.concave
+
+    def process_events_bounding(self):
+        for e in self.events:
+
+            # swap prev and next indices
+            e.prev_ind, e.next_ind = e.next_ind, e.prev_ind
+
+            # x, y, preve, nexte
+            x, y = e.xy
+            next_e = self.events[e.next_ind]
+            prev_e = self.events[e.prev_ind]
+
+            # set in-out for fake events
+            step = 0.2
+            if e.fake:
+                if self.poly.contains(Point(x+step, y)):
+                    e.etype_2 = 'in'
+                elif self.poly.contains(Point(x-step, y)):
+                    e.etype_2 = 'out'
+                else:
+                    raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [fake]")
+                continue
+
+            # detect event types: up, down, updown, in, out
+            if x < prev_e.xy[0] and x < next_e.xy[0]:
+                e.etype = 'updown'
+                e.etype_2 = 'in'
+            elif x > prev_e.xy[0] and x > next_e.xy[0]:
+                e.etype = 'updown'
+                e.etype_2 = 'out'
+            elif prev_e.xy[0] < x < next_e.xy[0]:
+                e.etype = 'floor'
+            elif next_e.xy[0] < x < prev_e.xy[0]:
+                e.etype = 'ceil'
+            elif x == prev_e.xy[0] or x == next_e.xy[0]:
+                c_up = self.poly.contains(Point(x, y + step)) or self.poly.touches(Point(x, y + step))
+                c_down = self.poly.contains(Point(x, y - step)) or self.poly.touches(Point(x, y - step))
+                if c_up and c_down:
+                    e.etype = 'updown'
+                    if self.poly.contains(Point(x+step, y)):
+                        e.etype_2 = 'out'
+                    elif self.poly.contains(Point(x-step, y)):
+                        e.etype_2 = 'in'
+                    else:
+                        raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [in-out-2]")
+                elif c_up:
+                    e.etype = 'ceil'
+                elif c_down:
+                    e.etype = 'floor'
+                else:
+                    raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [up-down]")
+            else:
+                raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [in-out]")
+
+            # set endpoints
+            if e.etype == 'updown':
+                e.c_etype = 'updown'
+                e.set_endpoint_down_edge(prev_e.xy)
+                e.set_endpoint_up_edge(next_e.xy)
+            elif e.etype == 'ceil':
+                e.c_etype = 'floor'
+                e.set_endpoint_up_edge(next_e.xy)
+            elif e.etype == 'floor':
+                e.c_etype = 'ceil'
+                e.set_endpoint_down_edge(prev_e.xy)
+            else:
+                raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [e.etype]")
+
+            # detect skipped sweep events
+            if e.etype_2 == 'in':
+                if e.convex:
+                    e.etype_3 = "ivex"
+                    e.skip_sweep = True
+            elif e.etype_2 == 'out' and e.convex:
+                e.etype_3 = "ovex"
+                if not e.vertical:
+                    e.direct_trap = True
+                e.x_max = max(prev_e.xy[0], next_e.xy[0])
+
+            # if e.vertical:
+            #     e.skip_sweep = True
+
+    def process_events_types_1(self):
+        for e in self.events:
+            # x, y, preve, nexte
+            x, y = e.xy
+            next_e = self.events[e.next_ind]
+            prev_e = self.events[e.prev_ind]
+
+            # set in-out for fake events
+            step = 1.0
+            if e.fake:
+                if self.poly.contains(Point(x+step, y)):
+                    e.etype_2 = 'in'
+                elif self.poly.contains(Point(x-step, y)):
+                    e.etype_2 = 'out'
+                else:
+                    raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [fake]")
+                continue
+
+            # detect event types: up, down, updown, in, out
+            if x < prev_e.xy[0] and x < next_e.xy[0]:
+                e.etype = 'updown'
+                e.etype_2 = 'in'
+            elif x > prev_e.xy[0] and x > next_e.xy[0]:
+                e.etype = 'updown'
+                e.etype_2 = 'out'
+            elif prev_e.xy[0] < x < next_e.xy[0]:
+                e.etype = 'floor'
+            elif next_e.xy[0] < x < prev_e.xy[0]:
+                e.etype = 'ceil'
+            elif x == prev_e.xy[0] or x == next_e.xy[0]:
+                c_up = self.poly.contains(Point(x, y + step)) or self.poly.touches(Point(x, y + step))
+                c_down = self.poly.contains(Point(x, y - step)) or self.poly.touches(Point(x, y - step))
+                if c_up and c_down:
+                    e.etype = 'updown'
+                    if self.poly.contains(Point(x+step, y)):
+                        e.etype_2 = 'in'
+                    elif self.poly.contains(Point(x-step, y)):
+                        e.etype_2 = 'out'
+                    else:
+                        raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [in-out-2]")
+                elif c_up:
+                    e.etype = 'floor'
+                elif c_down:
+                    e.etype = 'ceil'
+                else:
+                    raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [up-down]")
+            else:
+                raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [in-out]")
+
+            # set endpoints
+            if e.etype == 'updown':
+                e.c_etype = 'updown'
+                e.set_endpoint_down_edge(prev_e.xy)
+                e.set_endpoint_up_edge(next_e.xy)
+            elif e.etype == 'ceil':
+                e.c_etype = 'floor'
+                e.set_endpoint_up_edge(next_e.xy)
+            elif e.etype == 'floor':
+                e.c_etype = 'ceil'
+                e.set_endpoint_down_edge(prev_e.xy)
+            else:
+                raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [e.etype]")
+
+            # detect skipped sweep events
+            if e.etype_2 == 'out':
+                if e.concave:
+                    e.etype_3 = "ocave"
+                    e.skip_sweep = True
+            elif e.etype_2 == 'in' and e.concave:
+                e.etype_3 = "icave"
+                if not e.vertical:
+                    e.direct_trap = True
+                e.x_max = max(prev_e.xy[0], next_e.xy[0])
+
+            # #
+            # if e.vertical:
+            #     e.skip_sweep = True
+
+    def process_fake_events(self):
+        for e in self.events:
+            if not e.fake:
+                continue
+            #
+            case_in = False
+            if e.etype_2 == 'in':
+                case_in = True
+            elif e.etype_2 == 'out':
+                case_in = False
+            else:
+                raise ValueError(f"[{self.ns}][process_fake_events] Invalid event type [fake]")
+
+            #
+            if case_in:
+                if e.obst_ind == 0:
+                    self.process_fake_in_events_b(e)
+                else:
+                    self.process_fake_in_events(e)
+            else:
+                if e.obst_ind == 0:
+                    self.process_fake_out_events_b(e)
+                else:
+                    self.process_fake_out_events(e)
+
+    def process_fake_in_events_b(self, e: Event):
+        prev_e = self.events[e.prev_ind]
+        next_e = self.events[e.next_ind]
+        up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
+        down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
+        e.skip_sweep = True
+        #
+        if up_e.etype == 'floor' and down_e.etype == 'updown':
+            up_e.skip_sweep = True
+            down_e.skip_sweep = False
+            down_e.etype = 'floor'
+            # no hitted: up_e, e
+        elif down_e.etype == 'ceil' and up_e.etype == 'updown':
+            down_e.skip_sweep = True
+            up_e.skip_sweep = False
+            up_e.etype = 'ceil'
+            # no hitted: down_e, e
+        elif up_e.etype == 'updown' and down_e.etype == 'updown':
+            down_e.skip_sweep = False
+            down_e.etype = 'floor'
+            up_e.skip_sweep = False
+            up_e.etype = 'ceil'
+            e.skip_sweep = False
+            # no hitted: e
+        elif up_e.etype == 'floor' and down_e.etype == 'ceil':
+            down_e.skip_sweep = True
+            up_e.skip_sweep = True
+            # no hitted: e
+        else:
+            raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
+
+    def process_fake_out_events_b(self, e: Event):
+        prev_e = self.events[e.prev_ind]
+        next_e = self.events[e.next_ind]
+        up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
+        down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
+        e.skip_sweep = True
+        #
+        if up_e.etype == 'floor' and down_e.etype == 'updown':
+            up_e.skip_sweep = False
+            down_e.skip_sweep = True
+            # no hitted: down_e, e
+        elif down_e.etype == 'ceil' and up_e.etype == 'updown':
+            down_e.skip_sweep = False
+            up_e.skip_sweep = True
+            # no hitted: up_e, e
+        elif up_e.etype == 'updown' and down_e.etype == 'updown':
+            e.skip_sweep = False
+            down_e.skip_sweep = True
+            up_e.skip_sweep = True
+            # no hitted: e
+        elif up_e.etype == 'floor' and down_e.etype == 'ceil':
+            up_e.skip_sweep = True
+            down_e.skip_sweep = False
+            # no hitted: e
+        else:
+            raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
+
+    def process_fake_in_events(self, e: Event):
+        prev_e = self.events[e.prev_ind]
+        next_e = self.events[e.next_ind]
+        up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
+        down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
+        e.skip_sweep = True
+        #
+        if up_e.etype == 'updown' and down_e.etype == 'floor':
+            down_e.skip_sweep = True
+            up_e.skip_sweep = False
+            up_e.etype = 'floor'
+            # no hitted: e, down_e
+        elif up_e.etype == 'ceil' and down_e.etype == 'updown':
+            down_e.skip_sweep = False
+            up_e.skip_sweep = True
+            down_e.etype = 'ceil'
+            # no hitted: e, up_e
+        elif up_e.etype == 'updown' and down_e.etype == 'updown':
+            up_e.skip_sweep = True
+            down_e.skip_sweep = False
+            down_e.etype = 'ceil'
+            up_e.etype = 'floor'
+            # no hitted: e
+        elif up_e.etype == 'ceil' and down_e.etype == 'floor':
+            up_e.skip_sweep = True
+            down_e.skip_sweep = True
+            e.skip_sweep = False
+            # no hitted: e
+        else:
+            raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
+
+    def process_fake_out_events(self, e: Event):
+        prev_e = self.events[e.prev_ind]
+        next_e = self.events[e.next_ind]
+        up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
+        down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
+        e.skip_sweep = True
+        #
+        if up_e.etype == 'ceil' and down_e.etype == 'updown':
+            up_e.skip_sweep = False
+            down_e.skip_sweep = True
+            down_e.etype = 'ceil'
+            # no hitted: down_e, e
+        elif down_e.etype == 'floor' and up_e.etype == 'updown':
+            down_e.skip_sweep = False
+            up_e.skip_sweep = True
+            up_e.etype = 'floor'
+            # no hitted: up_e, e
+        elif up_e.etype == 'ceil' and down_e.etype == 'floor':
+            up_e.skip_sweep = False
+            down_e.skip_sweep = False
+            # no hitted: e
+        elif up_e.etype == 'updown' and down_e.etype == 'updown':
+            up_e.skip_sweep = True
+            down_e.skip_sweep = True
+            up_e.etype = 'ceil'
+            down_e.etype = 'floor'
+            # no hitted: e, down_e, up_e
+        else:
+            raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
+
+    def inverse_event_types(self):
+        for e in self.events:
+            temp = e.prev_ind
+            e.prev_ind = e.next_ind
+            e.next_ind = temp
+            # swpap endpoints
+            e.endp_up_e, e.endp_down_e = e.endp_down_e, e.endp_up_e
+
+    def print_events(self):
+        for e in self.events:
+            print(f"Event {e.ind}: {e.xy} {e.etype}")

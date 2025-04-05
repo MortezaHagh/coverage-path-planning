@@ -74,6 +74,8 @@ class Event:
             name += f"-{self.etype}"
         if self.fake:
             name += "-fake"
+        if self.skip_sweep:
+            name += "-sk"
         self.name = name
 
 # Obstacle ====================================================================
@@ -134,34 +136,33 @@ class Obstacle:
         self.poly = Polygon([Point(e.xy[0], e.xy[1]) for e in self.events])
 
     def create_fake_events(self):
-        n_fake = 0
-        temp_dict = {}
+        new_events = []
         for i, e in enumerate(self.events[:self.n_v]):
+            new_events.append(e)
             j = i+1
             if j == self.n_v:
-                n_fake = 0
                 j = 0
-            if e.xy[0] == self.events[j].xy[0]:
-                self.events[i].vertical = True
-                self.events[j].vertical = True
-                e1 = self.events[i]
-                e2 = self.events[j]
-                xy = (e.xy[0], (e1.xy[1] + e2.xy[1]) / 2)
+            e2 = self.events[j]
+            if e.xy[0] == e2.xy[0]:
+                e.vertical = True
+                e2.vertical = True
+                xy = (e.xy[0], (e.xy[1] + e2.xy[1]) / 2)
                 # create fake event
-                fake_event = Event(self.ind, j+n_fake, xy)
+                fake_event = Event(self.ind, j, xy)
                 fake_event.etype = 'updown'
                 fake_event.c_etype = 'updown'
                 fake_event.fake = True
-                temp_dict[j+n_fake] = fake_event
-                n_fake += 1
-                for ee in self.events[j:]:
-                    ee.ind += 1
+                if j == 0:
+                    new_events.insert(0, fake_event)
+                else:
+                    new_events.append(fake_event)
         # add fake events to the events list
-        for k, v in temp_dict.items():
-            self.events.insert(k, v)
+        for i, e in enumerate(new_events):
+            e.ind = i
+
         # sort based on ind
+        self.events = new_events  # sorted(new_events, key=lambda e: (e.ind))
         self.n_v = len(self.events)
-        self.events = sorted(self.events, key=lambda e: (e.ind))
 
     def create_sorted_events(self):
         self.s_events = sorted(self.events, key=lambda e: (e.xy[0], e.xy[1]))
@@ -358,8 +359,10 @@ class Obstacle:
             if (prev_e.etype in ['ceil', 'updown']) and (next_e.etype in ['ceil', 'updown']):
                 e.skip_sweep = True
                 if prev_e.etype == 'ceil':
-                    prev_e.skip_sweep = False
-                    next_e.skip_sweep = True
+                    # prev_e.skip_sweep = False # todo
+                    # next_e.skip_sweep = True
+                    prev_e.skip_sweep = True
+                    next_e.skip_sweep = False
                 else:
                     prev_e.skip_sweep = True
                     next_e.skip_sweep = False
@@ -373,6 +376,13 @@ class Obstacle:
                     prev_e.skip_sweep = False
                     next_e.skip_sweep = True
                     prev_e.etype = 'floor'
+            # todo
+            elif e.etype_2 == 'out':
+                e.skip_sweep = True
+                prev_e.skip_sweep = False
+                next_e.skip_sweep = False
+                prev_e.vertical = False
+                next_e.vertical = False
 
     def inverse_event_types(self):
         for e in self.events:
@@ -407,7 +417,7 @@ class TrapezoidalDecomposition:
         self.create_events()
         #
         self.decompose_all()
-        self.create_final_trapezoids()
+        # self.create_final_trapezoids()
         self.visualize()
 
     def set_bounding_polygon(self, poly: Polygon):
@@ -525,13 +535,19 @@ class TrapezoidalDecomposition:
                 if hit_down_event:
                     trap2 = [base_e.xy, (base_e.xy[0], hit_down_y), hit_down_event.endp_up_e, base_e.endp_down_e]
             else:
-                if hit_down_event:
+                if hit_down_event and hit_up_event:
                     trap1 = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e,
                              hit_down_event.endp_up_e, (base_e.xy[0], hit_down_y)]
+                else:
+                    print((f"[{self.ns}] [WARN] create_trapezoid: hit_up_event and hit_down_event are both None [updown-in]"))
+                    return
+
             if not (hit_up_event or hit_down_event):
                 print((f"[{self.ns}] [WARN] updown: hit_up_event and hit_down_event are None"))
-            hit_up_event.set_endpoint_down_edge((base_e.xy[0], hit_up_y))
-            hit_down_event.set_endpoint_up_edge((base_e.xy[0], hit_down_y))
+            if hit_up_event:
+                hit_up_event.set_endpoint_down_edge((base_e.xy[0], hit_up_y))
+            if hit_down_event:
+                hit_down_event.set_endpoint_up_edge((base_e.xy[0], hit_down_y))
         #
         elif base_e.etype == 'ceil' and hit_up_event:
             trap1 = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e, base_e.endp_up_e]
@@ -660,13 +676,13 @@ class TrapezoidalDecomposition:
         for e in self.events:
             # ct = "concave" if e.concave else "convex"
             # text1 = f"{e.sd_ind}-[t1:{e.etype}]-[t2:{e.etype_2}]--{ct}"
-
-            # text1 = e.name
-            # plt.text(e.xy[0], e.xy[1], text1, fontsize=10, color='blue')
-
             # #
-            # text2 = f"{e.s_ind}-{e.ind}--[{e.prev_ind},{e.next_ind}]"
+            # text2 = f"{e.ind}--[{e.prev_ind},{e.next_ind}]"
             # plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
+
+            #
+            text1 = e.name
+            plt.text(e.xy[0], e.xy[1], text1, fontsize=10, color='blue')
 
             #
             plt.plot(e.xy[0], e.xy[1], 'o', color='purple', markersize=8)
@@ -698,7 +714,8 @@ def create_bounding():
 def create_polygons():
     # create obstacles polygons
     p1 = Polygon([(40, 60), (70, 60), (80, 66), (70, 70), (50, 80), (40, 70)])
-    p2 = Polygon([(30, 30), (40, 20), (60, 30), (70, 40), (60, 50), (30, 50), (20, 40)])
+    p2 = Polygon([(30, 30), (40, 20), (60, 30), (60, 50), (30, 50), (20, 40)])
+    # p2 = Polygon([(30, 30), (40, 20), (60, 30), (70, 40), (60, 50), (30, 50), (20, 40)])
     return [p1, p2]
 
 
