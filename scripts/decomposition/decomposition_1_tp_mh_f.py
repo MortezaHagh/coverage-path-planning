@@ -270,11 +270,20 @@ class Obstacle:
             elif next_e.xy[0] < x < prev_e.xy[0]:
                 e.etype = 'up'
             elif x == prev_e.xy[0] or x == next_e.xy[0]:
-                step = 1.0
-                if self.poly.touches(Point(x, y + step)):
-                    e.etype = 'up'
-                elif self.poly.touches(Point(x, y - step)):
+                c_up = self.poly.contains(Point(x, y + step)) or self.poly.touches(Point(x, y + step))
+                c_down = self.poly.contains(Point(x, y - step)) or self.poly.touches(Point(x, y - step))
+                if c_up and c_down:
+                    e.etype = 'updown'
+                    if self.poly.contains(Point(x+step, y)):
+                        e.etype_2 = 'in'
+                    elif self.poly.contains(Point(x-step, y)):
+                        e.etype_2 = 'out'
+                    else:
+                        raise ValueError("Invalid event type [in-out-2]")
+                elif c_up:
                     e.etype = 'down'
+                elif c_down:
+                    e.etype = 'up'
                 else:
                     raise ValueError("Invalid event type [up-down]")
             else:
@@ -317,14 +326,22 @@ class Obstacle:
             #
             if (prev_e.etype in ['up', 'updown']) and (next_e.etype in ['up', 'updown']):
                 e.skip_sweep = True
-                prev_e.skip_sweep = True
-                # prev_e.vertical = True
-                next_e.skip_sweep = False
+                if prev_e.etype == 'up':
+                    prev_e.skip_sweep = False
+                    next_e.skip_sweep = True
+                else:
+                    prev_e.skip_sweep = True
+                    next_e.skip_sweep = False
             elif (prev_e.etype in ['down', 'updown']) and (next_e.etype in ['down', 'updown']):
                 e.skip_sweep = True
-                prev_e.skip_sweep = True
-                # next_e.vertical = True
-                next_e.skip_sweep = False
+                if prev_e.etype == 'down':
+                    prev_e.skip_sweep = True
+                    next_e.skip_sweep = False
+                    next_e.etype = 'down'
+                else:
+                    prev_e.skip_sweep = False
+                    next_e.skip_sweep = True
+                    prev_e.etype = 'down'
 
     def inverse_event_types(self):
         for e in self.events:
@@ -462,8 +479,8 @@ class TrapezoidalDecomposition:
 
         #
         if not (hit_up_event or hit_down_event):
-            print((f"[{self.ns}] [WARN] create_trapezoid: hit_up_event and hit_down_event are both None"))
-            print("base_e:", base_e.sd_ind, base_e.etype, base_e.etype_2)
+            # print((f"[{self.ns}] [WARN] create_trapezoid: hit_up_event and hit_down_event are both None"))
+            # print("base_e:", base_e.sd_ind, base_e.etype, base_e.etype_2)
             return
 
         #

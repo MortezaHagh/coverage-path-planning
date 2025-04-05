@@ -5,7 +5,11 @@ from shapely import Polygon, Point
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.district.district import DistrictData, ZoneData
 from scripts.planning.base_coverage_pp import CoveragePPBase
-from scripts.decomposition.decomposition_2_bs_mh_f import TrapezoidalDecomposition
+CASE_DEC = "Dec1-Trapezoidal"  # "D2-Boustraphedon"
+if CASE_DEC == "Dec2-Boustraphedon":
+    from scripts.decomposition.decomposition_2_bs_mh_f import TrapezoidalDecomposition as CellDecomposition
+else:
+    from scripts.decomposition.decomposition_1_tp_mh_f import TrapezoidalDecomposition as CellDecomposition
 
 
 class Decomposition:
@@ -13,7 +17,7 @@ class Decomposition:
         self.ns = "Decomposition"
 
         #
-        self.tpd = TrapezoidalDecomposition()
+        self.tpd = CellDecomposition()
 
         # set bounding polygon
         self.create_bounding(zmd)
@@ -135,7 +139,7 @@ class CoveragePP(CoveragePPBase):
         base_path = self.district.dmd.orig_map_data.bcfg.district_dir
         for i, zd in enumerate(self.district.zone_datas):
             dec_path = base_path + f"/Zone_{zd.ind}"
-            dec_path = os.path.join(dec_path, 'decomposition')
+            dec_path = os.path.join(dec_path, CASE_DEC)  # decomposition
             # os.makedirs(dec_path, exist_ok=True)
             self.decompositions[i].tpd.fig.savefig(dec_path + ".png", format="png", dpi=400)
 

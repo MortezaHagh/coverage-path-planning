@@ -270,11 +270,20 @@ class Obstacle:
             elif next_e.xy[0] < x < prev_e.xy[0]:
                 e.etype = 'ceil'
             elif x == prev_e.xy[0] or x == next_e.xy[0]:
-                step = 1.0
-                if self.poly.touches(Point(x, y + step)):
-                    e.etype = 'ceil'
-                elif self.poly.touches(Point(x, y - step)):
+                c_up = self.poly.contains(Point(x, y + step)) or self.poly.touches(Point(x, y + step))
+                c_down = self.poly.contains(Point(x, y - step)) or self.poly.touches(Point(x, y - step))
+                if c_up and c_down:
+                    e.etype = 'updown'
+                    if self.poly.contains(Point(x+step, y)):
+                        e.etype_2 = 'in'
+                    elif self.poly.contains(Point(x-step, y)):
+                        e.etype_2 = 'out'
+                    else:
+                        raise ValueError("Invalid event type [in-out-2]")
+                elif c_up:
                     e.etype = 'floor'
+                elif c_down:
+                    e.etype = 'ceil'
                 else:
                     raise ValueError("Invalid event type [up-down]")
             else:
@@ -317,14 +326,22 @@ class Obstacle:
             #
             if (prev_e.etype in ['ceil', 'updown']) and (next_e.etype in ['ceil', 'updown']):
                 e.skip_sweep = True
-                prev_e.skip_sweep = True
-                # prev_e.vertical = True
-                next_e.skip_sweep = False
+                if prev_e.etype == 'ceil':
+                    prev_e.skip_sweep = False
+                    next_e.skip_sweep = True
+                else:
+                    prev_e.skip_sweep = True
+                    next_e.skip_sweep = False
             elif (prev_e.etype in ['floor', 'updown']) and (next_e.etype in ['floor', 'updown']):
                 e.skip_sweep = True
-                prev_e.skip_sweep = True
-                # next_e.vertical = True
-                next_e.skip_sweep = False
+                if prev_e.etype == 'floor':
+                    prev_e.skip_sweep = True
+                    next_e.skip_sweep = False
+                    next_e.etype = 'floor'
+                else:
+                    prev_e.skip_sweep = False
+                    next_e.skip_sweep = True
+                    prev_e.etype = 'floor'
 
     def inverse_event_types(self):
         for e in self.events:
