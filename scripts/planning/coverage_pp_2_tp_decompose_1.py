@@ -5,7 +5,7 @@ from shapely import Polygon, Point
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.district.district import DistrictData, ZoneData
 from scripts.planning.base_coverage_pp import CoveragePPBase
-CASE_DEC = "Dec1-Trapezoidal"  # "D2-Boustraphedon"
+CASE_DEC = "Dec2-Boustraphedon"  # "D2-Boustraphedon"
 if CASE_DEC == "Dec2-Boustraphedon":
     from scripts.decomposition.decomposition_2_bs_mh_f import TrapezoidalDecomposition as CellDecomposition
 else:
@@ -38,7 +38,7 @@ class Decomposition:
 
         # check mid distance
         skip = set()
-        mid_dist = 20
+        mid_dist = 1
         for i, p1 in enumerate(biggest_contour):
             if i in skip:
                 continue
@@ -81,7 +81,7 @@ class Decomposition:
         for c in obs_contours:
 
             # check mid distance
-            mid_dist = 20
+            mid_dist = 1
             for i, p1 in enumerate(c):
                 if i in skip:
                     continue
@@ -95,6 +95,9 @@ class Decomposition:
             filtered_c.reverse()
 
             # get the polygon
+            if len(filtered_c) < 3:
+                print(f"[{self.ns}]: not enough points to create polygon")
+                continue
             poly = Polygon([Point(p[0][0], y_max-p[0][1]) for p in filtered_c])
             obs_polys.append(poly)
 
@@ -126,7 +129,7 @@ class CoveragePP(CoveragePPBase):
         # 4-save decomposed trapezoids and coverage paths
 
         # for each zone # list[ZoneData]
-        for zd in self.district.zone_datas:
+        for zd in self.district.zone_datas[1:]:
             tpd = Decomposition(zd.zone_map_data)
             self.decompositions.append(tpd)
 

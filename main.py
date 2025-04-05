@@ -18,7 +18,7 @@ def main():
     ns = "main"
     if len(sys.argv) < 2:
         print(f"[{ns}] Usage: python main.py <map_name>")
-        map_name = "Map1"
+        map_name = "Map3"
     else:
         map_name = sys.argv[1]
 
