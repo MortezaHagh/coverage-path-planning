@@ -527,10 +527,13 @@ class TrapezoidalDecomposition:
         e1 = self.obstacles[e.obst_ind].events[e1_ind]
 
         # check coordinates
+        # if e1 is the base event itself
         if e1.sd_ind == base_e.sd_ind:
             return False, None
+        # if x base_e is left to e1
         if e1.xy[0] >= base_e.xy[0]:
             return False, None
+        # check y coordinates
         if e1.xy[1] < base_e.xy[1] and e.xy[1] < base_e.xy[1]:
             return False, None
 
@@ -553,10 +556,13 @@ class TrapezoidalDecomposition:
         e2 = self.obstacles[e.obst_ind].events[e2_ind]
 
         # check coordinates
+        # if e2 is the base event itself
         if e2.sd_ind == base_e.sd_ind:
             return False, None
+        # if x base_e is left to e2
         if e2.xy[0] > base_e.xy[0]:
             return False, None
+        # check y coordinates
         if e2.xy[1] > base_e.xy[1] and e.xy[1] > base_e.xy[1]:
             return False, None
 

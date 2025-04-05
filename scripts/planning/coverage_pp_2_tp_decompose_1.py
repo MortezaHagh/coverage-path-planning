@@ -5,7 +5,7 @@ from shapely import Polygon, Point
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.district.district import DistrictData, ZoneData
 from scripts.planning.base_coverage_pp import CoveragePPBase
-from scripts.decomposition.tp_decomposition_mh_f import TrapezoidalDecomposition
+from scripts.decomposition.decomposition_2_bs_mh_f import TrapezoidalDecomposition
 
 
 class Decomposition:
