@@ -295,27 +295,31 @@ class Obstacle:
         up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
         down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
         e.skip_sweep = True
+        e.skip_hit = True
         #
         if up_e.etype == 'floor' and down_e.etype == 'updown':
             up_e.skip_sweep = True
             down_e.skip_sweep = False
             down_e.etype = 'floor'
+            up_e.skip_hit = True
             # no hitted: up_e, e
         elif down_e.etype == 'ceil' and up_e.etype == 'updown':
             down_e.skip_sweep = True
             up_e.skip_sweep = False
             up_e.etype = 'ceil'
+            down_e.skip_hit = True
             # no hitted: down_e, e
         elif up_e.etype == 'updown' and down_e.etype == 'updown':
             down_e.skip_sweep = False
             down_e.etype = 'floor'
             up_e.skip_sweep = False
             up_e.etype = 'ceil'
-            e.skip_sweep = False
             # no hitted: e
         elif up_e.etype == 'floor' and down_e.etype == 'ceil':
             down_e.skip_sweep = True
             up_e.skip_sweep = True
+            down_e.skip_hit = True
+            up_e.skip_hit = True
             # no hitted: e
         else:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
@@ -326,19 +330,25 @@ class Obstacle:
         up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
         down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
         e.skip_sweep = True
+        e.skip_hit = True
         #
         if up_e.etype == 'floor' and down_e.etype == 'updown':
             up_e.skip_sweep = False
             down_e.skip_sweep = True
+            down_e.skip_hit = True
             # no hitted: down_e, e
         elif down_e.etype == 'ceil' and up_e.etype == 'updown':
             down_e.skip_sweep = False
             up_e.skip_sweep = True
+            up_e.skip_hit = True
             # no hitted: up_e, e
         elif up_e.etype == 'updown' and down_e.etype == 'updown':
             e.skip_sweep = False
+            e.etype_2 = 'in'
             down_e.skip_sweep = True
             up_e.skip_sweep = True
+            down_e.skip_hit = True
+            up_e.skip_hit = True
             # no hitted: e
         elif up_e.etype == 'floor' and down_e.etype == 'ceil':
             up_e.skip_sweep = True
@@ -418,4 +428,4 @@ class Obstacle:
 
     def print_events(self):
         for e in self.events:
-            print(f"Event {e.ind}: {e.xy} {e.etype}")
+            print(f"[self.ns]: Event {e.ind}: {e.xy} {e.etype}")

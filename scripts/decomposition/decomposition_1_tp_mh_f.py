@@ -52,9 +52,6 @@ class TrapezoidalDecomposition:
         for i, base_e in enumerate(self.events[1:]):
             ind = i + 1
 
-            if base_e.sd_ind == 421:
-                pass
-
             # Skip border and events
             if base_e.skip_sweep or base_e.done:
                 continue
@@ -72,6 +69,14 @@ class TrapezoidalDecomposition:
             # Create trapezoids based on event type
             self.create_trapezoid(base_e, hit_up_event, hit_down_event, hit_up_y, hit_down_y)
 
+            # update done status of lower events at same x coordinate
+            if hit_up_event and i > 2:
+                j = i-1
+                lower_e = self.events[j]
+                while lower_e.xy[0] == base_e.xy[0]:
+                    j -= 1
+                    lower_e = self.events[j]
+
     def expand_hit(self, base_e: Event, base_i: int):
         # Initialize hit variables
         hit_up_y, hit_down_y = math.inf, -math.inf
@@ -83,15 +88,8 @@ class TrapezoidalDecomposition:
 
         # Iterate over events
         for e in self.events[base_i+1:]:
-            if e.fake:
+            if e.fake or e.skip_hit:
                 continue
-
-            # check fake vertices
-            if base_e.fake and base_e.obst_ind == e.obst_ind:
-                continue
-
-            # if (base_e.fake and e.vertical) and base_e.obst_ind == e.obst_ind:  # and (abs(base_e.sd_ind - e.sd_ind) == 1):
-            #     continue
 
             # Evaluate event based on base_e type
             success_up, y_up = False, None
@@ -116,6 +114,8 @@ class TrapezoidalDecomposition:
             if hit_up_event.xy[0] == base_e.xy[0]:
                 if hit_up_event.etype == 'floor':
                     hit_up_event.done = True
+                elif hit_up_event.etype == 'updown':
+                    hit_up_event.can_down = False
         if hit_down_event:
             if hit_down_event.xy[0] == base_e.xy[0]:
                 if hit_down_event.etype == 'ceil':
@@ -149,11 +149,11 @@ class TrapezoidalDecomposition:
                     trap1 = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.endp_down_e,
                              hit_down_event.endp_up_e, (base_e.xy[0], hit_down_y)]
                 else:
-                    print((f"[{self.ns}] [WARN] create_trapezoid: hit_up_event and hit_down_event are both None [updown-in]"))
+                    print((f"[{self.ns}][create_trapezoid][WARN]: hit_up_event and hit_down_event are both None [updown-in]"))
                     return
 
             if not (hit_up_event or hit_down_event):
-                print((f"[{self.ns}] [WARN] updown: hit_up_event and hit_down_event are None"))
+                print((f"[{self.ns}][create_trapezoid][WARN]: updown: hit_up_event and hit_down_event are None"))
             if hit_up_event:
                 hit_up_event.set_endpoint_down_edge((base_e.xy[0], hit_up_y))
             if hit_down_event:
@@ -173,7 +173,7 @@ class TrapezoidalDecomposition:
         if trap2:
             self.trapezoids.append(Polygon(trap2))
         if trap1 is None and trap2 is None:
-            print((f"[{self.ns}], [ERROR] Invalid trapezoid creation"))
+            print((f"[{self.ns}][create_trapezoid][ERROR]: Invalid trapezoid creation"))
 
     def evel_event_up(self, base_e: Event, e: Event, y_hit: float) -> bool:
         # based even type is 'ceil'
@@ -184,15 +184,15 @@ class TrapezoidalDecomposition:
         if e.direct_trap and base_e.xy[0] > e.x_max:
             return False, None
 
-        # reach to higher updown event # todo y_lim
+        # reach to higher updown event
         new_y_hit = e.xy[1]
+        if new_y_hit > base_e.y_max_lim:
+            return False, None
         if e.xy[0] == base_e.xy[0] and new_y_hit < y_hit:
             if e.etype == 'updown':
                 if e.etype_2 == 'out':
-                    e.can_down = False
-                    base_e.can_up = False
+                    base_e.y_max_lim = y_hit
                     return True, new_y_hit
-                e.done = True
                 return False, None
 
         # type is 'floor'
@@ -214,6 +214,9 @@ class TrapezoidalDecomposition:
         # incline
         theta = math.atan2(e.xy[1] - e1.xy[1], e.xy[0] - e1.xy[0])
         new_y_hit = math.tan(theta) * (base_e.xy[0] - e1.xy[0]) + e1.xy[1]
+        # check y coordinates relative to max limit
+        if new_y_hit > base_e.y_max_lim:
+            return False, None
         if new_y_hit < y_hit:
             return True, new_y_hit
         #
@@ -290,9 +293,9 @@ class TrapezoidalDecomposition:
             # text2 = f"{e.ind}--[{e.prev_ind},{e.next_ind}]"
             # plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
 
-            #
-            text1 = e.name
-            plt.text(e.xy[0], e.xy[1], text1, fontsize=10, color='blue')
+            # #
+            # text1 = e.name
+            # plt.text(e.xy[0], e.xy[1], text1, fontsize=10, color='blue')
 
             #
             # plt.plot(e.xy[0], e.xy[1], 'o', color='purple', markersize=8)
@@ -307,7 +310,7 @@ class TrapezoidalDecomposition:
         for i, trap in enumerate(self.trapezoids):
             x, y = trap.exterior.xy
             plt.fill(x, y, alpha=0.5, fc='yellow', ec='black', linewidth=1)
-            plt.text(trap.centroid.x, trap.centroid.y, f"[{i}]", fontsize=8, color='black')
+            # plt.text(trap.centroid.x, trap.centroid.y, f"[{i}]", fontsize=5, color='black')
 
         #
         self.fig = fig

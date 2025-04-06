@@ -15,9 +15,13 @@ else:
 class Decomposition:
     def __init__(self, zmd: ZoneMapData):
         self.ns = "Decomposition"
+        print(f"[{self.ns}]: Step: decomposing zone {zmd.ind}")
 
         #
         self.tpd = CellDecomposition()
+
+        # settinfs
+        self.dec_mid_dist = 2
 
         # set bounding polygon
         self.create_bounding(zmd)
@@ -38,7 +42,6 @@ class Decomposition:
 
         # check mid distance
         skip = set()
-        mid_dist = 1
         for i, p1 in enumerate(biggest_contour):
             if i in skip:
                 continue
@@ -46,7 +49,7 @@ class Decomposition:
                 if j in skip:
                     continue
                 dist = np.linalg.norm(p1 - biggest_contour[j])
-                if dist < mid_dist:
+                if dist < self.dec_mid_dist:
                     skip.add(j)
         filtered_c = [biggest_contour[i] for i in range(len(biggest_contour)) if i not in skip]
         # filtered_c.reverse()
@@ -58,7 +61,7 @@ class Decomposition:
         # get obstacle contours inside the biggest contour from map imag
         contours, hierarchy = cv.findContours(zmd.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         # get the biggest contour
-        biggest_contour = max(contours, key=cv.contourArea)
+        # biggest_contour = max(contours, key=cv.contourArea) # todo
 
         # get the obstacle contours
         obs_contours = []
@@ -68,7 +71,7 @@ class Decomposition:
 
         #
         if len(obs_contours) == 0:
-            print(f"[{self.ns}]: no obstacle contours found")
+            print(f"[{self.ns}]: no obstacle contours found in zone {zmd.ind}")
             return
 
         # #
@@ -81,7 +84,6 @@ class Decomposition:
         for c in obs_contours:
 
             # check mid distance
-            mid_dist = 1
             for i, p1 in enumerate(c):
                 if i in skip:
                     continue
@@ -89,7 +91,7 @@ class Decomposition:
                     if i in skip:
                         continue
                     dist = np.linalg.norm(p1 - c[j])
-                    if dist < mid_dist:
+                    if dist < self.dec_mid_dist:
                         skip.add(j)
             filtered_c = [c[i] for i in range(len(c)) if i not in skip]
             filtered_c.reverse()
@@ -106,11 +108,11 @@ class Decomposition:
 
 
 class CoveragePP(CoveragePPBase):
-    """  TrapDecCPP  """
+    """  DecCoveragePP  """
 
     def __init__(self, district: DistrictData):
         super().__init__(district)
-        self.ns = "TrapDecCPP"
+        self.ns = "DecCoveragePP"
         print(f"[{self.ns}]: Step: coverage path planning")
 
         #
@@ -118,7 +120,7 @@ class CoveragePP(CoveragePPBase):
 
         # coverage path planning for all zones
         self.trap_dec_cpp()
-        # self.save_decomposition()
+        self.save_decomposition()
 
     def trap_dec_cpp(self):
         print(f"[{self.ns}]: start trap_dec_cpp for all zones")
@@ -129,7 +131,7 @@ class CoveragePP(CoveragePPBase):
         # 4-save decomposed trapezoids and coverage paths
 
         # for each zone # list[ZoneData]
-        for zd in self.district.zone_datas[1:]:
+        for zd in self.district.zone_datas:
             tpd = Decomposition(zd.zone_map_data)
             self.decompositions.append(tpd)
 
@@ -142,13 +144,11 @@ class CoveragePP(CoveragePPBase):
         base_path = self.district.dmd.orig_map_data.bcfg.district_dir
         for i, zd in enumerate(self.district.zone_datas):
             dec_path = base_path + f"/Zone_{zd.ind}"
-            dec_path = os.path.join(dec_path, CASE_DEC)  # decomposition
-            # os.makedirs(dec_path, exist_ok=True)
+            dec_path = os.path.join(dec_path, CASE_DEC)
             self.decompositions[i].tpd.fig.savefig(dec_path + ".png", format="png", dpi=400)
 
     def coverage_planning(self):
         print(f"[{self.ns}]: simple coverage path planning")
-
         # for each zone # list[ZoneData]
         for zd in self.district.zone_datas:
             self.zone_cpp(zd)

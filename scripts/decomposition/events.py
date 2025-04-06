@@ -1,4 +1,5 @@
 """ Events for decomposition """
+import math
 
 
 class Event:
@@ -6,6 +7,8 @@ class Event:
         self.ns = "Event"
         self.xy = v
         self.x_max = None
+        self.y_max_lim = math.inf
+        # self.y_min_lim = -math.inf
         #
         self.etype: str = None      # ceil, floor, updown
         self.etype_2: str = None    # out, in
@@ -33,6 +36,7 @@ class Event:
         #
         #
         self.skip_sweep = False
+        self.skip_hit = False
         self.direct_trap = False
         #
         self.done = False
@@ -74,4 +78,6 @@ class Event:
             name += "-fake"
         if self.skip_sweep:
             name += "-sk"
+        if self.skip_hit:
+            name += "-h"
         self.name = name
