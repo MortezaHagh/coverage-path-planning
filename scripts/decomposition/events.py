@@ -28,8 +28,11 @@ class Event:
         self.hit_up_event: Event = None
         self.hit_down_event: Event = None
         #
-        self.endp_up_e: tuple[float, float] = None
-        self.endp_down_e: tuple[float, float] = None
+        self.end_up_ed_xy: tuple[float, float] = None
+        self.end_down_ed_xy: tuple[float, float] = None
+        #
+        self.endpoint_cil = []
+        self.has_adj = True
         #
         self.fake: bool = False
         self.vertical: bool = False
@@ -59,10 +62,13 @@ class Event:
         self.next_ind = ind
 
     def set_endpoint_up_edge(self, xy: tuple[float, float]):
-        self.endp_up_e = xy
+        self.end_up_ed_xy = xy
 
     def set_endpoint_down_edge(self, xy: tuple[float, float]):
-        self.endp_down_e = xy
+        self.end_down_ed_xy = xy
+
+    def add_endpoint_ci(self, ci: str):
+        self.endpoint_cil.append(ci)
 
     def update_name(self):
         name = f"{self.sd_ind}"

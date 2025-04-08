@@ -107,7 +107,6 @@ class Obstacle:
 
     def process_events_bounding(self):
         for e in self.events:
-
             # swap prev and next indices
             e.prev_ind, e.next_ind = e.next_ind, e.prev_ind
 
@@ -181,10 +180,8 @@ class Obstacle:
                 e.etype_3 = "ovex"
                 if not e.vertical:
                     e.direct_trap = True
+                    e.has_adj = False
                 e.x_max = max(prev_e.xy[0], next_e.xy[0])
-
-            # if e.vertical:
-            #     e.skip_sweep = True
 
     def process_events_types_1(self):
         for e in self.events:
@@ -258,16 +255,16 @@ class Obstacle:
                 e.etype_3 = "icave"
                 if not e.vertical:
                     e.direct_trap = True
+                    e.has_adj = False
                 e.x_max = max(prev_e.xy[0], next_e.xy[0])
-
-            # #
-            # if e.vertical:
-            #     e.skip_sweep = True
 
     def process_fake_events(self):
         for e in self.events:
             if not e.fake:
                 continue
+            #
+            e.skip_hit = True
+
             #
             case_in = False
             if e.etype_2 == 'in':
@@ -295,32 +292,29 @@ class Obstacle:
         up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
         down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
         e.skip_sweep = True
-        e.skip_hit = True
         #
         if up_e.etype == 'floor' and down_e.etype == 'updown':
             up_e.skip_sweep = True
             down_e.skip_sweep = False
             down_e.etype = 'floor'
             up_e.skip_hit = True
-            # no hitted: up_e, e
         elif down_e.etype == 'ceil' and up_e.etype == 'updown':
             down_e.skip_sweep = True
             up_e.skip_sweep = False
             up_e.etype = 'ceil'
             down_e.skip_hit = True
-            # no hitted: down_e, e
         elif up_e.etype == 'updown' and down_e.etype == 'updown':
             down_e.skip_sweep = False
             down_e.etype = 'floor'
             up_e.skip_sweep = False
             up_e.etype = 'ceil'
-            # no hitted: e
         elif up_e.etype == 'floor' and down_e.etype == 'ceil':
             down_e.skip_sweep = True
             up_e.skip_sweep = True
             down_e.skip_hit = True
             up_e.skip_hit = True
-            # no hitted: e
+            #
+            e.has_adj = False
         else:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
@@ -330,18 +324,15 @@ class Obstacle:
         up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
         down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
         e.skip_sweep = True
-        e.skip_hit = True
         #
         if up_e.etype == 'floor' and down_e.etype == 'updown':
             up_e.skip_sweep = False
             down_e.skip_sweep = True
             down_e.skip_hit = True
-            # no hitted: down_e, e
         elif down_e.etype == 'ceil' and up_e.etype == 'updown':
             down_e.skip_sweep = False
             up_e.skip_sweep = True
             up_e.skip_hit = True
-            # no hitted: up_e, e
         elif up_e.etype == 'updown' and down_e.etype == 'updown':
             e.skip_sweep = False
             e.etype_2 = 'in'
@@ -349,11 +340,11 @@ class Obstacle:
             up_e.skip_sweep = True
             down_e.skip_hit = True
             up_e.skip_hit = True
-            # no hitted: e
         elif up_e.etype == 'floor' and down_e.etype == 'ceil':
             up_e.skip_sweep = True
             down_e.skip_sweep = False
-            # no hitted: e
+            #
+            down_e.has_adj = False
         else:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
@@ -368,23 +359,19 @@ class Obstacle:
             down_e.skip_sweep = True
             up_e.skip_sweep = False
             up_e.etype = 'floor'
-            # no hitted: e, down_e
         elif up_e.etype == 'ceil' and down_e.etype == 'updown':
             down_e.skip_sweep = False
             up_e.skip_sweep = True
             down_e.etype = 'ceil'
-            # no hitted: e, up_e
         elif up_e.etype == 'updown' and down_e.etype == 'updown':
             up_e.skip_sweep = True
             down_e.skip_sweep = False
             down_e.etype = 'ceil'
             up_e.etype = 'floor'
-            # no hitted: e
         elif up_e.etype == 'ceil' and down_e.etype == 'floor':
             up_e.skip_sweep = True
             down_e.skip_sweep = True
             e.skip_sweep = False
-            # no hitted: e
         else:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
@@ -399,22 +386,18 @@ class Obstacle:
             up_e.skip_sweep = False
             down_e.skip_sweep = True
             down_e.etype = 'ceil'
-            # no hitted: down_e, e
         elif down_e.etype == 'floor' and up_e.etype == 'updown':
             down_e.skip_sweep = False
             up_e.skip_sweep = True
             up_e.etype = 'floor'
-            # no hitted: up_e, e
         elif up_e.etype == 'ceil' and down_e.etype == 'floor':
             up_e.skip_sweep = False
             down_e.skip_sweep = False
-            # no hitted: e
         elif up_e.etype == 'updown' and down_e.etype == 'updown':
             up_e.skip_sweep = True
             down_e.skip_sweep = True
             up_e.etype = 'ceil'
             down_e.etype = 'floor'
-            # no hitted: e, down_e, up_e
         else:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
@@ -424,7 +407,7 @@ class Obstacle:
             e.prev_ind = e.next_ind
             e.next_ind = temp
             # swpap endpoints
-            e.endp_up_e, e.endp_down_e = e.endp_down_e, e.endp_up_e
+            e.end_up_ed_xy, e.end_down_ed_xy = e.end_down_ed_xy, e.end_up_ed_xy
 
     def print_events(self):
         for e in self.events:
