@@ -294,28 +294,10 @@ class TrapezoidalDecomposition:
             ci_upe, ci_downe = None, None
             current_cell: Cell = None
 
-            if e.sd_ind == 50:
-                pass
-
             # hit_up_event
             if e.hit_up_event:
                 hit_up_event = e.hit_up_event
-
-                # #
-                # keep = False
-                # obst_ind = hit_up_event.obst_ind
-                # next_e = self.obstacles[obst_ind].events[hit_up_event.next_ind]
-                # if next_e.xy[0] <= e.hit_up_event.xy[0]:
-                #     while next_e.xy[0] <= e.hit_up_event.xy[0] and next_e.ind < self.obstacles[obst_ind].n_v-1:
-                #         hit_up_event = next_e
-                #         next_e = self.obstacles[obst_ind].events[hit_up_event.next_ind]
-                #     hit_up_event = next_e
-                #     keep = True
-
-                # #
                 ci_curr = e.endpoint_cil.pop(0)
-                # if not keep:
-
                 ci_upe = hit_up_event.endpoint_cil.pop(0)
                 if not ci_curr == ci_upe:
                     raise ValueError(f"[{self.ns}][find_adjacents_cells][ERROR]: ci_up and ci_upe are not equal")
@@ -399,9 +381,9 @@ class TrapezoidalDecomposition:
             # text2 = f"{e.ind}--[{e.prev_ind},{e.next_ind}]"
             # plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
 
-            # name
-            text1 = e.name
-            self.ax.text(e.xy[0], e.xy[1], text1, fontsize=8, color='blue')
+            # # name
+            # text1 = e.name
+            # self.ax.text(e.xy[0], e.xy[1], text1, fontsize=8, color='blue')
 
             # # endpoint_cil
             # txt = f"cil:{e.endpoint_cil}"
@@ -417,15 +399,15 @@ class TrapezoidalDecomposition:
                 self.ax.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_down_y], '--', color='orange', linewidth=1)
 
     def vizualize_cells(self):
-        for cell in self.cells[42:44]:
+        for cell in self.cells:
             # fill
             x, y = cell.poly.exterior.xy
             self.ax.fill(x, y, alpha=0.5, fc='yellow', ec='black', linewidth=1)
             # centroid
             self.ax.plot(cell.poly.centroid.x, cell.poly.centroid.y, 'o', color='purple', markersize=8)
 
-            # text
-            plt.text(cell.poly.centroid.x, cell.poly.centroid.y, f"[{cell.ind}]", fontsize=5, color='black')
+            # # text
+            # plt.text(cell.poly.centroid.x, cell.poly.centroid.y, f"[{cell.ind}]", fontsize=5, color='black')
             # self.ax.text(cell.poly.centroid.x, cell.poly.centroid.y,
             #              f"[{cell.ind}][{cell.down_adj_ci}, {cell.up_adj_ci}]", fontsize=5, color='black')
 
