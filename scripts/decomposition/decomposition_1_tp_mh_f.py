@@ -14,14 +14,29 @@ class Cell:
         self.up_adj_ci = None
         self.down_adj_ci = None
         self.n_adj = 0
+        self.parent_up_ci = None
+        self.parent_down_ci = None
+        self.n_parent = 0
 
     def set_up_adj_ci(self, ci: str):
-        self.up_adj_ci = ci
-        self.n_adj += 1
+        if ci:
+            self.up_adj_ci = ci
+            self.n_adj += 1
 
     def set_down_adj_ci(self, ci: str):
-        self.down_adj_ci = ci
-        self.n_adj += 1
+        if ci:
+            self.down_adj_ci = ci
+            self.n_adj += 1
+
+    def set_parent_up_ci(self, ci: str):
+        if ci:
+            self.parent_up_ci = ci
+            self.n_parent += 1
+
+    def set_parent_down_ci(self, ci: str):
+        if ci:
+            self.parent_down_ci = ci
+            self.n_parent += 1
 
 
 class TrapezoidalDecomposition:
@@ -155,7 +170,7 @@ class TrapezoidalDecomposition:
         #
         if base_e.direct_trap:
             trap1 = [base_e.xy, base_e.end_down_ed_xy, base_e.end_up_ed_xy]
-            base_e.add_endpoint_ci(self.n_cells)
+            base_e.set_base_ci_up(self.n_cells)
             self.add_cell(Polygon(trap1))
             return
 
@@ -192,18 +207,24 @@ class TrapezoidalDecomposition:
         elif base_e.etype == 'floor' and hit_down_event:
             trap_down = [base_e.xy, base_e.end_down_ed_xy, hit_down_event.end_up_ed_xy, (base_e.xy[0], hit_down_y)]
 
-        #
+        dn = 0
         if hit_up_event:
+            dn = 1
+            if base_e.etype_2 == 'in':
+                dn = 0
+            base_e.set_base_ci_up(self.n_cells)
+            hit_up_event.add_down_ci_d(base_e.sd_ind, self.n_cells)
             hit_up_event.set_endpoint_down_edge((base_e.xy[0], hit_up_y))
-            hit_up_event.add_endpoint_ci(self.n_cells)
-            base_e.add_endpoint_ci(self.n_cells)
+            # hit_up_event.add_end_down_ed_ci(self.n_cells)
+            # base_e.add_endpoint_ci(self.n_cells)
+            # base_e.add_end_down_ed_ci(self.n_cells)
         if hit_down_event:
+            base_e.set_base_ci_down(self.n_cells+dn)
+            hit_down_event.add_up_ci_d(base_e.sd_ind, self.n_cells+dn)
             hit_down_event.set_endpoint_up_edge((base_e.xy[0], hit_down_y))
-            dn = 0
-            if base_e.etype_2 == 'out':
-                dn = 1
-            hit_down_event.add_endpoint_ci(self.n_cells+dn)
-            base_e.add_endpoint_ci(self.n_cells+dn)
+            # hit_down_event.add_end_up_ed_ci(self.n_cells+dn)
+            # base_e.add_endpoint_ci(self.n_cells+dn)
+            # base_e.add_end_up_ed_ci(self.n_cells+dn)
 
         #
         if trap_up:
@@ -294,51 +315,103 @@ class TrapezoidalDecomposition:
             ci_upe, ci_downe = None, None
             current_cell: Cell = None
 
-            # hit_up_event
+            if e.sd_ind == 431:
+                pass
+
             if e.hit_up_event:
+                success = False
                 hit_up_event = e.hit_up_event
-                ci_curr = e.endpoint_cil.pop(0)
-                ci_upe = hit_up_event.endpoint_cil.pop(0)
-                if not ci_curr == ci_upe:
-                    raise ValueError(f"[{self.ns}][find_adjacents_cells][ERROR]: ci_up and ci_upe are not equal")
+                ci_curr = e.base_ci_up
                 current_cell: Cell = self.cells[ci_curr]
-                len_up_cil = len(hit_up_event.endpoint_cil)
-                if len_up_cil > 0:
-                    up_adj_ci = hit_up_event.endpoint_cil[0]
-                    current_cell.set_up_adj_ci(up_adj_ci)
+                ind = hit_up_event.down_cil_k.index(e.sd_ind)
+                if len(hit_up_event.down_cil_k) > ind+1:
+                    val = e.hit_up_event.down_cil_k[ind+1]
+                    up_adj_ci = e.hit_up_event.down_cil_d[val]
+                    success = True
+                elif hit_up_event.direct_trap:
+                    up_adj_ci = hit_up_event.base_ci_up
+                    success = True
                 else:
-                    if hit_up_event.etype == 'floor':
-                        obst_ind = hit_up_event.obst_ind
-                        next_e = self.obstacles[obst_ind].events[hit_up_event.next_ind]
-                        if len(next_e.endpoint_cil) > 0:
-                            up_adj_ci = next_e.endpoint_cil[0]
-                            current_cell.set_up_adj_ci(up_adj_ci)
+                    up_adj_ci = hit_up_event.base_ci_down
+                    if up_adj_ci:
+                        success = True
                     else:
-                        print(f"[{self.ns}][find_adjacents_cells][ERROR]: hit_up_event has no cil")
-                        print(f"e: {e.ind}")
-                        print(f"hit_up_event: {hit_up_event.ind}")
+                        if hit_up_event.etype == 'floor':
+                            up_next = hit_up_event.next_ind
+                            up_next_event = self.obstacles[hit_up_event.obst_ind].events[up_next]
+                            if len(up_next_event.down_cil_k) > 0:
+                                val = up_next_event.down_cil_k[0]
+                                up_adj_ci = up_next_event.down_cil_d[val]
+                                success = True
+                            else:
+                                up_adj_ci = up_next_event.base_ci_down
+                                if up_adj_ci:
+                                    success = True
+                    if not success:
+                        up_next = hit_up_event.next_ind
+                        up_next_event = self.obstacles[hit_up_event.obst_ind].events[up_next]
+                        down_prev = e.prev_ind
+                        down_prev_event = self.obstacles[e.obst_ind].events[down_prev]
+                        if up_next_event.sd_ind in down_prev_event.up_cil_k:
+                            up_adj_ci = up_next_event.base_ci_down
+                        elif up_next_event.sd_ind in down_prev_event.up_cil_k:
+                            up_adj_ci = up_next_event.base_ci_down
+                        else:
+                            if down_prev_event.fake:
+                                down_prev = down_prev_event.prev_ind
+                                down_prev_event = self.obstacles[e.obst_ind].events[down_prev]
+                                down_prev = down_prev_event.prev_ind
+                                down_prev_event = self.obstacles[e.obst_ind].events[down_prev]
+                            if up_next_event.fake:
+                                up_next = up_next_event.next_ind
+                                up_next_event = self.obstacles[hit_up_event.obst_ind].events[up_next]
+                                up_next = up_next_event.next_ind
+                                up_next_event = self.obstacles[hit_up_event.obst_ind].events[up_next]
+                            if down_prev_event.sd_ind in up_next_event.down_cil_k:
+                                up_adj_ci = down_prev_event.base_ci_up
+                            elif up_next_event.sd_ind in down_prev_event.up_cil_k:
+                                up_adj_ci = up_next_event.base_ci_down
+                if up_adj_ci:
+                    current_cell.set_up_adj_ci(up_adj_ci)
+                    self.cells[up_adj_ci].set_parent_up_ci(ci_curr)
+
+            # end if hit_up_event:
 
             # hit_down_event
             if e.hit_down_event:
-                ci_curr = e.endpoint_cil.pop(0)
-                ci_downe = e.hit_down_event.endpoint_cil.pop(0)
-                if not ci_curr == ci_downe:
-                    raise ValueError(f"[{self.ns}][find_adjacents_cells][ERROR]: ci_down and ci_downe are not equal")
+                ci_curr = e.base_ci_down
                 current_cell: Cell = self.cells[ci_curr]
-                if len(e.hit_down_event.endpoint_cil) > 0:
-                    down_adj_ci = e.hit_down_event.endpoint_cil[0]
+                ind = e.hit_down_event.up_cil_k.index(e.sd_ind)
+                if len(e.hit_down_event.up_cil_k) > ind+1:
+                    val = e.hit_down_event.up_cil_k[ind+1]
+                    down_adj_ci = e.hit_down_event.up_cil_d[val]
+                else:
+                    down_adj_ci = e.hit_down_event.base_ci_up
+                    if down_adj_ci:
+                        pass
+                    else:
+                        up_next = e.next_ind
+                        up_next_event = self.obstacles[e.obst_ind].events[up_next]
+                        down_prev = e.hit_down_event.prev_ind
+                        down_prev_event = self.obstacles[e.obst_ind].events[down_prev]
+                        if up_next_event.sd_ind in down_prev_event.down_cil_k:
+                            down_adj_ci = up_next_event.base_ci_up
+                        elif down_prev_event.sd_ind in up_next_event.up_cil_k:
+                            down_adj_ci = down_prev_event.base_ci_down
+
+                if down_adj_ci:
                     current_cell.set_down_adj_ci(down_adj_ci)
+                    self.cells[down_adj_ci].set_parent_down_ci(ci_curr)
+
+            # if ci_downe and ci_upe:
+            #     if not ci_downe == ci_upe:
+            #         if not e.etype_2 == 'out':
+            #             print(f"[{self.ns}][find_adjacents_cells][ERROR]: ci_down and ci_up are not equal")
+            #             print(f"ci_down: {ci_downe}, ci_up: {ci_upe}")
+            #             # raise ValueError(f"[{self.ns}][find_adjacents_cells][ERROR]: ci_up and ci_down are not equal")
 
             #
-            if ci_downe and ci_upe:
-                if not ci_downe == ci_upe:
-                    if not e.etype_2 == 'out':
-                        print(f"[{self.ns}][find_adjacents_cells][ERROR]: ci_down and ci_up are not equal")
-                        print(f"ci_down: {ci_downe}, ci_up: {ci_upe}")
-                        # raise ValueError(f"[{self.ns}][find_adjacents_cells][ERROR]: ci_up and ci_down are not equal")
-
-            #
-            if (e.ind < self.n_events-4) and current_cell and e.has_adj:
+            if (e.sd_ind < self.n_events-4) and current_cell and e.has_adj:
                 if current_cell.n_adj == 0:
                     print(f"[{self.ns}][find_adjacents_cells][ERROR]: ci_up and ci_down are None")
                     print(f"e: {e.sd_ind}")
@@ -371,8 +444,11 @@ class TrapezoidalDecomposition:
             plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
 
     def visualize_events(self):
-        # n = 61
-        # self.ax.plot(self.events[n].xy[0], self.events[n].xy[1], 'o', color='black', markersize=5)
+        # n = 346
+        # self.ax.plot(self.events[n].xy[0], self.events[n].xy[1], 'o', color='black', markersize=10)
+        # n = 347
+        # self.ax.plot(self.events[n].xy[0], self.events[n].xy[1], 'o', color='black', markersize=10)
+
         # display events
         for e in self.events:
             # ct = "concave" if e.concave else "convex"
@@ -381,35 +457,39 @@ class TrapezoidalDecomposition:
             # text2 = f"{e.ind}--[{e.prev_ind},{e.next_ind}]"
             # plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
 
-            # # name
-            # text1 = e.name
-            # self.ax.text(e.xy[0], e.xy[1], text1, fontsize=8, color='blue')
+            # name
+            text1 = e.name
+            self.ax.text(e.xy[0], e.xy[1], text1, fontsize=8, color='blue')
 
             # # endpoint_cil
-            # txt = f"cil:{e.endpoint_cil}"
+            # txt = f"cil:{e.endpoint_cil}[upc:{e.end_up_ed_cil}-downc:{e.end_down_ed_cil}]"
             # plt.text(e.xy[0], e.xy[1]-3, txt, fontsize=10, color='blue')
 
-            #
-            # plt.plot(e.xy[0], e.xy[1], 'o', color='purple', markersize=8)
-            if e.hit_up_event is not None:
-                # plt.plot(e.xy[0], e.hit_up_y, 'o', color='black', markersize=5)
-                self.ax.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_up_y], '--', color='orange', linewidth=1)
-            if e.hit_down_event is not None:
-                # plt.plot(e.xy[0], e.hit_down_y, 'o', color='black', markersize=5)
-                self.ax.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_down_y], '--', color='orange', linewidth=1)
+            # #
+            # # plt.plot(e.xy[0], e.xy[1], 'o', color='purple', markersize=8)
+            # if e.hit_up_event is not None:
+            #     # plt.plot(e.xy[0], e.hit_up_y, 'o', color='black', markersize=5)
+            #     self.ax.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_up_y], '--', color='orange', linewidth=1)
+            # if e.hit_down_event is not None:
+            #     # plt.plot(e.xy[0], e.hit_down_y, 'o', color='black', markersize=5)
+            #     self.ax.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_down_y], '--', color='orange', linewidth=1)
 
     def vizualize_cells(self):
         for cell in self.cells:
+            color = 'yellow'
+            if cell.n_adj == 0:
+                color = 'red'
+
             # fill
             x, y = cell.poly.exterior.xy
-            self.ax.fill(x, y, alpha=0.5, fc='yellow', ec='black', linewidth=1)
+            self.ax.fill(x, y, alpha=0.5, fc=color, ec='black', linewidth=1)
             # centroid
-            self.ax.plot(cell.poly.centroid.x, cell.poly.centroid.y, 'o', color='purple', markersize=8)
+            # self.ax.plot(cell.poly.centroid.x, cell.poly.centroid.y, 'o', color='purple', markersize=8)
 
-            # # text
-            # plt.text(cell.poly.centroid.x, cell.poly.centroid.y, f"[{cell.ind}]", fontsize=5, color='black')
+            # text
+            # self.ax.text(cell.poly.centroid.x, cell.poly.centroid.y, f"[{cell.ind}]", fontsize=5, color='black')
             # self.ax.text(cell.poly.centroid.x, cell.poly.centroid.y,
-            #              f"[{cell.ind}][{cell.down_adj_ci}, {cell.up_adj_ci}]", fontsize=5, color='black')
+            #              f"[{cell.ind}][{cell.down_adj_ci}, {cell.up_adj_ci}]", fontsize=10, color='black')
 
             # adjacents
             if cell.up_adj_ci:
@@ -432,7 +512,7 @@ class TrapezoidalDecomposition:
             ax.plot(x, y, color='red', linewidth=1)
 
         # vizualize events
-        self.visualize_events()
+        # self.visualize_events()
 
         # plot trapezoids
         self.vizualize_cells()
