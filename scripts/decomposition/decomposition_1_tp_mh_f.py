@@ -17,6 +17,8 @@ class Cell:
         self.parent_up_ci = None
         self.parent_down_ci = None
         self.n_parent = 0
+        #
+        self.done = False
 
     def set_up_adj_ci(self, ci: str):
         if ci:
@@ -29,12 +31,12 @@ class Cell:
             self.n_adj += 1
 
     def set_parent_up_ci(self, ci: str):
-        if ci:
+        if ci is not None:
             self.parent_up_ci = ci
             self.n_parent += 1
 
     def set_parent_down_ci(self, ci: str):
-        if ci:
+        if ci is not None:
             self.parent_down_ci = ci
             self.n_parent += 1
 
@@ -52,8 +54,11 @@ class TrapezoidalDecomposition:
         self.n_events: int = 0
         self.n_cells: int = 0
         #
-        self.fig = None
-        self.ax = None
+        self.cells_groups: list[list[Cell]] = []
+        #
+        self.fig1 = None
+        self.ax1 = None
+        self.fig2 = None
 
     def initiate(self):
         self.create_obstacles()
@@ -62,6 +67,7 @@ class TrapezoidalDecomposition:
         self.decompose_all()
         # self.create_final_trapezoids()
         self.find_adjacents_cells()
+        self.find_cell_groups()
         self.visualize()
 
     def set_bounding_polygon(self, poly: Polygon):
@@ -312,17 +318,14 @@ class TrapezoidalDecomposition:
 
     def find_adjacents_cells(self):
         for e in self.events:
-            ci_upe, ci_downe = None, None
+            # ci_upe, ci_downe = None, None
             current_cell: Cell = None
-
-            if e.sd_ind == 431:
-                pass
 
             if e.hit_up_event:
                 success = False
                 hit_up_event = e.hit_up_event
                 ci_curr = e.base_ci_up
-                current_cell: Cell = self.cells[ci_curr]
+                current_cell = self.cells[ci_curr]
                 ind = hit_up_event.down_cil_k.index(e.sd_ind)
                 if len(hit_up_event.down_cil_k) > ind+1:
                     val = e.hit_up_event.down_cil_k[ind+1]
@@ -380,7 +383,7 @@ class TrapezoidalDecomposition:
             # hit_down_event
             if e.hit_down_event:
                 ci_curr = e.base_ci_down
-                current_cell: Cell = self.cells[ci_curr]
+                current_cell = self.cells[ci_curr]
                 ind = e.hit_down_event.up_cil_k.index(e.sd_ind)
                 if len(e.hit_down_event.up_cil_k) > ind+1:
                     val = e.hit_down_event.up_cil_k[ind+1]
@@ -418,6 +421,48 @@ class TrapezoidalDecomposition:
                     print(f"current_cell: {current_cell.ind}")
                     # raise ValueError(f"[{self.ns}][find_adjacents_cells][ERROR]: ci_up and ci_down are None")
 
+    def find_cell_groups(self):
+        cell_groups = []
+        cell_ind_groups = []
+        for cell in self.cells[0:]:
+            if cell.done:
+                continue
+            base_cell = cell
+            base_cell.done = True
+            if base_cell.n_adj == 0:
+                cell_groups.append([base_cell])
+                cell_ind_groups.append([base_cell.ind])
+            elif base_cell.n_adj > 1:
+                cell_groups.append([base_cell])
+                cell_ind_groups.append([base_cell.ind])
+            else:
+                adj_cell: Cell = None
+                if base_cell.up_adj_ci:
+                    adj_cell = self.cells[base_cell.up_adj_ci]
+                else:
+                    adj_cell = self.cells[base_cell.down_adj_ci]
+
+                #
+                new_group = [base_cell]
+                new_ind_group = [base_cell.ind]
+                while adj_cell.n_parent == 1:
+                    adj_cell.done = True
+                    new_group.append(adj_cell)
+                    new_ind_group.append(adj_cell.ind)
+                    #
+                    if not adj_cell.n_adj == 1:
+                        break
+                    #
+                    if adj_cell.up_adj_ci:
+                        adj_cell = self.cells[adj_cell.up_adj_ci]
+                    else:
+                        adj_cell = self.cells[adj_cell.down_adj_ci]
+                if new_group:
+                    cell_groups.append(new_group)
+                    cell_ind_groups.append(new_ind_group)
+        #
+        self.cells_groups = cell_groups
+
     def create_final_trapezoids(self):
         if len(self.events) < 6:
             return
@@ -445,9 +490,9 @@ class TrapezoidalDecomposition:
 
     def visualize_events(self):
         # n = 346
-        # self.ax.plot(self.events[n].xy[0], self.events[n].xy[1], 'o', color='black', markersize=10)
+        # self.ax1.plot(self.events[n].xy[0], self.events[n].xy[1], 'o', color='black', markersize=10)
         # n = 347
-        # self.ax.plot(self.events[n].xy[0], self.events[n].xy[1], 'o', color='black', markersize=10)
+        # self.ax1.plot(self.events[n].xy[0], self.events[n].xy[1], 'o', color='black', markersize=10)
 
         # display events
         for e in self.events:
@@ -459,7 +504,7 @@ class TrapezoidalDecomposition:
 
             # name
             text1 = e.name
-            self.ax.text(e.xy[0], e.xy[1], text1, fontsize=8, color='blue')
+            self.ax1.text(e.xy[0], e.xy[1], text1, fontsize=8, color='blue')
 
             # # endpoint_cil
             # txt = f"cil:{e.endpoint_cil}[upc:{e.end_up_ed_cil}-downc:{e.end_down_ed_cil}]"
@@ -469,10 +514,10 @@ class TrapezoidalDecomposition:
             # # plt.plot(e.xy[0], e.xy[1], 'o', color='purple', markersize=8)
             # if e.hit_up_event is not None:
             #     # plt.plot(e.xy[0], e.hit_up_y, 'o', color='black', markersize=5)
-            #     self.ax.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_up_y], '--', color='orange', linewidth=1)
+            #     self.ax1.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_up_y], '--', color='orange', linewidth=1)
             # if e.hit_down_event is not None:
             #     # plt.plot(e.xy[0], e.hit_down_y, 'o', color='black', markersize=5)
-            #     self.ax.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_down_y], '--', color='orange', linewidth=1)
+            #     self.ax1.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_down_y], '--', color='orange', linewidth=1)
 
     def vizualize_cells(self):
         for cell in self.cells:
@@ -482,29 +527,41 @@ class TrapezoidalDecomposition:
 
             # fill
             x, y = cell.poly.exterior.xy
-            self.ax.fill(x, y, alpha=0.5, fc=color, ec='black', linewidth=1)
+            self.ax1.fill(x, y, alpha=0.5, fc=color, ec='black', linewidth=1)
+
             # centroid
-            # self.ax.plot(cell.poly.centroid.x, cell.poly.centroid.y, 'o', color='purple', markersize=8)
+            self.ax1.plot(cell.poly.centroid.x, cell.poly.centroid.y, 'o', color='purple', markersize=8)
 
             # text
-            # self.ax.text(cell.poly.centroid.x, cell.poly.centroid.y, f"[{cell.ind}]", fontsize=5, color='black')
-            # self.ax.text(cell.poly.centroid.x, cell.poly.centroid.y,
+            self.ax1.text(cell.poly.centroid.x, cell.poly.centroid.y, f"[{cell.ind}]", fontsize=10, color='black')
+            # self.ax1.text(cell.poly.centroid.x, cell.poly.centroid.y,
             #              f"[{cell.ind}][{cell.down_adj_ci}, {cell.up_adj_ci}]", fontsize=10, color='black')
 
             # adjacents
             if cell.up_adj_ci:
-                self.ax.plot([cell.poly.centroid.x, self.cells[cell.up_adj_ci].poly.centroid.x],
-                             [cell.poly.centroid.y, self.cells[cell.up_adj_ci].poly.centroid.y], 'r--', linewidth=1)
+                self.ax1.plot([cell.poly.centroid.x, self.cells[cell.up_adj_ci].poly.centroid.x],
+                              [cell.poly.centroid.y, self.cells[cell.up_adj_ci].poly.centroid.y], 'r--', linewidth=1)
             if cell.down_adj_ci:
-                self.ax.plot([cell.poly.centroid.x, self.cells[cell.down_adj_ci].poly.centroid.x],
-                             [cell.poly.centroid.y, self.cells[cell.down_adj_ci].poly.centroid.y], 'g--', linewidth=1)
+                self.ax1.plot([cell.poly.centroid.x, self.cells[cell.down_adj_ci].poly.centroid.x],
+                              [cell.poly.centroid.y, self.cells[cell.down_adj_ci].poly.centroid.y], 'g--', linewidth=1)
+
+    def visualize_cells_groups(self):
+        fig, ax = plt.subplots(1, 1)
+        ng = len(self.cells_groups)
+        colors = plt.cm.get_cmap('tab20', ng).colors
+        for i, cg in enumerate(self.cells_groups):
+            color = colors[i]
+            for cell in cg:
+                x, y = cell.poly.exterior.xy
+                ax.fill(x, y, alpha=0.5, fc=color, ec='black', linewidth=1)
+        self.fig2 = fig
 
     def visualize(self):
         # plot boarder
         # fig, ax = plt.subplots(1, 1, figsize=(10, 6))
         fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
-        self.ax = ax
+        self.ax1 = ax
 
         # plot obstacles
         for obs in self.obstacles:
@@ -517,6 +574,13 @@ class TrapezoidalDecomposition:
         # plot trapezoids
         self.vizualize_cells()
 
+        # vizualize cells groups
+        self.visualize_cells_groups()
+
         #
-        self.fig = fig
+        self.fig1 = fig
         plt.show()
+
+    def save_figs(self, path: str):
+        self.fig1.savefig(path + "_1.png", format="png", dpi=400)
+        self.fig2.savefig(path + "_2.png", format="png", dpi=400)

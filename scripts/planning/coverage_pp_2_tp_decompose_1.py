@@ -120,7 +120,7 @@ class CoveragePP(CoveragePPBase):
 
         # coverage path planning for all zones
         self.trap_dec_cpp()
-        # self.save_decomposition()
+        self.save_decomposition()
 
     def trap_dec_cpp(self):
         print(f"[{self.ns}]: start trap_dec_cpp for all zones")
@@ -145,7 +145,7 @@ class CoveragePP(CoveragePPBase):
         for i, zd in enumerate(self.district.zone_datas):
             dec_path = base_path + f"/Zone_{zd.ind}"
             dec_path = os.path.join(dec_path, CASE_DEC)
-            self.decompositions[i].tpd.fig.savefig(dec_path + ".png", format="png", dpi=400)
+            self.decompositions[i].tpd.save_figs(dec_path)
 
     def coverage_planning(self):
         print(f"[{self.ns}]: simple coverage path planning")
