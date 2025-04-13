@@ -39,6 +39,7 @@ class Event:
         self.down_cil_k = []
         #
         self.has_adj = True
+        self.has_parent = True
         #
         self.fake: bool = False
         self.vertical: bool = False

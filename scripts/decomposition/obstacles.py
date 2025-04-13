@@ -1,4 +1,5 @@
 """ obstacles for decomposition """
+import math
 from shapely import Polygon, Point
 from scripts.decomposition.events import Event
 
@@ -176,6 +177,11 @@ class Obstacle:
                 if e.convex:
                     e.etype_3 = "ivex"
                     e.skip_sweep = True
+                    #
+                    if next_e.xy[0] < prev_e.xy[0]:
+                        next_e.has_parent = False
+                    else:
+                        prev_e.has_parent = False
             elif e.etype_2 == 'out' and e.convex:
                 e.etype_3 = "ovex"
                 if not e.vertical:
@@ -202,12 +208,24 @@ class Obstacle:
                 continue
 
             # detect event types: up, down, updown, in, out
-            if x < prev_e.xy[0] and x < next_e.xy[0]:
+            mid_x = (prev_e.xy[0] + next_e.xy[0]) / 2
+            mid_y = (prev_e.xy[1] + next_e.xy[1]) / 2
+            theta = math.atan2(mid_y - y, mid_x - x)
+            mid_x = x + step * math.cos(theta)
+            mid_y = y + step * math.sin(theta)
+            mid_p = Point(mid_x, mid_y)
+            if (x < prev_e.xy[0] and x < next_e.xy[0]):
                 e.etype = 'updown'
-                e.etype_2 = 'in'
-            elif x > prev_e.xy[0] and x > next_e.xy[0]:
+                if self.poly.contains(mid_p):
+                    e.etype_2 = 'in'
+                else:
+                    e.etype_2 = 'out'
+            elif (x > prev_e.xy[0] and x > next_e.xy[0]):
                 e.etype = 'updown'
-                e.etype_2 = 'out'
+                if self.poly.contains(mid_p):
+                    e.etype_2 = 'out'
+                else:
+                    e.etype_2 = 'in'
             elif prev_e.xy[0] < x < next_e.xy[0]:
                 e.etype = 'floor'
             elif next_e.xy[0] < x < prev_e.xy[0]:
@@ -232,6 +250,10 @@ class Obstacle:
             else:
                 raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [in-out]")
 
+            #
+            if e.etype == 'updown' and e.etype_2 is None:
+                raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [updown]")
+
             # set endpoints
             if e.etype == 'updown':
                 e.c_etype = 'updown'
@@ -251,6 +273,11 @@ class Obstacle:
                 if e.concave:
                     e.etype_3 = "ocave"
                     e.skip_sweep = True
+                    #
+                    if next_e.xy[0] < prev_e.xy[0]:
+                        next_e.has_parent = False
+                    else:
+                        prev_e.has_parent = False
             elif e.etype_2 == 'in' and e.concave:
                 e.etype_3 = "icave"
                 if not e.vertical:
@@ -315,6 +342,13 @@ class Obstacle:
             up_e.skip_hit = True
             #
             e.has_adj = False
+            #
+            n_e = self.events[up_e.next_ind]
+            p_e = self.events[down_e.prev_ind]
+            if n_e.xy[0] < p_e.xy[0]:
+                n_e.has_parent = False
+            else:
+                p_e.has_parent = False
         else:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
