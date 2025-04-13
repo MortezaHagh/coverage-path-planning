@@ -1,4 +1,5 @@
 from shapely import Polygon
+from shapely.ops import unary_union
 from scripts.decomposition.events import Event
 
 
@@ -25,6 +26,8 @@ class Cell:
         #
         self.first_cell: Cell = None
         self.last_cell: Cell = None
+        #
+        self.group_ind: int = None
 
     def set_up_adj_ci(self, ci: str):
         if ci:
@@ -64,10 +67,18 @@ class Cell:
 
 
 class CellGroup:
-    def __init__(self, first_cell: Cell):
+    _counter = 0
+
+    def __init__(self, first_cell: Cell, ncg: int = None):
+        if ncg is None:
+            self.ind = CellGroup._counter
+        else:
+            self.ind = ncg
+        CellGroup._counter += 1
         self.cells: list[Cell] = [first_cell]
         self.first_cell: Cell = first_cell
         self.last_cell: Cell = None
+        self.merged_cell: Cell = None
 
     def add_cell(self, cell: Cell):
         if cell:
@@ -80,3 +91,18 @@ class CellGroup:
     def set_last_cell(self, cell: 'Cell'):
         if cell:
             self.last_cell = cell
+
+    def update_group(self):
+        if self.cells:
+            self.last_cell = self.cells[-1]
+            self.merge_cells()
+
+    def merge_cells(self):
+        # Merge all polygons
+        if self.cells:
+            merged_polygon = unary_union([cell.poly for cell in self.cells])
+            self.merged_cell = Cell(self.ind, merged_polygon, self.first_cell.event)
+
+        # Update the group index for all cells in the group
+        for cell in self.cells:
+            cell.group_ind = self.ind

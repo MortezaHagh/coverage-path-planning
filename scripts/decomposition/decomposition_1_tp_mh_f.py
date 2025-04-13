@@ -1,10 +1,10 @@
 """ Trapezoidal decomposition """
 import math
 from shapely import Polygon
-import matplotlib.pyplot as plt
 from scripts.decomposition.events import Event
 from scripts.decomposition.obstacles import Obstacle
 from scripts.decomposition.cell import Cell, CellGroup
+from scripts.decomposition.plotter import DecPlotter
 
 
 class TrapezoidalDecomposition:
@@ -23,9 +23,7 @@ class TrapezoidalDecomposition:
         self.cells_groups: list[CellGroup] = []
         self.deadend_cells: list[Cell] = []
         #
-        self.fig1 = None
-        self.ax1 = None
-        self.fig2 = None
+        self.plotter: DecPlotter = None
 
     def initiate(self):
         self.create_obstacles()
@@ -438,15 +436,16 @@ class TrapezoidalDecomposition:
 
     def find_cell_groups(self):
         cell_groups = []
+        ncg = 0
         for cell in self.cells[0:]:
             if cell.done:
                 continue
             base_cell = cell
             base_cell.done = True
             if base_cell.n_adj == 0:
-                cell_groups.append(CellGroup(base_cell))
+                new_group = CellGroup(base_cell, ncg)
             elif base_cell.n_adj > 1:
-                cell_groups.append(CellGroup(base_cell))
+                new_group = CellGroup(base_cell, ncg)
             else:
                 adj_cell: Cell = None
                 if base_cell.up_adj_ci:
@@ -457,7 +456,7 @@ class TrapezoidalDecomposition:
                     adj_cell = self.cells[base_cell.mid_adjlist[0]]
 
                 #
-                new_group = CellGroup(base_cell)
+                new_group = CellGroup(base_cell, ncg)
                 while adj_cell.n_parent == 1 and not adj_cell.done:
                     adj_cell.done = True
                     new_group.add_cell(adj_cell)
@@ -471,8 +470,12 @@ class TrapezoidalDecomposition:
                         adj_cell = self.cells[adj_cell.down_adj_ci]
                     else:
                         adj_cell = self.cells[adj_cell.mid_adjlist[0]]
-                if new_group:
-                    cell_groups.append(new_group)
+            #
+            if new_group:
+                new_group.update_group()
+                cell_groups.append(new_group)
+                ncg += 1
+
         #
         self.cells_groups = cell_groups
 
@@ -488,113 +491,9 @@ class TrapezoidalDecomposition:
             hit_down_y = hit_down_event.xy[1]
             self.create_trapezoid(base_e, hit_up_event, hit_down_event, hit_up_y, hit_down_y)
 
-#  visualization ======================================================================================================
-
-    def visualize_boarder_events(self):
-        # plot boarder polygon
-        x, y = self.b_poly.exterior.xy
-        plt.plot(x, y, color='black', linewidth=2)
-        #
-        for e in self.b_obstacle.events:
-            text1 = f"{e.etype}"
-            text2 = f"{e.s_ind}-{e.ind}--[{e.prev_ind},{e.next_ind}]"
-            plt.text(e.xy[0], e.xy[1], text1, fontsize=12, color='blue')
-            plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
-
-    def visualize_events(self):
-        for e in self.events:
-            # ct = "concave" if e.concave else "convex"
-            # text1 = f"{e.sd_ind}-[t1:{e.etype}]-[t2:{e.etype_2}]--{ct}"
-            # #
-            # text2 = f"{e.ind}--[{e.prev_ind},{e.next_ind}]"
-            # plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
-
-            # name
-            text1 = e.name
-            self.ax1.text(e.xy[0], e.xy[1], text1, fontsize=8, color='blue')
-
-            # # endpoint_cil
-            # txt = f"cil:{e.endpoint_cil}[upc:{e.end_up_ed_cil}-downc:{e.end_down_ed_cil}]"
-            # plt.text(e.xy[0], e.xy[1]-3, txt, fontsize=10, color='blue')
-
-            # #
-            # # plt.plot(e.xy[0], e.xy[1], 'o', color='purple', markersize=8)
-            # if e.hit_up_event is not None:
-            #     # plt.plot(e.xy[0], e.hit_up_y, 'o', color='black', markersize=5)
-            #     self.ax1.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_up_y], '--', color='orange', linewidth=1)
-            # if e.hit_down_event is not None:
-            #     # plt.plot(e.xy[0], e.hit_down_y, 'o', color='black', markersize=5)
-            #     self.ax1.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_down_y], '--', color='orange', linewidth=1)
-
-    def vizualize_cells(self):
-        for cell in self.cells:
-            color = 'yellow'
-            if not cell.status:
-                color = 'red'
-
-            # fill
-            x, y = cell.poly.exterior.xy
-            self.ax1.fill(x, y, alpha=0.5, fc=color, ec='black', linewidth=1)
-
-            # centroid
-            self.ax1.plot(cell.poly.centroid.x, cell.poly.centroid.y, 'o', color='purple', markersize=8)
-
-            # text
-            self.ax1.text(cell.poly.centroid.x, cell.poly.centroid.y, f"[{cell.ind}]", fontsize=10, color='black')
-            # self.ax1.text(cell.poly.centroid.x, cell.poly.centroid.y,
-            #              f"[{cell.ind}][{cell.down_adj_ci}, {cell.up_adj_ci}]", fontsize=10, color='black')
-
-            # adjacents
-            if cell.up_adj_ci:
-                self.ax1.plot([cell.poly.centroid.x, self.cells[cell.up_adj_ci].poly.centroid.x],
-                              [cell.poly.centroid.y, self.cells[cell.up_adj_ci].poly.centroid.y], 'r--', linewidth=1)
-            if cell.down_adj_ci:
-                self.ax1.plot([cell.poly.centroid.x, self.cells[cell.down_adj_ci].poly.centroid.x],
-                              [cell.poly.centroid.y, self.cells[cell.down_adj_ci].poly.centroid.y], 'g--', linewidth=1)
-
-            for mid_adj in cell.mid_adjlist:
-                self.ax1.plot([cell.poly.centroid.x, self.cells[mid_adj].poly.centroid.x],
-                              [cell.poly.centroid.y, self.cells[mid_adj].poly.centroid.y], 'b--', linewidth=1)
-
-    def visualize_cells_groups(self):
-        fig, ax = plt.subplots(1, 1)
-        ng = len(self.cells_groups)
-        colors = plt.cm.get_cmap('tab20', ng).colors
-        for i, cg in enumerate(self.cells_groups):
-            color = colors[i]
-            for cell in cg.cells:
-                x, y = cell.poly.exterior.xy
-                ax.fill(x, y, alpha=0.5, fc=color, ec='black', linewidth=1)
-                ax.text(cell.poly.centroid.x, cell.poly.centroid.y, f"[g{i}-c{cell.ind}]", fontsize=8, color='black')
-        self.fig2 = fig
-
     def visualize(self):
-        # plot boarder
-        fig, ax = plt.subplots(1, 1)
-        self.ax1 = ax
-
-        # plot obstacles
-        for obs in self.obstacles:
-            if obs.ind == 0:
-                color = 'blue'
-            else:
-                color = 'red'
-            x, y = obs.poly.exterior.xy
-            ax.plot(x, y, color=color, linewidth=1)
-
-        # vizualize events
-        self.visualize_events()
-
-        # plot trapezoids
-        self.vizualize_cells()
-
-        # vizualize cells groups
-        self.visualize_cells_groups()
-
-        #
-        self.fig1 = fig
-        plt.show()
+        self.plotter = DecPlotter(self)
+        self.plotter.visualize()
 
     def save_figs(self, path: str):
-        self.fig1.savefig(path + "_1.png", format="png", dpi=400)
-        self.fig2.savefig(path + "_2.png", format="png", dpi=400)
+        self.plotter.save_figs(path)
