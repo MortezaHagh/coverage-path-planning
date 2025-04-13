@@ -2,9 +2,9 @@
 import math
 from shapely import Polygon
 import matplotlib.pyplot as plt
-from scripts.decomposition.cell import Cell
 from scripts.decomposition.events import Event
 from scripts.decomposition.obstacles import Obstacle
+from scripts.decomposition.cell import Cell, CellGroup
 
 
 class TrapezoidalDecomposition:
@@ -20,7 +20,7 @@ class TrapezoidalDecomposition:
         self.n_events: int = 0
         self.n_cells: int = 0
         #
-        self.cells_groups: list[list[Cell]] = []
+        self.cells_groups: list[CellGroup] = []
         self.deadend_cells: list[Cell] = []
         #
         self.fig1 = None
@@ -89,7 +89,6 @@ class TrapezoidalDecomposition:
 
             # update done status of lower events at same x coordinate
             # out
-            # todo
             if hit_up_event and i > 2:
                 low_j = hit_up_event.sd_ind
                 while low_j > base_e.sd_ind+1:
@@ -145,6 +144,8 @@ class TrapezoidalDecomposition:
                     hit_down_event.done = True
 
     def create_trapezoid(self, base_e: Event, hit_up_event: Event, hit_down_event: Event, hit_up_y: float, hit_down_y: float):
+        trap_up, trap_down = None, None
+
         #
         if base_e.direct_trap:
             trap1 = [base_e.xy, base_e.end_down_ed_xy, base_e.end_up_ed_xy]
@@ -154,12 +155,7 @@ class TrapezoidalDecomposition:
 
         #
         if not (hit_up_event or hit_down_event):
-            # print((f"[{self.ns}] [WARN] create_trapezoid: hit_up_event and hit_down_event are both None"))
-            # print("base_e:", base_e.sd_ind, base_e.etype, base_e.etype_2)
             return
-
-        #
-        trap_up, trap_down = None, None
 
         #
         if base_e.etype == 'updown':
@@ -442,18 +438,15 @@ class TrapezoidalDecomposition:
 
     def find_cell_groups(self):
         cell_groups = []
-        cell_ind_groups = []
         for cell in self.cells[0:]:
             if cell.done:
                 continue
             base_cell = cell
             base_cell.done = True
             if base_cell.n_adj == 0:
-                cell_groups.append([base_cell])
-                cell_ind_groups.append([base_cell.ind])
+                cell_groups.append(CellGroup(base_cell))
             elif base_cell.n_adj > 1:
-                cell_groups.append([base_cell])
-                cell_ind_groups.append([base_cell.ind])
+                cell_groups.append(CellGroup(base_cell))
             else:
                 adj_cell: Cell = None
                 if base_cell.up_adj_ci:
@@ -464,12 +457,10 @@ class TrapezoidalDecomposition:
                     adj_cell = self.cells[base_cell.mid_adjlist[0]]
 
                 #
-                new_group = [base_cell]
-                new_ind_group = [base_cell.ind]
+                new_group = CellGroup(base_cell)
                 while adj_cell.n_parent == 1 and not adj_cell.done:
                     adj_cell.done = True
-                    new_group.append(adj_cell)
-                    new_ind_group.append(adj_cell.ind)
+                    new_group.add_cell(adj_cell)
                     #
                     if not adj_cell.n_adj == 1:
                         break
@@ -482,7 +473,6 @@ class TrapezoidalDecomposition:
                         adj_cell = self.cells[adj_cell.mid_adjlist[0]]
                 if new_group:
                     cell_groups.append(new_group)
-                    cell_ind_groups.append(new_ind_group)
         #
         self.cells_groups = cell_groups
 
@@ -572,7 +562,7 @@ class TrapezoidalDecomposition:
         colors = plt.cm.get_cmap('tab20', ng).colors
         for i, cg in enumerate(self.cells_groups):
             color = colors[i]
-            for cell in cg:
+            for cell in cg.cells:
                 x, y = cell.poly.exterior.xy
                 ax.fill(x, y, alpha=0.5, fc=color, ec='black', linewidth=1)
                 ax.text(cell.poly.centroid.x, cell.poly.centroid.y, f"[g{i}-c{cell.ind}]", fontsize=8, color='black')
