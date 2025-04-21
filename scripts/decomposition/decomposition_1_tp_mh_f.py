@@ -361,7 +361,7 @@ class TrapezoidalDecomposition:
 
             # case n_adj = 0 --------------------------------------------------
             if e.has_adj and cell.n_adj == 0:
-                if cell.event.etype_2 == 'out' or cell.event.etype == 'up':
+                if e.etype_2 == 'out' or e.etype == 'up':
                     up_e = e.hit_up_event
                     while up_e and e.xy[0] == up_e.xy[0]:
                         up_cell_i = up_e.base_ci_up
@@ -387,10 +387,11 @@ class TrapezoidalDecomposition:
                 if cell.n_adj == 0:
                     cell.status = False
                     print(f"[{self.ns}][find_adjacents_cells][ERROR]: No adjacents found:")
-                    print(f"e: {cell.event.sd_ind}, -- cell: {cell.ind}")
+                    print(f"e: {e.sd_ind}, -- cell: {cell.ind}")
 
             # case n_parent = 0 ------------------------------------------------
             if e.has_parent and cell.n_parent == 0:
+                # case: upper cell has parent which is also adjacent of current cell
                 b_e_ind = None
                 o_e = e
                 if e.etype == 'down' or e.etype_2 == 'out':
