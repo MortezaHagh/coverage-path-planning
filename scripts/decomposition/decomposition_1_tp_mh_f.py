@@ -470,7 +470,7 @@ class TrapezoidalDecomposition:
                         adj_cell = self.cells[adj_cell.down_adj_ci]
                     else:
                         adj_cell = self.cells[adj_cell.mid_adjlist[0]]
-            #
+            # merge_cells
             if new_group:
                 new_group.update_group()
                 cell_groups.append(new_group)

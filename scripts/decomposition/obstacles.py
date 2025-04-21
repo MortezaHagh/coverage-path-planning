@@ -74,7 +74,6 @@ class Obstacle:
                 # create fake event
                 fake_event = Event(self.ind, j, xy)
                 fake_event.etype = 'updown'
-                fake_event.c_etype = 'updown'
                 fake_event.fake = True
                 if j == 0:
                     new_events.insert(0, fake_event)
@@ -160,14 +159,11 @@ class Obstacle:
 
             # set endpoints
             if e.etype == 'updown':
-                e.c_etype = 'updown'
                 e.set_endpoint_down_edge(prev_e.xy)
                 e.set_endpoint_up_edge(next_e.xy)
             elif e.etype == 'ceil':
-                e.c_etype = 'floor'
                 e.set_endpoint_up_edge(next_e.xy)
             elif e.etype == 'floor':
-                e.c_etype = 'ceil'
                 e.set_endpoint_down_edge(prev_e.xy)
             else:
                 raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [e.etype]")
@@ -256,14 +252,11 @@ class Obstacle:
 
             # set endpoints
             if e.etype == 'updown':
-                e.c_etype = 'updown'
                 e.set_endpoint_down_edge(prev_e.xy)
                 e.set_endpoint_up_edge(next_e.xy)
             elif e.etype == 'ceil':
-                e.c_etype = 'floor'
                 e.set_endpoint_up_edge(next_e.xy)
             elif e.etype == 'floor':
-                e.c_etype = 'ceil'
                 e.set_endpoint_down_edge(prev_e.xy)
             else:
                 raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [e.etype]")

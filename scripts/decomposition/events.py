@@ -13,7 +13,6 @@ class Event:
         self.etype: str = None      # ceil, floor, updown
         self.etype_2: str = None    # out, in
         self.etype_3: str = None    # ovex, ivex, ocave, icave
-        self.c_etype: str = None    # ceil, floor, updown
         self.name = 'event'
         #
         self.obst_ind: int = obst_ind
