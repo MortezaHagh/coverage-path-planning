@@ -21,11 +21,13 @@ class Event:
         self.sd_ind: int = None     # sorted index in the decomposition
         self.prev_ind: int = None
         self.next_ind: int = None
+        self.next_e: 'Event' = None
+        self.prev_e: 'Event' = None
         #
         self.hit_up_y: float = None
         self.hit_down_y: float = None
-        self.hit_up_event: Event = None
-        self.hit_down_event: Event = None
+        self.hit_up_event: 'Event' = None
+        self.hit_down_event: 'Event' = None
         #
         self.end_up_ed_xy: tuple[float, float] = None
         self.end_down_ed_xy: tuple[float, float] = None
@@ -66,6 +68,12 @@ class Event:
 
     def set_next_ind(self, ind: int):
         self.next_ind = ind
+
+    def set_prev_e(self, e: 'Event'):
+        self.prev_e = e
+
+    def set_next_e(self, e: 'Event'):
+        self.next_e = e
 
     def set_endpoint_up_edge(self, xy: tuple[float, float]):
         self.end_up_ed_xy = xy

@@ -221,8 +221,8 @@ class TrapezoidalDecomposition:
 
         # type is 'down'
         # edge = e1-e
-        e1_ind = e.prev_ind
-        e1 = self.obstacles[e.obst_ind].events[e1_ind]
+        e1 = e.prev_e
+        # e1 = self.obstacles[e.obst_ind].events[e1_ind]
 
         # check coordinates
         # if e1 is the base event itself
@@ -250,8 +250,8 @@ class TrapezoidalDecomposition:
 
         # type is 'up'
         # edge = e1-e
-        e2_ind = e.next_ind
-        e2 = self.obstacles[e.obst_ind].events[e2_ind]
+        e2 = e.next_e
+        # e2 = self.obstacles[e.obst_ind].events[e2_ind]
 
         # check coordinates
         # if e2 is the base event itself
@@ -295,33 +295,26 @@ class TrapezoidalDecomposition:
                     up_adj_ci = hit_up_event.base_ci_down
                     if not up_adj_ci:
                         if hit_up_event.etype == 'down':
-                            up_next = hit_up_event.next_ind
-                            up_next_event = self.obstacles[hit_up_event.obst_ind].events[up_next]
+                            up_next_event = hit_up_event.next_e
                             if len(up_next_event.down_cil_k) > 0:
                                 val = up_next_event.down_cil_k[0]
                                 up_adj_ci = up_next_event.down_cil_d[val]
                             else:
                                 up_adj_ci = up_next_event.base_ci_down
                     if not up_adj_ci:
-                        up_next = hit_up_event.next_ind
-                        up_next_event = self.obstacles[hit_up_event.obst_ind].events[up_next]
-                        down_prev = e.prev_ind
-                        down_prev_event = self.obstacles[e.obst_ind].events[down_prev]
+                        up_next_event = hit_up_event.next_e
+                        down_prev_event = e.prev_e
                         if up_next_event.sd_ind in down_prev_event.up_cil_k:
                             up_adj_ci = up_next_event.base_ci_down
                         elif down_prev_event.sd_ind in up_next_event.down_cil_k:
                             up_adj_ci = down_prev_event.base_ci_up
                         else:
                             if down_prev_event.fake:
-                                down_prev = down_prev_event.prev_ind
-                                down_prev_event = self.obstacles[e.obst_ind].events[down_prev]
-                                down_prev = down_prev_event.prev_ind
-                                down_prev_event = self.obstacles[e.obst_ind].events[down_prev]
+                                down_prev_event = down_prev_event.prev_e
+                                down_prev_event = down_prev_event.prev_e
                             if up_next_event.fake:
-                                up_next = up_next_event.next_ind
-                                up_next_event = self.obstacles[hit_up_event.obst_ind].events[up_next]
-                                up_next = up_next_event.next_ind
-                                up_next_event = self.obstacles[hit_up_event.obst_ind].events[up_next]
+                                up_next_event = up_next_event.next_e
+                                up_next_event = up_next_event.next_e
                             if down_prev_event.sd_ind in up_next_event.down_cil_k:
                                 up_adj_ci = down_prev_event.base_ci_up
                 if up_adj_ci:
@@ -343,10 +336,8 @@ class TrapezoidalDecomposition:
                     if down_adj_ci:
                         pass
                     else:
-                        up_next = e.next_ind
-                        up_next_event = self.obstacles[e.obst_ind].events[up_next]
-                        down_prev = e.hit_down_event.prev_ind
-                        down_prev_event = self.obstacles[e.hit_down_event.obst_ind].events[down_prev]
+                        up_next_event = e.next_e
+                        down_prev_event = e.hit_down_event.prev_e
                         if up_next_event.sd_ind in down_prev_event.down_cil_k:
                             down_adj_ci = up_next_event.base_ci_up
                         elif down_prev_event.sd_ind in up_next_event.up_cil_k:
@@ -376,11 +367,9 @@ class TrapezoidalDecomposition:
                             up_e = n_up_e
                         else:
                             if up_e.vertical:
-                                up_e_ind = up_e.next_ind
-                                up_e = self.obstacles[up_e.obst_ind].events[up_e_ind]
+                                up_e = up_e.next_e
                                 if up_e.fake:
-                                    up_e_ind = up_e.next_ind
-                                    up_e = self.obstacles[up_e.obst_ind].events[up_e_ind]
+                                    up_e = up_e.next_e
                             else:
                                 break
                 #
@@ -392,20 +381,18 @@ class TrapezoidalDecomposition:
             # case n_parent = 0 ------------------------------------------------
             if e.has_parent and cell.n_parent == 0:
                 # case: upper cell has parent which is also adjacent of current cell
-                b_e_ind = None
-                o_e = e
+                # b_e_ind = None
+                b_e: Event = None
                 if e.etype == 'down' or e.etype_2 == 'out':
-                    b_e_ind = e.prev_ind
+                    b_e = e.prev_e
                 elif e.etype == 'up':
-                    b_e_ind = e.next_ind
+                    b_e = e.next_e
                 elif e.etype_2 == 'in':
                     up_e = e.hit_up_event
                     if up_e:
-                        o_e = up_e
-                        b_e_ind = up_e.prev_ind
-                if b_e_ind is not None:
-                    b_e = self.obstacles[o_e.obst_ind].events[b_e_ind]
-                    down_e = self.obstacles[o_e.obst_ind].events[b_e_ind]
+                        b_e = up_e.prev_e
+                if b_e:
+                    down_e = self.events[b_e.sd_ind]
                     while down_e.done and down_e.xy[0] == b_e.xy[0]:
                         down_e = self.events[down_e.sd_ind-1]
                     if down_e and down_e.base_ci_down:
@@ -418,13 +405,9 @@ class TrapezoidalDecomposition:
                         continue
                 #
                 if e.direct_trap:
-                    prev_e_i = e.prev_ind
-                    prev_e = self.obstacles[e.obst_ind].events[prev_e_i]
-                    next_e_i = e.next_ind
-                    next_e = self.obstacles[e.obst_ind].events[next_e_i]
-                    ee = next_e
-                    if prev_e.xy[0] > next_e.xy[0]:
-                        ee = prev_e
+                    ee = e.next_e
+                    if e.prev_e.xy[0] > e.next_e.xy[0]:
+                        ee = e.prev_e
                     down_e = ee
                     while down_e.done and ee.xy[0] == down_e.xy[0]:
                         down_e = self.events[down_e.sd_ind-1]

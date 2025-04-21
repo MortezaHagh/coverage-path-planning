@@ -21,7 +21,7 @@ class Obstacle:
         if self.ind == 0:
             self.process_events_bounding()
         else:
-            self.process_events_types_1()
+            self.process_events()
         self.process_fake_events()
         # self.print_events()
 
@@ -95,12 +95,14 @@ class Obstacle:
             next_ind = (self.s_events[i].ind + 1) % (self.n_v)
             e.set_prev_ind(prev_ind)
             e.set_next_ind(next_ind)
+            e.set_prev_e(self.events[prev_ind])
+            e.set_next_e(self.events[next_ind])
 
     def eval_concave(self) -> bool:
         for e in self.events:
             x, y = e.xy
-            prev_x, prev_y = self.events[e.prev_ind].xy
-            next_x, next_y = self.events[e.next_ind].xy
+            prev_x, prev_y = e.prev_e.xy
+            next_x, next_y = e.next_e.xy
             # Check if the event is concave
             e.concave = (prev_x - x) * (next_y - y) - (prev_y - y) * (next_x - x) > 0
             e.convex = not e.concave
@@ -109,11 +111,12 @@ class Obstacle:
         for e in self.events:
             # swap prev and next indices
             e.prev_ind, e.next_ind = e.next_ind, e.prev_ind
+            e.prev_e, e.next_e = e.next_e, e.prev_e
 
             # x, y, preve, nexte
             x, y = e.xy
-            next_e = self.events[e.next_ind]
-            prev_e = self.events[e.prev_ind]
+            next_e = e.next_e
+            prev_e = e.prev_e
 
             # set in-out for fake events
             step = 0.2
@@ -185,12 +188,12 @@ class Obstacle:
                     e.has_adj = False
                 e.x_max = max(prev_e.xy[0], next_e.xy[0])
 
-    def process_events_types_1(self):
+    def process_events(self):
         for e in self.events:
             # x, y, preve, nexte
             x, y = e.xy
-            next_e = self.events[e.next_ind]
-            prev_e = self.events[e.prev_ind]
+            next_e = e.next_e
+            prev_e = e.prev_e
 
             # set in-out for fake events
             step = 1.0
@@ -200,7 +203,7 @@ class Obstacle:
                 elif self.poly.contains(Point(x-step, y)):
                     e.etype_2 = 'out'
                 else:
-                    raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [fake]")
+                    raise ValueError(f"[{self.ns}][process_events] Invalid event type [fake]")
                 continue
 
             # detect event types: up, down, updown, in, out
@@ -236,19 +239,19 @@ class Obstacle:
                     elif self.poly.contains(Point(x-step, y)):
                         e.etype_2 = 'out'
                     else:
-                        raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [in-out-2]")
+                        raise ValueError(f"[{self.ns}][process_events] Invalid event type [in-out-2]")
                 elif c_up:
                     e.etype = 'down'
                 elif c_down:
                     e.etype = 'up'
                 else:
-                    raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [up-down]")
+                    raise ValueError(f"[{self.ns}][process_events] Invalid event type [up-down]")
             else:
-                raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [in-out]")
+                raise ValueError(f"[{self.ns}][process_events] Invalid event type [in-out]")
 
             #
             if e.etype == 'updown' and e.etype_2 is None:
-                raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [updown]")
+                raise ValueError(f"[{self.ns}][process_events] Invalid event type [updown]")
 
             # set endpoints
             if e.etype == 'updown':
@@ -259,7 +262,7 @@ class Obstacle:
             elif e.etype == 'down':
                 e.set_endpoint_down_edge(prev_e.xy)
             else:
-                raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [e.etype]")
+                raise ValueError(f"[{self.ns}][process_events] Invalid event type [e.etype]")
 
             # detect skipped sweep events
             if e.etype_2 == 'out':
@@ -307,8 +310,8 @@ class Obstacle:
                     self.process_fake_out_events(e)
 
     def process_fake_in_events_b(self, e: Event):
-        prev_e = self.events[e.prev_ind]
-        next_e = self.events[e.next_ind]
+        prev_e = e.prev_e
+        next_e = e.next_e
         up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
         down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
         e.skip_sweep = True
@@ -336,8 +339,8 @@ class Obstacle:
             #
             e.has_adj = False
             #
-            n_e = self.events[up_e.next_ind]
-            p_e = self.events[down_e.prev_ind]
+            n_e = up_e.next_e
+            p_e = down_e.prev_e
             if n_e.xy[0] < p_e.xy[0]:
                 n_e.has_parent = False
             else:
@@ -346,8 +349,8 @@ class Obstacle:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
     def process_fake_out_events_b(self, e: Event):
-        prev_e = self.events[e.prev_ind]
-        next_e = self.events[e.next_ind]
+        prev_e = e.prev_e
+        next_e = e.next_e
         up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
         down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
         e.skip_sweep = True
@@ -376,8 +379,8 @@ class Obstacle:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
     def process_fake_in_events(self, e: Event):
-        prev_e = self.events[e.prev_ind]
-        next_e = self.events[e.next_ind]
+        prev_e = e.prev_e
+        next_e = e.next_e
         up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
         down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
         e.skip_sweep = True
@@ -403,8 +406,8 @@ class Obstacle:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
     def process_fake_out_events(self, e: Event):
-        prev_e = self.events[e.prev_ind]
-        next_e = self.events[e.next_ind]
+        prev_e = e.prev_e
+        next_e = e.next_e
         up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
         down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
         e.skip_sweep = True
@@ -430,9 +433,8 @@ class Obstacle:
 
     def inverse_event_types(self):
         for e in self.events:
-            temp = e.prev_ind
-            e.prev_ind = e.next_ind
-            e.next_ind = temp
+            e.prev_ind, e.next_ind = e.next_ind, e.prev_ind
+            e.prev_e, e.next_e = e.next_e, e.prev_e
             # swpap endpoints
             e.end_up_ed_xy, e.end_down_ed_xy = e.end_down_ed_xy, e.end_up_ed_xy
 
