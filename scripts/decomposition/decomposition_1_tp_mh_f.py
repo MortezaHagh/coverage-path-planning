@@ -115,9 +115,9 @@ class TrapezoidalDecomposition:
             success_up, y_up = False, None
             success_down, y_down = False, None
 
-            if base_e.can_up and base_e.etype in ('ceil', 'updown'):
+            if base_e.can_up and base_e.etype in ('up', 'updown'):
                 success_up, y_up = self.evel_event_up(base_e, e, hit_up_y)
-            if base_e.can_down and base_e.etype in ('floor', 'updown'):
+            if base_e.can_down and base_e.etype in ('down', 'updown'):
                 success_down, y_down = self.eval_event_down(base_e, e, hit_down_y)
 
             # Update hit variables if successful
@@ -132,13 +132,13 @@ class TrapezoidalDecomposition:
         # update done status of the hit events
         if hit_up_event:
             if hit_up_event.xy[0] == base_e.xy[0]:
-                if hit_up_event.etype == 'floor':
+                if hit_up_event.etype == 'down':
                     hit_up_event.done = True
                 elif hit_up_event.etype == 'updown':
                     hit_up_event.can_down = False
         if hit_down_event:
             if hit_down_event.xy[0] == base_e.xy[0]:
-                if hit_down_event.etype == 'ceil':
+                if hit_down_event.etype == 'up':
                     hit_down_event.done = True
 
     def create_trapezoid(self, base_e: Event, hit_up_event: Event, hit_down_event: Event, hit_up_y: float, hit_down_y: float):
@@ -173,10 +173,10 @@ class TrapezoidalDecomposition:
                 print((f"[{self.ns}][create_trapezoid][WARN]: updown: hit_up_event and hit_down_event are None"))
 
         #
-        elif base_e.etype == 'ceil' and hit_up_event:
+        elif base_e.etype == 'up' and hit_up_event:
             trap_up = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.end_down_ed_xy, base_e.end_up_ed_xy]
         #
-        elif base_e.etype == 'floor' and hit_down_event:
+        elif base_e.etype == 'down' and hit_down_event:
             trap_down = [base_e.xy, base_e.end_down_ed_xy, hit_down_event.end_up_ed_xy, (base_e.xy[0], hit_down_y)]
 
         dn = 0
@@ -201,8 +201,8 @@ class TrapezoidalDecomposition:
             print((f"[{self.ns}][create_trapezoid][ERROR]: Invalid trapezoid creation"))
 
     def evel_event_up(self, base_e: Event, e: Event, y_hit: float) -> bool:
-        # based even type is 'ceil'
-        if e.etype == 'ceil':
+        # based even type is 'up'
+        if e.etype == 'up':
             return False, None
 
         # check not to hit from outside of polygon
@@ -218,7 +218,7 @@ class TrapezoidalDecomposition:
                 # in
                 return False, None
 
-        # type is 'floor'
+        # type is 'down'
         # edge = e1-e
         e1_ind = e.prev_ind
         e1 = self.obstacles[e.obst_ind].events[e1_ind]
@@ -243,11 +243,11 @@ class TrapezoidalDecomposition:
         return False, None
 
     def eval_event_down(self, base_e: Event, e: Event, y_hit: float) -> bool:
-        # based even type is 'floor'
-        if e.etype == 'floor':
+        # based even type is 'down'
+        if e.etype == 'down':
             return False, None
 
-        # type is 'ceil'
+        # type is 'up'
         # edge = e1-e
         e2_ind = e.next_ind
         e2 = self.obstacles[e.obst_ind].events[e2_ind]
@@ -291,7 +291,7 @@ class TrapezoidalDecomposition:
                 else:
                     up_adj_ci = hit_up_event.base_ci_down
                     if not up_adj_ci:
-                        if hit_up_event.etype == 'floor':
+                        if hit_up_event.etype == 'down':
                             up_next = hit_up_event.next_ind
                             up_next_event = self.obstacles[hit_up_event.obst_ind].events[up_next]
                             if len(up_next_event.down_cil_k) > 0:
@@ -358,7 +358,7 @@ class TrapezoidalDecomposition:
 
             # case n_adj = 0 --------------------------------------------------
             if e.has_adj and cell.n_adj == 0:
-                if cell.event.etype_2 == 'out' or cell.event.etype == 'ceil':
+                if cell.event.etype_2 == 'out' or cell.event.etype == 'up':
                     up_e = e.hit_up_event
                     while up_e and e.xy[0] == up_e.xy[0]:
                         up_cell_i = up_e.base_ci_up
@@ -390,9 +390,9 @@ class TrapezoidalDecomposition:
             if e.has_parent and cell.n_parent == 0:
                 b_e_ind = None
                 o_e = e
-                if e.etype == 'floor' or e.etype_2 == 'out':
+                if e.etype == 'down' or e.etype_2 == 'out':
                     b_e_ind = e.prev_ind
-                elif e.etype == 'ceil':
+                elif e.etype == 'up':
                     b_e_ind = e.next_ind
                 elif e.etype_2 == 'in':
                     up_e = e.hit_up_event

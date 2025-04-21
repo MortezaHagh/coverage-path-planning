@@ -10,7 +10,7 @@ class Event:
         self.y_max_lim = math.inf
         # self.y_min_lim = -math.inf
         #
-        self.etype: str = None      # ceil, floor, updown
+        self.etype: str = None      # up, floor, updown
         self.etype_2: str = None    # out, in
         self.etype_3: str = None    # ovex, ivex, ocave, icave
         self.name = 'event'

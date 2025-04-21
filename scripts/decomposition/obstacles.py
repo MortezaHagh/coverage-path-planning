@@ -134,9 +134,9 @@ class Obstacle:
                 e.etype = 'updown'
                 e.etype_2 = 'out'
             elif prev_e.xy[0] < x < next_e.xy[0]:
-                e.etype = 'floor'
+                e.etype = 'down'
             elif next_e.xy[0] < x < prev_e.xy[0]:
-                e.etype = 'ceil'
+                e.etype = 'up'
             elif x == prev_e.xy[0] or x == next_e.xy[0]:
                 c_up = self.poly.contains(Point(x, y + step)) or self.poly.touches(Point(x, y + step))
                 c_down = self.poly.contains(Point(x, y - step)) or self.poly.touches(Point(x, y - step))
@@ -149,9 +149,9 @@ class Obstacle:
                     else:
                         raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [in-out-2]")
                 elif c_up:
-                    e.etype = 'ceil'
+                    e.etype = 'up'
                 elif c_down:
-                    e.etype = 'floor'
+                    e.etype = 'down'
                 else:
                     raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [up-down]")
             else:
@@ -161,9 +161,9 @@ class Obstacle:
             if e.etype == 'updown':
                 e.set_endpoint_down_edge(prev_e.xy)
                 e.set_endpoint_up_edge(next_e.xy)
-            elif e.etype == 'ceil':
+            elif e.etype == 'up':
                 e.set_endpoint_up_edge(next_e.xy)
-            elif e.etype == 'floor':
+            elif e.etype == 'down':
                 e.set_endpoint_down_edge(prev_e.xy)
             else:
                 raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [e.etype]")
@@ -223,9 +223,9 @@ class Obstacle:
                 else:
                     e.etype_2 = 'in'
             elif prev_e.xy[0] < x < next_e.xy[0]:
-                e.etype = 'floor'
+                e.etype = 'down'
             elif next_e.xy[0] < x < prev_e.xy[0]:
-                e.etype = 'ceil'
+                e.etype = 'up'
             elif x == prev_e.xy[0] or x == next_e.xy[0]:
                 c_up = self.poly.contains(Point(x, y + step)) or self.poly.touches(Point(x, y + step))
                 c_down = self.poly.contains(Point(x, y - step)) or self.poly.touches(Point(x, y - step))
@@ -238,9 +238,9 @@ class Obstacle:
                     else:
                         raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [in-out-2]")
                 elif c_up:
-                    e.etype = 'floor'
+                    e.etype = 'down'
                 elif c_down:
-                    e.etype = 'ceil'
+                    e.etype = 'up'
                 else:
                     raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [up-down]")
             else:
@@ -254,9 +254,9 @@ class Obstacle:
             if e.etype == 'updown':
                 e.set_endpoint_down_edge(prev_e.xy)
                 e.set_endpoint_up_edge(next_e.xy)
-            elif e.etype == 'ceil':
+            elif e.etype == 'up':
                 e.set_endpoint_up_edge(next_e.xy)
-            elif e.etype == 'floor':
+            elif e.etype == 'down':
                 e.set_endpoint_down_edge(prev_e.xy)
             else:
                 raise ValueError(f"[{self.ns}][process_events_types_1] Invalid event type [e.etype]")
@@ -313,22 +313,22 @@ class Obstacle:
         down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
         e.skip_sweep = True
         #
-        if up_e.etype == 'floor' and down_e.etype == 'updown':
+        if up_e.etype == 'down' and down_e.etype == 'updown':
             up_e.skip_sweep = True
             down_e.skip_sweep = False
-            down_e.etype = 'floor'
+            down_e.etype = 'down'
             up_e.skip_hit = True
-        elif down_e.etype == 'ceil' and up_e.etype == 'updown':
+        elif down_e.etype == 'up' and up_e.etype == 'updown':
             down_e.skip_sweep = True
             up_e.skip_sweep = False
-            up_e.etype = 'ceil'
+            up_e.etype = 'up'
             down_e.skip_hit = True
         elif up_e.etype == 'updown' and down_e.etype == 'updown':
             down_e.skip_sweep = False
-            down_e.etype = 'floor'
+            down_e.etype = 'down'
             up_e.skip_sweep = False
-            up_e.etype = 'ceil'
-        elif up_e.etype == 'floor' and down_e.etype == 'ceil':
+            up_e.etype = 'up'
+        elif up_e.etype == 'down' and down_e.etype == 'up':
             down_e.skip_sweep = True
             up_e.skip_sweep = True
             down_e.skip_hit = True
@@ -352,11 +352,11 @@ class Obstacle:
         down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
         e.skip_sweep = True
         #
-        if up_e.etype == 'floor' and down_e.etype == 'updown':
+        if up_e.etype == 'down' and down_e.etype == 'updown':
             up_e.skip_sweep = False
             down_e.skip_sweep = True
             down_e.skip_hit = True
-        elif down_e.etype == 'ceil' and up_e.etype == 'updown':
+        elif down_e.etype == 'up' and up_e.etype == 'updown':
             down_e.skip_sweep = False
             up_e.skip_sweep = True
             up_e.skip_hit = True
@@ -367,7 +367,7 @@ class Obstacle:
             up_e.skip_sweep = True
             down_e.skip_hit = True
             up_e.skip_hit = True
-        elif up_e.etype == 'floor' and down_e.etype == 'ceil':
+        elif up_e.etype == 'down' and down_e.etype == 'up':
             up_e.skip_sweep = True
             down_e.skip_sweep = False
             #
@@ -382,20 +382,20 @@ class Obstacle:
         down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
         e.skip_sweep = True
         #
-        if up_e.etype == 'updown' and down_e.etype == 'floor':
+        if up_e.etype == 'updown' and down_e.etype == 'down':
             down_e.skip_sweep = True
             up_e.skip_sweep = False
-            up_e.etype = 'floor'
-        elif up_e.etype == 'ceil' and down_e.etype == 'updown':
+            up_e.etype = 'down'
+        elif up_e.etype == 'up' and down_e.etype == 'updown':
             down_e.skip_sweep = False
             up_e.skip_sweep = True
-            down_e.etype = 'ceil'
+            down_e.etype = 'up'
         elif up_e.etype == 'updown' and down_e.etype == 'updown':
             up_e.skip_sweep = True
             down_e.skip_sweep = False
-            down_e.etype = 'ceil'
-            up_e.etype = 'floor'
-        elif up_e.etype == 'ceil' and down_e.etype == 'floor':
+            down_e.etype = 'up'
+            up_e.etype = 'down'
+        elif up_e.etype == 'up' and down_e.etype == 'down':
             up_e.skip_sweep = True
             down_e.skip_sweep = True
             e.skip_sweep = False
@@ -409,22 +409,22 @@ class Obstacle:
         down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
         e.skip_sweep = True
         #
-        if up_e.etype == 'ceil' and down_e.etype == 'updown':
+        if up_e.etype == 'up' and down_e.etype == 'updown':
             up_e.skip_sweep = False
             down_e.skip_sweep = True
-            down_e.etype = 'ceil'
-        elif down_e.etype == 'floor' and up_e.etype == 'updown':
+            down_e.etype = 'up'
+        elif down_e.etype == 'down' and up_e.etype == 'updown':
             down_e.skip_sweep = False
             up_e.skip_sweep = True
-            up_e.etype = 'floor'
-        elif up_e.etype == 'ceil' and down_e.etype == 'floor':
+            up_e.etype = 'down'
+        elif up_e.etype == 'up' and down_e.etype == 'down':
             up_e.skip_sweep = False
             down_e.skip_sweep = False
         elif up_e.etype == 'updown' and down_e.etype == 'updown':
             up_e.skip_sweep = True
             down_e.skip_sweep = True
-            up_e.etype = 'ceil'
-            down_e.etype = 'floor'
+            up_e.etype = 'up'
+            down_e.etype = 'down'
         else:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
