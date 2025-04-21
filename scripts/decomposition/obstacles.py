@@ -287,6 +287,7 @@ class Obstacle:
                 continue
             #
             e.skip_hit = True
+            e.skip_sweep = True
 
             #
             case_in = False
@@ -310,11 +311,8 @@ class Obstacle:
                     self.process_fake_out_events(e)
 
     def process_fake_in_events_b(self, e: Event):
-        prev_e = e.prev_e
-        next_e = e.next_e
-        up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
-        down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
-        e.skip_sweep = True
+        up_e = e.prev_e if e.prev_e.xy[1] > e.xy[1] else e.next_e
+        down_e = e.next_e if e.prev_e.xy[1] > e.xy[1] else e.prev_e
         #
         if up_e.etype == 'down' and down_e.etype == 'updown':
             up_e.skip_sweep = True
@@ -349,11 +347,8 @@ class Obstacle:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
     def process_fake_out_events_b(self, e: Event):
-        prev_e = e.prev_e
-        next_e = e.next_e
-        up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
-        down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
-        e.skip_sweep = True
+        up_e = e.prev_e if e.prev_e.xy[1] > e.xy[1] else e.next_e
+        down_e = e.next_e if e.prev_e.xy[1] > e.xy[1] else e.prev_e
         #
         if up_e.etype == 'down' and down_e.etype == 'updown':
             up_e.skip_sweep = False
@@ -379,11 +374,8 @@ class Obstacle:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
     def process_fake_in_events(self, e: Event):
-        prev_e = e.prev_e
-        next_e = e.next_e
-        up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
-        down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
-        e.skip_sweep = True
+        up_e = e.prev_e if e.prev_e.xy[1] > e.xy[1] else e.next_e
+        down_e = e.next_e if e.prev_e.xy[1] > e.xy[1] else e.prev_e
         #
         if up_e.etype == 'updown' and down_e.etype == 'down':
             down_e.skip_sweep = True
@@ -406,11 +398,8 @@ class Obstacle:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
     def process_fake_out_events(self, e: Event):
-        prev_e = e.prev_e
-        next_e = e.next_e
-        up_e = prev_e if prev_e.xy[1] > e.xy[1] else next_e
-        down_e = next_e if prev_e.xy[1] > e.xy[1] else prev_e
-        e.skip_sweep = True
+        up_e = e.prev_e if e.prev_e.xy[1] > e.xy[1] else e.next_e
+        down_e = e.next_e if e.prev_e.xy[1] > e.xy[1] else e.prev_e
         #
         if up_e.etype == 'up' and down_e.etype == 'updown':
             up_e.skip_sweep = False
