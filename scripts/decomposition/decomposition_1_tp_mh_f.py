@@ -115,7 +115,7 @@ class TrapezoidalDecomposition:
             success_up, y_up = False, None
             success_down, y_down = False, None
 
-            if base_e.can_up and base_e.etype in ('up', 'updown'):
+            if base_e.etype in ('up', 'updown'):
                 success_up, y_up = self.evel_event_up(base_e, e, hit_up_y)
             if base_e.can_down and base_e.etype in ('down', 'updown'):
                 success_down, y_down = self.eval_event_down(base_e, e, hit_down_y)
@@ -144,18 +144,18 @@ class TrapezoidalDecomposition:
     def create_trapezoid(self, base_e: Event, hit_up_event: Event, hit_down_event: Event, hit_up_y: float, hit_down_y: float):
         trap_up, trap_down = None, None
 
-        #
+        # direct trap
         if base_e.direct_trap:
             trap1 = [base_e.xy, base_e.end_down_ed_xy, base_e.end_up_ed_xy]
             base_e.set_base_ci_up(self.n_cells)
             self.add_cell(Polygon(trap1), base_e)
             return
 
-        #
+        # not hit events
         if not (hit_up_event or hit_down_event):
             return
 
-        #
+        # updown
         if base_e.etype == 'updown':
             if base_e.etype_2 == 'out':
                 if hit_up_event:
@@ -172,13 +172,14 @@ class TrapezoidalDecomposition:
             if not (hit_up_event or hit_down_event):
                 print((f"[{self.ns}][create_trapezoid][WARN]: updown: hit_up_event and hit_down_event are None"))
 
-        #
+        # up
         elif base_e.etype == 'up' and hit_up_event:
             trap_up = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.end_down_ed_xy, base_e.end_up_ed_xy]
-        #
+        # down
         elif base_e.etype == 'down' and hit_down_event:
             trap_down = [base_e.xy, base_e.end_down_ed_xy, hit_down_event.end_up_ed_xy, (base_e.xy[0], hit_down_y)]
 
+        # add cell number - update endpoints
         dn = 0
         if hit_up_event:
             dn = 1
@@ -192,7 +193,7 @@ class TrapezoidalDecomposition:
             hit_down_event.add_up_ci_d(base_e.sd_ind, self.n_cells+dn)
             hit_down_event.set_endpoint_up_edge((base_e.xy[0], hit_down_y))
 
-        #
+        # create cell
         if trap_up:
             self.add_cell(Polygon(trap_up), base_e)
         if trap_down:
@@ -284,11 +285,13 @@ class TrapezoidalDecomposition:
                 current_cell = self.cells[ci_curr]
                 ind = hit_up_event.down_cil_k.index(e.sd_ind)
                 if len(hit_up_event.down_cil_k) > ind+1:
+                    # next cell created on hit_up_event
                     val = e.hit_up_event.down_cil_k[ind+1]
                     up_adj_ci = e.hit_up_event.down_cil_d[val]
                 elif hit_up_event.direct_trap:
                     up_adj_ci = hit_up_event.base_ci_up
                 else:
+                    # e was the last hitting event
                     up_adj_ci = hit_up_event.base_ci_down
                     if not up_adj_ci:
                         if hit_up_event.etype == 'down':

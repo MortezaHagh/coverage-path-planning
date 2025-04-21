@@ -49,8 +49,8 @@ class Event:
         self.direct_trap = False
         #
         self.done = False
-        self.can_up = True
         self.can_down = True
+        # self.can_up = True
         #
         self.concave = False
         self.convex = True
