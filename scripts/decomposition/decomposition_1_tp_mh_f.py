@@ -30,7 +30,6 @@ class TrapezoidalDecomposition:
         self.create_events()
         #
         self.decompose_all()
-        # self.create_final_trapezoids()
         self.find_adjacents_cells()
         self.compleate_adjacency()
         self.create_cell_groups()
@@ -312,75 +311,29 @@ class TrapezoidalDecomposition:
                     self.cells[down_adj_ci].set_parent_down_ci(ci_curr)
 
     def compleate_adjacency(self):
-        for cell in self.cells[::-1]:
+        for ic, cell in enumerate(self.cells):
             e = cell.event
-
-            # case n_adj = 0 --------------------------------------------------
-            if e.has_adj and cell.n_adj == 0:
-                if e.etype_2 == 'out' or e.etype == 'up':
-                    up_e = e.hit_up_event
-                    while up_e and e.xy[0] == up_e.xy[0]:
-                        up_cell_i = up_e.base_ci_up
-                        if up_cell_i:
-                            up_cell = self.cells[up_cell_i]
-                            if up_cell.up_adj_ci:
-                                cell.set_up_adj_ci(up_cell.up_adj_ci)
-                                self.cells[up_cell.up_adj_ci].set_parent_up_ci(cell.ind)
-                                break
-                        n_up_e = up_e.hit_up_event
-                        if n_up_e:
-                            up_e = n_up_e
-                        else:
-                            if up_e.vertical:
-                                up_e = up_e.next_e
-                                if up_e.fake:
-                                    up_e = up_e.next_e
-                            else:
-                                break
+            # adjacent cells
+            if e.has_adj:
+                for next_c in self.cells[ic+1:]:
+                    #
+                    if next_c.ind in [cell.up_adj_ci, cell.down_adj_ci]:
+                        continue
+                    #
+                    if cell.x_max == next_c.x_min:
+                        # if y is in between
+                        if next_c.y_min < cell.y_c < next_c.y_max or \
+                                cell.y_min < next_c.y_c < cell.y_max:
+                            # add adjacent cells
+                            cell.add_mid_adjlist(next_c.ind)
+                            next_c.add_mid_parentlist(cell.ind)
                 #
                 if cell.n_adj == 0:
                     cell.status = False
                     print(f"[{self.ns}][find_adjacents_cells][ERROR]: No adjacents found:")
-                    print(f"e: {e.sd_ind}, -- cell: {cell.ind}")
+                    print(f"e: {cell.event.sd_ind}, -- cell: {cell.ind}")
 
-            # case n_parent = 0 ------------------------------------------------
-            if e.has_parent and cell.n_parent == 0:
-                # case: upper cell has parent which is also adjacent of current cell
-                # b_e_ind = None
-                b_e: Event = None
-                if e.etype == 'down' or e.etype_2 == 'out':
-                    b_e = e.next_e
-                elif e.etype == 'up':
-                    b_e = e.next_e
-                elif e.etype_2 == 'in':
-                    up_e = e.hit_up_event
-                    if up_e:
-                        b_e = up_e.next_e
-                if b_e:
-                    down_e = self.events[b_e.sd_ind]
-                    while down_e.done and down_e.xy[0] == b_e.xy[0]:
-                        down_e = self.events[down_e.sd_ind-1]
-                    if down_e and down_e.base_ci_down:
-                        cell.add_mid_parentlist(down_e.base_ci_down)
-                        self.cells[down_e.base_ci_down].add_mid_adjlist(cell.ind)
-                        continue
-                    elif down_e and down_e.base_ci_up:
-                        cell.add_mid_parentlist(down_e.base_ci_up)
-                        self.cells[down_e.base_ci_up].add_mid_adjlist(cell.ind)
-                        continue
-                #
-                if e.direct_trap:
-                    ee = e.next_e
-                    if e.prev_e.xy[0] > e.next_e.xy[0]:
-                        ee = e.prev_e
-                    down_e = ee
-                    while down_e.done and ee.xy[0] == down_e.xy[0]:
-                        down_e = self.events[down_e.sd_ind-1]
-                    if down_e.base_ci_up:
-                        cell.add_mid_parentlist(down_e.base_ci_up)
-                        self.cells[down_e.base_ci_up].add_mid_adjlist(cell.ind)
-
-                #
+            if e.has_parent:
                 if cell.n_parent == 0:
                     cell.status = False
                     print(f"[{self.ns}][find_adjacents_cells][ERROR]: No parents found:")

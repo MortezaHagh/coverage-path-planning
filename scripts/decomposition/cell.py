@@ -9,13 +9,14 @@ class Cell:
         self.ind: int = ind
         self.event: Event = event
         self.poly: Polygon = poly
-        self.events: list[Event] = []
         #
         self.xy: tuple[float, float] = None
         self.x_min: float = None
         self.x_max: float = None
         self.y_min: float = None
         self.y_max: float = None
+        self.x_c: float = None
+        self.y_c: float = None
         self.width: float = None
         self.height: float = None
         self.area: float = None
@@ -49,6 +50,9 @@ class Cell:
         minx, miny, maxx, maxy = self.poly.bounds
         self.x_min, self.y_min = minx, miny
         self.x_max, self.y_max = maxx, maxy
+        # center
+        self.x_c = (self.x_min + self.x_max) / 2
+        self.y_c = (self.y_min + self.y_max) / 2
         # width and height
         self.width = maxx - minx
         self.height = maxy - miny
@@ -87,7 +91,7 @@ class Cell:
                 self.n_parent += 1
 
     def add_mid_parentlist(self, ci: str):
-        if ci:
+        if ci is not None:
             self.mid_parentlist.append(ci)
             self.n_parent += 1
 
