@@ -61,7 +61,6 @@ class Decomposition:
         # get obstacle contours inside the biggest contour from map imag
         contours, hierarchy = cv.findContours(zmd.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         # get the biggest contour
-        # biggest_contour = max(contours, key=cv.contourArea) # todo
 
         # get the obstacle contours
         obs_contours = []

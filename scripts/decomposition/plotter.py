@@ -137,7 +137,7 @@ class DecPlotter:
             ax.plot(x, y, color=color, linewidth=1)
 
         # # vizualize events
-        self.visualize_events()
+        # self.visualize_events()
 
         # plot trapezoids
         self.vizualize_cells()
