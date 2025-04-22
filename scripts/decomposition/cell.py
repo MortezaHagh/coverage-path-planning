@@ -9,6 +9,16 @@ class Cell:
         self.ind: int = ind
         self.event: Event = event
         self.poly: Polygon = poly
+        self.events: list[Event] = []
+        #
+        self.xy: tuple[float, float] = None
+        self.x_min: float = None
+        self.x_max: float = None
+        self.y_min: float = None
+        self.y_max: float = None
+        self.width: float = None
+        self.height: float = None
+        self.area: float = None
         #
         self.up_adj_ci = None
         self.down_adj_ci = None
@@ -28,6 +38,22 @@ class Cell:
         self.last_cell: Cell = None
         #
         self.group_ind: int = None
+
+        # calculate cell specs
+        self.cell_specs()
+
+    def cell_specs(self):
+        # center
+        self.xy = self.poly.centroid.coords[0]
+        # nounds
+        minx, miny, maxx, maxy = self.poly.bounds
+        self.x_min, self.y_min = minx, miny
+        self.x_max, self.y_max = maxx, maxy
+        # width and height
+        self.width = maxx - minx
+        self.height = maxy - miny
+        # area
+        self.area = self.poly.area
 
     def set_up_adj_ci(self, ci: str):
         if ci:
