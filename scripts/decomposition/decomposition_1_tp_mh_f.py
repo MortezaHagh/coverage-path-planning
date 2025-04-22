@@ -32,8 +32,8 @@ class TrapezoidalDecomposition:
         self.decompose_all()
         # self.create_final_trapezoids()
         self.find_adjacents_cells()
-        self.find_adjacent_for_deadend_cells()
-        self.find_cell_groups()
+        self.compleate_adjacency()
+        self.create_cell_groups()
         self.visualize()
 
     def set_bounding_polygon(self, poly: Polygon):
@@ -83,18 +83,7 @@ class TrapezoidalDecomposition:
             self.eval_done_status(base_e, hit_up_event, hit_down_event)
 
             # Create trapezoids based on event type
-            self.create_trapezoid(base_e, hit_up_event, hit_down_event, hit_up_y, hit_down_y)
-
-            # update done status of lower events at same x coordinate
-            # out
-            if hit_up_event and i > 2:
-                low_j = hit_up_event.sd_ind
-                while low_j > base_e.sd_ind+1:
-                    low_j -= 1
-                    low_e = self.events[low_j]
-                    if low_e.xy[1] < hit_up_y:
-                        if low_e.xy[0] == base_e.xy[0]:
-                            low_e.done = True
+            self.create_trapezoid(base_e, hit_up_event, hit_down_event)
 
     def expand_hit(self, base_e: Event, base_i: int):
         # Initialize hit variables
@@ -116,7 +105,7 @@ class TrapezoidalDecomposition:
             success_down, y_down = False, None
 
             if base_e.etype in ('up', 'updown'):
-                success_up, y_up = self.evel_event_up(base_e, e, hit_up_y)
+                success_up, y_up = self.eval_event_up(base_e, e, hit_up_y)
             if base_e.can_down and base_e.etype in ('down', 'updown'):
                 success_down, y_down = self.eval_event_down(base_e, e, hit_down_y)
 
@@ -128,7 +117,85 @@ class TrapezoidalDecomposition:
         #
         return hit_up_y, hit_down_y, hit_up_event, hit_down_event
 
+    def eval_event_up(self, base_e: Event, e: Event, y_hit: float) -> bool:
+        # based even type is 'up'
+        if e.etype == 'up':
+            return False, None
+
+        # check not to hit from outside of polygon
+        if e.direct_trap and base_e.xy[0] > e.x_max:
+            return False, None
+
+        # reach to higher updown event
+        new_y_hit = e.xy[1]
+        if e.xy[0] == base_e.xy[0] and new_y_hit < y_hit:
+            if e.etype == 'updown':
+                if e.etype_2 == 'out':
+                    return True, new_y_hit
+                # in
+                return False, None
+
+        # type is 'down'
+        # edge = e1-e
+        e1 = e.prev_e
+
+        # check coordinates
+        # if e1 is the base event itself
+        if e1.sd_ind == base_e.sd_ind:
+            return False, None
+        # if x base_e is left to e1
+        if e1.xy[0] >= base_e.xy[0]:
+            return False, None
+        # check y coordinates
+        if e1.xy[1] < base_e.xy[1] and e.xy[1] < base_e.xy[1]:
+            return False, None
+
+        # incline
+        theta = math.atan2(e.xy[1] - e1.xy[1], e.xy[0] - e1.xy[0])
+        new_y_hit = math.tan(theta) * (base_e.xy[0] - e1.xy[0]) + e1.xy[1]
+        if new_y_hit < y_hit:
+            return True, new_y_hit
+        #
+        return False, None
+
+    def eval_event_down(self, base_e: Event, e: Event, y_hit: float) -> bool:
+        # based even type is 'down'
+        if e.etype == 'down':
+            return False, None
+
+        # type is 'up'
+        # edge = e1-e
+        e2 = e.next_e
+
+        # check coordinates
+        # if e2 is the base event itself
+        if e2.sd_ind == base_e.sd_ind:
+            return False, None
+        # if x base_e is left to e2
+        if e2.xy[0] >= base_e.xy[0]:
+            return False, None
+        # check y coordinates
+        if e2.xy[1] > base_e.xy[1] and e.xy[1] > base_e.xy[1]:
+            return False, None
+
+        # incline
+        theta = math.atan2(e.xy[1] - e2.xy[1], e.xy[0] - e2.xy[0])
+        new_y_hit = math.tan(theta) * (base_e.xy[0] - e2.xy[0]) + e2.xy[1]
+        if new_y_hit > y_hit:
+            return True, new_y_hit
+        #
+        return False, None
+
     def eval_done_status(self, base_e: Event, hit_up_event: Event, hit_down_event: Event):
+        # eval events on the same x coordinate between base_e and hit_up_event
+        if hit_up_event:
+            up_ind = base_e.sd_ind+1
+            up_e = self.events[up_ind]
+            while up_e.xy[0] == base_e.xy[0] and up_e.xy[1] < base_e.hit_up_y:
+                up_e.done = True
+                up_ind = up_ind + 1
+                up_e = self.events[up_ind]
+
         # update done status of the hit events
         if hit_up_event:
             if hit_up_event.xy[0] == base_e.xy[0]:
@@ -141,7 +208,7 @@ class TrapezoidalDecomposition:
                 if hit_down_event.etype == 'up':
                     hit_down_event.done = True
 
-    def create_trapezoid(self, base_e: Event, hit_up_event: Event, hit_down_event: Event, hit_up_y: float, hit_down_y: float):
+    def create_trapezoid(self, base_e: Event, hit_up_event: Event, hit_down_event: Event):
         trap_up, trap_down = None, None
 
         # direct trap
@@ -154,6 +221,9 @@ class TrapezoidalDecomposition:
         # not hit events
         if not (hit_up_event or hit_down_event):
             return
+
+        hit_up_y = base_e.hit_up_y
+        hit_down_y = base_e.hit_down_y
 
         # updown
         if base_e.etype == 'updown':
@@ -201,77 +271,6 @@ class TrapezoidalDecomposition:
         if trap_up is None and trap_down is None:
             print((f"[{self.ns}][create_trapezoid][ERROR]: Invalid trapezoid creation"))
 
-    def evel_event_up(self, base_e: Event, e: Event, y_hit: float) -> bool:
-        # based even type is 'up'
-        if e.etype == 'up':
-            return False, None
-
-        # check not to hit from outside of polygon
-        if e.direct_trap and base_e.xy[0] > e.x_max:
-            return False, None
-
-        # reach to higher updown event
-        new_y_hit = e.xy[1]
-        if e.xy[0] == base_e.xy[0] and new_y_hit < y_hit:
-            if e.etype == 'updown':
-                if e.etype_2 == 'out':
-                    return True, new_y_hit
-                # in
-                return False, None
-
-        # type is 'down'
-        # edge = e1-e
-        e1 = e.prev_e
-        # e1 = self.obstacles[e.obst_ind].events[e1_ind]
-
-        # check coordinates
-        # if e1 is the base event itself
-        if e1.sd_ind == base_e.sd_ind:
-            return False, None
-        # if x base_e is left to e1
-        if e1.xy[0] >= base_e.xy[0]:
-            return False, None
-        # check y coordinates
-        if e1.xy[1] < base_e.xy[1] and e.xy[1] < base_e.xy[1]:
-            return False, None
-
-        # incline
-        theta = math.atan2(e.xy[1] - e1.xy[1], e.xy[0] - e1.xy[0])
-        new_y_hit = math.tan(theta) * (base_e.xy[0] - e1.xy[0]) + e1.xy[1]
-        if new_y_hit < y_hit:
-            return True, new_y_hit
-        #
-        return False, None
-
-    def eval_event_down(self, base_e: Event, e: Event, y_hit: float) -> bool:
-        # based even type is 'down'
-        if e.etype == 'down':
-            return False, None
-
-        # type is 'up'
-        # edge = e1-e
-        e2 = e.next_e
-        # e2 = self.obstacles[e.obst_ind].events[e2_ind]
-
-        # check coordinates
-        # if e2 is the base event itself
-        if e2.sd_ind == base_e.sd_ind:
-            return False, None
-        # if x base_e is left to e2
-        if e2.xy[0] > base_e.xy[0]:
-            return False, None
-        # check y coordinates
-        if e2.xy[1] > base_e.xy[1] and e.xy[1] > base_e.xy[1]:
-            return False, None
-
-        # incline
-        theta = math.atan2(e.xy[1] - e2.xy[1], e.xy[0] - e2.xy[0])
-        new_y_hit = math.tan(theta) * (base_e.xy[0] - e2.xy[0]) + e2.xy[1]
-        if new_y_hit > y_hit:
-            return True, new_y_hit
-        #
-        return False, None
-
     # find_adjacents_cells =============================================================================================
 
     def find_adjacents_cells(self):
@@ -279,6 +278,7 @@ class TrapezoidalDecomposition:
             up_adj_ci, down_adj_ci = None, None
             current_cell: Cell = None
 
+            # hit_up_event
             if e.hit_up_event:
                 hit_up_event = e.hit_up_event
                 ci_curr = e.base_ci_up
@@ -293,35 +293,9 @@ class TrapezoidalDecomposition:
                 else:
                     # e was the last hitting event
                     up_adj_ci = hit_up_event.base_ci_down
-                    if not up_adj_ci:
-                        if hit_up_event.etype == 'down':
-                            up_next_event = hit_up_event.next_e
-                            if len(up_next_event.down_cil_k) > 0:
-                                val = up_next_event.down_cil_k[0]
-                                up_adj_ci = up_next_event.down_cil_d[val]
-                            else:
-                                up_adj_ci = up_next_event.base_ci_down
-                    if not up_adj_ci:
-                        up_next_event = hit_up_event.next_e
-                        down_prev_event = e.prev_e
-                        if up_next_event.sd_ind in down_prev_event.up_cil_k:
-                            up_adj_ci = up_next_event.base_ci_down
-                        elif down_prev_event.sd_ind in up_next_event.down_cil_k:
-                            up_adj_ci = down_prev_event.base_ci_up
-                        else:
-                            if down_prev_event.fake:
-                                down_prev_event = down_prev_event.prev_e
-                                down_prev_event = down_prev_event.prev_e
-                            if up_next_event.fake:
-                                up_next_event = up_next_event.next_e
-                                up_next_event = up_next_event.next_e
-                            if down_prev_event.sd_ind in up_next_event.down_cil_k:
-                                up_adj_ci = down_prev_event.base_ci_up
                 if up_adj_ci:
                     current_cell.set_up_adj_ci(up_adj_ci)
                     self.cells[up_adj_ci].set_parent_up_ci(ci_curr)
-
-            # end if hit_up_event:
 
             # hit_down_event
             if e.hit_down_event:
@@ -333,20 +307,11 @@ class TrapezoidalDecomposition:
                     down_adj_ci = e.hit_down_event.up_cil_d[val]
                 else:
                     down_adj_ci = e.hit_down_event.base_ci_up
-                    if down_adj_ci:
-                        pass
-                    else:
-                        up_next_event = e.next_e
-                        down_prev_event = e.hit_down_event.prev_e
-                        if up_next_event.sd_ind in down_prev_event.down_cil_k:
-                            down_adj_ci = up_next_event.base_ci_up
-                        elif down_prev_event.sd_ind in up_next_event.up_cil_k:
-                            down_adj_ci = down_prev_event.base_ci_down
                 if down_adj_ci:
                     current_cell.set_down_adj_ci(down_adj_ci)
                     self.cells[down_adj_ci].set_parent_down_ci(ci_curr)
 
-    def find_adjacent_for_deadend_cells(self):
+    def compleate_adjacency(self):
         for cell in self.cells[::-1]:
             e = cell.event
 
@@ -384,13 +349,13 @@ class TrapezoidalDecomposition:
                 # b_e_ind = None
                 b_e: Event = None
                 if e.etype == 'down' or e.etype_2 == 'out':
-                    b_e = e.prev_e
+                    b_e = e.next_e
                 elif e.etype == 'up':
                     b_e = e.next_e
                 elif e.etype_2 == 'in':
                     up_e = e.hit_up_event
                     if up_e:
-                        b_e = up_e.prev_e
+                        b_e = up_e.next_e
                 if b_e:
                     down_e = self.events[b_e.sd_ind]
                     while down_e.done and down_e.xy[0] == b_e.xy[0]:
@@ -421,7 +386,7 @@ class TrapezoidalDecomposition:
                     print(f"[{self.ns}][find_adjacents_cells][ERROR]: No parents found:")
                     print(f"e: {cell.event.sd_ind}, -- cell: {cell.ind}")
 
-    def find_cell_groups(self):
+    def create_cell_groups(self):
         cell_groups = []
         ncg = 0
         for cell in self.cells[0:]:
@@ -466,17 +431,10 @@ class TrapezoidalDecomposition:
         #
         self.cells_groups = cell_groups
 
-    def create_final_trapezoids(self):
-        if len(self.events) < 6:
-            return
-        if self.events[-2].fake:
-            base_e = self.events[-2]
-            base_e.etype_2 = 'in'
-            hit_up_event = self.events[-1]
-            hit_down_event = self.events[-3]
-            hit_up_y = hit_up_event.xy[1]
-            hit_down_y = hit_down_event.xy[1]
-            self.create_trapezoid(base_e, hit_up_event, hit_down_event, hit_up_y, hit_down_y)
+    def get_event(self, ind: int) -> Event:
+        if ind < 0 or ind >= len(self.events):
+            return None
+        return self.events[ind]
 
     def visualize(self):
         self.plotter = DecPlotter(self)
