@@ -37,6 +37,8 @@ class ZoneMapData:
     map_cleaning: np.ndarray
     map_ws: np.ndarray
     map_viz: np.ndarray
+    #
+    map_planning: np.ndarray
 
     def __init__(self, ind: int = 0):
         self.ind = ind
@@ -57,6 +59,7 @@ class ZoneMapData:
         self.map_cleaning = None
         self.map_ws = None
         self.map_viz = None
+        self.map_planning = None
 
     @property
     def final_rect_data(self) -> int:

@@ -54,7 +54,7 @@ def main():
     print(" ============================================================================== ")
 
     # display map_planning
-    map_planning = district_data.map_planning
+    map_planning = district_data.dmd.map_planning
     cv.imshow("map_planning", map_planning)
     cv.waitKey(0)
     cv.destroyAllWindows()

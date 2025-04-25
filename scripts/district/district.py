@@ -11,8 +11,6 @@ class DistrictData:
     spa_obj: SpaceAnalyzer      # space_analyzer
     dmd: ZoneMapData            # district_map_data
     zone_datas: list[ZoneData]  # zones
-    #
-    map_planning: np.ndarray          # map high level
 
     def __init__(self, spa: SpaceAnalyzer):
         self.ns = "DistrictData"
@@ -25,11 +23,10 @@ class DistrictData:
         self.dmd = spa.zone_map_data
         self.dmd.name = "District"
 
-        # save district data # todo
-        self.dmd.save_data()
+        # # save district data # todo
+        # self.dmd.save_data()
 
         # attributes
-        self.map_planning = None  # map info: containing zones rect, paths, ...
         self.zone_datas: list[ZoneData] = []  # zones
 
     def create_zones_hl(self):
@@ -69,24 +66,24 @@ class DistrictData:
 
     def create_map_planning(self):
         # display zones rectangles
-        self.map_planning = self.dmd.map_viz.copy()
+        self.dmd.map_planning = self.dmd.map_viz.copy()
         for zd in self.zone_datas:
             vertices = zd.zone_map_data.vertices
-            self.map_planning = cv.polylines(self.map_planning, [vertices], isClosed=True, color=(100, 0, 150), thickness=4)
+            self.dmd.map_planning = cv.polylines(self.dmd.map_planning, [vertices], isClosed=True, color=(100, 0, 150), thickness=4)
             final_vertices = zd.zone_map_data.final_vertices
-            self.map_planning = cv.polylines(self.map_planning, [final_vertices], isClosed=True, color=(100, 0, 250), thickness=4)
+            self.dmd.map_planning = cv.polylines(self.dmd.map_planning, [final_vertices], isClosed=True, color=(100, 0, 250), thickness=4)
 
     def save_map_planning(self):
         base_path = self.dmd.orig_map_data.bcfg.district_dir
         map_planning_path = base_path + "/District"
-        cv.imwrite(map_planning_path + "/" + "map_planning.png", self.map_planning)
+        cv.imwrite(map_planning_path + "/" + "map_planning.png", self.dmd.map_planning)
 
     def add_os_path_map_planning(self):
         """add os path of all zones to map_planning"""
         for zd in self.zone_datas:
             path = zd.cov_planner.path_px
             for (p1, p2) in zip(path[:-1], path[1:]):
-                self.map_planning = cv.line(self.map_planning, p1, p2, (0, 255, 10), 4)
+                self.dmd.map_planning = cv.line(self.dmd.map_planning, p1, p2, (0, 255, 10), 4)
         self.save_map_planning()
 
     # ==================================================================================================================
