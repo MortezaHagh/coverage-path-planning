@@ -20,6 +20,7 @@ class ZoneMapData:
         values are in pixel by default
     """
     ind: int
+    name: str
     reslolution: float           # resolution m/px
     orig_map_data: MapData
     orig_rectangle: Rectangle
@@ -39,6 +40,7 @@ class ZoneMapData:
 
     def __init__(self, ind: int = 0):
         self.ind = ind
+        self.name = f"Zone_{self.ind}"
         self.reslolution = None
         self.orig_map_data = None
         self.orig_rectangle = None
@@ -62,6 +64,7 @@ class ZoneMapData:
 
     def set_ind(self, ind: int):
         self.ind = ind
+        self.name = f"Zone_{self.ind}"
 
     def set_orig_map_data(self, map_data: MapData):
         self.orig_map_data = map_data
@@ -106,8 +109,8 @@ class ZoneMapData:
         self.final_vertices = vertices
         self.final_rectangle = Rectangle(self.final_rect_data)
 
-    def save_data(self, path: str) -> None:
-        res_path = os.path.join(self.orig_map_data.bcfg.district_dir, path)
+    def save_data(self) -> None:
+        res_path = os.path.join(self.orig_map_data.bcfg.district_dir, self.name)
         os.makedirs(res_path, exist_ok=True)
         #
         cv.imwrite(res_path + "/" + "local_map_1_orig.png", self.map_orig)

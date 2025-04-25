@@ -12,29 +12,31 @@ class DistrictData:
     dmd: ZoneMapData            # district_map_data
     zone_datas: list[ZoneData]  # zones
     #
-    map_hl: np.ndarray          # map high level
+    map_planning: np.ndarray          # map high level
 
     def __init__(self, spa: SpaceAnalyzer):
         self.ns = "DistrictData"
         print(f"[{self.ns}]: Step: creating district data")
 
-        # main district map data
+        # space_analyzer object
         self.spa_obj = spa
+
+        # main district map data
         self.dmd = spa.zone_map_data
-        # self.dmd.visualize()
+        self.dmd.name = "District"
 
         # save district data
-        self.save_init_district_data()
+        self.dmd.save_data()
 
         # attributes
-        self.map_hl = None  # map info: containing zones rect, paths, ...
+        self.map_planning = None  # map info: containing zones rect, paths, ...
         self.zone_datas: list[ZoneData] = []  # zones
 
     def create_zones_hl(self):
-        """create all zones in the district and create map_hl (high level)"""
+        """create all zones in the district and create map_planning (high level)"""
         self.create_zones()
-        self.create_map_hl()
-        self.save_map_hl()
+        self.create_map_planning()
+        self.save_map_planning()
 
     def create_zones(self):
         print(f"[{self.ns}]: Step: creating zone map data")
@@ -50,8 +52,7 @@ class DistrictData:
             zmd.set_ind(i)
 
             # save zone data
-            zone_path = f"Zone_{i}"
-            zmd.save_data(zone_path)
+            zmd.save_data()
 
             # append zone map data
             zd = ZoneData(i)
@@ -59,39 +60,34 @@ class DistrictData:
             self.zone_datas.append(zd)
         print(f"[{self.ns}]: ----------------------------------------------- ")
 
-    def save_init_district_data(self):
-        district_path = "District"
-        self.dmd.save_data(district_path)
-
-    def create_map_hl(self):
-        map_hl = self.dmd.map_viz.copy()
-        self.map_hl = map_hl
+    def create_map_planning(self):
+        self.map_planning = self.dmd.map_viz.copy()
         # display zones rectangles
         for zd in self.zone_datas:
             vertices = zd.zone_map_data.vertices
-            self.map_hl = cv.polylines(self.map_hl, [vertices], isClosed=True, color=(100, 0, 150), thickness=4)
+            self.map_planning = cv.polylines(self.map_planning, [vertices], isClosed=True, color=(100, 0, 150), thickness=4)
             final_vertices = zd.zone_map_data.final_vertices
-            self.map_hl = cv.polylines(self.map_hl, [final_vertices], isClosed=True, color=(100, 0, 250), thickness=4)
+            self.map_planning = cv.polylines(self.map_planning, [final_vertices], isClosed=True, color=(100, 0, 250), thickness=4)
 
             # for zone
-            zd.create_map_hl()
+            zd.create_map_planning()
 
-    def save_map_hl(self):
+    def save_map_planning(self):
         base_path = self.dmd.orig_map_data.bcfg.district_dir
-        map_hl_path = base_path + "/District"
-        cv.imwrite(map_hl_path + "/" + "map_hl.png", self.map_hl)
+        map_planning_path = base_path + "/District"
+        cv.imwrite(map_planning_path + "/" + "map_planning.png", self.map_planning)
 
     def add_os_path_map_hl(self):
-        """add os path of all zones to map_hl"""
+        """add os path of all zones to map_planning"""
         for zd in self.zone_datas:
             path = zd.os_path_m
             for (p1, p2) in zip(path[:-1], path[1:]):
                 p1 = self.point_m_to_px(p1)
                 p2 = self.point_m_to_px(p2)
-                self.map_hl = cv.line(self.map_hl, p1, p2, (0, 255, 10), 4)
+                self.map_planning = cv.line(self.map_planning, p1, p2, (0, 255, 10), 4)
                 # for zone
                 zd.add_os_path_map_hl()
-        self.save_map_hl()
+        self.save_map_planning()
 
     def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
         res = self.dmd.reslolution

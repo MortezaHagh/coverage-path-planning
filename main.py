@@ -10,8 +10,8 @@ from scripts.base.image_processor import MapImageProcessor
 from scripts.gui.create_district import DistrictGen
 from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.district import DistrictData
-from scripts.planning.coverage_pp_2_tp_decompose_1 import CoveragePP
-# from scripts.planning.coverage_pp_1_mh import CoveragePP
+# from scripts.planning.coverage_pp_2_tp_decompose_1 import CoveragePP
+from scripts.planning.coverage_pp_1_mh import CoveragePP
 
 
 def main():
@@ -31,7 +31,7 @@ def main():
     mp = MapImageProcessor(orig_map, b_configs)
     map_data: MapData = mp.mdata
 
-    # Select District [rectangle] from map
+    # Select area in the map and create District rectangle
     district_g = DistrictGen(map_data=map_data)
     district_rect: Rectangle = district_g.get_district_rect()
 
@@ -39,25 +39,24 @@ def main():
     spa = SpaceAnalyzer(map_data=map_data, rectangle=district_rect)
     spa.create_local_map_ws_selection()
 
-    # Create District Data and Zone Map Data
+    # Create District Data and district Zone Map Data
     district_data = DistrictData(spa)
-    # district_data.create_zones()
 
-    # create zones high level
+    # create zones and map_planning for zones
     district_data.create_zones_hl()
 
     # coverage path planning
     CoveragePP(district_data)
 
-    # # add os path to map_hl
-    # district_data.add_os_path_map_hl()
+    # add os path to map_planning
+    district_data.add_os_path_map_hl()
 
-    # # display map_hl
-    # map_hl = district_data.map_hl
-    # cv.imshow("map_hl", map_hl)
-    # cv.waitKey(0)
-    # cv.destroyAllWindows()
-    #
+    # display map_planning
+    map_planning = district_data.map_planning
+    cv.imshow("map_planning", map_planning)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+
     print(f"[{ns}]: resolution:", spa.orig_map_data.up_resolution)
 
 

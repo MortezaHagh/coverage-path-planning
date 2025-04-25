@@ -55,6 +55,19 @@ class InputsProcessor:
     def orig_map(self) -> np.ndarray:
         return copy.deepcopy(self.__orig_map)
 
+    def set_paths(self) -> None:
+        self.paths["map"] = os.path.join(self.paths["data"], self.map_name)
+        self.paths["district"] = os.path.join(self.paths["map"], self.__configs.district_folder)
+        self.paths["yaml"] = os.path.join(self.paths["map"], "merge.yaml")
+        self.paths["json"] = os.path.join(self.paths["map"], "merge.json")
+        self.paths["pgm"] = os.path.join(self.paths["map"], "merge.pgm")
+
+    def check_directory(self) -> None:
+        """ check if directory and map files exist """
+        if not os.path.isdir(self.paths["map"]):
+            print(f"Directory {self.paths['map']} does not exist")
+            raise FileNotFoundError(f"Directory {self.paths['map']} does not exist")
+
     def set_configs(self, yaml_data: dict) -> None:
         """ read map yaml file and update config object """
         self.__configs.map_name = self.map_name
@@ -66,12 +79,6 @@ class InputsProcessor:
         self.__configs.free_thresh = yaml_data["free_thresh"]
         self.__configs.occupied_thresh = yaml_data["occupied_thresh"]
 
-    def check_directory(self) -> None:
-        """ check if directory and map files exist """
-        if not os.path.isdir(self.paths["map"]):
-            print(f"Directory {self.paths['map']} does not exist")
-            raise FileNotFoundError(f"Directory {self.paths['map']} does not exist")
-
     def read_yaml(self, file_path):
         with open(file_path, 'r') as file:
             return yaml.safe_load(file)
@@ -79,13 +86,6 @@ class InputsProcessor:
     def write_json(self, file_path, data) -> None:
         with open(file_path, 'w') as file:
             json.dump(data, file, indent=4)
-
-    def set_paths(self) -> None:
-        self.paths["map"] = os.path.join(self.paths["data"], self.map_name)
-        self.paths["district"] = os.path.join(self.paths["map"], self.__configs.district_folder)
-        self.paths["yaml"] = os.path.join(self.paths["map"], "merge.yaml")
-        self.paths["json"] = os.path.join(self.paths["map"], "merge.json")
-        self.paths["pgm"] = os.path.join(self.paths["map"], "merge.pgm")
 
     def visualize_map(self, pgm_data) -> None:
         print(f"[{self.ns}]: visualizing")

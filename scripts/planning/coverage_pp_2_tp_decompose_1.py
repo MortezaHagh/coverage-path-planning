@@ -105,6 +105,9 @@ class Decomposition:
         # set obstacle polygons
         self.tpd.set_obstacle_polygons(obs_polys)
 
+# =====================================================================================================================
+# =====================================================================================================================
+
 
 class CoveragePP(CoveragePPBase):
     """  DecCoveragePP  """
@@ -119,7 +122,7 @@ class CoveragePP(CoveragePPBase):
 
         # coverage path planning for all zones
         self.trap_dec_cpp()
-        self.save_decomposition()
+        # self.save_decomposition()
 
     def trap_dec_cpp(self):
         print(f"[{self.ns}]: start trap_dec_cpp for all zones")
