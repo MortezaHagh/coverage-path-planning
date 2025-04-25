@@ -4,6 +4,7 @@ import numpy as np
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase
 from scripts.planning.decomposition_interface import DecompositionInterface
+from scripts.planning.cell_bs_cov_planner import CellCoveragePP
 
 
 class CoveragePP(CoveragePPBase):
@@ -14,6 +15,9 @@ class CoveragePP(CoveragePPBase):
         self.ns = "DecCoveragePP" + "-" + str(self.zmd.ind)
         print(f"[{self.ns}]: Step: coverage path planning")
 
+        # all_ccp
+        self.all_ccpp: list[CellCoveragePP] = []
+
         # run decomposition and coverage planning
         self.coverage_planning()
 
@@ -22,6 +26,8 @@ class CoveragePP(CoveragePPBase):
         self.decompose_map()
         # self.save_decomposition()
         self.add_cells_to_map_planning()
+        #
+        self.coverage_planning_l()
 
     # =================================================================================================================
 
@@ -46,8 +52,16 @@ class CoveragePP(CoveragePPBase):
     def coverage_planning_l(self):
         print(f"[{self.ns}]: BS coverage path planning")
         self.zone_covpp()
-        self.rotate_waypoints()
-        self.create_path_px()
+        self.add_cell_paths_to_map_planning()
 
     def zone_covpp(self):
-        pass
+        for cellg in self.dec_interface.decomposed.cells_groups:
+            ccpp = CellCoveragePP(cell=cellg.merged_cell)
+            self.all_ccpp.append(ccpp)
+
+    def add_cell_paths_to_map_planning(self):
+        for ccpp in self.all_ccpp:
+            path_px = ccpp.path_px
+            if path_px:
+                pp = np.array(path_px, dtype=np.int32)  # Ensure pp is a numpy array of integers
+                self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=False, color=(0, 255, 0), thickness=2)

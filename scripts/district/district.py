@@ -42,6 +42,7 @@ class DistrictData:
 
         #
         self.add_cells_to_map_planning()
+        self.add_cell_paths_to_map_planning()
         self.add_os_path_to_map_planning()
         self.save_map_planning()
 
@@ -78,11 +79,23 @@ class DistrictData:
     def add_cells_to_map_planning(self):
         for zd in self.zone_datas:
             dec = zd.cov_planner.dec_interface
-            if dec:
-                for cell in dec.decomposed.cells_groups:
-                    pp = cell.merged_cell.poly_points
-                    pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
-                    self.dmd.map_planning = cv.polylines(self.dmd.map_planning, [pp], isClosed=True, color=(0, 0, 0), thickness=4)
+            if not dec:
+                return
+            for cell in dec.decomposed.cells_groups:
+                pp = cell.merged_cell.poly_points
+                pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
+                self.dmd.map_planning = cv.polylines(self.dmd.map_planning, [pp], isClosed=True, color=(0, 0, 0), thickness=4)
+
+    def add_cell_paths_to_map_planning(self):
+        for zd in self.zone_datas:
+            all_ccpp = zd.cov_planner.all_ccpp
+            if not all_ccpp:
+                return
+            for ccpp in all_ccpp:
+                path_px = ccpp.path_px
+                if path_px:
+                    pp = np.array(path_px, dtype=np.int32)
+                    self.dmd.map_planning = cv.polylines(self.dmd.map_planning, [pp], isClosed=False, color=(0, 255, 0), thickness=2)
 
     def add_os_path_to_map_planning(self):
         for zd in self.zone_datas:
