@@ -9,6 +9,7 @@ class Cell:
         self.ind: int = ind
         self.event: Event = event
         self.poly: Polygon = poly
+        self.poly_points: list[tuple[int, int]] = []
         #
         self.xy: tuple[float, float] = None
         self.x_min: float = None
@@ -43,6 +44,9 @@ class Cell:
         # calculate cell specs
         self.cell_specs()
 
+        # create cell points
+        self.create_cell_points()
+
     def cell_specs(self):
         # center
         self.xy = self.poly.centroid.coords[0]
@@ -58,6 +62,13 @@ class Cell:
         self.height = maxy - miny
         # area
         self.area = self.poly.area
+
+    def create_cell_points(self):
+        # create cell points
+        if self.poly:
+            self.poly_points = [(int(p[0]), int(p[1])) for p in self.poly.exterior.coords]
+        else:
+            self.poly_points = []
 
     def set_up_adj_ci(self, ci: str):
         if ci:

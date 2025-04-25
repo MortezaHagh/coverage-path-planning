@@ -2,7 +2,8 @@ import cv2 as cv
 import numpy as np
 from scripts.base.configs import SpaceConfigs
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.planning.coverage_pp_1_simple import CoveragePP
+# from scripts.planning.coverage_pp_1_simple import CoveragePP
+from scripts.planning.coverage_pp_2_tp_decompose_1 import CoveragePP
 
 
 class ZoneData:
@@ -32,11 +33,12 @@ class ZoneData:
     def initialize(self):
         # self.zone_map_data.save_data() # todo
         self.create_map_planning()
-        self.save_map_planning()
+        # self.save_map_planning()
 
     def coverage_planning(self):
         self.cov_planner = CoveragePP(self.zone_map_data)
-        self.add_os_path_map_planning()
+        # self.add_os_path_to_map_planning()
+        self.save_map_planning()
 
     # ==================================================================================================================
     # ==================================================================================================================
@@ -52,7 +54,7 @@ class ZoneData:
         map_hl_path = base_path + f"/Zone_{self.ind}"
         cv.imwrite(map_hl_path + "/" + "map_planning.png", self.zone_map_data.map_planning)
 
-    def add_os_path_map_planning(self):
+    def add_os_path_to_map_planning(self):
         path = self.cov_planner.path_px
         for (p1, p2) in zip(path[:-1], path[1:]):
             self.zone_map_data.map_planning = cv.line(self.zone_map_data.map_planning, p1, p2, (0, 255, 10), 2)

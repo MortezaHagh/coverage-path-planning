@@ -16,11 +16,17 @@ class Rectangle:
     vertices_t: tuple
     vertices_a: np.ndarray
     vertices_ccw: np.ndarray
+    x_min: int
+    y_min: int
 
     def __init__(self, data: dict, rid: int = None):
         #
         self.ns = "Rectangle"
         self.point_radius = 40
+
+        #
+        self.x_min = 0
+        self.y_min = 0
 
         # rid
         if rid is None:
@@ -71,6 +77,7 @@ class Rectangle:
         self.bl: tuple[int, int] = None
         self.rot_point: tuple[int, int] = None
         self.up_all_points()
+        self.cal_min_xy()
 
     @property
     def data(self) -> dict:
@@ -104,6 +111,7 @@ class Rectangle:
     def up_all_points(self):
         self.up_4_points()
         self.up_rotation_point()
+        self.cal_min_xy()
 
     def up_rotation_point(self):
         xr = 0
@@ -146,6 +154,10 @@ class Rectangle:
 
     def cal_distance_t(self, p1, p2):
         return np.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
+
+    def cal_min_xy(self):
+        self.x_min = min(xy[0] for xy in self.vertices_t)
+        self.y_min = min(xy[1] for xy in self.vertices_t)
 
 
 class VisualRectangle(Rectangle):

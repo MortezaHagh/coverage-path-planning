@@ -40,7 +40,7 @@ class Obstacle:
             dx2 = e.xy[0] - self.events[i2].xy[0]
             if dx1 == 0 and dx2 == 0:
                 rem.append(i1)
-                while dx2 == 0:
+                while dx2 == 0 and i2 < self.n_v-1:
                     rem.append(i2)
                     i2 += 1
                     dx2 = self.events[i2].xy[0] - e.xy[0]

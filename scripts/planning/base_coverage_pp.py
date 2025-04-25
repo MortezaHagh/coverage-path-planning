@@ -1,12 +1,14 @@
 import numpy as np
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.configs import SpaceConfigs, PlanningConfigs
+from scripts.planning.decomposition_interface import DecompositionInterface
 
 
 class CoveragePPBase:
     zmd: ZoneMapData  # zone data
     path_px: list[tuple[int, int]]
     path_m: list[tuple[float, float]]
+    dec_interface: DecompositionInterface
 
     def __init__(self, zone_map_data: ZoneMapData):
         self.ns = "CoveragePPBase"
@@ -17,6 +19,7 @@ class CoveragePPBase:
         # path
         self.path_px = []
         self.path_m = []
+        self.dec_interface = None
 
         # parameters and configurations
         self.scfgs = SpaceConfigs()

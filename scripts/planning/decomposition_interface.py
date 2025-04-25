@@ -12,9 +12,12 @@ class DecompositionInterface:
 
         #
         self.decomposed = CellDecomposition()
+        self.s_x: int = 0
+        self.s_y: int = 0
 
         # settings
         self.dec_mid_dist = 10
+        self.set_start_coord(zmd)
 
         # set bounding polygon
         self.create_bounding(zmd)
@@ -24,6 +27,10 @@ class DecompositionInterface:
 
         # initiate decomposition
         self.decomposed.initiate()
+
+    def set_start_coord(self, zmd: ZoneMapData):
+        self.s_x = zmd.rectangle.x_min
+        self.s_y = zmd.rectangle.y_min
 
     def create_bounding(self, zmd: ZoneMapData):
         # todo
@@ -36,7 +43,7 @@ class DecompositionInterface:
         # check mid distance
         filtered_c = self.filter_contour_points(biggest_contour)
         filtered_c.reverse()
-        b_poly = Polygon([Point(p[0][0], p[0][1]) for p in filtered_c])
+        b_poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
 
         self.decomposed.set_bounding_polygon(b_poly)
 
@@ -59,14 +66,12 @@ class DecompositionInterface:
         # obstacle polygons
         obs_polys = []
         for c in obs_contours:
-            #
             filtered_c = self.filter_contour_points(c)
-
             # get the polygon
             if len(filtered_c) < 3:
                 print(f"[{self.ns}]: not enough points to create polygon")
                 continue
-            poly = Polygon([Point(p[0][0], p[0][1]) for p in filtered_c])
+            poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
             obs_polys.append(poly)
 
         # set obstacle polygons

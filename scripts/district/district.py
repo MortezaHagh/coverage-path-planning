@@ -41,7 +41,9 @@ class DistrictData:
             zd.coverage_planning()
 
         #
-        self.add_os_path_map_planning()
+        self.add_cells_to_map_planning()
+        self.add_os_path_to_map_planning()
+        self.save_map_planning()
 
     # ==================================================================================================================
     # ==================================================================================================================
@@ -73,18 +75,25 @@ class DistrictData:
             final_vertices = zd.zone_map_data.final_vertices
             self.dmd.map_planning = cv.polylines(self.dmd.map_planning, [final_vertices], isClosed=True, color=(100, 0, 250), thickness=4)
 
-    def save_map_planning(self):
-        base_path = self.dmd.orig_map_data.bcfg.district_dir
-        map_planning_path = base_path + "/District"
-        cv.imwrite(map_planning_path + "/" + "map_planning.png", self.dmd.map_planning)
+    def add_cells_to_map_planning(self):
+        for zd in self.zone_datas:
+            dec = zd.cov_planner.dec_interface
+            if dec:
+                for cell in dec.decomposed.cells_groups:
+                    pp = cell.merged_cell.poly_points
+                    pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
+                    self.dmd.map_planning = cv.polylines(self.dmd.map_planning, [pp], isClosed=True, color=(0, 0, 0), thickness=4)
 
-    def add_os_path_map_planning(self):
-        """add os path of all zones to map_planning"""
+    def add_os_path_to_map_planning(self):
         for zd in self.zone_datas:
             path = zd.cov_planner.path_px
             for (p1, p2) in zip(path[:-1], path[1:]):
                 self.dmd.map_planning = cv.line(self.dmd.map_planning, p1, p2, (0, 255, 10), 4)
-        self.save_map_planning()
+
+    def save_map_planning(self):
+        base_path = self.dmd.orig_map_data.bcfg.district_dir
+        map_planning_path = base_path + "/District"
+        cv.imwrite(map_planning_path + "/" + "map_planning.png", self.dmd.map_planning)
 
     # ==================================================================================================================
 
