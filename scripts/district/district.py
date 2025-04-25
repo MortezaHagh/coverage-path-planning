@@ -25,7 +25,7 @@ class DistrictData:
         self.dmd = spa.zone_map_data
         self.dmd.name = "District"
 
-        # save district data
+        # save district data # todo
         self.dmd.save_data()
 
         # attributes
@@ -38,60 +38,58 @@ class DistrictData:
         self.create_map_planning()
         self.save_map_planning()
 
+    def run_coverage_planning(self):
+        """run coverage planning for all zones"""
+        for zd in self.zone_datas:
+            zd.coverage_planning()
+
+        #
+        self.add_os_path_map_planning()
+
+    # ==================================================================================================================
+    # ==================================================================================================================
+
     def create_zones(self):
         print(f"[{self.ns}]: Step: creating zone map data")
+
         # create zones rectangles
         zone_rectangles: list[Rectangle] = self.create_zone_rectangles_2()
-        # create zone ws maps
+
+        # create zone map data and zones
         for i, zr in enumerate(zone_rectangles):
-            # create zone map data
             print(f"[{self.ns}]: creating map data for zone [{i}]")
             z_spa: SpaceAnalyzer = deepcopy(self.spa_obj)
             z_spa.update_by_rectangle(zr)
             zmd = z_spa.zone_map_data  # zone_map_data
             zmd.set_ind(i)
-
-            # save zone data
-            zmd.save_data()
-
-            # append zone map data
+            # create zone
             zd = ZoneData(i)
-            zd.zone_map_data = zmd
+            zd.set_map_data(zmd)
             self.zone_datas.append(zd)
-        print(f"[{self.ns}]: ----------------------------------------------- ")
 
     def create_map_planning(self):
-        self.map_planning = self.dmd.map_viz.copy()
         # display zones rectangles
+        self.map_planning = self.dmd.map_viz.copy()
         for zd in self.zone_datas:
             vertices = zd.zone_map_data.vertices
             self.map_planning = cv.polylines(self.map_planning, [vertices], isClosed=True, color=(100, 0, 150), thickness=4)
             final_vertices = zd.zone_map_data.final_vertices
             self.map_planning = cv.polylines(self.map_planning, [final_vertices], isClosed=True, color=(100, 0, 250), thickness=4)
 
-            # for zone
-            zd.create_map_planning()
-
     def save_map_planning(self):
         base_path = self.dmd.orig_map_data.bcfg.district_dir
         map_planning_path = base_path + "/District"
         cv.imwrite(map_planning_path + "/" + "map_planning.png", self.map_planning)
 
-    def add_os_path_map_hl(self):
+    def add_os_path_map_planning(self):
         """add os path of all zones to map_planning"""
         for zd in self.zone_datas:
-            path = zd.os_path_m
+            path = zd.cov_planner.path_px
             for (p1, p2) in zip(path[:-1], path[1:]):
-                p1 = self.point_m_to_px(p1)
-                p2 = self.point_m_to_px(p2)
                 self.map_planning = cv.line(self.map_planning, p1, p2, (0, 255, 10), 4)
-                # for zone
-                zd.add_os_path_map_hl()
         self.save_map_planning()
 
-    def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
-        res = self.dmd.reslolution
-        return (int(p[0] / res), int(p[1] / res))
+    # ==================================================================================================================
 
     def create_zone_rectangles_1(self) -> list[Rectangle]:
         data = self.dmd.rect_data

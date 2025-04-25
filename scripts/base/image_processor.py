@@ -37,9 +37,6 @@ class MapImageProcessor:
         # # visualize
         # self.visualize_map(self.processed_map)
 
-        # final
-        print(f"[{self.ns}]: ----------------------------------------------- ")
-
     @property
     def mdata(self) -> MapData:
         return copy.deepcopy(self.__map_data)

@@ -44,9 +44,6 @@ class InputsProcessor:
         self.__orig_map = map_arr
         # self.visualize_map(map_arr)
 
-        # final
-        print(f"[{self.ns}]: ----------------------------------------------- ")
-
     @property
     def configs(self) -> BConfigs:
         return copy.deepcopy(self.__configs)

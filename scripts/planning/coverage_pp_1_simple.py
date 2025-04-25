@@ -1,14 +1,14 @@
 import numpy as np
-from scripts.district.district import DistrictData, ZoneData
+from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase
 
 
 class CoveragePP(CoveragePPBase):
     """ CPPSimple"""
 
-    def __init__(self, district: DistrictData):
-        super().__init__(district)
-        self.ns = "CPPSimple"
+    def __init__(self, zone_map_data: ZoneMapData):
+        super().__init__(zone_map_data)
+        self.ns = "CPPSimple" + "-" + str(self.zmd.ind)
         print(f"[{self.ns}]: Step: coverage path planning")
 
         # coverage path planning for all zones
@@ -16,14 +16,12 @@ class CoveragePP(CoveragePPBase):
 
     def coverage_planning(self):
         print(f"[{self.ns}]: simple coverage path planning")
+        self.zone_covpp()
+        self.rotate_waypoints()
+        self.create_path_px()
 
-        # for each zone # list[ZoneData]
-        for zd in self.district.zone_datas:
-            self.zone_cpp(zd)
-            self.post_process_os_path(zd)
-
-    def zone_cpp(self, zd: ZoneData):
-        print(f"[{self.ns}]: cpp for zone [{zd.zone_map_data.ind}]")
+    def zone_covpp(self):
+        print(f"[{self.ns}]: cpp for zone [{self.zmd.ind}]")
 
         # margin rectangle
         margin = self.pcfgs.margin
@@ -32,8 +30,8 @@ class CoveragePP(CoveragePPBase):
         cleaning_d = self.cleaning_width - self.min_overlap_w   # cleaning diameter
 
         # zone rectangle
-        rd = zd.zone_map_data.final_rect_data  # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-        resol = zd.zone_map_data.reslolution
+        rd = self.zmd.final_rect_data  # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        resol = self.zmd.reslolution
 
         # w, h in meters
         w_m = rd["w"] * resol
@@ -85,28 +83,5 @@ class CoveragePP(CoveragePPBase):
                 dx = -1 * dx
             base_path.append((new_x, new_y))
 
-        # # base_path = base_path
-        # path_x = (xy[0] for xy in base_path)
-        # path_y = (xy[1] for xy in base_path)
-
-        # save path to zone data
-        zd.os_path_m = base_path
-
-    def post_process_os_path(self, zd: ZoneData):
-        os_path = zd.os_path_m
-        rect_data = zd.zone_map_data.final_rect_data
-        rot = rect_data["rot"]
-        tl = zd.zone_map_data.final_rectangle.tl
-        resol = zd.zone_map_data.reslolution
-        x_0, y_0 = tl[0]*resol, tl[1]*resol  # first vertex (from which rot is calculated)
-        # rotate
-        new_os_path = [self.rotate_point(p[0], p[1], rot) for p in os_path]
-        # translate
-        new_os_path = [(p[0] + x_0, p[1] + y_0) for p in new_os_path]
-        # update
-        zd.os_path_m = new_os_path
-
-    def rotate_point(self, x, y, rotation):
-        x_r = x * np.cos(rotation) - y * np.sin(rotation)
-        y_r = x * np.sin(rotation) + y * np.cos(rotation)
-        return (x_r, y_r)
+        # save path
+        self.path_m = base_path

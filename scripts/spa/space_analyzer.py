@@ -95,9 +95,6 @@ class SpaceAnalyzer:
         # process
         self.get_vertices_data()
 
-        # final
-        print(f"[{self.ns}]: ----------------------------------------------- ")
-
     @property
     def zone_map_data(self) -> ZoneMapData:
         return copy.deepcopy(self.__zone_map_data)
@@ -181,7 +178,6 @@ class SpaceAnalyzer:
 
         # create district object
         self.create_zone_map_data()
-        print(f"[{self.ns}]: ----------------------------------------------- ")
 
     def create_zone_map_data(self) -> None:
         zone_map_data = ZoneMapData()
@@ -236,8 +232,8 @@ class SpaceAnalyzer:
         if self.space_type == "District":
             sol = find_circumscribed_rectangle(map_i)
         else:
-            # sol = find_circumscribed_rectangle(map_i)
-            sol = find_inscribed_rotated_rectangle(map_i)
+            sol = find_circumscribed_rectangle(map_i)
+            # sol = find_inscribed_rotated_rectangle(map_i)
             # vertices: [(x, y), ...]
             # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
             # sol: {"vertices": vertices, "rect_data": data}

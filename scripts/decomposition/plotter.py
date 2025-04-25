@@ -10,6 +10,36 @@ class DecPlotter:
         self.fig1 = None
         self.fig2 = None
 
+    def visualize(self):
+        # fig, ax = plt.subplots(1, 1)
+        # self.fig1 = fig
+        # self.ax1 = ax
+
+        # # plot contours
+        # self.plot_contours()
+
+        # # vizualize events
+        # self.visualize_events()
+
+        # # plot trapezoids
+        # self.vizualize_cells()
+
+        # vizualize cells groups
+        self.visualize_cells_groups()
+
+        #
+        plt.show()
+
+    def plot_contours(self):
+        # plot contours
+        for obs in self.dec_obj.obstacles:
+            if obs.ind == 0:
+                color = 'blue'
+            else:
+                color = 'red'
+            x, y = obs.poly.exterior.xy
+            self.ax1.plot(x, y, color=color, linewidth=1)
+
     def visualize_boarder_events(self):
         # plot boarder polygon
         x, y = self.dec_obj.b_poly.exterior.xy
@@ -121,33 +151,6 @@ class DecPlotter:
         c = cell.poly.centroid
         adj_c = self.dec_obj.cells_groups[adj_g_cell_ind].merged_cell.poly.centroid
         ax.plot([c.x, adj_c.x], [c.y, adj_c.y], color=color, linewidth=1, linestyle='--')
-
-    def visualize(self):
-        # plot boarder
-        fig, ax = plt.subplots(1, 1)
-        self.ax1 = ax
-
-        # plot obstacles
-        for obs in self.dec_obj.obstacles:
-            if obs.ind == 0:
-                color = 'blue'
-            else:
-                color = 'red'
-            x, y = obs.poly.exterior.xy
-            ax.plot(x, y, color=color, linewidth=1)
-
-        # # vizualize events
-        # self.visualize_events()
-
-        # plot trapezoids
-        self.vizualize_cells()
-
-        # vizualize cells groups
-        self.visualize_cells_groups()
-
-        #
-        self.fig1 = fig
-        plt.show()
 
     def save_figs(self, path: str):
         self.fig1.savefig(path + "_1.png", format="png", dpi=400)

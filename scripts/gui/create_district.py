@@ -51,9 +51,6 @@ class DistrictGen:
         listener_thread.join()
         cv.destroyAllWindows()
 
-        # final
-        print(f"[{self.__ns}]: ----------------------------------------------- ")
-
     def init_wind(self):
         cv.namedWindow(self.__wind_name, cv.WINDOW_GUI_NORMAL)
 

@@ -11,7 +11,6 @@ from scripts.gui.create_district import DistrictGen
 from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.district import DistrictData
 # from scripts.planning.coverage_pp_2_tp_decompose_1 import CoveragePP
-from scripts.planning.coverage_pp_1_mh import CoveragePP
 
 
 def main():
@@ -26,30 +25,33 @@ def main():
     inp_processor = InputsProcessor(map_name)
     orig_map: np.ndarray = inp_processor.orig_map
     b_configs: BConfigs = inp_processor.configs
+    print(" ============================================================================== ")
 
     # Initial Process of the map image
     mp = MapImageProcessor(orig_map, b_configs)
     map_data: MapData = mp.mdata
+    print(" ============================================================================== ")
 
     # Select area in the map and create District rectangle
     district_g = DistrictGen(map_data=map_data)
     district_rect: Rectangle = district_g.get_district_rect()
+    print(" ============================================================================== ")
 
     # Process Space - Initialize District Map Data
     spa = SpaceAnalyzer(map_data=map_data, rectangle=district_rect)
     spa.create_local_map_ws_selection()
+    print(" ============================================================================== ")
 
     # Create District Data and district Zone Map Data
     district_data = DistrictData(spa)
 
     # create zones and map_planning for zones
     district_data.create_zones_hl()
+    print(" ============================================================================== ")
 
-    # coverage path planning
-    CoveragePP(district_data)
-
-    # add os path to map_planning
-    district_data.add_os_path_map_hl()
+    # planning sequentially for all zones
+    district_data.run_coverage_planning()
+    print(" ============================================================================== ")
 
     # display map_planning
     map_planning = district_data.map_planning

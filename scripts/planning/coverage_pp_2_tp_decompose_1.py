@@ -12,15 +12,15 @@ else:
     from scripts.decomposition.decomposition_1_tp_mh_f import TrapezoidalDecomposition as CellDecomposition
 
 
-class Decomposition:
+class DecompositionInterface:
     def __init__(self, zmd: ZoneMapData):
         self.ns = "Decomposition"
         print(f"[{self.ns}]: Step: decomposing zone {zmd.ind}")
 
         #
-        self.tpd = CellDecomposition()
+        self.decomposed = CellDecomposition()
 
-        # settinfs
+        # settings
         self.dec_mid_dist = 10
 
         # set bounding polygon
@@ -29,33 +29,23 @@ class Decomposition:
         # set obstacle polygons
         self.create_obstacle_polygons(zmd)
 
-        #
-        self.tpd.initiate()
+        # initiate decomposition
+        self.decomposed.initiate()
 
     def create_bounding(self, zmd: ZoneMapData):
-        # b_poly = Polygon(zmd.vertices)
-        y_max = max(zmd.vertices, key=lambda x: x[1])[1]
+        # todo
+        # y_max = max(zmd.vertices, key=lambda x: x[1])[1]
 
         #
         contours, _ = cv.findContours(zmd.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         biggest_contour = max(contours, key=cv.contourArea)
 
         # check mid distance
-        skip = set()
-        for i, p1 in enumerate(biggest_contour):
-            if i in skip:
-                continue
-            for j in range(i+1, len(biggest_contour)):
-                if j in skip:
-                    continue
-                dist = np.linalg.norm(p1 - biggest_contour[j])
-                if dist < self.dec_mid_dist:
-                    skip.add(j)
-        filtered_c = [biggest_contour[i] for i in range(len(biggest_contour)) if i not in skip]
-        # filtered_c.reverse()
-        b_poly = Polygon([Point(p[0][0], y_max-p[0][1]) for p in filtered_c])
+        filtered_c = self.filter_contour_points(biggest_contour)
+        filtered_c.reverse()
+        b_poly = Polygon([Point(p[0][0], p[0][1]) for p in filtered_c])
 
-        self.tpd.set_bounding_polygon(b_poly)
+        self.decomposed.set_bounding_polygon(b_poly)
 
     def create_obstacle_polygons(self, zmd: ZoneMapData):
         # get obstacle contours inside the biggest contour from map imag
@@ -73,37 +63,35 @@ class Decomposition:
             print(f"[{self.ns}]: no obstacle contours found in zone {zmd.ind}")
             return
 
-        # #
-        # x_o = min(zmd.vertices, key=lambda x: x[0])[0]
-        y_max = max(zmd.vertices, key=lambda x: x[1])[1]
-
         # obstacle polygons
         obs_polys = []
-        skip = set()
         for c in obs_contours:
-
-            # check mid distance
-            for i, p1 in enumerate(c):
-                if i in skip:
-                    continue
-                for j in range(i+1, len(c)):
-                    if i in skip:
-                        continue
-                    dist = np.linalg.norm(p1 - c[j])
-                    if dist < self.dec_mid_dist:
-                        skip.add(j)
-            filtered_c = [c[i] for i in range(len(c)) if i not in skip]
-            filtered_c.reverse()
+            #
+            filtered_c = self.filter_contour_points(c)
 
             # get the polygon
             if len(filtered_c) < 3:
                 print(f"[{self.ns}]: not enough points to create polygon")
                 continue
-            poly = Polygon([Point(p[0][0], y_max-p[0][1]) for p in filtered_c])
+            poly = Polygon([Point(p[0][0], p[0][1]) for p in filtered_c])
             obs_polys.append(poly)
 
         # set obstacle polygons
-        self.tpd.set_obstacle_polygons(obs_polys)
+        self.decomposed.set_obstacle_polygons(obs_polys)
+
+    def filter_contour_points(self, contour: np.ndarray):
+        skip = set()
+        for i, p1 in enumerate(contour):
+            if i in skip:
+                continue
+            for j in range(i+1, len(contour)):
+                if i in skip:
+                    continue
+                dist = np.linalg.norm(p1 - contour[j])
+                if dist < self.dec_mid_dist:
+                    skip.add(j)
+        filtered_c = [contour[i] for i in range(len(contour)) if i not in skip]
+        return filtered_c
 
 # =====================================================================================================================
 # =====================================================================================================================
@@ -118,7 +106,7 @@ class CoveragePP(CoveragePPBase):
         print(f"[{self.ns}]: Step: coverage path planning")
 
         #
-        self.decompositions: list[Decomposition] = []
+        self.decompositions: list[DecompositionInterface] = []
 
         # coverage path planning for all zones
         self.trap_dec_cpp()
@@ -126,21 +114,11 @@ class CoveragePP(CoveragePPBase):
 
     def trap_dec_cpp(self):
         print(f"[{self.ns}]: start trap_dec_cpp for all zones")
+
         # for each zone
-        # 1-trapezoidal decomposition for zone map
-        # 2-coverage path planning for each trapezoid
-        # 3-merge coverage paths
-        # 4-save decomposed trapezoids and coverage paths
-
-        # for each zone # list[ZoneData]
         for zd in self.district.zone_datas:
-            tpd = Decomposition(zd.zone_map_data)
+            tpd = DecompositionInterface(zd.zone_map_data)
             self.decompositions.append(tpd)
-
-            # 1-trapezoidal decomposition for zone map
-            # 2-coverage path planning for each trapezoid
-            # 3-merge coverage paths
-            # 4-save decomposed trapezoids and coverage paths
 
     def save_decomposition(self):
         base_path = self.district.dmd.orig_map_data.bcfg.district_dir
@@ -153,10 +131,10 @@ class CoveragePP(CoveragePPBase):
         print(f"[{self.ns}]: simple coverage path planning")
         # for each zone # list[ZoneData]
         for zd in self.district.zone_datas:
-            self.zone_cpp(zd)
+            self.zone_covpp(zd)
             self.post_process_os_path(zd)
 
-    def zone_cpp(self, zd: ZoneData):
+    def zone_covpp(self, zd: ZoneData):
         print(f"[{self.ns}]: cpp for zone [{zd.zone_map_data.ind}]")
 
         # margin rectangle

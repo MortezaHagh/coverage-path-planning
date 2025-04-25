@@ -1,15 +1,16 @@
-import numpy as np
 import cv2 as cv
-from scripts.district.zone_map_data import ZoneMapData
+import numpy as np
 from scripts.base.configs import SpaceConfigs
+from scripts.district.zone_map_data import ZoneMapData
+from scripts.planning.coverage_pp_1_simple import CoveragePP
 
 
 class ZoneData:
     ind: int
     zone_map_data: ZoneMapData
     map_planning: np.ndarray
-    os_path_m: list[tuple[float, float]]
     cleaning_area: float
+    cov_planner: CoveragePP
 
     def __init__(self, ind: int = None):
         self.ind = ind
@@ -17,31 +18,47 @@ class ZoneData:
         self.map_planning = None
         self.os_path_m = []
 
-        #
+        # configs
         self.scfg = SpaceConfigs()
+
+        # coverage path planner
+        self.cov_planner = None
 
         # statistics - todo
         self.cleaning_area = None
 
+    def set_map_data(self, zone_map_data: ZoneMapData):
+        self.zone_map_data = zone_map_data
+        self.initialize()
+
+    def initialize(self):
+        self.zone_map_data.save_data()
+        self.create_map_planning()
+        self.save_map_planning()
+
+    def coverage_planning(self):
+        self.cov_planner = CoveragePP(self.zone_map_data)
+        self.add_os_path_map_planning()
+
+    # ==================================================================================================================
+    # ==================================================================================================================
+
     def create_map_planning(self):
-        """create map high level"""
+        """create map planning"""
         map_planning = self.zone_map_data.map_viz.copy()
         vertices = self.zone_map_data.vertices
         self.map_planning = cv.polylines(map_planning, [vertices], isClosed=True, color=(100, 0, 150), thickness=4)
-        self.save_map_planning()
 
     def save_map_planning(self):
         base_path = self.zone_map_data.orig_map_data.bcfg.district_dir
         map_hl_path = base_path + f"/Zone_{self.ind}"
         cv.imwrite(map_hl_path + "/" + "map_planning.png", self.map_planning)
 
-    def add_os_path_map_hl(self):
-        path = self.os_path_m
+    def add_os_path_map_planning(self):
+        path = self.cov_planner.path_px
         for (p1, p2) in zip(path[:-1], path[1:]):
-            p1 = self.point_m_to_px(p1)
-            p2 = self.point_m_to_px(p2)
             self.map_planning = cv.line(self.map_planning, p1, p2, (0, 255, 10), 2)
-        #
+
         # vis robot
         alpha = 0.2
         pose = self.point_m_to_px(path[0])
