@@ -11,7 +11,7 @@ class CellCoveragePP:
     path_m: list[tuple[float, float]] = []
     path_px: list[tuple[int, int]] = []
 
-    def __init__(self, cell: Cell):
+    def __init__(self, cell: Cell, resolution: float = 0.05):
         self.ns = "CellCoveragePP"
         self.cell = cell
         self.poly_m = None
@@ -24,7 +24,7 @@ class CellCoveragePP:
         # parameters and configurations
         self.scfgs = SpaceConfigs()
         self.pcfgs = PlanningConfigs()
-        self.resolution = 0.05
+        self.resolution = resolution
 
         #
         self.coverage_planning()
@@ -80,12 +80,12 @@ class CellCoveragePP:
 
         # width and height
         w_m = self.cell.width * resolution
-        h_m = self.cell.height * resolution
+        # h_m = self.cell.height * resolution
 
         # margin
-        margin = self.pcfgs.margin
-        w_m = w_m - 2 * margin
-        h_m = h_m - 2 * margin + cleaning_d
+        # margin = 0  # self.pcfgs.margin # todo
+        # h_m = h_m - 2 * margin + cleaning_d
+        w_m = w_m - cleaning_d/2
 
         # start point - top left
         x_min = self.cell.x_min * resolution
@@ -94,30 +94,33 @@ class CellCoveragePP:
         y_max = self.cell.y_max * resolution
 
         #
-        n_lines = np.ceil(w_m / cleaning_d)                     # number of lines
-        if n_lines == 0:
+        n_lines = np.ceil(w_m / cleaning_d)     # number of lines
+        if n_lines < 1:
+            print(f"[{self.ns}]: ==== n_lines < 1")
             return False
-        cleaning_d = w_m / n_lines                              # width of each cleaning line
+        cleaning_d = w_m / n_lines              # width of each cleaning line
 
         # find hitting points with the cell polygon
-        x_left = x_min + 1.0  # todo
-        y_but = y_min - 1.0  # todo
+        d_shift = resolution * 2
+        x_left = x_min + d_shift
+        y_but = y_min - d_shift
         xx = [x_left+cleaning_d*i for i in range(int(n_lines))]
-
-        #
+        xx.append(x_max - d_shift)
         if len(xx) == 0:
+            print(f"[{self.ns}]: ==== len xx == 0")
             return False
-        xx[-1] = xx[-1] - 1.0  # todo
-        y_hit_check = y_max + 1.0  # todo
+        y_hit_check = y_max + d_shift
 
         # find hitting points with the cell polygon
         xy_but = []
         xy_top = []
         for x in xx:
             top_point = Point((x, y_but))
-            p1, p2 = self.get_intersection_points(y_hit_check, top_point, self.poly_m)
-            xy_but.append((p1.x, p1.y))
-            xy_top.append((p2.x, p2.y))
+            points = self.get_intersection_points(y_hit_check, top_point, self.poly_m)
+            if points:
+                p1, p2 = points
+                xy_but.append((p1.x, p1.y))
+                xy_top.append((p2.x, p2.y))
         self.xy_but = xy_but
         self.xy_top = xy_top
         return True
@@ -131,20 +134,24 @@ class CellCoveragePP:
         #
         if intersection.is_empty:
             print(f"[{self.ns}]: no intersection")
-            raise ValueError("No intersection found between the line and the polygon.")
+            # raise ValueError("No intersection found between the line and the polygon.")
+            return None
         elif intersection.geom_type == 'Point':
             print(f"only one intersection point: {intersection.x}, {intersection.y}")
-            raise ValueError("Only one intersection point found.")
+            # raise ValueError("Only one intersection point found.")
+            return None
         elif intersection.geom_type == 'LineString':
             xy = intersection.coords.xy
             xx = list(xy[0])
             yy = list(xy[1])
             if len(xx) != 2:
                 print(f"[{self.ns}]: number of intersection points: {len(xx)}")
-                raise ValueError("Invalid number of intersection points found.")
+                # raise ValueError("Invalid number of intersection points found.")
+                return None
         else:
             print("No valid intersection below the point.")
-            raise ValueError("No valid intersection below the point.")
+            # raise ValueError("No valid intersection below the point.")
+            return None
         #
         p1 = Point(xx[0], yy[0])
         p2 = Point(xx[1], yy[1])

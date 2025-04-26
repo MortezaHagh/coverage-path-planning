@@ -1,6 +1,7 @@
 import os
 import cv2 as cv
 import numpy as np
+from scripts.base.configs import SpaceConfigs
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase
 from scripts.planning.decomposition_interface import DecompositionInterface
@@ -17,6 +18,7 @@ class CoveragePP(CoveragePPBase):
 
         # all_ccp
         self.all_ccpp: list[CellCoveragePP] = []
+        self.cell_paths_px: list[tuple[int, int]] = []
 
         # run decomposition and coverage planning
         self.coverage_planning()
@@ -45,7 +47,7 @@ class CoveragePP(CoveragePPBase):
         for cell in self.dec_interface.decomposed.cells_groups:
             pp = cell.merged_cell.poly_points
             pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
-            self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(0, 0, 0), thickness=4)
+            self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(0, 0, 0), thickness=6)
 
     # =================================================================================================================
 
@@ -53,15 +55,28 @@ class CoveragePP(CoveragePPBase):
         print(f"[{self.ns}]: BS coverage path planning")
         self.zone_covpp()
         self.add_cell_paths_to_map_planning()
+        # self.create_final_path()
 
     def zone_covpp(self):
         for cellg in self.dec_interface.decomposed.cells_groups:
-            ccpp = CellCoveragePP(cell=cellg.merged_cell)
+            ccpp = CellCoveragePP(cell=cellg.merged_cell, resolution=self.resolution)
             self.all_ccpp.append(ccpp)
+            self.cell_paths_px.extend(ccpp.path_px)
+
+    def create_final_path(self):
+        self.path_px = self.cell_paths_px.copy()
 
     def add_cell_paths_to_map_planning(self):
+        # pp = np.array(self.cell_paths_px, dtype=np.int32)  # Ensure pp is a numpy array of integers
+        # self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=False, color=(0, 255, 0), thickness=2)
+        #
+        scfg = SpaceConfigs()
         for ccpp in self.all_ccpp:
             path_px = ccpp.path_px
             if path_px:
                 pp = np.array(path_px, dtype=np.int32)  # Ensure pp is a numpy array of integers
                 self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=False, color=(0, 255, 0), thickness=2)
+                #
+                radius_px_3 = int(np.ceil(scfg.cleaning_r / self.zmd.orig_map_data.up_resolution))
+                pose = self.point_m_to_px(pp[0])
+                cv.circle(self.zmd.map_planning, pose, radius_px_3, [100, 0, 100], -1)

@@ -1,0 +1,161 @@
+from copy import deepcopy
+import cv2 as cv
+import numpy as np
+from scripts.gui.visuals import Rectangle
+from scripts.district.zone_map_data import ZoneMapData
+from scripts.spa.space_analyzer import SpaceAnalyzer
+from scripts.district.zone import ZoneData
+
+
+class DistrictData:
+    spa_obj: SpaceAnalyzer      # space_analyzer
+    dmd: ZoneMapData            # district_map_data
+    zone_datas: list[ZoneData]  # zones
+
+    def __init__(self, spa: SpaceAnalyzer):
+        self.ns = "DistrictData"
+        print(f"[{self.ns}]: Step: creating district data")
+
+        # space_analyzer object
+        self.spa_obj = spa
+
+        # main district map data
+        self.dmd = spa.zone_map_data
+        self.dmd.name = "District"
+
+        # # save district data # todo
+        # self.dmd.save_data()
+
+        # attributes
+        self.zone_datas: list[ZoneData] = []  # zones
+
+    def create_zones_hl(self):
+        """create all zones in the district and create map_planning (high level)"""
+        self.create_zones()
+        self.update_map_planning()
+        # self.create_map_planning()
+        # self.save_map_planning()
+
+    def run_coverage_planning(self):
+        """run coverage planning for all zones"""
+        for zd in self.zone_datas:
+            zd.coverage_planning()
+
+        #
+        # self.add_cells_to_map_planning()
+        # self.add_cell_paths_to_map_planning()
+        # self.add_os_path_to_map_planning()
+        self.update_map_planning()
+        self.save_map_planning()
+
+    # ==================================================================================================================
+    # ==================================================================================================================
+
+    def create_zones(self):
+        print(f"[{self.ns}]: Step: creating zone map data")
+
+        # create zones rectangles
+        zone_rectangles: list[Rectangle] = self.create_zone_rectangles_2()
+
+        # create zone map data and zones
+        for i, zr in enumerate(zone_rectangles):
+            print(f"[{self.ns}]: creating map data for zone [{i}]")
+            z_spa: SpaceAnalyzer = deepcopy(self.spa_obj)
+            z_spa.update_by_rectangle(zr)
+            zmd = z_spa.zone_map_data  # zone_map_data
+            zmd.set_ind(i)
+            # create zone
+            zd = ZoneData(i)
+            zd.set_map_data(zmd)
+            self.zone_datas.append(zd)
+
+    def update_map_planning(self):
+        mapp = self.dmd.map_viz.copy()
+        for zd in self.zone_datas:
+            x1, y1 = zd.zone_map_data.hw_bd_px["h_min"], zd.zone_map_data.hw_bd_px["w_min"]
+            x2, y2 = zd.zone_map_data.hw_bd_px["h_max"], zd.zone_map_data.hw_bd_px["w_max"]
+            # h, w = zd.zone_map_data.map_planning.shape[:2]
+            mapp[x1:x2, y1:y2] = zd.zone_map_data.map_planning[x1:x2, y1:y2]
+        self.dmd.map_planning = mapp
+
+    def create_map_planning(self):
+        # display zones rectangles
+        self.dmd.map_planning = self.dmd.map_viz.copy()
+        for zd in self.zone_datas:
+            vertices = zd.zone_map_data.vertices
+            self.dmd.map_planning = cv.polylines(self.dmd.map_planning, [vertices], isClosed=True, color=(100, 0, 150), thickness=4)
+            final_vertices = zd.zone_map_data.final_vertices
+            self.dmd.map_planning = cv.polylines(self.dmd.map_planning, [final_vertices], isClosed=True, color=(100, 0, 250), thickness=4)
+
+    def add_cells_to_map_planning(self):
+        for zd in self.zone_datas:
+            dec = zd.cov_planner.dec_interface
+            if not dec:
+                return
+            for cell in dec.decomposed.cells_groups:
+                pp = cell.merged_cell.poly_points
+                pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
+                self.dmd.map_planning = cv.polylines(self.dmd.map_planning, [pp], isClosed=True, color=(
+                    0, 0, 0), thickness=10, lineType=cv.LINE_AA)
+
+    def add_cell_paths_to_map_planning(self):
+        for zd in self.zone_datas:
+            all_ccpp = zd.cov_planner.all_ccpp
+            if not all_ccpp:
+                return
+            for ccpp in all_ccpp:
+                path_px = ccpp.path_px
+                if path_px:
+                    pp = np.array(path_px, dtype=np.int32)
+                    self.dmd.map_planning = cv.polylines(self.dmd.map_planning, [pp], isClosed=False, color=(0, 255, 0), thickness=2)
+
+    def add_os_path_to_map_planning(self):
+        for zd in self.zone_datas:
+            path = zd.cov_planner.path_px
+            for (p1, p2) in zip(path[:-1], path[1:]):
+                self.dmd.map_planning = cv.line(self.dmd.map_planning, p1, p2, (0, 255, 10), 4)
+
+    def save_map_planning(self):
+        base_path = self.dmd.orig_map_data.bcfg.district_dir
+        map_planning_path = base_path + "/District"
+        cv.imwrite(map_planning_path + "/" + "map_planning.png", self.dmd.map_planning)
+
+    # ==================================================================================================================
+
+    def create_zone_rectangles_1(self) -> list[Rectangle]:
+        data = self.dmd.rect_data
+        h = data["h"]
+        w = data["w"]
+        rot = data["rot"]
+        dx1 = -np.sin(rot) * (h//4)
+        dy1 = np.cos(rot) * (h//4)
+        xc1 = int(data["xc"] + dx1)
+        yc1 = int(data["yc"] + dy1)
+        dx2 = np.sin(rot) * (h//4)
+        dy2 = -np.cos(rot) * (h//4)
+        xc2 = int(data["xc"] + dx2)
+        yc2 = int(data["yc"] + dy2)
+        data1 = {"xc": xc1, "yc": yc1, "rot": rot, "w": w, "h": h//2}
+        data2 = {"xc": xc2, "yc": yc2, "rot": rot, "w": w, "h": h//2}
+        rect1 = Rectangle(data1)
+        rect2 = Rectangle(data2)
+        return [rect1, rect2]
+
+    def create_zone_rectangles_2(self) -> list[Rectangle]:
+        data = self.dmd.final_rect_data
+        h = data["h"]
+        w = data["w"]
+        rot = data["rot"]
+        dx1 = -np.sin(rot) * (h//4)
+        dy1 = np.cos(rot) * (h//4)
+        xc1 = int(data["xc"] + dx1)
+        yc1 = int(data["yc"] + dy1)
+        dx2 = np.sin(rot) * (h//4)
+        dy2 = -np.cos(rot) * (h//4)
+        xc2 = int(data["xc"] + dx2)
+        yc2 = int(data["yc"] + dy2)
+        data1 = {"xc": xc1, "yc": yc1, "rot": rot, "w": w, "h": h//2}
+        data2 = {"xc": xc2, "yc": yc2, "rot": rot, "w": w, "h": h//2}
+        rect1 = Rectangle(data1)
+        rect2 = Rectangle(data2)
+        return [rect1, rect2]

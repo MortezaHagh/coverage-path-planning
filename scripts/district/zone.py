@@ -15,7 +15,6 @@ class ZoneData:
     def __init__(self, ind: int = None):
         self.ind = ind
         self.zone_map_data = None
-        self.os_path_m = []
 
         # configs
         self.scfg = SpaceConfigs()
