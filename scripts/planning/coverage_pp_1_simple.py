@@ -1,3 +1,4 @@
+import cv2 as cv
 import numpy as np
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase
@@ -19,6 +20,9 @@ class CoveragePP(CoveragePPBase):
         self.zone_covpp()
         self.rotate_waypoints()
         self.create_path_px()
+        self.add_path_to_map_planning()
+
+    # =================================================================================================================
 
     def zone_covpp(self):
         print(f"[{self.ns}]: cpp for zone [{self.zmd.ind}]")
@@ -51,9 +55,9 @@ class CoveragePP(CoveragePPBase):
 
         # calculate planning w, h, start and end points
         # _p: planning
-        n_lines = np.ceil(h_m / cleaning_d)                     # number of lines
-        cleaning_d = h_m / n_lines                              # width of each cleaning line
-        # cleaning_r = cleaning_d / 2                             # cleaning radius
+        n_lines = np.ceil(h_m / cleaning_d)     # number of lines
+        cleaning_d = h_m / n_lines              # width of each cleaning line
+        # cleaning_r = cleaning_d / 2           # cleaning radius
         # margin_x = cleaning_r
         margin_x = 0
 
@@ -85,3 +89,21 @@ class CoveragePP(CoveragePPBase):
 
         # save path
         self.path_m = base_path
+
+    def add_path_to_map_planning(self):
+        path = self.cov_planner.path_px
+        for (p1, p2) in zip(path[:-1], path[1:]):
+            self.zmd.map_planning = cv.line(self.zmd.map_planning, p1, p2, (0, 255, 10), 2)
+
+        # vis robot
+        alpha = 0.2
+        pose = self.point_m_to_px(path[0])
+        radius_px_1 = int(np.ceil(self.scfgs.ws_r_dist / self.zmd.orig_map_data.up_resolution))
+        radius_px_2 = int(np.ceil(self.scfgs.robot_radius / self.zmd.orig_map_data.up_resolution))
+        radius_px_3 = int(np.ceil(self.scfgs.cleaning_r / self.zmd.orig_map_data.up_resolution))
+        overlay = self.zmd.map_planning.copy()
+        cv.circle(overlay, pose, radius_px_1, [200, 200, 250], -1)
+        cv.circle(overlay, pose, radius_px_2, [0, 0, 250], -1)
+        cv.circle(overlay, pose, radius_px_3, [100, 0, 100], -1)
+        cv.circle(overlay, pose, 5, [250, 250, 250], -1)
+        self.zmd.map_planning = cv.addWeighted(overlay, alpha, self.zmd.map_planning, 1 - alpha, 0)

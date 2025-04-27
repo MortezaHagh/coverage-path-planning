@@ -1,7 +1,7 @@
 import os
 import cv2 as cv
 import numpy as np
-from scripts.base.configs import SpaceConfigs
+from scripts.base.configs import DistrictConfgs  # , SpaceConfigs
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase
 from scripts.planning.decomposition_interface import DecompositionInterface
@@ -16,6 +16,9 @@ class CoveragePP(CoveragePPBase):
         self.ns = "DecCoveragePP" + "-" + str(self.zmd.ind)
         print(f"[{self.ns}]: Step: coverage path planning")
 
+        # configs
+        self.dcfg = DistrictConfgs()
+
         # all_ccp
         self.all_ccpp: list[CellCoveragePP] = []
         self.cell_paths_px: list[tuple[int, int]] = []
@@ -26,7 +29,7 @@ class CoveragePP(CoveragePPBase):
     def coverage_planning(self):
         print(f"[{self.ns}]: BS coverage path planning")
         self.decompose_map()
-        # self.save_decomposition()
+        self.save_decomposition()
         self.add_cells_to_map_planning()
         #
         self.coverage_planning_l()
@@ -38,8 +41,10 @@ class CoveragePP(CoveragePPBase):
         self.dec_interface = DecompositionInterface(self.zmd)
 
     def save_decomposition(self):
+        if not self.dcfg.save_decomposition:
+            return
         base_path = self.zmd.orig_map_data.bcfg.district_dir
-        dec_path = base_path + self.zmd.name
+        dec_path = base_path + "/" + self.zmd.name
         dec_path = os.path.join(dec_path, "Dec1")
         self.dec_interface.decomposed.save_figs(dec_path)
 
@@ -70,13 +75,12 @@ class CoveragePP(CoveragePPBase):
         # pp = np.array(self.cell_paths_px, dtype=np.int32)  # Ensure pp is a numpy array of integers
         # self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=False, color=(0, 255, 0), thickness=2)
         #
-        scfg = SpaceConfigs()
         for ccpp in self.all_ccpp:
             path_px = ccpp.path_px
             if path_px:
                 pp = np.array(path_px, dtype=np.int32)  # Ensure pp is a numpy array of integers
                 self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=False, color=(0, 255, 0), thickness=2)
                 #
-                # radius_px_3 = int(np.ceil(scfg.cleaning_r / self.zmd.orig_map_data.up_resolution))
+                # radius_px_3 = int(np.ceil(self.scfgs.cleaning_r / self.zmd.orig_map_data.up_resolution))
                 # pose = pp[0]
                 # self.zmd.map_planning = cv.circle(self.zmd.map_planning, pose, radius_px_3, [100, 0, 100], -1)

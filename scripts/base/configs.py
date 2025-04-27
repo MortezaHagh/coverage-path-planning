@@ -24,6 +24,9 @@ class BConfigs:
 class DistrictConfgs:
     def __init__(self):
         self.whole_map = True  # False True
+        #
+        self.save_decomposition = True
+        self.plot_decomposition = True
 
 
 @dataclasses.dataclass

@@ -50,7 +50,7 @@ class DistrictData:
         print(f"[{self.ns}]: Step: creating zone map data")
 
         # create zones rectangles
-        zone_rectangles: list[Rectangle] = self.create_zone_rectangles_2()
+        zone_rectangles: list[Rectangle] = self.create_one_zone_rectangle()
 
         # create zone map data and zones
         for i, zr in enumerate(zone_rectangles):
@@ -117,3 +117,14 @@ class DistrictData:
         rect1 = Rectangle(data1)
         rect2 = Rectangle(data2)
         return [rect1, rect2]
+
+    def create_one_zone_rectangle(self) -> Rectangle:
+        data = self.dmd.final_rect_data
+        h = data["h"]
+        w = data["w"]
+        rot = data["rot"]
+        xc = int(data["xc"])
+        yc = int(data["yc"])
+        data1 = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        rect1 = Rectangle(data1)
+        return [rect1]

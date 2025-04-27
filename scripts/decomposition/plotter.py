@@ -1,34 +1,37 @@
 import matplotlib.pyplot as plt
 from scripts.decomposition.cell import Cell
+from scripts.base.configs import DistrictConfgs
 
 
 class DecPlotter:
     def __init__(self, dec_obj):
         self.dec_obj = dec_obj
+        self.dcfgs = DistrictConfgs()
         #
         self.ax1 = None
         self.fig1 = None
         self.fig2 = None
 
     def visualize(self):
-        # fig, ax = plt.subplots(1, 1)
-        # self.fig1 = fig
-        # self.ax1 = ax
+        fig, ax = plt.subplots(1, 1)
+        self.fig1 = fig
+        self.ax1 = ax
 
-        # # plot contours
-        # self.plot_contours()
+        # plot contours
+        self.plot_contours()
 
         # # vizualize events
         # self.visualize_events()
 
-        # # plot trapezoids
-        # self.vizualize_cells()
+        # plot trapezoids
+        self.vizualize_cells()
 
         # vizualize cells groups
         self.visualize_cells_groups()
 
         #
-        plt.show()
+        if self.dcfgs.plot_decomposition:
+            plt.show()
 
     def plot_contours(self):
         # plot contours

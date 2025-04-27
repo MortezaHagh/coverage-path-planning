@@ -546,18 +546,6 @@ class TrapezoidalDecomposition:
             return None
         return self.events[ind]
 
-    def create_final_trapezoids(self):
-        if len(self.events) < 6:
-            return
-        if self.events[-2].fake:
-            base_e = self.events[-2]
-            base_e.etype_2 = 'in'
-            hit_up_event = self.events[-1]
-            hit_down_event = self.events[-3]
-            hit_up_y = hit_up_event.xy[1]
-            hit_down_y = hit_down_event.xy[1]
-            self.create_trapezoid(base_e, hit_up_event, hit_down_event, hit_up_y, hit_down_y)
-
     def visualize(self):
         self.plotter = DecPlotter(self)
         self.plotter.visualize()

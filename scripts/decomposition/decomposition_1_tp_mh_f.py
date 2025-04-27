@@ -33,7 +33,7 @@ class TrapezoidalDecomposition:
         self.find_adjacents_cells()
         self.compleate_adjacency()
         self.create_cell_groups()
-        # self.visualize()
+        self.visualize()
 
     def set_bounding_polygon(self, poly: Polygon):
         self.b_poly = poly
