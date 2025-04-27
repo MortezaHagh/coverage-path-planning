@@ -5,6 +5,7 @@ from scripts.gui.visuals import Rectangle
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.zone import ZoneData
+from scripts.base.configs import DistrictConfgs
 
 
 class DistrictData:
@@ -14,7 +15,10 @@ class DistrictData:
 
     def __init__(self, spa: SpaceAnalyzer):
         self.ns = "DistrictData"
-        print(f"[{self.ns}]: Step: creating district data")
+        print(f"[{self.ns}]: >>>>> Step: creating district data")
+
+        # configs
+        self.dcfgs = DistrictConfgs()
 
         # space_analyzer object
         self.spa_obj = spa
@@ -47,7 +51,7 @@ class DistrictData:
     # ==================================================================================================================
 
     def create_zones(self):
-        print(f"[{self.ns}]: Step: creating zone map data")
+        print(f"[{self.ns}]: >>>>> Step: creating zone map data")
 
         # create zones rectangles
         zone_rectangles: list[Rectangle] = self.create_one_zone_rectangle()
@@ -74,6 +78,8 @@ class DistrictData:
         self.dmd.map_planning = mapp
 
     def save_map_planning(self):
+        if not self.dcfgs.save_map_planning:
+            return
         base_path = self.dmd.orig_map_data.bcfg.district_dir
         map_planning_path = base_path + "/District"
         cv.imwrite(map_planning_path + "/" + "map_planning.png", self.dmd.map_planning)

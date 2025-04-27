@@ -21,7 +21,7 @@ class MHDecomposition:
         self.n_cells: int = 0
         #
         self.cells_groups: list[CellGroup] = []
-        self.deadend_cells: list[Cell] = []
+        self.mcells: list[Cell] = []
         #
         self.plotter: DecPlotter = None
 
@@ -340,7 +340,6 @@ class MHDecomposition:
                     print(f"e: {cell.event.sd_ind}, -- cell: {cell.ind}")
 
     def create_cell_groups(self):
-        cell_groups = []
         ncg = 0
         for cell in self.cells[0:]:
             if cell.done:
@@ -378,11 +377,9 @@ class MHDecomposition:
             # merge_cells
             if new_group:
                 new_group.update_group()
-                cell_groups.append(new_group)
+                self.cells_groups.append(new_group)
+                self.mcells.append(new_group.merged_cell)
                 ncg += 1
-
-        #
-        self.cells_groups = cell_groups
 
     def get_event(self, ind: int) -> Event:
         if ind < 0 or ind >= len(self.events):

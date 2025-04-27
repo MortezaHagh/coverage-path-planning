@@ -25,7 +25,8 @@ class DistrictConfgs:
     def __init__(self):
         self.whole_map = True  # False True
         #
-        self.save_decomposition = True
+        self.save_map_planning = False
+        self.save_decomposition = False
         self.plot_decomposition = False
 
 

@@ -11,8 +11,8 @@ class CellCoveragePP:
     path_m: list[tuple[float, float]] = []
     path_px: list[tuple[int, int]] = []
 
-    def __init__(self, cell: Cell, resolution: float = 0.05):
-        self.ns = "CellCoveragePP"
+    def __init__(self, cell: Cell, zone_ind: int = 0, resolution: float = 0.05):
+        self.ns = "CellCoverageP-Z" + str(zone_ind)
         self.cell = cell
         self.poly_m = None
         self.path_m = []
@@ -48,7 +48,7 @@ class CellCoveragePP:
 
     def create_cell_polygon_in_meter(self):
         # create cell polygon in meter
-        points = self.cell.poly_points
+        points = self.cell.points
         points_m = [(p[0] * self.resolution, p[1] * self.resolution) for p in points]
         points_m_p = [Point(p) for p in points_m]
         self.poly_m = Polygon(points_m_p)

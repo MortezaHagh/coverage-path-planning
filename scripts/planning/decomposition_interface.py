@@ -8,9 +8,6 @@ from scripts.decomposition.decomposition_1_mh_f import MHDecomposition as CellDe
 class DecompositionInterface:
     def __init__(self, zmd: ZoneMapData):
         self.ns = "Decomposition"
-        print(f"[{self.ns}]: Step: decomposing zone {zmd.ind}")
-
-        #
         self.decomposed = CellDecomposition()
         self.s_x: int = 0
         self.s_y: int = 0
@@ -33,10 +30,6 @@ class DecompositionInterface:
         self.s_y = zmd.rectangle.y_min
 
     def create_bounding(self, zmd: ZoneMapData):
-        # todo
-        # y_max = max(zmd.vertices, key=lambda x: x[1])[1]
-
-        #
         contours, _ = cv.findContours(zmd.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         biggest_contour = max(contours, key=cv.contourArea)
 

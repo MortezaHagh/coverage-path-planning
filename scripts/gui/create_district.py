@@ -14,7 +14,7 @@ class DistrictGen:
         #
         self.__ns = "DistrictEvent"
         self.__wind_name = "Select District"
-        print(f"[{self.__ns}]: Step: Creating district for CPP")
+        print(f"[{self.__ns}]: >>>>> Step: Creating district for CPP")
 
         #
         self.__md = map_data

@@ -50,7 +50,7 @@ class SpaceAnalyzer:
 
     def __init__(self, map_data: MapData, rectangle: Rectangle):
         self.ns = "SpaceAnalyzer"
-        print(f"[{self.ns}]: Step: Analyzing space for creating free space [local map]")
+        print(f"[{self.ns}]: >>>>> Step: Analyzing space for creating free space [local map]")
 
         # configs
         self.scfg = SpaceConfigs()

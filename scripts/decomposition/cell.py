@@ -9,9 +9,9 @@ class Cell:
         self.ind: int = ind
         self.event: Event = event
         self.poly: Polygon = poly
-        self.poly_points: list[tuple[int, int]] = []
+        self.points: list[tuple[int, int]] = []
         #
-        self.xy: tuple[float, float] = None
+        self.cxy: tuple[float, float] = None
         self.x_min: float = None
         self.x_max: float = None
         self.y_min: float = None
@@ -21,6 +21,11 @@ class Cell:
         self.width: float = None
         self.height: float = None
         self.area: float = None
+        #
+        self.ld: tuple[float, float] = None
+        self.lu: tuple[float, float] = None
+        self.rd: tuple[float, float] = None
+        self.ru: tuple[float, float] = None
         #
         self.up_adj_ci = None
         self.down_adj_ci = None
@@ -47,9 +52,12 @@ class Cell:
         # create cell points
         self.create_cell_points()
 
+        # find corners
+        self.find_corner()
+
     def cell_specs(self):
         # center
-        self.xy = self.poly.centroid.coords[0]
+        self.cxy = self.poly.centroid.coords[0]
         # nounds
         minx, miny, maxx, maxy = self.poly.bounds
         self.x_min, self.y_min = minx, miny
@@ -66,9 +74,20 @@ class Cell:
     def create_cell_points(self):
         # create cell points
         if self.poly:
-            self.poly_points = [(int(p[0]), int(p[1])) for p in self.poly.exterior.coords]
+            self.points = [(int(p[0]), int(p[1])) for p in self.poly.exterior.coords]
         else:
-            self.poly_points = []
+            self.points = []
+
+    def find_corner(self):
+        lps = [xy for xy in self.points if xy[0] == self.x_min]
+        lps = sorted(lps, key=lambda xy: xy[1])
+        self.ld = lps[0]
+        self.lu = lps[-1]
+        #
+        rps = [xy for xy in self.points if xy[0] == self.x_max]
+        rps = sorted(rps, key=lambda xy: xy[1])
+        self.rd = rps[0]
+        self.ru = rps[-1]
 
     def set_up_adj_ci(self, ci: str):
         if ci:

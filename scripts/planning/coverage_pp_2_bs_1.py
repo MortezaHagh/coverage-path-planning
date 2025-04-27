@@ -13,8 +13,8 @@ class CoveragePP(CoveragePPBase):
 
     def __init__(self, zone_map_data: ZoneMapData):
         super().__init__(zone_map_data)
-        self.ns = "DecCoveragePP" + "-" + str(self.zmd.ind)
-        print(f"[{self.ns}]: Step: coverage path planning")
+        self.ns = "DecCoveragePP" + "-Z" + str(self.zmd.ind)
+        print(f"[{self.ns}]: >>>>> Step: coverage path planning")
 
         # configs
         self.dcfg = DistrictConfgs()
@@ -27,7 +27,6 @@ class CoveragePP(CoveragePPBase):
         self.coverage_planning()
 
     def coverage_planning(self):
-        print(f"[{self.ns}]: BS coverage path planning")
         self.decompose_map()
         self.save_decomposition()
         self.add_cells_to_map_planning()
@@ -50,21 +49,21 @@ class CoveragePP(CoveragePPBase):
 
     def add_cells_to_map_planning(self):
         for cell in self.dec_interface.decomposed.cells_groups:
-            pp = cell.merged_cell.poly_points
+            pp = cell.merged_cell.points
             pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
             self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(0, 0, 0), thickness=3)
 
     # =================================================================================================================
 
     def coverage_planning_l(self):
-        print(f"[{self.ns}]: BS coverage path planning")
+        print(f"[{self.ns}]: start coverage path planning")
         self.zone_covpp()
         self.add_cell_paths_to_map_planning()
         # self.create_final_path()
 
     def zone_covpp(self):
         for cellg in self.dec_interface.decomposed.cells_groups:
-            ccpp = CellCoveragePP(cell=cellg.merged_cell, resolution=self.resolution)
+            ccpp = CellCoveragePP(cell=cellg.merged_cell, zone_ind=self.zmd.ind, resolution=self.resolution)
             self.all_ccpp.append(ccpp)
             self.cell_paths_px.extend(ccpp.path_px)
 
