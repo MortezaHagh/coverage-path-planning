@@ -46,7 +46,8 @@ class ZoneData:
         """create map planning"""
         map_planning = self.zone_map_data.map_viz.copy()
         vertices = self.zone_map_data.vertices
-        self.zone_map_data.map_planning = cv.polylines(map_planning, [vertices], isClosed=True, color=(100, 0, 150), thickness=4)
+        map_planning = cv.polylines(map_planning, [vertices], isClosed=True, color=(100, 0, 150), thickness=2)
+        self.zone_map_data.map_planning = map_planning
 
     def save_map_planning(self):
         base_path = self.zone_map_data.orig_map_data.bcfg.district_dir

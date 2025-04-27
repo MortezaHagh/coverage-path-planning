@@ -47,7 +47,7 @@ class CoveragePP(CoveragePPBase):
         for cell in self.dec_interface.decomposed.cells_groups:
             pp = cell.merged_cell.poly_points
             pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
-            self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(0, 0, 0), thickness=6)
+            self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(0, 0, 0), thickness=3)
 
     # =================================================================================================================
 
@@ -77,6 +77,6 @@ class CoveragePP(CoveragePPBase):
                 pp = np.array(path_px, dtype=np.int32)  # Ensure pp is a numpy array of integers
                 self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=False, color=(0, 255, 0), thickness=2)
                 #
-                radius_px_3 = int(np.ceil(scfg.cleaning_r / self.zmd.orig_map_data.up_resolution))
-                pose = self.point_m_to_px(pp[0])
-                cv.circle(self.zmd.map_planning, pose, radius_px_3, [100, 0, 100], -1)
+                # radius_px_3 = int(np.ceil(scfg.cleaning_r / self.zmd.orig_map_data.up_resolution))
+                # pose = pp[0]
+                # self.zmd.map_planning = cv.circle(self.zmd.map_planning, pose, radius_px_3, [100, 0, 100], -1)

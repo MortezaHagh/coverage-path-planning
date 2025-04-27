@@ -38,6 +38,7 @@ class DistrictData:
     def run_coverage_planning(self):
         """run coverage planning for all zones"""
         for zd in self.zone_datas:
+            print(" -------------------------------- ")
             zd.coverage_planning()
         self.update_map_planning()
         self.save_map_planning()
@@ -68,7 +69,6 @@ class DistrictData:
         for zd in self.zone_datas:
             x1, y1 = zd.zone_map_data.hw_bd_px["h_min"], zd.zone_map_data.hw_bd_px["w_min"]
             x2, y2 = zd.zone_map_data.hw_bd_px["h_max"], zd.zone_map_data.hw_bd_px["w_max"]
-            # h, w = zd.zone_map_data.map_planning.shape[:2]
             mapp[x1:x2, y1:y2] = zd.zone_map_data.map_planning[x1:x2, y1:y2]
         self.dmd.map_planning = mapp
 

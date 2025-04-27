@@ -510,10 +510,10 @@ class SpaceAnalyzer:
             map_main_viz = cv.cvtColor(self.binary_map_0, cv.COLOR_GRAY2BGR)
             map_main_viz[x:x+h_c, y:y+w_c] = map_viz
 
-            # plot final rectangle
-            if self.final_vertices is not None:
-                # Perimeter rectangle on free space
-                map_main_viz = self.add_rectangle(map_main_viz, self.final_vertices, color=[0, 0, 200], thickness=4)
+            # # plot final rectangle
+            # if self.final_vertices is not None:
+            #     # Perimeter rectangle on free space
+            #     map_main_viz = self.add_rectangle(map_main_viz, self.final_vertices, color=[0, 0, 200], thickness=4)
         else:
             map_main_viz = map_viz
 
