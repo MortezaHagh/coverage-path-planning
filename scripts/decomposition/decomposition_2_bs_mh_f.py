@@ -3,10 +3,10 @@ from shapely import Polygon
 import matplotlib.pyplot as plt
 from scripts.decomposition.events import Event
 from scripts.decomposition.obstacles import Obstacle
-from scripts.decomposition.decomposition_1_tp_mh_f import TrapezoidalDecomposition
+from scripts.decomposition.decomposition_1_mh_f import MHDecomposition
 
 
-class BoustraphedonDecomposition(TrapezoidalDecomposition):
+class BoustraphedonDecomposition(MHDecomposition):
     def __init__(self):
         super().__init__()
-        self.ns = "TrapezoidalDecomposition"
+        self.ns = "MHDecomposition"

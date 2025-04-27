@@ -7,9 +7,9 @@ from scripts.decomposition.cell import Cell, CellGroup
 from scripts.decomposition.plotter import DecPlotter
 
 
-class TrapezoidalDecomposition:
+class MHDecomposition:
     def __init__(self):
-        self.ns = "TrapezoidalDecomposition"
+        self.ns = "MHDecomposition"
         self.b_poly: Polygon = None
         self.b_obstacle: Obstacle = None
         self.polygons: list[Polygon] = []

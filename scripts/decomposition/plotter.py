@@ -16,6 +16,7 @@ class DecPlotter:
         fig, ax = plt.subplots(1, 1)
         self.fig1 = fig
         self.ax1 = ax
+        ax.set_aspect('equal', adjustable='box')
 
         # plot contours
         self.plot_contours()
@@ -111,6 +112,7 @@ class DecPlotter:
 
     def visualize_cells_groups(self):
         fig, ax = plt.subplots(1, 1)
+        ax.set_aspect('equal', adjustable='box')
         ng = len(self.dec_obj.cells_groups)
         colors = plt.cm.get_cmap('tab20', 2*ng).colors
         for i, cg in enumerate(self.dec_obj.cells_groups):

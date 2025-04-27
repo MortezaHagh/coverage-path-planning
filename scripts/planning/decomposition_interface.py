@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 from shapely import Polygon, Point
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.decomposition.decomposition_1_tp_mh_f import TrapezoidalDecomposition as CellDecomposition
+from scripts.decomposition.decomposition_1_mh_f import MHDecomposition as CellDecomposition
 
 
 class DecompositionInterface:

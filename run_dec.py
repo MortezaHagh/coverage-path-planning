@@ -1,5 +1,5 @@
 from shapely import Polygon
-from scripts.decomposition.decomposition_1_tp_mh_f import TrapezoidalDecomposition
+from scripts.decomposition.decomposition_1_mh_f import MHDecomposition
 # from scripts.decomposition.decomposition_2_bs_mh_f import BoustraphedonDecomposition
 
 
@@ -19,7 +19,7 @@ def create_polygons():
 
 
 def main():
-    td = TrapezoidalDecomposition()
+    td = MHDecomposition()
     td.set_bounding_polygon(create_bounding())
     td.set_obstacle_polygons(create_polygons())
     td.initiate()
