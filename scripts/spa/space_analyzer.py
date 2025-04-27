@@ -490,7 +490,8 @@ class SpaceAnalyzer:
         free_selected_inds = self.map_3_c_dilated_cleaning == FREE_COST
 
         #
-        map_viz = np.zeros_like(self.map_c_orig) + 0
+        # map_viz = np.zeros_like(map_cropped) + 0
+        map_viz = copy.copy(self.binary_map_0[self.hw_bd["h_min"]:self.hw_bd["h_max"], self.hw_bd["w_min"]:self.hw_bd["w_max"]])
         map_viz = cv.cvtColor(map_viz, cv.COLOR_GRAY2BGR)
         # map_viz[occ_cropped_inds] = [0, 0, 0]
         map_viz[free_selected_inds] = [250, 250, 250]
@@ -500,9 +501,6 @@ class SpaceAnalyzer:
 
         #
         h_c, w_c = self.map_c_orig.shape
-        # Cropped map frame
-        # hw_bd_crop = {"h_min": 0, "w_min": 0, "h_max": h_c, "w_max": w_c}
-        # map_viz = self.add_rectangle_bd(map_viz, hw_bd_crop, color=[0, 250, 0], thickness=2)
 
         #
         if self.plot_main:

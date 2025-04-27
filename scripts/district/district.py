@@ -23,8 +23,8 @@ class DistrictData:
         self.dmd = spa.zone_map_data
         self.dmd.name = "District"
 
-        # # save district data # todo
-        # self.dmd.save_data()
+        # # save district data # todos
+        self.dmd.save_data()
 
         # attributes
         self.zone_datas: list[ZoneData] = []  # zones
@@ -69,7 +69,8 @@ class DistrictData:
         for zd in self.zone_datas:
             x1, y1 = zd.zone_map_data.hw_bd_px["h_min"], zd.zone_map_data.hw_bd_px["w_min"]
             x2, y2 = zd.zone_map_data.hw_bd_px["h_max"], zd.zone_map_data.hw_bd_px["w_max"]
-            mapp[x1:x2, y1:y2] = zd.zone_map_data.map_planning[x1:x2, y1:y2]
+            inds = zd.zone_map_data.map_sf_orig > 0
+            mapp[x1:x2, y1:y2][inds] = zd.zone_map_data.map_planning[x1:x2, y1:y2][inds]
         self.dmd.map_planning = mapp
 
     def save_map_planning(self):

@@ -30,7 +30,7 @@ class ZoneData:
         self.initialize()
 
     def initialize(self):
-        # self.zone_map_data.save_data() # todo
+        self.zone_map_data.save_data()  # todos
         self.create_map_planning()
         # self.save_map_planning()
 
