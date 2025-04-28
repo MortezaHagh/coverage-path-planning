@@ -28,7 +28,7 @@ class CoveragePP(CoveragePPBase):
 
     def coverage_planning(self):
         self.decompose_map()
-        self.save_decomposition()
+        self.save_decomposition_plot()
         self.add_cells_to_map_planning()
         #
         self.coverage_planning_l()
@@ -39,8 +39,8 @@ class CoveragePP(CoveragePPBase):
         print(f"[{self.ns}]: start decomposition")
         self.dec_interface = DecompositionInterface(self.zmd)
 
-    def save_decomposition(self):
-        if not self.dcfg.save_decomposition:
+    def save_decomposition_plot(self):
+        if not self.dcfg.save_decomposition_plot:
             return
         base_path = self.zmd.orig_map_data.bcfg.district_dir
         dec_path = base_path + "/" + self.zmd.name

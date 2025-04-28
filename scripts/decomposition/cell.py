@@ -16,8 +16,8 @@ class Cell:
         self.x_max: float = None
         self.y_min: float = None
         self.y_max: float = None
-        self.x_c: float = None
-        self.y_c: float = None
+        self.x_mid: float = None
+        self.y_mid: float = None
         self.width: float = None
         self.height: float = None
         self.area: float = None
@@ -63,8 +63,8 @@ class Cell:
         self.x_min, self.y_min = minx, miny
         self.x_max, self.y_max = maxx, maxy
         # center
-        self.x_c = (self.x_min + self.x_max) / 2
-        self.y_c = (self.y_min + self.y_max) / 2
+        self.x_mid = (self.x_min + self.x_max) / 2
+        self.y_mid = (self.y_min + self.y_max) / 2
         # width and height
         self.width = maxx - minx
         self.height = maxy - miny
@@ -93,11 +93,13 @@ class Cell:
         if ci:
             self.up_adj_ci = ci
             self.n_adj += 1
+            self.mid_adjlist.append(ci)
 
     def set_down_adj_ci(self, ci: str):
         if ci:
             self.down_adj_ci = ci
             self.n_adj += 1
+            self.mid_adjlist.append(ci)
 
     def add_mid_adjlist(self, ci: str):
         if ci:
@@ -111,6 +113,7 @@ class Cell:
             else:
                 self.parent_up_ci = ci
                 self.n_parent += 1
+            self.mid_parentlist.append(ci)
 
     def set_parent_down_ci(self, ci: str):
         if ci is not None:
@@ -119,6 +122,7 @@ class Cell:
             else:
                 self.parent_down_ci = ci
                 self.n_parent += 1
+            self.mid_parentlist.append(ci)
 
     def add_mid_parentlist(self, ci: str):
         if ci is not None:
