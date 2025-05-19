@@ -33,7 +33,10 @@ class MHDecomposition:
         self.find_adjacents_cells()
         self.compleate_adjacency()
         self.create_cell_groups()
+        self.set_merged_cells_adjacents()
         self.visualize()
+        #
+        self.create_sequence()
 
     def set_bounding_polygon(self, poly: Polygon):
         self.b_poly = poly
@@ -317,13 +320,13 @@ class MHDecomposition:
             if e.has_adj:
                 for next_c in self.cells[ic+1:]:
                     #
-                    if next_c.ind in [cell.up_adj_ci, cell.down_adj_ci]:
+                    if next_c.ind in cell.mid_adjlist:
                         continue
                     #
                     if cell.x_max == next_c.x_min:
                         # if y is in between
-                        if next_c.y_min < cell.y_c < next_c.y_max or \
-                                cell.y_min < next_c.y_c < cell.y_max:
+                        if next_c.y_min < cell.y_mid < next_c.y_max or \
+                                cell.y_min < next_c.y_mid < cell.y_max:
                             # add adjacent cells
                             cell.add_mid_adjlist(next_c.ind)
                             next_c.add_mid_parentlist(cell.ind)
@@ -381,6 +384,18 @@ class MHDecomposition:
                 self.mcells.append(new_group.merged_cell)
                 ncg += 1
 
+    def set_merged_cells_adjacents(self):
+        for cellg in self.cells_groups:
+            parents_i = cellg.first_cell.mid_parentlist
+            successors_i = cellg.last_cell.mid_adjlist
+            cellg.merged_cell.mid_parentlist = [self.cells[i].group_ind for i in parents_i]
+            cellg.merged_cell.mid_adjlist = [self.cells[i].group_ind for i in successors_i]
+            adj = cellg.merged_cell.mid_parentlist.copy()
+            adj.extend(cellg.merged_cell.mid_adjlist)
+            cellg.merged_cell.adjacent_inds = adj
+
+    # =================================================================================================================
+
     def get_event(self, ind: int) -> Event:
         if ind < 0 or ind >= len(self.events):
             return None
@@ -392,3 +407,12 @@ class MHDecomposition:
 
     def save_figs(self, path: str):
         self.plotter.save_figs(path)
+
+    # =================================================================================================================
+
+    def create_sequence(self):
+        from scripts.decomposition.seq import OptimCellsSeq
+        seq = OptimCellsSeq(self.mcells)
+        print(" =================== ")
+        print(" =================== ")
+        print(" =================== ")
