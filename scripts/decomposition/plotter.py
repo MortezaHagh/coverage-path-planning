@@ -13,7 +13,7 @@ class DecPlotter:
         self.fig2 = None
 
     def visualize(self):
-        if not self.dcfgs.save_decomposition_plot:
+        if not (self.dcfgs.save_decomposition_plot or self.dcfgs.plot_decomposition):
             return
         #
         fig, ax = plt.subplots(1, 1)
@@ -49,15 +49,16 @@ class DecPlotter:
 
     def visualize_events(self):
         for e in self.dec_obj.events:
-            # ct = "concave" if e.concave else "convex"
-            # text1 = f"{e.sd_ind}-[t1:{e.etype}]-[t2:{e.etype_2}]--{ct}"
             # #
             # text2 = f"{e.ind}--[{e.prev_ind},{e.next_ind}]"
             # plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
 
             # name
+            # ct = "concave" if e.concave else "convex"
+            # text1 = f"{e.name}:{e.sd_ind}-{e.etype}-{e.etype_2}"
+            # text1 = f"{e.name}:{e.etype}-{e.etype_2}"
             text1 = e.name
-            self.ax1.text(e.xy[0], e.xy[1], text1, fontsize=8, color='blue')
+            self.ax1.text(e.xy[0], e.xy[1], text1, fontsize=10, color='blue')
 
             # #
             # # plt.plot(e.xy[0], e.xy[1], 'o', color='purple', markersize=8)

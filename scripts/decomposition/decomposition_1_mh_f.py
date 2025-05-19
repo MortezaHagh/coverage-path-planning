@@ -324,7 +324,7 @@ class MHDecomposition:
                         continue
                     #
                     if cell.x_max == next_c.x_min:
-                        # if y is in between
+                        # check y condition
                         if next_c.y_min < cell.y_mid < next_c.y_max or \
                                 cell.y_min < next_c.y_mid < cell.y_max:
                             # add adjacent cells
@@ -411,8 +411,9 @@ class MHDecomposition:
     # =================================================================================================================
 
     def create_sequence(self):
-        from scripts.decomposition.seq import OptimCellsSeq
-        seq = OptimCellsSeq(self.mcells)
-        print(" =================== ")
-        print(" =================== ")
-        print(" =================== ")
+        pass
+        # from scripts.decomposition.seq import OptimCellsSeq
+        # seq = OptimCellsSeq(self.mcells)
+        # print(" =================== ")
+        # print(" =================== ")
+        # print(" =================== ")

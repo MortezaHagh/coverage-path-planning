@@ -93,8 +93,6 @@ class Obstacle:
             e.set_s_ind(i)
             prev_ind = (self.s_events[i].ind - 1) % (self.n_v)
             next_ind = (self.s_events[i].ind + 1) % (self.n_v)
-            e.set_prev_ind(prev_ind)
-            e.set_next_ind(next_ind)
             e.set_prev_e(self.events[prev_ind])
             e.set_next_e(self.events[next_ind])
 
@@ -110,7 +108,6 @@ class Obstacle:
     def process_events_bounding(self):
         for e in self.events:
             # swap prev and next indices
-            e.prev_ind, e.next_ind = e.next_ind, e.prev_ind
             e.prev_e, e.next_e = e.next_e, e.prev_e
 
             # x, y, preve, nexte
@@ -422,7 +419,6 @@ class Obstacle:
 
     def inverse_event_types(self):
         for e in self.events:
-            e.prev_ind, e.next_ind = e.next_ind, e.prev_ind
             e.prev_e, e.next_e = e.next_e, e.prev_e
             # swpap endpoints
             e.end_up_ed_xy, e.end_down_ed_xy = e.end_down_ed_xy, e.end_up_ed_xy

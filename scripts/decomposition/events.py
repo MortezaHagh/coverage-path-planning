@@ -10,37 +10,37 @@ class Event:
         self.y_max_lim = math.inf
         # self.y_min_lim = -math.inf
         #
-        self.etype: str = None      # up, floor, updown
+        self.name = 'event'
+        self.etype: str = None      # up, down, updown
         self.etype_2: str = None    # out, in
         self.etype_3: str = None    # ovex, ivex, ocave, icave
-        self.name = 'event'
         #
-        self.obst_ind: int = obst_ind
-        self.ind: int = ind         # index in the obstacle (ccw)
-        self.s_ind: int = None      # sorted index in the obstacles events
-        self.sd_ind: int = None     # sorted index in the decomposition
-        self.prev_ind: int = None
-        self.next_ind: int = None
-        self.next_e: 'Event' = None
-        self.prev_e: 'Event' = None
+        self.obst_ind: int = obst_ind   # index in the obstacle to which this event belongs
+        self.ind: int = ind             # index in the obstacle (ccw)
+        self.s_ind: int = None          # sorted index in the obstacle events
+        self.sd_ind: int = None         # sorted index in the decomposition (all) events
+        self.next_e: 'Event' = None     # next event in the obstacle
+        self.prev_e: 'Event' = None     # previous event in the obstacle
         #
         self.hit_up_y: float = None
         self.hit_down_y: float = None
         self.hit_up_event: 'Event' = None
         self.hit_down_event: 'Event' = None
+
+        # end edge xy (up and down)
+        self.end_up_ed_xy: tuple[float, float] = None       # updated by hit down event
+        self.end_down_ed_xy: tuple[float, float] = None     # updated by hit up event
+
+        # ci: cell index, cil: cell index list
+        self.base_ci_up = None        # cell index which created from this event by hit up
+        self.base_ci_down = None      # cell index which created from this event by hit down
+        self.up_cil_d = dict()        # cell index list dictionary - created by other hit down event which hitted to this event
+        self.up_cil_k = []            # keys list of up_cil_d
+        self.down_cil_d = dict()      # cell index list dictionary - created by other hit up event which hitted to this event
+        self.down_cil_k = []          # keys list of down_cil_d
         #
-        self.end_up_ed_xy: tuple[float, float] = None
-        self.end_down_ed_xy: tuple[float, float] = None
-        #
-        self.base_ci_up = None
-        self.base_ci_down = None
-        self.up_cil_d = dict()
-        self.up_cil_k = []
-        self.down_cil_d = dict()
-        self.down_cil_k = []
-        #
-        self.has_adj = True
-        self.has_parent = True
+        self.has_adj = True         # if this event should has adjacent cells
+        self.has_parent = True      # if this event should has parent cells
         #
         self.fake: bool = False
         self.vertical: bool = False
@@ -62,12 +62,6 @@ class Event:
 
     def set_sd_ind(self, ind: int):
         self.sd_ind = ind
-
-    def set_prev_ind(self, ind: int):
-        self.prev_ind = ind
-
-    def set_next_ind(self, ind: int):
-        self.next_ind = ind
 
     def set_prev_e(self, e: 'Event'):
         self.prev_e = e

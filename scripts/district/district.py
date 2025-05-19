@@ -42,7 +42,7 @@ class DistrictData:
     def run_coverage_planning(self):
         """run coverage planning for all zones"""
         for zd in self.zone_datas:
-            print(" -------------------------------- ")
+            print("zd ind: ", zd.ind, " -------------------------------- ")
             zd.coverage_planning()
         self.update_map_planning()
         self.save_map_planning()
