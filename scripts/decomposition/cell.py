@@ -37,6 +37,7 @@ class Cell:
         #
         self.mid_adjlist = []
         self.mid_parentlist = []
+        self.adjacent_inds: list[int] = []
         #
         self.done = False
         self.status = True
@@ -89,45 +90,42 @@ class Cell:
         self.rd = rps[0]
         self.ru = rps[-1]
 
-    def set_up_adj_ci(self, ci: str):
-        if ci:
+    def set_up_adj_ci(self, ci: int):
+        if ci is not None:
             self.up_adj_ci = ci
-            self.n_adj += 1
-            self.mid_adjlist.append(ci)
+            self.add_mid_adjlist(ci)
 
-    def set_down_adj_ci(self, ci: str):
-        if ci:
+    def set_down_adj_ci(self, ci: int):
+        if ci is not None:
             self.down_adj_ci = ci
-            self.n_adj += 1
-            self.mid_adjlist.append(ci)
+            self.add_mid_adjlist(ci)
 
-    def add_mid_adjlist(self, ci: str):
-        if ci:
-            self.mid_adjlist.append(ci)
-            self.n_adj += 1
-
-    def set_parent_up_ci(self, ci: str):
+    def add_mid_adjlist(self, ci: int):
         if ci is not None:
-            if self.parent_up_ci:
-                self.add_mid_parentlist(ci)
-            else:
+            self.mid_adjlist.append(ci)
+            self.n_adj += 1
+            self.add_adjacent_ind(ci)
+
+    def set_parent_up_ci(self, ci: int):
+        if ci is not None:
+            if self.parent_up_ci is None:
                 self.parent_up_ci = ci
-                self.n_parent += 1
-            self.mid_parentlist.append(ci)
+            self.add_mid_parentlist(ci)
 
-    def set_parent_down_ci(self, ci: str):
+    def set_parent_down_ci(self, ci: int):
         if ci is not None:
-            if self.parent_down_ci:
-                self.add_mid_parentlist(ci)
-            else:
+            if self.parent_down_ci is None:
                 self.parent_down_ci = ci
-                self.n_parent += 1
-            self.mid_parentlist.append(ci)
+            self.add_mid_parentlist(ci)
 
-    def add_mid_parentlist(self, ci: str):
+    def add_mid_parentlist(self, ci: int):
         if ci is not None:
             self.mid_parentlist.append(ci)
             self.n_parent += 1
+            self.add_adjacent_ind(ci)
+
+    def add_adjacent_ind(self, ind: int):
+        self.adjacent_inds.append(ind)
 
 
 class CellGroup:

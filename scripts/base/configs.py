@@ -26,8 +26,8 @@ class DistrictConfgs:
         self.whole_map = True  # False True
         #
         self.save_map_planning = False
-        self.save_decomposition_plot = True
-        self.plot_decomposition = True
+        self.save_decomposition_plot = False
+        self.plot_decomposition = False
 
 
 @dataclasses.dataclass
