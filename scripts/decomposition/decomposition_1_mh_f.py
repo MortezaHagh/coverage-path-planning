@@ -400,14 +400,16 @@ class MHDecomposition:
     # =================================================================================================================
 
     def create_sequence(self):
-        if not self.dcfgs.optimize_cell_path:
+        if self.dcfgs.cell_sequence_method == "simple":
             for i, cell in enumerate(self.mcells):
                 next_cell_ind = None
                 if i < len(self.mcells) - 1:
                     next_cell_ind = self.mcells[i + 1].ind
                 cell.set_optim_ind(i, next_cell_ind)
-            return
-        OptimCellsSeq(self.mcells)
+        elif self.dcfgs.cell_sequence_method == "milp":
+            OptimCellsSeq(self.mcells)
+        else:
+            print(f"[{self.ns}][create_sequence][ERROR]: Invalid cell sequence method: {self.dcfgs.cell_sequence_method}")
 
     # =================================================================================================================
 

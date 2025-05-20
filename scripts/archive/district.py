@@ -5,6 +5,7 @@ from scripts.gui.visuals import Rectangle
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.zone import ZoneData
+from scripts.base.configs import DistrictConfgs
 
 
 class DistrictData:
@@ -21,7 +22,8 @@ class DistrictData:
 
         # main district map data
         self.dmd = spa.zone_map_data
-        self.dmd.name = "District"
+        self.dmd.set_name("District")
+        self.dcfgs = DistrictConfgs()
 
         # save district data
         self.dmd.save_data()
@@ -82,9 +84,8 @@ class DistrictData:
             self.dmd.map_planning = cv.polylines(self.dmd.map_planning, [final_vertices], isClosed=True, color=(100, 0, 250), thickness=4)
 
     def save_map_planning(self):
-        base_path = self.dmd.orig_map_data.bcfg.district_dir
-        map_planning_path = base_path + "/District"
-        cv.imwrite(map_planning_path + "/" + "map_planning.png", self.dmd.map_planning)
+        map_planning_path = self.dmd.path + f"map_planning_{self.dcfgs.ns}_.png"
+        cv.imwrite(map_planning_path, self.dmd.map_planning)
 
     # ==================================================================================================================
 

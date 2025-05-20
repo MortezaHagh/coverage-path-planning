@@ -49,9 +49,8 @@ class ZoneData:
     def save_map_planning(self):
         if not self.dcfg.save_map_planning:
             return
-        base_path = self.zone_map_data.orig_map_data.bcfg.district_dir
-        map_hl_path = base_path + f"/Zone_{self.ind}"
-        cv.imwrite(map_hl_path + "/" + "map_planning.png", self.zone_map_data.map_planning)
+        map_hl_path = self.zone_map_data.path + f"/map_planning_{self.dcfg.ns}_.png"
+        cv.imwrite(map_hl_path, self.zone_map_data.map_planning)
 
     def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
         res = self.zone_map_data.reslolution

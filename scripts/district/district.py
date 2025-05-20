@@ -25,7 +25,7 @@ class DistrictData:
 
         # main district map data
         self.dmd = spa.zone_map_data
-        self.dmd.name = "District"
+        self.dmd.set_name("District")
 
         # # save district data # todos
         self.dmd.save_data()
@@ -80,9 +80,8 @@ class DistrictData:
     def save_map_planning(self):
         if not self.dcfgs.save_map_planning:
             return
-        base_path = self.dmd.orig_map_data.bcfg.district_dir
-        map_planning_path = base_path + "/District"
-        cv.imwrite(map_planning_path + "/" + "map_planning.png", self.dmd.map_planning)
+        map_planning_path = self.dmd.path + f"/map_planning_{self.dcfgs.ns}_.png"
+        cv.imwrite(map_planning_path, self.dmd.map_planning)
 
     # ==================================================================================================================
 

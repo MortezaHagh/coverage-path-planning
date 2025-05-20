@@ -8,7 +8,7 @@ class BoustPlotter:
         self.dec_obj = dec_obj
         self.dcfgs = DistrictConfgs()
         #
-        self.viz_together = False
+        self.viz_together = True
         self.set_aspect = True
         #
         self.ax_cell_event = None
@@ -188,9 +188,9 @@ class BoustPlotter:
 
     def save_figs(self, path: str):
         ns = "/bs"
-        seq_method = self.dcfgs.cell_sequence_mrthod
+        seq_method = self.dcfgs.cell_sequence_method
         if self.viz_together:
-            self.fig_all.savefig(path + f"{ns}_0_mcells_seq.png", format="png", dpi=400)
+            self.fig_all.savefig(path + f"{ns}_0_mcells_seq_{seq_method}.png", format="png", dpi=400)
             self.fig_mcells_seq.savefig(path + f"{ns}_1_seq_{seq_method}.png", format="png", dpi=400)
         else:
             self.fig_mcells_seq.savefig(path + f"{ns}_1_seq_{seq_method}.png", format="png", dpi=400)

@@ -42,10 +42,8 @@ class CoveragePP(CoveragePPBase):
     def save_decomposition_plot(self):
         if not self.dcfg.save_decomposition_plot:
             return
-        dist_path = self.zmd.orig_map_data.bcfg.district_dir
-        zone_path = dist_path + "/" + self.zmd.name
         ns = self.dcfg.covpp_method
-        boust_path = os.path.join(zone_path, ns)  # boustrophedon
+        boust_path = os.path.join(self.zmd.path, ns)  # boustrophedon
         os.makedirs(boust_path, exist_ok=True)
         self.dec_interface.decomposed.save_figs(boust_path)
 

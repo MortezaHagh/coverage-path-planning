@@ -26,7 +26,7 @@ class DistrictConfgs:
         self.whole_map = True  # False True
 
         # plots configs
-        self.save_map_planning = False
+        self.save_map_planning = True
         self.save_decomposition_plot = True
         self.plot_decomposition = True
 
@@ -34,8 +34,10 @@ class DistrictConfgs:
         self.covpp_method = "m0_boust"
 
         # boustrophedon configs
-        self.cell_sequence_mrthod = "milp"
-        self.optimize_cell_path = True
+        self.cell_sequence_method = "simple"  # simple, milp
+
+        # ns
+        self.ns = self.covpp_method + "_" + self.cell_sequence_method
 
 
 @dataclasses.dataclass
