@@ -1,7 +1,7 @@
 """ boustrophedon coverage planning inside the given cell """
 import numpy as np
 from shapely.geometry import Polygon, Point, LineString
-from scripts.decomposition.cell import Cell
+from scripts.boustrophedon.cell import Cell
 from scripts.base.configs import SpaceConfigs, PlanningConfigs
 
 

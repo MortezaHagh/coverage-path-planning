@@ -1,7 +1,7 @@
 import numpy as np
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.configs import SpaceConfigs, PlanningConfigs
-from scripts.planning.decomposition_interface import DecompositionInterface
+from scripts.boustrophedon.decomposition_interface import DecompositionInterface
 
 
 class CoveragePPBase:

@@ -1,11 +1,11 @@
 """ Trapezoidal decomposition """
 import math
 from shapely import Polygon
-from scripts.decomposition.events import Event
-from scripts.decomposition.obstacles import Obstacle
-from scripts.decomposition.cell import Cell, CellGroup
-from scripts.decomposition.plotter import BoustPlotter
-from scripts.decomposition.optimize_mcells_seq import OptimCellsSeq
+from scripts.boustrophedon.events import Event
+from scripts.boustrophedon.obstacles import Obstacle
+from scripts.boustrophedon.cell import Cell, CellGroup
+from scripts.boustrophedon.plotter import BoustPlotter
+from scripts.boustrophedon.optimize_mcells_seq import OptimCellsSeq
 from scripts.base.configs import DistrictConfgs
 
 

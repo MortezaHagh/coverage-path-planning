@@ -4,8 +4,8 @@ import numpy as np
 from scripts.base.configs import DistrictConfgs  # , SpaceConfigs
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase
-from scripts.planning.decomposition_interface import DecompositionInterface
-from scripts.planning.cell_bs_cov_planner import CellCoveragePP
+from scripts.boustrophedon.cell_bs_cov_planner import CellCoveragePP
+from scripts.boustrophedon.decomposition_interface import DecompositionInterface
 
 
 class CoveragePP(CoveragePPBase):

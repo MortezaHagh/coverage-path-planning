@@ -1,9 +1,10 @@
 from shapely import Polygon
-from scripts.decomposition.decomposition_1_mh_f import MHDecomposition
+from scripts.boustrophedon.decomposition_1_mh_f import MHDecomposition
 # from scripts.decomposition.decomposition_2_bs_mh_f import BoustraphedonDecomposition
 
-
 # example
+
+
 def create_bounding():
     # create boarder polygon
     # b_poly = Polygon([(0, 0), (100, 0), (100, 100), (0, 100)])

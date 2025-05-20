@@ -1,6 +1,6 @@
 from shapely import Polygon
 from shapely.ops import unary_union
-from scripts.decomposition.events import Event
+from scripts.boustrophedon.events import Event
 
 
 class Cell:

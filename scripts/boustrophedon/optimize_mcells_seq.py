@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp
-from scripts.decomposition.cell import Cell
-from scripts.decomposition.search import SearchCells
+from scripts.boustrophedon.cell import Cell
+from scripts.boustrophedon.search import SearchCells
 
 
 class OptimCellsSeq:

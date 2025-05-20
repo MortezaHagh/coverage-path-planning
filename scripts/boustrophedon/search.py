@@ -1,6 +1,6 @@
 import heapq
 import numpy as np
-from scripts.decomposition.cell import Cell
+from scripts.boustrophedon.cell import Cell
 
 
 class SearchCells:

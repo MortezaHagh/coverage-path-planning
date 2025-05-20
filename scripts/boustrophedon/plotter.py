@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-from scripts.decomposition.cell import Cell, CellGroup
 from scripts.base.configs import DistrictConfgs
+from scripts.boustrophedon.cell import Cell, CellGroup
 
 
 class BoustPlotter:
