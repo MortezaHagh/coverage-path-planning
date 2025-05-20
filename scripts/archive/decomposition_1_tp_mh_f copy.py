@@ -4,7 +4,7 @@ from shapely import Polygon
 from scripts.decomposition.events import Event
 from scripts.decomposition.obstacles import Obstacle
 from scripts.decomposition.cell import Cell, CellGroup
-from scripts.decomposition.plotter import DecPlotter
+from scripts.decomposition.plotter import BoustPlotter
 
 
 class MHDecomposition:
@@ -23,7 +23,7 @@ class MHDecomposition:
         self.cells_groups: list[CellGroup] = []
         self.deadend_cells: list[Cell] = []
         #
-        self.plotter: DecPlotter = None
+        self.plotter: BoustPlotter = None
 
     def initiate(self):
         self.create_obstacles()
@@ -547,7 +547,7 @@ class MHDecomposition:
         return self.events[ind]
 
     def visualize(self):
-        self.plotter = DecPlotter(self)
+        self.plotter = BoustPlotter(self)
         self.plotter.visualize()
 
     def save_figs(self, path: str):

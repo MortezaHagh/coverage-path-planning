@@ -1,4 +1,4 @@
-from scripts.decomposition.seq import OptimCellsSeq
+from scripts.decomposition.optimize_mcells_seq import OptimCellsSeq
 
 
 def main():

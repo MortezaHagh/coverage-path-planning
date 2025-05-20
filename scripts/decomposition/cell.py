@@ -7,6 +7,9 @@ class Cell:
 
     def __init__(self, ind: int, poly: Polygon, event: Event):
         self.ind: int = ind
+        self.opt_ind: int = None
+        self.next_cell_seq: int = None
+        #
         self.event: Event = event
         self.poly: Polygon = poly
         self.points: list[tuple[int, int]] = []
@@ -127,6 +130,13 @@ class Cell:
     def add_adjacent_ind(self, ind: int):
         self.adjacent_inds.append(ind)
 
+    def set_optim_ind(self, ind: int, next_cell_ind: int = None):
+        self.opt_ind = ind
+        if next_cell_ind is not None:
+            self.next_cell_seq = next_cell_ind
+        else:
+            self.next_cell_seq = None
+
 
 class CellGroup:
     _counter = 0
@@ -134,8 +144,10 @@ class CellGroup:
     def __init__(self, first_cell: Cell, ncg: int = None):
         if ncg is None:
             self.ind = CellGroup._counter
+            self.opt_ind = CellGroup._counter
         else:
             self.ind = ncg
+            self.opt_ind = ncg
         CellGroup._counter += 1
         self.cells: list[Cell] = [first_cell]
         self.first_cell: Cell = first_cell

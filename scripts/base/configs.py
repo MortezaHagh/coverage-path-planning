@@ -24,10 +24,18 @@ class BConfigs:
 class DistrictConfgs:
     def __init__(self):
         self.whole_map = True  # False True
-        #
+
+        # plots configs
         self.save_map_planning = False
-        self.save_decomposition_plot = False
-        self.plot_decomposition = False
+        self.save_decomposition_plot = True
+        self.plot_decomposition = True
+
+        # coverage path planning configs
+        self.covpp_method = "m0_boust"
+
+        # boustrophedon configs
+        self.cell_sequence_mrthod = "milp"
+        self.optimize_cell_path = True
 
 
 @dataclasses.dataclass

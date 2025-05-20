@@ -42,10 +42,12 @@ class CoveragePP(CoveragePPBase):
     def save_decomposition_plot(self):
         if not self.dcfg.save_decomposition_plot:
             return
-        base_path = self.zmd.orig_map_data.bcfg.district_dir
-        dec_path = base_path + "/" + self.zmd.name
-        dec_path = os.path.join(dec_path, "Dec1")
-        self.dec_interface.decomposed.save_figs(dec_path)
+        dist_path = self.zmd.orig_map_data.bcfg.district_dir
+        zone_path = dist_path + "/" + self.zmd.name
+        ns = self.dcfg.covpp_method
+        boust_path = os.path.join(zone_path, ns)  # boustrophedon
+        os.makedirs(boust_path, exist_ok=True)
+        self.dec_interface.decomposed.save_figs(boust_path)
 
     def add_cells_to_map_planning(self):
         for cell in self.dec_interface.decomposed.cells_groups:

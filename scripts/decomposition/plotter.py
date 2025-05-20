@@ -3,39 +3,97 @@ from scripts.decomposition.cell import Cell, CellGroup
 from scripts.base.configs import DistrictConfgs
 
 
-class DecPlotter:
+class BoustPlotter:
     def __init__(self, dec_obj):
         self.dec_obj = dec_obj
         self.dcfgs = DistrictConfgs()
         #
-        self.ax1 = None
-        self.fig1 = None
-        self.fig2 = None
+        self.viz_together = False
+        self.set_aspect = True
+        #
+        self.ax_cell_event = None
+        self.fig_cells_events = None
+        self.fig_mcells = None
+        self.fig_mcells_seq = None
+        self.fig_all = None
 
     def visualize(self):
         if not (self.dcfgs.save_decomposition_plot or self.dcfgs.plot_decomposition):
             return
-        #
-        fig, ax = plt.subplots(1, 1)
-        self.fig1 = fig
-        self.ax1 = ax
-        ax.set_aspect('equal', adjustable='box')
+        if self.viz_together:
+            self.visualize_together()
+        else:
+            self.visualize_seperate()
+        if self.dcfgs.plot_decomposition:
+            plt.show()
 
-        # plot contours
-        self.plot_contours()
+    def visualize_seperate(self):
+        self.vizualize_cells_events()
+        self.visualize_cells_groups()
+        self.visualize_cells_sequence()
+
+    def visualize_together(self):
+        # fig, axs = plt.subplots(1, 3, constrained_layout=True)
+        fig, axs = plt.subplots(1, 3, constrained_layout=True, figsize=(25, 30))
+        if self.set_aspect:
+            axs[0].set_aspect('equal', adjustable='box')
+            axs[1].set_aspect('equal', adjustable='box')
+            axs[2].set_aspect('equal', adjustable='box')
+        self.vizualize_cells_events(axs[0])
+        self.visualize_cells_groups(axs[1])
+        self.visualize_cells_sequence(axs[2])
+        self.visualize_cells_sequence()
+        self.fig_all = fig
+
+    def vizualize_cells_events(self, ax=None):
+        fig = None
+        if ax is None:
+            fig, ax = plt.subplots(1, 1)
+            if self.set_aspect:
+                ax.set_aspect('equal', adjustable='box')
+        self.ax_cell_event = ax
 
         # # vizualize events
         # self.visualize_events()
 
-        # plot trapezoids
-        self.vizualize_cells()
+        # plot contours
+        self.plot_contours()
 
-        # vizualize cells groups
-        self.visualize_cells_groups()
+        # plot cells
+        for cell in self.dec_obj.cells:
+            color = 'yellow'
+            if not cell.status:
+                color = 'red'
 
+            # fill
+            x, y = cell.poly.exterior.xy
+            self.ax_cell_event.fill(x, y, alpha=0.5, fc=color, ec='black', linewidth=1)
+
+            # centroid
+            self.ax_cell_event.plot(cell.poly.centroid.x, cell.poly.centroid.y, 'o', color='purple', markersize=6)
+
+            # adjacents
+            for mid_adj in cell.mid_adjlist:
+                self.ax_cell_event.plot([cell.poly.centroid.x, self.dec_obj.cells[mid_adj].poly.centroid.x],
+                                        [cell.poly.centroid.y, self.dec_obj.cells[mid_adj].poly.centroid.y], 'b--', linewidth=1)
+            if cell.up_adj_ci:
+                self.ax_cell_event.plot([cell.poly.centroid.x, self.dec_obj.cells[cell.up_adj_ci].poly.centroid.x],
+                                        [cell.poly.centroid.y, self.dec_obj.cells[cell.up_adj_ci].poly.centroid.y], 'r--', linewidth=1)
+            if cell.down_adj_ci:
+                self.ax_cell_event.plot([cell.poly.centroid.x, self.dec_obj.cells[cell.down_adj_ci].poly.centroid.x],
+                                        [cell.poly.centroid.y, self.dec_obj.cells[cell.down_adj_ci].poly.centroid.y], 'g--', linewidth=1)
         #
-        if self.dcfgs.plot_decomposition:
-            plt.show()
+        if fig:
+            self.fig_cells_events = fig
+
+    def visualize_events(self):
+        for e in self.dec_obj.events:
+            # name
+            # ct = "concave" if e.concave else "convex"
+            # text1 = f"{e.name}:{e.sd_ind}-{e.etype}-{e.etype_2}"
+            # text1 = f"{e.name}:{e.etype}-{e.etype_2}"
+            text1 = e.name
+            self.ax_cell_event.text(e.xy[0], e.xy[1], text1, fontsize=10, color='blue')
 
     def plot_contours(self):
         # plot contours
@@ -45,59 +103,14 @@ class DecPlotter:
             else:
                 color = 'red'
             x, y = obs.poly.exterior.xy
-            self.ax1.plot(x, y, color=color, linewidth=1)
+            self.ax_cell_event.plot(x, y, color=color, linewidth=1)
 
-    def visualize_events(self):
-        for e in self.dec_obj.events:
-            # #
-            # text2 = f"{e.ind}--[{e.prev_ind},{e.next_ind}]"
-            # plt.text(e.xy[0], e.xy[1]-5, text2, fontsize=12, color='green')
-
-            # name
-            # ct = "concave" if e.concave else "convex"
-            # text1 = f"{e.name}:{e.sd_ind}-{e.etype}-{e.etype_2}"
-            # text1 = f"{e.name}:{e.etype}-{e.etype_2}"
-            text1 = e.name
-            self.ax1.text(e.xy[0], e.xy[1], text1, fontsize=10, color='blue')
-
-            # #
-            # # plt.plot(e.xy[0], e.xy[1], 'o', color='purple', markersize=8)
-            # if e.hit_down_event is not None:
-            #     # plt.plot(e.xy[0], e.hit_down_y, 'o', color='black', markersize=5)
-            #     self.ax1.plot([e.xy[0], e.xy[0]], [e.xy[1], e.hit_down_y], '--', color='orange', linewidth=1)
-
-    def vizualize_cells(self):
-        for cell in self.dec_obj.cells:
-            color = 'yellow'
-            if not cell.status:
-                color = 'red'
-
-            # fill
-            x, y = cell.poly.exterior.xy
-            self.ax1.fill(x, y, alpha=0.5, fc=color, ec='black', linewidth=1)
-
-            # centroid
-            self.ax1.plot(cell.poly.centroid.x, cell.poly.centroid.y, 'o', color='purple', markersize=6)
-
-            # # text
-            # self.ax1.text(cell.poly.centroid.x, cell.poly.centroid.y, f"[{cell.ind}]", fontsize=10, color='black')
-            # # self.ax1.text(cell.poly.centroid.x, cell.poly.centroid.y,
-            # #              f"[{cell.ind}][{cell.down_adj_ci}, {cell.up_adj_ci}]", fontsize=10, color='black')
-
-            # adjacents
-            for mid_adj in cell.mid_adjlist:
-                self.ax1.plot([cell.poly.centroid.x, self.dec_obj.cells[mid_adj].poly.centroid.x],
-                              [cell.poly.centroid.y, self.dec_obj.cells[mid_adj].poly.centroid.y], 'b--', linewidth=1)
-            if cell.up_adj_ci:
-                self.ax1.plot([cell.poly.centroid.x, self.dec_obj.cells[cell.up_adj_ci].poly.centroid.x],
-                              [cell.poly.centroid.y, self.dec_obj.cells[cell.up_adj_ci].poly.centroid.y], 'r--', linewidth=1)
-            if cell.down_adj_ci:
-                self.ax1.plot([cell.poly.centroid.x, self.dec_obj.cells[cell.down_adj_ci].poly.centroid.x],
-                              [cell.poly.centroid.y, self.dec_obj.cells[cell.down_adj_ci].poly.centroid.y], 'g--', linewidth=1)
-
-    def visualize_cells_groups(self):
-        fig, ax = plt.subplots(1, 1)
-        ax.set_aspect('equal', adjustable='box')
+    def visualize_cells_groups(self, ax=None):
+        fig = None
+        if ax is None:
+            fig, ax = plt.subplots(1, 1)
+            if self.set_aspect:
+                ax.set_aspect('equal', adjustable='box')
         ng = len(self.dec_obj.cells_groups)
         cg: CellGroup
         colors = plt.cm.get_cmap('tab20', 2*ng).colors
@@ -110,7 +123,8 @@ class DecPlotter:
             # merged cell
             x, y = cg.merged_cell.poly.exterior.xy
             cx, cy = cg.merged_cell.cxy
-            ax.text(cx, cy, f'g{i}', color='black', fontsize=10)
+            text = f"g{i}-({cg.merged_cell.opt_ind})"
+            ax.text(cx, cy, text, color='black', fontsize=10)
             ax.plot(x, y, color=color, linewidth=4, linestyle='-')
             ax.plot(cx, cy, 'o', color='purple', markersize=6)
             #
@@ -122,29 +136,50 @@ class DecPlotter:
             # adjacents
             # m1
             mc: Cell = cg.merged_cell
+            mcx, mcy = mc.cxy
             for ac_i in mc.mid_adjlist:
-                mcx, mcy = mc.cxy
                 acx, acy = self.dec_obj.mcells[ac_i].cxy
                 ax.plot([mcx, acx], [mcy, acy], color=color, linewidth=1, linestyle='--')
 
-            # # m2
-            # lcell = cg.last_cell
-            # adj_cell: Cell = None
-            # if lcell.up_adj_ci:
-            #     adj_cell = self.dec_obj.cells[lcell.up_adj_ci]
-            #     adj_g_cell_ind = adj_cell.group_ind
-            #     self.plot_adj_gcells(ax, cg.merged_cell, adj_g_cell_ind, color='red')
-            # if lcell.down_adj_ci:
-            #     adj_cell = self.dec_obj.cells[lcell.down_adj_ci]
-            #     adj_g_cell_ind = adj_cell.group_ind
-            #     self.plot_adj_gcells(ax, cg.merged_cell, adj_g_cell_ind, color='green')
-            # if lcell.mid_adjlist:
-            #     for ac in lcell.mid_adjlist:
-            #         adj_cell = self.dec_obj.cells[ac]
-            #         adj_g_cell_ind = adj_cell.group_ind
-            #         self.plot_adj_gcells(ax, cg.merged_cell, adj_g_cell_ind, color='blue')
         #
-        self.fig2 = fig
+        if fig:
+            self.fig_mcells = fig
+
+    def visualize_cells_sequence(self, ax=None):
+        fig = None
+        if ax is None:
+            fig, ax = plt.subplots(1, 1, figsize=(25, 30))
+            if self.set_aspect:
+                ax.set_aspect('equal', adjustable='box')
+        ng = len(self.dec_obj.cells_groups)
+        cg: CellGroup
+        colors = plt.cm.get_cmap('tab20', 2*ng).colors
+        for i, cg in enumerate(self.dec_obj.cells_groups):
+            if i % 2:
+                color = colors[i]
+            else:
+                color = colors[i+ng]
+
+            # merged cell
+            x, y = cg.merged_cell.poly.exterior.xy
+            cx, cy = cg.merged_cell.cxy
+            text = f"g{i}-({cg.merged_cell.opt_ind})"
+            ax.text(cx, cy, text, color='black', fontsize=10)
+            ax.plot(x, y, color=color, linewidth=4, linestyle='-')
+            ax.plot(cx, cy, 'o', color='purple', markersize=6)
+            ax.fill(x, y, alpha=0.2, fc=color)
+
+            # sequence
+            next_ind = cg.merged_cell.next_cell_seq
+            if next_ind is None:
+                continue
+            x1, y1 = cg.merged_cell.cxy
+            x2, y2 = self.dec_obj.mcells[next_ind].cxy
+            ax.plot([x1, x2], [y1, y2], color=color, linewidth=1, linestyle='--')
+
+        #
+        if fig:
+            self.fig_mcells_seq = fig
 
     def plot_adj_gcells(self, ax, cell: Cell, adj_g_cell_ind: int, color='red'):
         c = cell.poly.centroid
@@ -152,5 +187,12 @@ class DecPlotter:
         ax.plot([c.x, adj_c.x], [c.y, adj_c.y], color=color, linewidth=1, linestyle='--')
 
     def save_figs(self, path: str):
-        self.fig1.savefig(path + "_1.png", format="png", dpi=400)
-        self.fig2.savefig(path + "_2.png", format="png", dpi=400)
+        ns = "/bs"
+        seq_method = self.dcfgs.cell_sequence_mrthod
+        if self.viz_together:
+            self.fig_all.savefig(path + f"{ns}_0_mcells_seq.png", format="png", dpi=400)
+            self.fig_mcells_seq.savefig(path + f"{ns}_1_seq_{seq_method}.png", format="png", dpi=400)
+        else:
+            self.fig_mcells_seq.savefig(path + f"{ns}_1_seq_{seq_method}.png", format="png", dpi=400)
+            self.fig_mcells.savefig(path + f"{ns}_2_mcells.png", format="png", dpi=400)
+            self.fig_cells_events.savefig(path + f"{ns}_3_cells.png", format="png", dpi=400)

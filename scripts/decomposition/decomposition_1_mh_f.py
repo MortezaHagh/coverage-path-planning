@@ -4,12 +4,15 @@ from shapely import Polygon
 from scripts.decomposition.events import Event
 from scripts.decomposition.obstacles import Obstacle
 from scripts.decomposition.cell import Cell, CellGroup
-from scripts.decomposition.plotter import DecPlotter
+from scripts.decomposition.plotter import BoustPlotter
+from scripts.decomposition.optimize_mcells_seq import OptimCellsSeq
+from scripts.base.configs import DistrictConfgs
 
 
 class MHDecomposition:
     def __init__(self):
         self.ns = "MHDecomposition"
+        self.dcfgs = DistrictConfgs()
         self.b_poly: Polygon = None
         self.b_obstacle: Obstacle = None
         self.polygons: list[Polygon] = []
@@ -23,7 +26,7 @@ class MHDecomposition:
         self.cells_groups: list[CellGroup] = []
         self.mcells: list[Cell] = []
         #
-        self.plotter: DecPlotter = None
+        self.plotter: BoustPlotter = None
 
     def initiate(self):
         self.create_obstacles()
@@ -34,9 +37,9 @@ class MHDecomposition:
         self.compleate_adjacency()
         self.create_cell_groups()
         self.set_merged_cells_adjacents()
+        self.create_sequence()
         self.visualize()
         #
-        self.create_sequence()
 
     def set_bounding_polygon(self, poly: Polygon):
         self.b_poly = poly
@@ -396,24 +399,26 @@ class MHDecomposition:
 
     # =================================================================================================================
 
+    def create_sequence(self):
+        if not self.dcfgs.optimize_cell_path:
+            for i, cell in enumerate(self.mcells):
+                next_cell_ind = None
+                if i < len(self.mcells) - 1:
+                    next_cell_ind = self.mcells[i + 1].ind
+                cell.set_optim_ind(i, next_cell_ind)
+            return
+        OptimCellsSeq(self.mcells)
+
+    # =================================================================================================================
+
     def get_event(self, ind: int) -> Event:
         if ind < 0 or ind >= len(self.events):
             return None
         return self.events[ind]
 
     def visualize(self):
-        self.plotter = DecPlotter(self)
+        self.plotter = BoustPlotter(self)
         self.plotter.visualize()
 
     def save_figs(self, path: str):
         self.plotter.save_figs(path)
-
-    # =================================================================================================================
-
-    def create_sequence(self):
-        pass
-        # from scripts.decomposition.seq import OptimCellsSeq
-        # seq = OptimCellsSeq(self.mcells)
-        # print(" =================== ")
-        # print(" =================== ")
-        # print(" =================== ")

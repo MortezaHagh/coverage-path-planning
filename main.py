@@ -53,11 +53,11 @@ def main():
     district_data.run_coverage_planning()
     print(" ============================================================================== ")
 
-    # display map_planning
-    map_planning = district_data.dmd.map_planning
-    cv.imshow("map_planning", map_planning)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
+    # # display map_planning
+    # map_planning = district_data.dmd.map_planning
+    # cv.imshow("map_planning", map_planning)
+    # cv.waitKey(0)
+    # cv.destroyAllWindows()
 
     print(f"[{ns}]: resolution:", spa.orig_map_data.up_resolution)
 
