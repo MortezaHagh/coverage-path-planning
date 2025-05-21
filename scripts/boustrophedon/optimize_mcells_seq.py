@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp
+from scripts.base.configs import DistrictConfgs
 from scripts.boustrophedon.cell import Cell
 from scripts.boustrophedon.search import SearchCells
 
@@ -8,28 +9,78 @@ from scripts.boustrophedon.search import SearchCells
 class OptimCellsSeq:
     def __init__(self, mcells: list[Cell]):
         self.ns = "OptimCellsSeq"
+        dcfgs = DistrictConfgs()
         print(f"[{self.ns}]: >>>>> Step: creating optimization cells sequence")
 
         #
+        optimizer = None
+        if dcfgs.cell_sequence_method == "simple":
+            optimizer = SimpleSeq(mcells)
+            return
+        elif dcfgs.cell_sequence_method == "milp":
+            optimizer = MILPSeq(mcells)
+        elif dcfgs.cell_sequence_method == "dfs":
+            optimizer = DepthFirstSearch(mcells)
+        else:
+            print(f"[{self.ns}][ERROR]: Invalid cell sequence method: {dcfgs.cell_sequence_method}")
+            return
+
+        #
+        self.tour = optimizer.tour
+        self.set_cells_optim_ind(mcells)
+        # self.plot()
+
+    def set_cells_optim_ind(self, mcells: list[Cell]):
+        nt = len(self.tour)-1
+        for c in mcells[:-1]:
+            ind = self.tour.index(c.ind)
+            next_cell_ind = None
+            if ind < nt:
+                next_cell_ind = self.tour[ind + 1]
+            c.set_optim_ind(ind, next_cell_ind)
+
+    def plot(self):
+        _, ax = plt.subplots(1, 1)
+        ax.set_title("Optimized Cells Sequence")
+        ax.set_aspect('equal', adjustable='box')
+
+        # #
+        # print(self.tour)
+        for cell in self.cells:
+            ax.plot(cell.cxy[0], cell.cxy[1], "ro")
+            text = f"{cell.ind}-{cell.opt_ind}"
+            ax.text(cell.cxy[0], cell.cxy[1], text, fontsize=12, color='blue')
+
+        # Draw the tour
+        for i in range(len(self.tour)-1):
+            x1, y1 = self.cells[self.tour[i]].cxy
+            x2, y2 = self.cells[self.tour[i + 1]].cxy
+            ax.plot([x1, x2], [y1, y2], 'b-')
+        plt.show()
+
+
+class SimpleSeq:
+    def __init__(self, mcells: list[Cell]):
+        self.ns = "SimpleSeq"
+        print(f"[{self.ns}]: >>>>> Step: creating cells sequence.")
+        self.tour = list(range(len(mcells)))
+
+
+class MILPSeq:
+    def __init__(self, mcells: list[Cell]):
+        self.ns = "MILPSeq"
+        print(f"[{self.ns}]: >>>>> Step: creating cells sequence.")
         self.cells = mcells
         self.n_cells = len(mcells)
         self.search = SearchCells(self.cells)
-
-        #
+        self.tour: list[int] = []
         self.distm: np.ndarray = None
-        self.tour: list[int] = None
-        self.tour_p: list[int] = None
-
         #
         self.create_dist_matrix()
         success = self.solve_tsp_milp()
         if not success:
+            self.tour = []
             print(f"[{self.ns}][ERROR]: No optimal solution found.")
-            return
-
-        #
-        self.set_cells_optim_ind()
-        # self.plot()
 
     def create_dist_matrix(self):
         n = len(self.cells)
@@ -105,31 +156,29 @@ class OptimCellsSeq:
         #
         return True
 
-    def set_cells_optim_ind(self):
-        nt = len(self.tour)-1
-        for c in self.cells[:-1]:
-            ind = self.tour.index(c.ind)
-            next_cell_ind = None
-            if ind < nt:
-                next_cell_ind = self.tour[ind + 1]
-            c.set_optim_ind(ind, next_cell_ind)
 
-    def plot(self):
-        _, ax = plt.subplots(1, 1)
-        ax.set_title("Optimized Cells Sequence")
-        ax.set_aspect('equal', adjustable='box')
+class DepthFirstSearch:
+    def __init__(self, cells: list[Cell]):
+        self.ns = "DepthFirstSearch"
+        print(f"[{self.ns}]: >>>>> Step: creating depth first search cells sequence")
+        #
+        self.cells = cells
+        self.n_cells = len(cells)
+        self.tour: list[int] = []
+        self.visited: list[bool] = [False] * self.n_cells
+        self.create_tour()
 
-        # #
-        # print(self.tour)
-        for cell in self.cells:
-            ax.plot(cell.cxy[0], cell.cxy[1], "ro")
-            text = f"{cell.ind}-{cell.opt_ind}"
-            ax.text(cell.cxy[0], cell.cxy[1], text, fontsize=12, color='blue')
+    def create_tour(self):
+        # Start DFS from the first cell
+        self.dfs(0)
+        # for i, cell in enumerate(self.cells):
+        #     if not self.visited[i]:
+        #         self.dfs(cell.ind)
 
-        # Draw the tour
-        for i in range(len(self.tour)-1):
-            x1, y1 = self.cells[self.tour[i]].cxy
-            x2, y2 = self.cells[self.tour[i + 1]].cxy
-            ax.plot([x1, x2], [y1, y2], 'b-')
-            # ax.text(x1+50, y1, str(i), fontsize=12, color='g')
-        plt.show()
+    def dfs(self, current: int):
+        self.visited[current] = True
+        self.tour.append(current)
+        neighbors = self.cells[current].adjacent_inds
+        for neighbor in neighbors:
+            if not self.visited[neighbor]:
+                self.dfs(neighbor)

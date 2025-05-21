@@ -1,0 +1,4 @@
+- add selectino of start and end points to the MILP
+- GA for sequence opt
+- optimizing entry and exit points
+- Create Sample maps with few rooms (no need to detect main sweeping direction)

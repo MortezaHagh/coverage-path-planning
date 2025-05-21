@@ -1,20 +1,9 @@
-from scripts.base.configs import DistrictConfgs
 from scripts.boustrophedon.cell import Cell, CellGroup
 from scripts.boustrophedon.optimize_mcells_seq import OptimCellsSeq
 
 
 def create_sequence(mcells: list[Cell]):
-    dcfgs = DistrictConfgs()
-    if dcfgs.cell_sequence_method == "simple":
-        for i, cell in enumerate(mcells):
-            next_cell_ind = None
-            if i < len(mcells) - 1:
-                next_cell_ind = mcells[i + 1].ind
-            cell.set_optim_ind(i, next_cell_ind)
-    elif dcfgs.cell_sequence_method == "milp":
-        OptimCellsSeq(mcells)
-    else:
-        print(f"[create_sequence][ERROR]: Invalid cell sequence method: {dcfgs.cell_sequence_method}")
+    OptimCellsSeq(mcells)
 
 
 def set_merged_cells_adjacents(cells_groups: list[CellGroup], cells: list[Cell]):
@@ -103,6 +92,8 @@ def find_cells_shared_edge_p(cells: list[Cell]):
             p1_up = adjc.lu
             p1_down = adjc.ld
             l1 = p1_up[1] - p1_down[1]  # dy
+            if l1 == 0:
+                continue
             # find overlap
             overlap_min = max(p0_down[1], p1_down[1])
             overlap_max = min(p0_up[1], p1_up[1])
@@ -145,6 +136,8 @@ def find_cells_shared_edge_p(cells: list[Cell]):
             p1_up = adjc.ru
             p1_down = adjc.rd
             l1 = p1_up[1] - p1_down[1]  # dy
+            if l1 == 0:
+                continue
             # find overlap
             overlap_min = max(p0_down[1], p1_down[1])
             overlap_max = min(p0_up[1], p1_up[1])

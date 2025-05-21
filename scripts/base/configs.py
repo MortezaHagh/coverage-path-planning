@@ -27,14 +27,14 @@ class DistrictConfgs:
 
         # plots configs
         self.save_map_planning = True
-        self.save_decomposition_plot = False
-        self.plot_decomposition = False
+        self.save_decomposition_plot = True
+        self.plot_decomposition = True
 
         # coverage path planning configs
         self.covpp_method = "m0_boust"
 
         # boustrophedon configs
-        self.cell_sequence_method = "simple"  # simple, milp
+        self.cell_sequence_method = "dfs"  # simple, milp, dfs
 
         # ns
         self.ns = self.covpp_method + "_" + self.cell_sequence_method
