@@ -24,11 +24,11 @@ class Cell:
         self.width: float = None
         self.height: float = None
         self.area: float = None
-        #
-        self.ld: tuple[float, float] = None
-        self.lu: tuple[float, float] = None
-        self.rd: tuple[float, float] = None
-        self.ru: tuple[float, float] = None
+        # #
+        # self.ld: tuple[float, float] = None
+        # self.lu: tuple[float, float] = None
+        # self.rd: tuple[float, float] = None
+        # self.ru: tuple[float, float] = None
         #
         self.up_adj_ci = None
         self.down_adj_ci = None
@@ -56,8 +56,8 @@ class Cell:
         # create cell points
         self.create_cell_points()
 
-        # find corners
-        self.find_corner()
+        # # find corners
+        # self.find_corner()
 
     def cell_specs(self):
         # center
@@ -82,16 +82,16 @@ class Cell:
         else:
             self.points = []
 
-    def find_corner(self):
-        lps = [xy for xy in self.points if xy[0] == self.x_min]
-        lps = sorted(lps, key=lambda xy: xy[1])
-        self.ld = lps[0]
-        self.lu = lps[-1]
-        #
-        rps = [xy for xy in self.points if xy[0] == self.x_max]
-        rps = sorted(rps, key=lambda xy: xy[1])
-        self.rd = rps[0]
-        self.ru = rps[-1]
+    # def find_corner(self):
+    #     lps = [xy for xy in self.points if xy[0] == self.x_min]
+    #     lps = sorted(lps, key=lambda xy: xy[1])
+    #     self.ld = lps[0]
+    #     self.lu = lps[-1]
+    #     #
+    #     rps = [xy for xy in self.points if xy[0] == self.x_max]
+    #     rps = sorted(rps, key=lambda xy: xy[1])
+    #     self.rd = rps[0]
+    #     self.ru = rps[-1]
 
     def set_up_adj_ci(self, ci: int):
         if ci is not None:

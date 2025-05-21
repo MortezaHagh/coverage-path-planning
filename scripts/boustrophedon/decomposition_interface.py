@@ -11,6 +11,7 @@ class DecompositionInterface:
         self.decomposed = CellDecomposition()
         self.s_x: int = 0
         self.s_y: int = 0
+        self.n_mcells: int = 0
 
         # settings
         self.dec_mid_dist = 10
@@ -24,6 +25,7 @@ class DecompositionInterface:
 
         # initiate decomposition
         self.decomposed.initiate()
+        self.n_mcells = self.decomposed.n_mcells
 
     def set_start_coord(self, zmd: ZoneMapData):
         self.s_x = zmd.rectangle.x_min

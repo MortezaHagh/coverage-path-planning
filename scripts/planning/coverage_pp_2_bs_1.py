@@ -6,6 +6,7 @@ from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase
 from scripts.boustrophedon.cell_bs_cov_planner import CellCoveragePP
 from scripts.boustrophedon.decomposition_interface import DecompositionInterface
+from scripts.base.my_utils import get_n_colors_bgr
 
 
 class CoveragePP(CoveragePPBase):
@@ -18,6 +19,7 @@ class CoveragePP(CoveragePPBase):
 
         # configs
         self.dcfg = DistrictConfgs()
+        self.colors = []
 
         # all_ccp
         self.all_ccpp: list[CellCoveragePP] = []
@@ -29,6 +31,11 @@ class CoveragePP(CoveragePPBase):
     def coverage_planning(self):
         self.decompose_map()
         self.save_decomposition_plot()
+
+        #
+        n = self.dec_interface.decomposed.n_mcells
+        self.colors = get_n_colors_bgr(n)
+        # self.colors = [(int(np.random.randint(0, cm)), int(np.random.randint(0, cm)), int(np.random.randint(0, cm))) for _ in range(n)]
         self.add_cells_to_map_planning()
         #
         self.coverage_planning_l()
@@ -48,10 +55,14 @@ class CoveragePP(CoveragePPBase):
         self.dec_interface.decomposed.save_figs(boust_path)
 
     def add_cells_to_map_planning(self):
-        for cell in self.dec_interface.decomposed.cells_groups:
+        for i, cell in enumerate(self.dec_interface.decomposed.cells_groups):
             pp = cell.merged_cell.points
             pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
-            self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(0, 0, 0), thickness=3)
+            map_p = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(100, 100, 100), thickness=2)
+            map_p_fill = self.zmd.map_planning.copy()
+            cv.fillPoly(map_p_fill, [pp], color=self.colors[i])
+            alpha = 0.1
+            self.zmd.map_planning = cv.addWeighted(map_p_fill, alpha, map_p, 1 - alpha, 0)
 
     # =================================================================================================================
 
@@ -73,13 +84,21 @@ class CoveragePP(CoveragePPBase):
     def add_cell_paths_to_map_planning(self):
         # pp = np.array(self.cell_paths_px, dtype=np.int32)  # Ensure pp is a numpy array of integers
         # self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=False, color=(0, 255, 0), thickness=2)
+
         #
-        for ccpp in self.all_ccpp:
+        robot_m = self.zmd.map_planning.copy()  # np.ones_like(self.zmd.map_planning) * 255
+        map_planning = self.zmd.map_planning.copy()
+        for i, ccpp in enumerate(self.all_ccpp):
             path_px = ccpp.path_px
             if path_px:
                 pp = np.array(path_px, dtype=np.int32)  # Ensure pp is a numpy array of integers
-                self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [pp], isClosed=False, color=(0, 255, 0), thickness=2)
+                map_planning = cv.polylines(map_planning, [pp], isClosed=False, color=self.colors[i], thickness=2)
                 #
-                # radius_px_3 = int(np.ceil(self.scfgs.cleaning_r / self.zmd.orig_map_data.up_resolution))
-                # pose = pp[0]
-                # self.zmd.map_planning = cv.circle(self.zmd.map_planning, pose, radius_px_3, [100, 0, 100], -1)
+                radius_px = int(np.ceil(self.scfgs.cleaning_r / self.zmd.orig_map_data.up_resolution))
+                robot_m = cv.circle(robot_m, pp[0], radius_px, [40, 40, 40], -1)
+                if len(pp) > 3:
+                    robot_m = cv.circle(robot_m, pp[3], radius_px, [40, 40, 40], -1)
+
+        #
+        alpha = 0.8
+        self.zmd.map_planning = cv.addWeighted(map_planning, alpha, robot_m, 1 - alpha, 0)

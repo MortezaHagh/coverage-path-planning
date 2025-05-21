@@ -25,6 +25,7 @@ class MHDecomposition:
         #
         self.cells_groups: list[CellGroup] = []
         self.mcells: list[Cell] = []
+        self.n_mcells: int = 0
         #
         self.plotter: BoustPlotter = None
 
@@ -386,6 +387,7 @@ class MHDecomposition:
                 self.cells_groups.append(new_group)
                 self.mcells.append(new_group.merged_cell)
                 ncg += 1
+            self.n_mcells = ncg
 
     def set_merged_cells_adjacents(self):
         for cellg in self.cells_groups:

@@ -71,25 +71,26 @@ class CellCoveragePP:
         # width
         w_m = self.cell.width * resolution
         # shift
-        d_shift = resolution * 2
+        d_shift = resolution * 5
 
         #
         if w_m < cleaning_d/3:  # todo
-            n_lines = 0
-            return False
-        elif w_m < cleaning_d:
             xx = [(x_min + x_max)/2]
-        elif w_m < 2.01*cleaning_d:
+            # n_lines = 0
+            # return False
+        elif w_m < cleaning_d*1.1:
             xx = [x_min+d_shift, x_max-d_shift]
+            # xx = [(x_min + x_max)/2]
+        # elif w_m < 2.01*cleaning_d:
+        #     xx = [x_min+d_shift, x_max-d_shift]
         else:
             ww = w_m - cleaning_d
-            n_lines = np.ceil(ww / cleaning_d)
-            d_c = ww / n_lines
+            n_r = int(np.ceil(ww / (cleaning_d)))
+            d_c = w_m / (n_r+1)
             #
             xl = x_min + d_shift
             xr = x_max - d_shift
-            x0 = x_min + d_c
-            xx = [x0 + d_c*i for i in range(int(n_lines))]
+            xx = [x_min + d_c*i for i in range(1, n_r+1)]
             xx.insert(0, xl)
             xx.append(xr)
 
@@ -105,6 +106,9 @@ class CellCoveragePP:
                 p1, p2 = points
                 xy_but.append((p1.x, p1.y+d_shift*3))
                 xy_top.append((p2.x, p2.y-d_shift*3))
+        if len(xy_but) < 1:
+            print(f"[{self.ns}]: [WARN] no hitting points")
+            return False
         self.xy_but = xy_but
         self.xy_top = xy_top
         return True
