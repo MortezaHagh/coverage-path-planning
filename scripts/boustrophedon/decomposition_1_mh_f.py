@@ -5,14 +5,13 @@ from scripts.boustrophedon.events import Event
 from scripts.boustrophedon.obstacles import Obstacle
 from scripts.boustrophedon.cell import Cell, CellGroup
 from scripts.boustrophedon.plotter import BoustPlotter
-from scripts.boustrophedon.optimize_mcells_seq import OptimCellsSeq
-from scripts.base.configs import DistrictConfgs
+from scripts.boustrophedon.post_process_mcells import create_cell_groups, create_sequence, find_cells_shared_edge_p
+# from scripts.boustrophedon.optimize_mcells_seq import OptimCellsSeq
 
 
 class MHDecomposition:
     def __init__(self):
         self.ns = "MHDecomposition"
-        self.dcfgs = DistrictConfgs()
         self.b_poly: Polygon = None
         self.b_obstacle: Obstacle = None
         self.polygons: list[Polygon] = []
@@ -36,11 +35,21 @@ class MHDecomposition:
         self.decompose_all()
         self.find_adjacents_cells()
         self.compleate_adjacency()
-        self.create_cell_groups()
-        self.set_merged_cells_adjacents()
-        self.create_sequence()
-        self.visualize()
+
+        # create merged cells & set_merged_cells_adjacents
+        cgs, mcells = create_cell_groups(self.cells)
+        self.cells_groups = cgs
+        self.mcells = mcells
+        self.n_mcells = len(mcells)
+
+        # find if coverage pp in cell should be shifted based on boarder with adjacents
+        find_cells_shared_edge_p(self.mcells)
+
         #
+        create_sequence(self.mcells)
+
+        #
+        self.visualize()
 
     def set_bounding_polygon(self, poly: Polygon):
         self.b_poly = poly
@@ -345,75 +354,6 @@ class MHDecomposition:
                     cell.status = False
                     print(f"[{self.ns}][find_adjacents_cells][ERROR]: No parents found:")
                     print(f"e: {cell.event.sd_ind}, -- cell: {cell.ind}")
-
-    def create_cell_groups(self):
-        ncg = 0
-        for cell in self.cells[0:]:
-            if cell.done:
-                continue
-            base_cell = cell
-            base_cell.done = True
-            if base_cell.n_adj == 0:
-                new_group = CellGroup(base_cell, ncg)
-            elif base_cell.n_adj > 1:
-                new_group = CellGroup(base_cell, ncg)
-            else:
-                adj_cell: Cell = None
-                if base_cell.up_adj_ci:
-                    adj_cell = self.cells[base_cell.up_adj_ci]
-                elif base_cell.down_adj_ci:
-                    adj_cell = self.cells[base_cell.down_adj_ci]
-                else:
-                    adj_cell = self.cells[base_cell.mid_adjlist[0]]
-
-                #
-                new_group = CellGroup(base_cell, ncg)
-                while adj_cell.n_parent == 1 and not adj_cell.done:
-                    adj_cell.done = True
-                    new_group.add_cell(adj_cell)
-                    #
-                    if not adj_cell.n_adj == 1:
-                        break
-                    #
-                    if adj_cell.up_adj_ci:
-                        adj_cell = self.cells[adj_cell.up_adj_ci]
-                    elif adj_cell.down_adj_ci:
-                        adj_cell = self.cells[adj_cell.down_adj_ci]
-                    else:
-                        adj_cell = self.cells[adj_cell.mid_adjlist[0]]
-            # merge_cells
-            if new_group:
-                new_group.update_group()
-                self.cells_groups.append(new_group)
-                self.mcells.append(new_group.merged_cell)
-                ncg += 1
-            self.n_mcells = ncg
-
-    def set_merged_cells_adjacents(self):
-        for cellg in self.cells_groups:
-            parents_i = cellg.first_cell.mid_parentlist
-            successors_i = cellg.last_cell.mid_adjlist
-            cellg.merged_cell.mid_parentlist = [self.cells[i].group_ind for i in parents_i]
-            cellg.merged_cell.mid_adjlist = [self.cells[i].group_ind for i in successors_i]
-            adj = cellg.merged_cell.mid_parentlist.copy()
-            adj.extend(cellg.merged_cell.mid_adjlist)
-            cellg.merged_cell.adjacent_inds = adj
-
-    # =================================================================================================================
-
-    def create_sequence(self):
-        if self.dcfgs.cell_sequence_method == "simple":
-            for i, cell in enumerate(self.mcells):
-                next_cell_ind = None
-                if i < len(self.mcells) - 1:
-                    next_cell_ind = self.mcells[i + 1].ind
-                cell.set_optim_ind(i, next_cell_ind)
-        elif self.dcfgs.cell_sequence_method == "milp":
-            OptimCellsSeq(self.mcells)
-        else:
-            print(f"[{self.ns}][create_sequence][ERROR]: Invalid cell sequence method: {self.dcfgs.cell_sequence_method}")
-
-    # =================================================================================================================
 
     def get_event(self, ind: int) -> Event:
         if ind < 0 or ind >= len(self.events):

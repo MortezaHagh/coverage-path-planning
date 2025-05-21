@@ -62,37 +62,51 @@ class CellCoveragePP:
         #
         resolution = self.resolution
 
+        #
+        cell = self.cell
+
         # start point - top left
-        x_min = self.cell.x_min * resolution
-        x_max = self.cell.x_max * resolution
-        y_min = self.cell.y_min * resolution
-        y_max = self.cell.y_max * resolution
+        x_min = cell.x_min * resolution
+        x_max = cell.x_max * resolution
+        y_min = cell.y_min * resolution
+        y_max = cell.y_max * resolution
 
         # width
-        w_m = self.cell.width * resolution
+        s_w_m = cell.width * resolution
         # shift
         d_shift = resolution * 5
 
+        # #
+        # print(cell.ind, "l", cell.shift_le, "r", cell.shift_re)
+        # s_w_m = w_m - cleaning_d * (cell.shift_le + cell.shift_re)
+        # if cell.shift_le:
+        #     x_max -= cleaning_d
+        # if cell.shift_re:
+        #     x_min += cleaning_d
+
         #
-        if w_m < cleaning_d/3:  # todo
+        if s_w_m < cleaning_d/3:  # todo
+            if cell.shift_le or cell.shift_re:
+                return False
             xx = [(x_min + x_max)/2]
-            # n_lines = 0
-            # return False
-        elif w_m < cleaning_d*1.1:
+        elif s_w_m < cleaning_d*1.1:
             xx = [x_min+d_shift, x_max-d_shift]
-            # xx = [(x_min + x_max)/2]
-        # elif w_m < 2.01*cleaning_d:
-        #     xx = [x_min+d_shift, x_max-d_shift]
         else:
-            ww = w_m - cleaning_d
+            ww = s_w_m - cleaning_d
             n_r = int(np.ceil(ww / (cleaning_d)))
-            d_c = w_m / (n_r+1)
+            d_c = s_w_m / (n_r+1)
             #
             xl = x_min + d_shift
             xr = x_max - d_shift
             xx = [x_min + d_c*i for i in range(1, n_r+1)]
             xx.insert(0, xl)
             xx.append(xr)
+
+        # check shifting
+        if cell.shift_le:
+            xx.pop(0)
+        if cell.shift_re:
+            xx.pop(-1)
 
         # find hitting points with the cell polygon
         y_but = y_min - d_shift
@@ -104,8 +118,8 @@ class CellCoveragePP:
             points = self.get_intersection_points(y_hit_check, top_point, self.poly_m)
             if points:
                 p1, p2 = points
-                xy_but.append((p1.x, p1.y+d_shift*3))
-                xy_top.append((p2.x, p2.y-d_shift*3))
+                xy_but.append((p1.x, p1.y+d_shift))
+                xy_top.append((p2.x, p2.y-d_shift))
         if len(xy_but) < 1:
             print(f"[{self.ns}]: [WARN] no hitting points")
             return False

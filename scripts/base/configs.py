@@ -34,7 +34,7 @@ class DistrictConfgs:
         self.covpp_method = "m0_boust"
 
         # boustrophedon configs
-        self.cell_sequence_method = "milp"  # simple, milp
+        self.cell_sequence_method = "simple"  # simple, milp
 
         # ns
         self.ns = self.covpp_method + "_" + self.cell_sequence_method
