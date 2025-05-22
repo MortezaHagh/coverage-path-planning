@@ -1,4 +1,5 @@
 import cv2 as cv
+import numpy as np
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.coverage_pp_2_bs_1 import CoveragePP
 from scripts.base.configs import SpaceConfigs, DistrictConfgs
@@ -12,6 +13,7 @@ class ZoneData:
     cleaning_area: float
 
     def __init__(self, ind: int = None):
+        self.ns = "ZoneData"
         self.ind = ind
         self.zone_map_data = None
 
@@ -23,7 +25,9 @@ class ZoneData:
         self.cov_planner = None
 
         # statistics - todo
-        self.cleaning_area = None
+        self.cleaning_area_px = None
+        self.cleaning_area_m = None
+        self.n_paths = 0
 
     def set_map_data(self, zone_map_data: ZoneMapData):
         self.zone_map_data = zone_map_data
@@ -36,7 +40,24 @@ class ZoneData:
 
     def coverage_planning(self):
         self.cov_planner = CoveragePP(self.zone_map_data)
+        self.post_planning()
         self.save_map_planning()
+
+    # ==================================================================================================================
+
+    def post_planning(self):
+        self.calculate_cleaning_area()
+        self.n_paths = self.cov_planner.n_paths
+        print(f"[{self.ns}-{self.zone_map_data.ind}]: *************************************** ")
+        print(f"[{self.ns}-{self.zone_map_data.ind}]: cleaning area: {self.cleaning_area_m:.2f} m^2")
+        print(f"[{self.ns}-{self.zone_map_data.ind}]: number of paths: {self.n_paths}")
+
+    def calculate_cleaning_area(self):
+        map_cleaning = self.zone_map_data.map_cleaning
+        # calculate the area of the free (white) pixels in the map
+        self.cleaning_area_px = np.sum(map_cleaning == 255)
+        # convert pixel area to square meters
+        self.cleaning_area_m = self.cleaning_area_px * (self.zone_map_data.reslolution**2)
 
     # ==================================================================================================================
 
@@ -49,7 +70,7 @@ class ZoneData:
     def save_map_planning(self):
         if not self.dcfg.save_map_planning:
             return
-        map_hl_path = self.zone_map_data.path + f"/map_planning_{self.dcfg.ns}.png"
+        map_hl_path = self.zone_map_data.path + f"/{self.dcfg.covpp_method}/map_planning_{self.dcfg.ns}.png"
         cv.imwrite(map_hl_path, self.zone_map_data.map_planning)
 
     def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:

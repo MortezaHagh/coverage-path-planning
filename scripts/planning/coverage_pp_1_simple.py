@@ -13,7 +13,7 @@ class CoveragePP(CoveragePPBase):
         print(f"[{self.ns}]: >>>>> Step: coverage path planning")
 
         # coverage path planning for all zones
-        self.coverage_planning()
+        self.plan()
 
     def coverage_planning(self):
         print(f"[{self.ns}]: simple coverage path planning")
@@ -88,10 +88,10 @@ class CoveragePP(CoveragePPBase):
             base_path.append((new_x, new_y))
 
         # save path
-        self.path_m = base_path
+        self.paths_m = [base_path]
 
     def add_path_to_map_planning(self):
-        path = self.cov_planner.path_px
+        path = self.paths_px[0]
         for (p1, p2) in zip(path[:-1], path[1:]):
             self.zmd.map_planning = cv.line(self.zmd.map_planning, p1, p2, (0, 255, 10), 2)
 

@@ -34,7 +34,7 @@ class BoustPlotter:
 
     def visualize_together(self):
         # fig, axs = plt.subplots(1, 3, constrained_layout=True)
-        fig, axs = plt.subplots(1, 3, constrained_layout=True, figsize=(25, 30))
+        fig, axs = plt.subplots(1, 3, constrained_layout=True, figsize=(15, 20))
         if self.set_aspect:
             axs[0].set_aspect('equal', adjustable='box')
             axs[1].set_aspect('equal', adjustable='box')
@@ -148,7 +148,7 @@ class BoustPlotter:
     def visualize_cells_sequence(self, ax=None):
         fig = None
         if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=(25, 30))
+            fig, ax = plt.subplots(1, 1, figsize=(15, 20))
             if self.set_aspect:
                 ax.set_aspect('equal', adjustable='box')
         ng = len(self.dec_obj.cells_groups)
@@ -190,9 +190,9 @@ class BoustPlotter:
         ns = "/bs"
         seq_method = self.dcfgs.cell_sequence_method
         if self.viz_together:
-            self.fig_all.savefig(path + f"{ns}_0_mcells_seq_{seq_method}.png", format="png", dpi=400)
-            self.fig_mcells_seq.savefig(path + f"{ns}_1_seq_{seq_method}.png", format="png", dpi=400)
+            self.fig_all.savefig(path + f"{ns}_0_mcells_seq_{seq_method}.png", format="png", dpi=300)
+            self.fig_mcells_seq.savefig(path + f"{ns}_1_seq_{seq_method}.png", format="png", dpi=300)
         else:
-            self.fig_mcells_seq.savefig(path + f"{ns}_1_seq_{seq_method}.png", format="png", dpi=400)
-            self.fig_mcells.savefig(path + f"{ns}_2_mcells.png", format="png", dpi=400)
-            self.fig_cells_events.savefig(path + f"{ns}_3_cells.png", format="png", dpi=400)
+            self.fig_mcells_seq.savefig(path + f"{ns}_1_seq_{seq_method}.png", format="png", dpi=300)
+            self.fig_mcells.savefig(path + f"{ns}_2_mcells.png", format="png", dpi=300)
+            self.fig_cells_events.savefig(path + f"{ns}_3_cells.png", format="png", dpi=300)

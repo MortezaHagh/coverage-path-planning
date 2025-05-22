@@ -14,13 +14,12 @@ class OptimCellsSeq:
 
         #
         optimizer = None
-        if dcfgs.cell_sequence_method == "simple":
+        if dcfgs.cell_sequence_method == "s1_simple":
             optimizer = SimpleSeq(mcells)
-            return
-        elif dcfgs.cell_sequence_method == "milp":
-            optimizer = MILPSeq(mcells)
-        elif dcfgs.cell_sequence_method == "dfs":
+        elif dcfgs.cell_sequence_method == "s2_dfs":
             optimizer = DepthFirstSearch(mcells)
+        elif dcfgs.cell_sequence_method == "s3_milp":
+            optimizer = MILPSeq(mcells)
         else:
             print(f"[{self.ns}][ERROR]: Invalid cell sequence method: {dcfgs.cell_sequence_method}")
             return
