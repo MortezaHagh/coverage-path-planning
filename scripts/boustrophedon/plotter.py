@@ -34,7 +34,7 @@ class BoustPlotter:
 
     def visualize_together(self):
         # fig, axs = plt.subplots(1, 3, constrained_layout=True)
-        fig, axs = plt.subplots(1, 3, constrained_layout=True, figsize=(15, 20))
+        fig, axs = plt.subplots(1, 3, constrained_layout=True, figsize=(20, 25))
         if self.set_aspect:
             axs[0].set_aspect('equal', adjustable='box')
             axs[1].set_aspect('equal', adjustable='box')
@@ -123,8 +123,8 @@ class BoustPlotter:
             # merged cell
             x, y = cg.merged_cell.poly.exterior.xy
             cx, cy = cg.merged_cell.cxy
-            text = f"g{i}-({cg.merged_cell.opt_ind})"
-            ax.text(cx, cy, text, color='black', fontsize=10)
+            text = f"g{i}"
+            ax.text(cx, cy, text, color='black', fontsize=8)
             ax.plot(x, y, color=color, linewidth=4, linestyle='-')
             ax.plot(cx, cy, 'o', color='purple', markersize=6)
             #
@@ -164,7 +164,7 @@ class BoustPlotter:
             x, y = cg.merged_cell.poly.exterior.xy
             cx, cy = cg.merged_cell.cxy
             text = f"g{i}-({cg.merged_cell.opt_ind})"
-            ax.text(cx, cy, text, color='black', fontsize=10)
+            ax.text(cx, cy, text, color='black', fontsize=8)
             ax.plot(x, y, color=color, linewidth=4, linestyle='-')
             ax.plot(cx, cy, 'o', color='purple', markersize=6)
             ax.fill(x, y, alpha=0.2, fc=color)
@@ -187,12 +187,13 @@ class BoustPlotter:
         ax.plot([c.x, adj_c.x], [c.y, adj_c.y], color=color, linewidth=1, linestyle='--')
 
     def save_figs(self, path: str):
-        ns = "/bs"
+        ns = "/"
+        dpi = 200
         seq_method = self.dcfgs.cell_sequence_method
         if self.viz_together:
-            self.fig_all.savefig(path + f"{ns}_0_mcells_seq_{seq_method}.png", format="png", dpi=300)
-            self.fig_mcells_seq.savefig(path + f"{ns}_1_seq_{seq_method}.png", format="png", dpi=300)
+            self.fig_all.savefig(path + f"{ns}mcells_seq_{seq_method}.png", format="png", dpi=dpi)
+            self.fig_mcells_seq.savefig(path + f"{ns}seq_{seq_method}.png", format="png", dpi=dpi)
         else:
-            self.fig_mcells_seq.savefig(path + f"{ns}_1_seq_{seq_method}.png", format="png", dpi=300)
-            self.fig_mcells.savefig(path + f"{ns}_2_mcells.png", format="png", dpi=300)
-            self.fig_cells_events.savefig(path + f"{ns}_3_cells.png", format="png", dpi=300)
+            self.fig_mcells_seq.savefig(path + f"{ns}seq_{seq_method}.png", format="png", dpi=dpi)
+            self.fig_mcells.savefig(path + f"{ns}mcells.png", format="png", dpi=dpi)
+            self.fig_cells_events.savefig(path + f"{ns}cells.png", format="png", dpi=dpi)

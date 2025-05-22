@@ -1,3 +1,4 @@
+import os
 import cv2 as cv
 import numpy as np
 from scripts.district.zone_map_data import ZoneMapData
@@ -70,7 +71,9 @@ class ZoneData:
     def save_map_planning(self):
         if not self.dcfg.save_map_planning:
             return
-        map_hl_path = self.zone_map_data.path + f"/{self.dcfg.covpp_method}/map_planning_{self.dcfg.ns}.png"
+        map_hl_path = self.zone_map_data.path + f"/{self.dcfg.covpp_method}/"
+        os.makedirs(map_hl_path, exist_ok=True)
+        map_hl_path = map_hl_path + f"map_planning_{self.dcfg.ns}.png"
         cv.imwrite(map_hl_path, self.zone_map_data.map_planning)
 
     def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:

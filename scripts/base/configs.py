@@ -27,16 +27,19 @@ class DistrictConfgs:
         self.ns = ""
 
         # plots configs
-        self.save_map_planning = True
-        self.save_decomposition_plot = True
+        self.save_map_planning = False
+        self.save_decomposition_plot = False
         self.plot_decomposition = False
 
         # coverage path planning configs
-        self.covpp_method = "m1_boust"
+        self.covpp_method = "m1_boust"  # m0_simple, m1_boust
 
-        # boustrophedon configs
-        self.cell_sequence_method = "s3_milp"  # s1_simple, s2_dfs, s3_milp
-        self.ns = self.cell_sequence_method
+        if self.covpp_method == "m0_simple":
+            pass
+        elif self.covpp_method == "m1_boust":
+            # boustrophedon configs
+            self.cell_sequence_method = "s2_dfs"  # s1_simple, s2_dfs, s3_milp
+            self.ns = self.cell_sequence_method
 
 
 @dataclasses.dataclass
