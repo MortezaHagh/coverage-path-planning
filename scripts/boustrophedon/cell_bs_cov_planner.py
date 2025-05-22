@@ -5,7 +5,7 @@ from scripts.boustrophedon.cell import Cell
 from scripts.base.configs import SpaceConfigs, PlanningConfigs
 
 
-class CellCoveragePP:
+class CellCoveragePathPlanner:
     cell: Cell
     poly_m: Polygon
     path_m: list[tuple[float, float]] = []

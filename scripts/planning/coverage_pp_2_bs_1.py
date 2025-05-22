@@ -4,7 +4,7 @@ import numpy as np
 from scripts.base.configs import DistrictConfgs  # , SpaceConfigs
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase
-from scripts.boustrophedon.cell_bs_cov_planner import CellCoveragePP
+from scripts.boustrophedon.cell_bs_cov_planner import CellCoveragePathPlanner
 from scripts.boustrophedon.decomposition_interface import DecompositionInterface
 from scripts.base.my_utils import get_n_colors_bgr
 
@@ -22,7 +22,7 @@ class CoveragePP(CoveragePPBase):
         self.colors = []
 
         # all_ccp
-        self.all_ccpp: list[CellCoveragePP] = []
+        self.all_cell_covp_planners: list[CellCoveragePathPlanner] = []
         self.cell_paths_px: list[tuple[int, int]] = []
 
         # run decomposition and coverage planning
@@ -74,9 +74,9 @@ class CoveragePP(CoveragePPBase):
 
     def zone_covpp(self):
         for cellg in self.dec_interface.decomposed.cells_groups:
-            ccpp = CellCoveragePP(cell=cellg.merged_cell, zone_ind=self.zmd.ind, resolution=self.resolution)
-            self.all_ccpp.append(ccpp)
-            self.cell_paths_px.extend(ccpp.path_px)
+            cell_covp_planner = CellCoveragePathPlanner(cell=cellg.merged_cell, zone_ind=self.zmd.ind, resolution=self.resolution)
+            self.all_cell_covp_planners.append(cell_covp_planner)
+            self.cell_paths_px.extend(cell_covp_planner.path_px)
 
     def create_final_path(self):
         self.path_px = self.cell_paths_px.copy()
@@ -88,8 +88,8 @@ class CoveragePP(CoveragePPBase):
         #
         robot_m = self.zmd.map_planning.copy()  # np.ones_like(self.zmd.map_planning) * 255
         map_planning = self.zmd.map_planning.copy()
-        for i, ccpp in enumerate(self.all_ccpp):
-            path_px = ccpp.path_px
+        for i, cell_covp_planner in enumerate(self.all_cell_covp_planners):
+            path_px = cell_covp_planner.path_px
             if path_px:
                 pp = np.array(path_px, dtype=np.int32)  # Ensure pp is a numpy array of integers
                 map_planning = cv.polylines(map_planning, [pp], isClosed=False, color=self.colors[i], thickness=2)
