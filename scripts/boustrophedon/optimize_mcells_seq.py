@@ -164,21 +164,34 @@ class DepthFirstSearch:
         #
         self.cells = cells
         self.n_cells = len(cells)
+        # self.tour = np.array([], dtype=int)
+        # self.depth = np.zeros((self.n_cells, 1))
         self.tour: list[int] = []
         self.visited: list[bool] = [False] * self.n_cells
+        self.depth: list[int] = [0] * self.n_cells
         self.create_tour()
+        # print(self.tour)
+        # depth_d = {i: self.depth[i] for i in self.tour}
+        # for k, v in depth_d.items():
+        #     print(f"cell {k}: depth {v}")
 
     def create_tour(self):
         # Start DFS from the first cell
-        self.dfs(0)
+        level = 0
+        self.dfs(0, level)
         # for i, cell in enumerate(self.cells):
         #     if not self.visited[i]:
         #         self.dfs(cell.ind)
 
-    def dfs(self, current: int):
+    def dfs(self, current: int, level: int):
         self.visited[current] = True
+        # self.tour = np.append(self.tour, current)
         self.tour.append(current)
         neighbors = self.cells[current].adjacent_inds
+        new_level = 0
         for neighbor in neighbors:
             if not self.visited[neighbor]:
-                self.dfs(neighbor)
+                level = self.dfs(neighbor, new_level)
+                new_level = max(level, new_level)
+        self.depth[current] = new_level
+        return new_level + 1

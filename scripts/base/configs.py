@@ -26,9 +26,9 @@ class DistrictConfgs:
         self.whole_map = True  # False True
 
         # plots configs
-        self.save_map_planning = True
+        self.save_map_planning = False
         self.save_decomposition_plot = True
-        self.plot_decomposition = True
+        self.plot_decomposition = False
 
         # coverage path planning configs
         self.covpp_method = "m0_boust"
