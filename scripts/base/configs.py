@@ -18,6 +18,7 @@ class BConfigs:
         self.data_dir = None
         self.district_dir = None
         self.district_folder = "District"
+        self.base_folder = "AMain"
 
 
 @dataclasses.dataclass
@@ -38,7 +39,7 @@ class DistrictConfgs:
             pass
         elif self.covpp_method == "m1_boust":
             # boustrophedon configs
-            self.cell_sequence_method = "s3_milp"  # s1_simple, s2_dfs, s3_milp
+            self.cell_sequence_method = "s2_dfs"  # s1_simple, s2_dfs, s3_milp
             self.ns = self.cell_sequence_method
 
 
@@ -71,7 +72,7 @@ class PlanningConfigs:
     def __init__(self):
         spa = SpaceConfigs()
         self.cleaning_r = spa.cleaning_r
-        self.min_path_overlap = 0.1
+        self.min_path_overlap = 0.0
         self.min_wp_dist = 0.4
         self.margin = 0.05
         self.cleaning_r_ov = self.cleaning_r - self.min_path_overlap/2

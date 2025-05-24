@@ -10,6 +10,7 @@ class CoveragePPBase:
     paths_px: list[list[tuple[int, int]]]
     paths_m: list[list[tuple[float, float]]]
     n_paths: int
+    total_path_len_m: float
 
     def __init__(self, zone_map_data: ZoneMapData):
         self.ns = "CoveragePPBase"
@@ -22,6 +23,7 @@ class CoveragePPBase:
         self.paths_px = []
         self.paths_m = []
         self.n_paths = 0
+        self.total_path_len_m = 0.0
 
         # parameters and configurations
         self.scfgs = SpaceConfigs()
@@ -70,3 +72,16 @@ class CoveragePPBase:
 
     def post_planning(self):
         self.n_paths = len(self.paths_px)
+        self.calculate_paths_length()
+
+    def calculate_paths_length(self):
+        total_length = 0.0
+        for path in self.paths_m:
+            if len(path) < 2:
+                continue
+            for i in range(1, len(path)):
+                p1 = path[i - 1]
+                p2 = path[i]
+                dist = np.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
+                total_length += dist
+        self.total_path_len_m = round(total_length, 2)

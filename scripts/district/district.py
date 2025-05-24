@@ -69,12 +69,12 @@ class DistrictData:
             self.zone_datas.append(zd)
 
     def update_map_planning(self):
-        mapp = self.dmd.map_viz.copy()
+        mapp = self.dmd.map_planning.copy()
         for zd in self.zone_datas:
-            x1, y1 = zd.zone_map_data.hw_bd_px["h_min"], zd.zone_map_data.hw_bd_px["w_min"]
-            x2, y2 = zd.zone_map_data.hw_bd_px["h_max"], zd.zone_map_data.hw_bd_px["w_max"]
-            inds = zd.zone_map_data.map_sf_orig > 0
-            mapp[x1:x2, y1:y2][inds] = zd.zone_map_data.map_planning[x1:x2, y1:y2][inds]
+            x1, y1 = zd.zmd.hw_bd_px["h_min"], zd.zmd.hw_bd_px["w_min"]
+            x2, y2 = zd.zmd.hw_bd_px["h_max"], zd.zmd.hw_bd_px["w_max"]
+            inds = zd.zmd.map_sf_orig > 0
+            mapp[x1:x2, y1:y2][inds] = zd.zmd.map_planning[x1:x2, y1:y2][inds]
         self.dmd.map_planning = mapp
 
     def save_map_planning(self):

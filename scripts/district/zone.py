@@ -1,4 +1,5 @@
 import os
+import json
 import cv2 as cv
 import numpy as np
 from scripts.district.zone_map_data import ZoneMapData
@@ -9,14 +10,14 @@ from scripts.base.configs import DistrictConfgs, PlanningConfigs
 
 class ZoneData:
     ind: int
-    zone_map_data: ZoneMapData
+    zmd: ZoneMapData
     cov_planner: CoveragePP
     cleaning_area: float
 
     def __init__(self, ind: int = None):
         self.ns = "ZoneData"
         self.ind = ind
-        self.zone_map_data = None
+        self.zmd = None
 
         # configs
         self.dcfg = DistrictConfgs()
@@ -30,95 +31,156 @@ class ZoneData:
         self.cleaning_area_m = None
         self.cleaned_area_px = None
         self.cleaned_area_m = None
+        self.uncleaned_area_m = None
+        self.overlaped_area_m = None
         self.n_paths = 0
 
-    def set_map_data(self, zone_map_data: ZoneMapData):
-        self.zone_map_data = zone_map_data
+    def set_map_data(self, zmd: ZoneMapData):
+        self.zmd = zmd
         self.initialize()
 
     def initialize(self):
-        self.zone_map_data.save_data()
+        self.zmd.save_data()
         self.create_map_planning()
         # self.save_map_planning()
 
     def coverage_planning(self):
-        self.cov_planner = CoveragePP(self.zone_map_data)
+        self.cov_planner = CoveragePP(self.zmd)
         self.post_planning()
         # self.save_map_planning()
 
     # ==================================================================================================================
 
     def post_planning(self):
+        self.n_paths = self.cov_planner.n_paths
         self.calculate_cleaning_area()
+        self.add_cleaned_to_map()
         self.calculate_cleaned_area()
         self.save_map_planning()
-        self.n_paths = self.cov_planner.n_paths
-        print(f"[{self.ns}-{self.zone_map_data.ind}]: *************************************** ")
-        print(f"[{self.ns}-{self.zone_map_data.ind}]: cleaning area: {self.cleaning_area_m:.2f} m^2")
-        print(f"[{self.ns}-{self.zone_map_data.ind}]: number of paths: {self.n_paths}")
-        print(f"[{self.ns}-{self.zone_map_data.ind}]: cleaned area: {self.cleaned_area_m:.2f} m^2")
+        self.save_map_cleaning_data()
+        self.save_result()
+        print(f"[{self.ns}-{self.zmd.ind}]: *************************************** ")
+        print(f"[{self.ns}-{self.zmd.ind}]: cleaning area: {self.cleaning_area_m:.2f} m^2")
+        print(f"[{self.ns}-{self.zmd.ind}]: number of paths: {self.n_paths}")
+        print(f"[{self.ns}-{self.zmd.ind}]: cleaned area: {self.cleaned_area_m:.2f} m^2")
 
     def calculate_cleaning_area(self):
-        map_cleaning = self.zone_map_data.map_cleaning
+        map_cleaning = self.zmd.map_cleaning
         # calculate the area of the free (white) pixels in the map
         self.cleaning_area_px = np.sum(map_cleaning == 255)
         # convert pixel area to square meters
-        self.cleaning_area_m = self.cleaning_area_px * (self.zone_map_data.reslolution**2)
+        self.cleaning_area_m = self.cleaning_area_px * (self.zmd.reslolution**2)
+        self.cleaning_area_m = round(self.cleaning_area_m, 2)
 
     def calculate_cleaned_area(self):
-        map_cleaned = self.zone_map_data.map_cleaning.copy()
+        paths_len = self.cov_planner.total_path_len_m
+        cleaning_r = self.pcfgs.cleaning_r
+        area = paths_len * (2 * cleaning_r)
+        area += np.pi*(cleaning_r**2) * self.n_paths  # add area of the end circles
+        # overlaped_area_m
+        overlaped_area_m = area - self.cleaning_area_m
+        self.overlaped_area_m = round(overlaped_area_m, 2)
+        # uncleaned_area_m
+        uncleaned_area_m = self.cleaning_area_m - self.cleaned_area_m
+        self.uncleaned_area_m = round(uncleaned_area_m, 2)
+
+    def add_cleaned_to_map(self):
+        map_cleaning = self.zmd.map_cleaning.copy()
         paths = self.cov_planner.paths_px
-        cleaning_r_px = int(self.pcfgs.cleaning_r / self.zone_map_data.reslolution)
+        cleaning_r_px = int(self.pcfgs.cleaning_r / self.zmd.reslolution)
 
         # Draw cleaned paths on a mask
-        cleaned_acc = np.zeros_like(map_cleaned, dtype=np.uint8)
-        hw_bd = self.zone_map_data.hw_bd_px
+        cleaned_acc = np.zeros_like(map_cleaning, dtype=np.uint8)
+        hw_bd = self.zmd.hw_bd_px
         h, w = hw_bd["h_min"], hw_bd["w_min"]
-        color_p = 40
+        color_p = 1
         for path in paths:
-            segment_mask = np.zeros_like(map_cleaned, dtype=np.uint8)
             for i in range(len(path) - 1):
+                segment_mask = np.zeros_like(map_cleaning, dtype=np.uint8)
                 pt1 = tuple([path[i][0]-w, path[i][1]-h])
                 pt2 = tuple([path[i + 1][0]-w, path[i+1][1]-h])
                 cv.line(segment_mask, pt1, pt2, color=color_p, thickness=2 * cleaning_r_px)
-            cleaned_acc = cv.add(cleaned_acc, segment_mask)
+                cleaned_acc = cv.add(cleaned_acc, segment_mask)
+        max_overlap = np.max(cleaned_acc)
 
-        # Optionally, mark the cleaned area in a different color for visualization
+        # map_clean_data: show uncleaner area and overlaps
+        d_c = int(np.floor(250/max_overlap))
+        map_clean_data = map_cleaning.copy()
+        map_clean_data = cv.cvtColor(map_clean_data, cv.COLOR_GRAY2BGR)
+        n, m = map_clean_data.shape[:2]
+        for i in range(n):
+            for j in range(m):
+                if map_cleaning[i, j] == 255:
+                    if cleaned_acc[i, j] == 0:
+                        map_clean_data[i, j] = (0, 0, 200)  # bgr
+                    else:
+                        map_clean_data[i, j] = (0, d_c*cleaned_acc[i, j], 0)
+        for path in paths:
+            for p in path[1:-1]:
+                pz = (p[0]-w, p[1]-h)
+                map_clean_data = cv.circle(map_clean_data, pz, cleaning_r_px, (0, d_c, 0), -1)
+        self.zmd.map_clean_data = map_clean_data
+
+        # update map planning with cleaned paths
         c = 40
         color = (c, c, c)
-        map_cleaned_viz = self.zone_map_data.map_planning.copy()
+        map_p_c = self.zmd.map_planning.copy()
         for path in paths:
             for i in range(len(path) - 1):
                 pt1 = tuple(map(int, path[i]))
                 pt2 = tuple(map(int, path[i + 1]))
-                cv.line(map_cleaned_viz, pt1, pt2, color=color, thickness=2 * cleaning_r_px)
-        alpha = 0.5
-        self.zone_map_data.map_planning = cv.addWeighted(self.zone_map_data.map_planning, alpha, map_cleaned_viz, 1 - alpha, 0)
+                cv.line(map_p_c, pt1, pt2, color=color, thickness=2 * cleaning_r_px)
+        alpha = 0.6
+        self.zmd.map_planning = cv.addWeighted(self.zmd.map_planning, alpha, map_p_c, 1 - alpha, 0)
 
         # Only count cleaned area where there was free space (white in map_cleaned)
-        cleaned_area_px = np.sum((cleaned_acc > 0) & (map_cleaned == 255))
-        # Convert to square meters
-        cleaned_area_m = cleaned_area_px * (self.zone_map_data.reslolution ** 2)
-
+        # cleaned_area_px = np.sum((cleaned_acc > 0) & (map_cleaned == 255))
+        cleaned_area_px = np.sum(cleaned_acc > 0)
+        cleaned_area_m = cleaned_area_px * (self.zmd.reslolution ** 2)
         self.cleaned_area_px = cleaned_area_px
-        self.cleaned_area_m = cleaned_area_m
+        self.cleaned_area_m = round(cleaned_area_m, 2)
 
     # ==================================================================================================================
 
     def create_map_planning(self):
-        map_planning = self.zone_map_data.map_viz.copy()
-        vertices = self.zone_map_data.vertices
+        map_planning = self.zmd.map_planning
+        vertices = self.zmd.vertices
         map_planning = cv.polylines(map_planning, [vertices], isClosed=True, color=(100, 0, 150), thickness=2)
-        self.zone_map_data.map_planning = map_planning
+        self.zmd.map_planning = map_planning
 
     def save_map_planning(self):
         if not self.dcfg.save_map_planning:
             return
-        map_hl_path = self.zone_map_data.path + f"/{self.dcfg.covpp_method}/"
+        map_hl_path = self.zmd.path + f"/{self.dcfg.covpp_method}/"
         os.makedirs(map_hl_path, exist_ok=True)
         map_hl_path = map_hl_path + f"map_planning_{self.dcfg.ns}.png"
-        cv.imwrite(map_hl_path, self.zone_map_data.map_planning)
+        cv.imwrite(map_hl_path, self.zmd.map_planning)
+
+    def save_map_cleaning_data(self):
+        if not self.dcfg.save_map_planning:
+            return
+        map_hl_path = self.zmd.path + f"/{self.dcfg.covpp_method}/"
+        os.makedirs(map_hl_path, exist_ok=True)
+        map_hl_path = map_hl_path + f"clean_data_{self.dcfg.ns}.png"
+        cv.imwrite(map_hl_path, self.zmd.map_clean_data)
 
     def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
-        res = self.zone_map_data.reslolution
+        res = self.zmd.reslolution
         return (int(p[0] / res), int(p[1] / res))
+
+    def save_result(self):
+        # save zone statistics to json file
+        result = {
+            "zone_index": self.ind,
+            "n_paths": self.n_paths,
+            "total_path_length_m": float(self.cov_planner.total_path_len_m),
+            "cleaning_area_m2": float(self.cleaning_area_m),
+            "cleaned_area_m2": float(self.cleaned_area_m),
+            "uncleaned_area_m2": float(self.uncleaned_area_m),
+            "overlaped_area_m2": float(self.overlaped_area_m),
+            "cleaning_area_px": float(self.cleaning_area_px),
+            "cleaned_area_px": float(self.cleaned_area_px),
+        }
+        result_path = self.zmd.path + f"/{self.dcfg.covpp_method}/result_{self.dcfg.ns}.json"
+        with open(result_path, 'w') as f:
+            json.dump(result, f, indent=4)

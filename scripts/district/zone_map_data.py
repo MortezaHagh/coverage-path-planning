@@ -37,9 +37,9 @@ class ZoneMapData:
     map_sf_orig: np.ndarray
     map_cleaning: np.ndarray
     map_ws: np.ndarray
-    map_viz: np.ndarray
     #
     map_planning: np.ndarray
+    map_clean_data: np.ndarray
 
     def __init__(self, ind: int = 0):
         self.ind = ind
@@ -60,7 +60,6 @@ class ZoneMapData:
         self.map_sf_orig = None
         self.map_cleaning = None
         self.map_ws = None
-        self.map_viz = None
         self.map_planning = None
 
     @property
@@ -107,7 +106,7 @@ class ZoneMapData:
         self.hw_px = map_cleaning.shape
 
     def set_map_viz(self, map_viz: np.ndarray):
-        self.map_viz = map_viz
+        self.map_planning = map_viz
 
     def set_hw_bd_px(self, hw_bd_px: dict):
         # cropped hw limits
@@ -127,17 +126,17 @@ class ZoneMapData:
         cv.imwrite(res_path + "/" + "local_map_1_orig.png", self.map_orig)
         cv.imwrite(res_path + "/" + "local_map_2_sf_orig.png", self.map_sf_orig)
         cv.imwrite(res_path + "/" + "local_map_3_cleaning.png", self.map_cleaning)
-        cv.imwrite(res_path + "/" + "local_map_4_viz.png", self.map_viz)
+        cv.imwrite(res_path + "/" + "local_map_4_viz.png", self.map_planning)
         #
-        zone_map_data = dict()
-        zone_map_data["origin_m"] = self.orig_map_data.origin_m
-        zone_map_data["up_resolution"] = self.orig_map_data.up_resolution
-        zone_map_data["hw_bd_px"] = self.hw_bd_px
-        zone_map_data["rect_data"] = convert_to_native(self.rect_data)
-        zone_map_data["final_rect_data"] = convert_to_native(self.final_rect_data)
+        zone_data_d = dict()
+        zone_data_d["origin_m"] = self.orig_map_data.origin_m
+        zone_data_d["up_resolution"] = self.orig_map_data.up_resolution
+        zone_data_d["hw_bd_px"] = self.hw_bd_px
+        zone_data_d["rect_data"] = convert_to_native(self.rect_data)
+        zone_data_d["final_rect_data"] = convert_to_native(self.final_rect_data)
 
         with open(res_path + "/" + "local_map.json", "w") as f:
-            json_object = json.dumps(zone_map_data, indent=4)
+            json_object = json.dumps(zone_data_d, indent=4)
             f.write(json_object)
 
     def visualize(self, case: str = "cleaning"):

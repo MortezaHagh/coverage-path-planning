@@ -39,7 +39,7 @@ class CellCoveragePathPlanner:
         self.create_path_px()
 
     def eveal_cell(self):
-        min_area = np.pi * self.pcfgs.cleaning_r**2
+        min_area = 0.5 * np.pi * self.pcfgs.cleaning_r**2
         if (self.cell.area*self.resolution**2) < min_area:
             print(f"[{self.ns}]: [WARN] cell area is too small: {self.cell.ind}")
             return False

@@ -53,8 +53,9 @@ class InputsProcessor:
         return copy.deepcopy(self.__orig_map)
 
     def set_paths(self) -> None:
-        self.paths["map"] = os.path.join(self.paths["data"], self.map_name)
-        self.paths["district"] = os.path.join(self.paths["map"], self.__configs.district_folder)
+        map_dir = os.path.join(self.paths["data"],  self.map_name)
+        self.paths["map"] = os.path.join(map_dir,  self.__configs.base_folder)
+        self.paths["district"] = os.path.join(map_dir, self.__configs.district_folder)
         self.paths["yaml"] = os.path.join(self.paths["map"], "merge.yaml")
         self.paths["json"] = os.path.join(self.paths["map"], "merge.json")
         self.paths["pgm"] = os.path.join(self.paths["map"], "merge.pgm")
