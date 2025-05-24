@@ -2,7 +2,7 @@
 import numpy as np
 from shapely.geometry import Polygon, Point, LineString
 from scripts.boustrophedon.cell import Cell
-from scripts.base.configs import SpaceConfigs, PlanningConfigs
+from scripts.base.configs import PlanningConfigs
 
 
 class CellCoveragePathPlanner:
@@ -22,7 +22,6 @@ class CellCoveragePathPlanner:
         self.xy_top = None
 
         # parameters and configurations
-        self.scfgs = SpaceConfigs()
         self.pcfgs = PlanningConfigs()
         self.resolution = resolution
 
@@ -40,7 +39,7 @@ class CellCoveragePathPlanner:
         self.create_path_px()
 
     def eveal_cell(self):
-        min_area = np.pi * self.scfgs.cleaning_r**2
+        min_area = np.pi * self.pcfgs.cleaning_r**2
         if (self.cell.area*self.resolution**2) < min_area:
             print(f"[{self.ns}]: [WARN] cell area is too small: {self.cell.ind}")
             return False
@@ -55,14 +54,8 @@ class CellCoveragePathPlanner:
 
     def find_top_but_hit_points(self):
         # # parameters and configurations
-        # effective cleaning diameter
-        cleaning_width = 2*self.scfgs.cleaning_r
-        min_overlap_w = self.pcfgs.min_path_overlap
-        cleaning_d = cleaning_width - min_overlap_w   # cleaning diameter
-        #
+        cleaning_d = 2*self.pcfgs.cleaning_r_ov
         resolution = self.resolution
-
-        #
         cell = self.cell
 
         # start point - top left

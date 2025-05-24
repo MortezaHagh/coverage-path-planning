@@ -79,18 +79,19 @@ class CoveragePP(CoveragePPBase):
                 self.paths_px.append(cell_covp_planner.path_px)
 
     def add_cell_paths_to_map_planning(self):
-        robot_m = self.zmd.map_planning.copy()  # np.ones_like(self.zmd.map_planning) * 255
+        # robot_m = self.zmd.map_planning.copy()  # np.ones_like(self.zmd.map_planning) * 255
         map_planning = self.zmd.map_planning.copy()
         for i, cell_covp_planner in enumerate(self.all_cell_covp_planners):
             path_px = cell_covp_planner.path_px
             if path_px:
                 pp = np.array(path_px, dtype=np.int32)  # Ensure pp is a numpy array of integers
                 map_planning = cv.polylines(map_planning, [pp], isClosed=False, color=self.colors[i], thickness=2)
-                #
-                radius_px = int(np.ceil(self.scfgs.cleaning_r / self.zmd.orig_map_data.up_resolution))
-                robot_m = cv.circle(robot_m, pp[0], radius_px, [40, 40, 40], -1)
-                if len(pp) > 3:
-                    robot_m = cv.circle(robot_m, pp[3], radius_px, [40, 40, 40], -1)
-        #
-        alpha = 0.8
-        self.zmd.map_planning = cv.addWeighted(map_planning, alpha, robot_m, 1 - alpha, 0)
+                # #
+                # radius_px = int(np.ceil(self.scfgs.cleaning_r / self.zmd.orig_map_data.up_resolution))
+                # robot_m = cv.circle(robot_m, pp[0], radius_px, [40, 40, 40], -1)
+                # if len(pp) > 3:
+                #     robot_m = cv.circle(robot_m, pp[3], radius_px, [40, 40, 40], -1)
+        self.zmd.map_planning = map_planning
+        # #
+        # alpha = 0.8
+        # self.zmd.map_planning = cv.addWeighted(map_planning, alpha, robot_m, 1 - alpha, 0)

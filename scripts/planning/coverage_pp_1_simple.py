@@ -31,7 +31,7 @@ class CoveragePP(CoveragePPBase):
         margin = self.pcfgs.margin
 
         # effective cleaning diameter
-        cleaning_d = self.cleaning_width - self.min_overlap_w   # cleaning diameter
+        cleaning_d = self.cleaning_width
 
         # zone rectangle
         rd = self.zmd.final_rect_data  # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}

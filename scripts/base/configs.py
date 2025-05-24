@@ -27,7 +27,7 @@ class DistrictConfgs:
         self.ns = ""
 
         # plots configs
-        self.save_map_planning = False
+        self.save_map_planning = True
         self.save_decomposition_plot = False
         self.plot_decomposition = False
 
@@ -38,7 +38,7 @@ class DistrictConfgs:
             pass
         elif self.covpp_method == "m1_boust":
             # boustrophedon configs
-            self.cell_sequence_method = "s2_dfs"  # s1_simple, s2_dfs, s3_milp
+            self.cell_sequence_method = "s3_milp"  # s1_simple, s2_dfs, s3_milp
             self.ns = self.cell_sequence_method
 
 
@@ -58,7 +58,7 @@ class SpaceConfigs:
         self.os_r_dist = self.robot_radius + self.os_safe_dist  # min distance of the os path from walls and obstacles
         self.ws_r_dist = self.ws_dist + self.robot_radius
         #
-        self.cleaning_c = 0.8
+        self.cleaning_c = 1.0
         self.cleaning_r = self.robot_radius * self.cleaning_c
         self.uncleaned_dist = self.ws_dist + (self.robot_radius - self.cleaning_r)
         # other
@@ -69,9 +69,12 @@ class SpaceConfigs:
 @dataclasses.dataclass
 class PlanningConfigs:
     def __init__(self):
+        spa = SpaceConfigs()
+        self.cleaning_r = spa.cleaning_r
         self.min_path_overlap = 0.1
         self.min_wp_dist = 0.4
         self.margin = 0.05
+        self.cleaning_r_ov = self.cleaning_r - self.min_path_overlap/2
 
 
 if __name__ == "__main__":

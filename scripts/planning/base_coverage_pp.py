@@ -28,13 +28,10 @@ class CoveragePPBase:
         self.pcfgs = PlanningConfigs()
 
         # ---------------------------------------------
-        # robot params
-        self.robot_width = self.scfgs.robot_radius
-        self.min_overlap_w = self.pcfgs.min_path_overlap
-        self.cleaning_width = 2*self.scfgs.cleaning_r
-        # map params
+        # params
+        self.cleaning_r = self.pcfgs.cleaning_r_ov
+        self.cleaning_width = 2*self.pcfgs.cleaning_r_ov
         self.resolution = zone_map_data.reslolution
-        # planning configs
         self.min_points_distance = self.pcfgs.min_wp_dist
 
     def plan(self):
