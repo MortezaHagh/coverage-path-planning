@@ -29,8 +29,12 @@ class CellCoveragePathPlanner:
         self.coverage_planning()
 
     def coverage_planning(self):
-        if not self.eveal_cell():
+        # if not self.eveal_cell():
+        #     return
+        if not self.cell.do_planning:
+            print(f"[{self.ns}]: [WARN] cell {self.cell.id} does not require planning.")
             return
+
         self.create_cell_polygon_in_meter()
         succ = self.find_top_but_hit_points()
         if not succ:
@@ -38,12 +42,12 @@ class CellCoveragePathPlanner:
         self.calculate_path()
         self.create_path_px()
 
-    def eveal_cell(self):
-        min_area = 0.5 * np.pi * self.pcfgs.cleaning_r**2
-        if (self.cell.area*self.resolution**2) < min_area:
-            print(f"[{self.ns}]: [WARN] cell area is too small: {self.cell.id}")
-            return False
-        return True
+    # def eveal_cell(self):
+    #     min_area = 0.5 * np.pi * self.pcfgs.cleaning_r**2
+    #     if (self.cell.area*self.resolution**2) < min_area:
+    #         print(f"[{self.ns}]: [WARN] cell area is too small: {self.cell.id}")
+    #         return False
+    #     return True
 
     def create_cell_polygon_in_meter(self):
         # create cell polygon in meter

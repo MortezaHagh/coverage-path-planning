@@ -6,6 +6,7 @@ import numpy as np
 from scripts.gui.visuals import Rectangle
 from scripts.base.map_data import MapData
 from scripts.base.my_utils import visualize_map_s
+from scripts.base.configs import DistrictConfgs
 
 
 def convert_to_native(data: dict) -> dict:
@@ -22,6 +23,7 @@ class ZoneMapData:
     ind: int
     name: str
     path: str
+    result_file: str = None
     reslolution: float           # resolution m/px
     orig_map_data: MapData
     orig_rectangle: Rectangle
@@ -45,6 +47,7 @@ class ZoneMapData:
         self.ind = ind
         self.name = f"Zone_{self.ind}"
         self.path = None
+        self.result_file = None
         self.reslolution = None
         self.orig_map_data = None
         self.orig_rectangle = None
@@ -70,15 +73,22 @@ class ZoneMapData:
         self.orig_map_data = map_data
         self.reslolution = map_data.up_resolution
         self.path = os.path.join(self.orig_map_data.bcfg.district_dir, self.name)
+        self.set_result_path()
 
     def set_name(self, name: str):
         self.name = name
         self.path = os.path.join(self.orig_map_data.bcfg.district_dir, self.name)
+        self.set_result_path()
 
     def set_ind(self, ind: int):
         self.ind = ind
         self.name = f"Zone_{self.ind}"
         self.path = os.path.join(self.orig_map_data.bcfg.district_dir, self.name)
+        self.set_result_path()
+
+    def set_result_path(self):
+        dcfg = DistrictConfgs()
+        self.result_file = self.path + f"/{dcfg.covpp_method}/result_{dcfg.ns}.json"
 
     def set_orig_rectangle(self, rectangle: Rectangle):
         self.orig_rectangle = rectangle

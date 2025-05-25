@@ -16,7 +16,7 @@ class MapImageProcessor:
 
         # init
         self.ns = "MapImageProcessor"
-        print(f"[{self.ns}]: >>>>> Step: processing map image")
+        print(f" >>>>> [{self.ns}] Step: processing map image")
 
         # read configs and eval original map arr
         self.__bcfg = bconfigs

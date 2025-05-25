@@ -1,83 +1,14 @@
-from scripts.boustrophedon.cell import Cell, CellGroup
+from scripts.boustrophedon.cell import Cell
 from scripts.boustrophedon.optimize_mcells_seq import OptimCellsSeq
 
 
 def create_sequence(mcells: list[Cell]):
     opt_seq = OptimCellsSeq(mcells)
-    return opt_seq.tour_ids
+    return opt_seq.tour_ids, opt_seq.cells_seq_length
 
 
-def set_merged_cells_adjacents(cells_groups: list[CellGroup], cells: list[Cell]):
-    for cellg in cells_groups:
-        parents_i = cellg.first_cell.mid_parentlist
-        successors_i = cellg.last_cell.mid_adjlist
-        cellg.merged_cell.mid_parentlist = [cells[i].group_id for i in parents_i]
-        cellg.merged_cell.mid_adjlist = [cells[i].group_id for i in successors_i]
-        adj = cellg.merged_cell.mid_parentlist.copy()
-        adj.extend(cellg.merged_cell.mid_adjlist)
-        cellg.merged_cell.adjacent_ids = adj
-
-
-def create_cell_groups(cells):
-    ncg = 0
-    cells_groups: list[CellGroup] = []
-    mcells: list[Cell] = []
-    #
-    for cell in cells[0:]:
-        if cell.done:
-            continue
-        base_cell = cell
-        base_cell.done = True
-        if base_cell.n_adj == 0:
-            new_group = CellGroup(base_cell, ncg)
-        elif base_cell.n_adj > 1:
-            new_group = CellGroup(base_cell, ncg)
-        else:
-            adj_cell: Cell = None
-            if base_cell.up_adj_ci:
-                adj_cell = cells[base_cell.up_adj_ci]
-            elif base_cell.down_adj_ci:
-                adj_cell = cells[base_cell.down_adj_ci]
-            else:
-                adj_cell = cells[base_cell.mid_adjlist[0]]
-
-            #
-            new_group = CellGroup(base_cell, ncg)
-            while adj_cell.n_parent == 1 and not adj_cell.done:
-                adj_cell.done = True
-                new_group.add_cell(adj_cell)
-                #
-                if not adj_cell.n_adj == 1:
-                    break
-                #
-                if adj_cell.up_adj_ci:
-                    adj_cell = cells[adj_cell.up_adj_ci]
-                elif adj_cell.down_adj_ci:
-                    adj_cell = cells[adj_cell.down_adj_ci]
-                else:
-                    adj_cell = cells[adj_cell.mid_adjlist[0]]
-        # merge_cells
-        if new_group:
-            new_group.update_group()
-            cells_groups.append(new_group)
-            mcells.append(new_group.merged_cell)
-            ncg += 1
-    #
-    set_merged_cells_adjacents(cells_groups, cells)
-    return cells_groups, mcells
-
-
-class PostProcessMCells:
-    def __init__(self, mcells):
-        self.mcells = mcells
-
-    def process(self):
-        # Example processing: just return the data for now
-        return self.mcell_data
-
-
-def find_cells_shared_edge_p(cells: list[Cell]):
-    P = 0.8
+def eval_cells_path_shift(cells: list[Cell]):
+    prob_lim = 0.8
     for cell in cells:
         # right side
         p0_up = cell.ru
@@ -103,13 +34,13 @@ def find_cells_shared_edge_p(cells: list[Cell]):
                 l1_overlap = overlap_max - overlap_min
             # left side overlap of the adjacent cell
             p1 = l1_overlap/l1
-            if p1 > P:
+            if p1 > prob_lim:
                 l_overlap += l1_overlap
                 l_sum += l1
                 inds.append(i)
         # total overlap of the right edge of the cell
         p0 = l_overlap/l0
-        if p0 < P:
+        if p0 < prob_lim:
             continue
         if l_sum > l0:
             cell.shift_re = True
@@ -147,13 +78,13 @@ def find_cells_shared_edge_p(cells: list[Cell]):
                 l1_overlap = overlap_max - overlap_min
             # right side overlap of the adjacent cell
             p1 = l1_overlap/l1
-            if p1 > P:
+            if p1 > prob_lim:
                 l_overlap += l1_overlap
                 l_sum += l1
                 inds.append(i)
         # total overlap of the left edge of the cell
         p0 = l_overlap/l0
-        if p0 < P:
+        if p0 < prob_lim:
             continue
         if l_sum > l0:
             cell.shift_le = True

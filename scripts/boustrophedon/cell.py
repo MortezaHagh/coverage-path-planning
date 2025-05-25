@@ -1,13 +1,12 @@
 from shapely import Polygon
 from shapely.ops import unary_union
 from scripts.boustrophedon.events import Event
-from scripts.base.configs import PlanningConfigs
 
 
 class Cell:
 
-    def __init__(self, id: int, poly: Polygon, event: Event):
-        self.id: int = id
+    def __init__(self, ind: int, poly: Polygon, event: Event):
+        self.id: int = ind
         #
         self.opt_id: int = None
         self.next_cell_seq: int = None
@@ -135,17 +134,17 @@ class Cell:
             self.n_parent += 1
             self.add_adjacent_id(ci)
 
-    def add_adjacent_id(self, id: int):
-        self.adjacent_ids.append(id)
+    def add_adjacent_id(self, ind: int):
+        self.adjacent_ids.append(ind)
 
-    def set_optim_id(self, id: int, next_cell_id: int = None):
-        self.opt_id = id
+    def set_optim_id(self, ind: int, next_cell_id: int = None):
+        self.opt_id = ind
         if next_cell_id is not None:
             self.next_cell_seq = next_cell_id
         else:
             self.next_cell_seq = None
 
-    def eveal_planning(self, resolution, cleaning_r):
+    def eveal_planning_area(self, resolution, cleaning_r):
         min_area = 0.5 * 3.14 * cleaning_r**2
         if (self.area*resolution**2) < min_area:
             print(f"[WARN] cell area is too small: {self.id}")

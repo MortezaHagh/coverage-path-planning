@@ -3,40 +3,69 @@ import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp
 from scripts.base.configs import DistrictConfgs
 from scripts.boustrophedon.cell import Cell
-from scripts.boustrophedon.search import SearchCells
+from scripts.boustrophedon.cells_graph import CellsGraph
 
 
 class OptimCellsSeq:
     def __init__(self, mcells: list[Cell]):
         self.ns = "OptimCellsSeq"
         dcfgs = DistrictConfgs()
-        print(f"[{self.ns}]: >>>>> Step: creating optimization cells sequence")
+        print(f" >>>>> [{self.ns}] Step: creating optimization cells sequence")
+
+        #
+        self.cells_graph = CellsGraph(mcells)
+
+        #
+        self.tour_indxs = None
+        self.tour_ids = None
+        self.cells_seq_length = None
+
+        # filter based on do_planning
+        pmcells = [c for c in mcells if c.do_planning]
 
         #
         optimizer = None
         if dcfgs.cell_sequence_method == "s1_simple":
-            optimizer = SimpleSeq(mcells)
+            optimizer = SimpleSeq(pmcells)
         elif dcfgs.cell_sequence_method == "s2_dfs":
-            optimizer = DepthFirstSearch(mcells)
+            optimizer = DepthFirstSearch(pmcells)
         elif dcfgs.cell_sequence_method == "s3_milp":
-            optimizer = MILPSeq(mcells)
+            optimizer = MILPSeq(self.cells_graph, mcells)
         else:
             print(f"[{self.ns}][ERROR]: Invalid cell sequence method: {dcfgs.cell_sequence_method}")
             return
 
         #
-        self.tour = optimizer.tour
-        self.set_cells_optim_ind(mcells)
+        if optimizer.tour_indxs is None or len(optimizer.tour_indxs) == 0:
+            print(f"[{self.ns}][ERROR]: No cells sequence found.")
+            return
+        #
+        self.tour_indxs = optimizer.tour_indxs
+        self.tour_ids = optimizer.tour_ids
+        self.set_cells_optim_ind(pmcells)
+        self.cal_cells_seq_length()
         # self.plot()
 
     def set_cells_optim_ind(self, mcells: list[Cell]):
-        nt = len(self.tour)-1
-        for c in mcells[:-1]:
-            ind = self.tour.index(c.ind)
-            next_cell_ind = None
-            if ind < nt:
-                next_cell_ind = self.tour[ind + 1]
-            c.set_optim_ind(ind, next_cell_ind)
+        new_cells = [mcells[i] for i in self.tour_indxs]
+        for i, c in enumerate(new_cells):
+            ind = i
+            next_cell_id = None
+            if i < len(new_cells) - 1:
+                next_cell_id = new_cells[i + 1].id
+            c.set_optim_id(ind, next_cell_id)
+
+    def cal_cells_seq_length(self) -> float:
+        if len(self.tour_ids) == 1:
+            self.cells_seq_length = 0.0
+            return
+        total_length = 0.0
+        for i in range(len(self.tour_ids) - 1):
+            i1 = self.tour_ids[i]
+            i2 = self.tour_ids[i+1]
+            d = self.cells_graph.get_distance(i1, i2)
+            total_length += d
+        self.cells_seq_length = total_length
 
     def plot(self):
         _, ax = plt.subplots(1, 1)
@@ -47,7 +76,7 @@ class OptimCellsSeq:
         # print(self.tour)
         for cell in self.cells:
             ax.plot(cell.cxy[0], cell.cxy[1], "ro")
-            text = f"{cell.ind}-{cell.opt_ind}"
+            text = f"{cell.id}-{cell.opt_id}"
             ax.text(cell.cxy[0], cell.cxy[1], text, fontsize=12, color='blue')
 
         # Draw the tour
@@ -61,32 +90,77 @@ class OptimCellsSeq:
 class SimpleSeq:
     def __init__(self, mcells: list[Cell]):
         self.ns = "SimpleSeq"
-        print(f"[{self.ns}]: >>>>> Step: creating cells sequence.")
-        self.tour = list(range(len(mcells)))
+        print(f"[{self.ns}]: creating cells sequence.")
+        self.tour_indxs = list(range(len(mcells)))
+        self.tour_ids = [c.id for c in mcells]
+
+
+class DepthFirstSearch:
+    def __init__(self, cells: list[Cell]):
+        self.ns = "DepthFirstSearch"
+        print(f"[{self.ns}]: creating cells sequence")
+        #
+        self.cells = cells
+        self.c_ids = [c.id for c in cells]
+        self.c_ids_ind_dict = {c.id: i for i, c in enumerate(cells)}
+        self.tour_ids: list[int] = []
+        self.visited_ids_d: dict = {i: False for i in self.c_ids}
+        self.depth_ids_d: dict = {i: 0 for i in self.c_ids}
+        self.create_tour()
+        self.tour_indxs = [self.c_ids_ind_dict[i] for i in self.tour_ids]
+
+    def create_tour(self):
+        # Start DFS from the first cell
+        start = self.c_ids[0]
+        self.dfs(start, 0)
+        # for i, cell in enumerate(self.cells):
+        #     if not self.visited[i]:
+        #         self.dfs(cell.id)
+
+    def dfs(self, c_id: int, level: int):
+        self.visited_ids_d[c_id] = True
+        self.tour_ids.append(c_id)
+        ind = self.c_ids_ind_dict[c_id]
+        neighbors = self.cells[ind].adjacent_ids
+        neighbors = [n for n in neighbors if n in self.c_ids]
+        new_level = 0
+        for neigh_id in neighbors:
+            if not self.visited_ids_d[neigh_id]:
+                level = self.dfs(neigh_id, new_level)
+                new_level = max(level, new_level)
+        self.depth_ids_d[c_id] = new_level
+        return new_level + 1
 
 
 class MILPSeq:
-    def __init__(self, mcells: list[Cell]):
+    def __init__(self, search: CellsGraph, mcells: list[Cell]):
         self.ns = "MILPSeq"
-        print(f"[{self.ns}]: >>>>> Step: creating cells sequence.")
-        self.cells = mcells
-        self.n_cells = len(mcells)
-        self.search = SearchCells(self.cells)
-        self.tour: list[int] = []
+        print(f"[{self.ns}]: creating cells sequence.")
+
+        pmcells = [c for c in mcells if c.do_planning]
+        self.cells = pmcells
+        self.n_cells = len(pmcells)
+        self.ids = [c.id for c in self.cells]
+
+        #
+        self.tour_indxs: list[int] = []
+        self.cells_graph = search
         self.distm: np.ndarray = None
+
         #
         self.create_dist_matrix()
         success = self.solve_tsp_milp()
         if not success:
-            self.tour = []
             print(f"[{self.ns}][ERROR]: No optimal solution found.")
+        self.tour_ids = [self.ids[i] for i in self.tour_indxs]
 
     def create_dist_matrix(self):
-        n = len(self.cells)
+        n = self.n_cells
         distm = np.ones((n, n))*np.inf
         for i in range(n):
             for j in range(i+1, n):
-                distm[i, j] = self.search.get_distance(i, j)
+                distm[i, j] = self.cells_graph.get_distance(self.ids[i], self.ids[j])
+                # distm[i, j] = self.cells_graph.get_distance(i, j)
                 distm[j, i] = distm[i, j]
         self.distm = distm
 
@@ -147,50 +221,10 @@ class MILPSeq:
                         break
                 if not found:
                     break
-            self.tour = tour
+            self.tour_indxs = tour
 
         else:
             print("[solve_tsp_milp]: No optimal solution found.")
             return False
         #
         return True
-
-
-class DepthFirstSearch:
-    def __init__(self, cells: list[Cell]):
-        self.ns = "DepthFirstSearch"
-        print(f"[{self.ns}]: >>>>> Step: creating depth first search cells sequence")
-        #
-        self.cells = cells
-        self.n_cells = len(cells)
-        # self.tour = np.array([], dtype=int)
-        # self.depth = np.zeros((self.n_cells, 1))
-        self.tour: list[int] = []
-        self.visited: list[bool] = [False] * self.n_cells
-        self.depth: list[int] = [0] * self.n_cells
-        self.create_tour()
-        # print(self.tour)
-        # depth_d = {i: self.depth[i] for i in self.tour}
-        # for k, v in depth_d.items():
-        #     print(f"cell {k}: depth {v}")
-
-    def create_tour(self):
-        # Start DFS from the first cell
-        level = 0
-        self.dfs(0, level)
-        # for i, cell in enumerate(self.cells):
-        #     if not self.visited[i]:
-        #         self.dfs(cell.ind)
-
-    def dfs(self, current: int, level: int):
-        self.visited[current] = True
-        # self.tour = np.append(self.tour, current)
-        self.tour.append(current)
-        neighbors = self.cells[current].adjacent_inds
-        new_level = 0
-        for neighbor in neighbors:
-            if not self.visited[neighbor]:
-                level = self.dfs(neighbor, new_level)
-                new_level = max(level, new_level)
-        self.depth[current] = new_level
-        return new_level + 1

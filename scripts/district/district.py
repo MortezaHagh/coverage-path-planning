@@ -15,7 +15,7 @@ class DistrictData:
 
     def __init__(self, spa: SpaceAnalyzer):
         self.ns = "DistrictData"
-        print(f"[{self.ns}]: >>>>> Step: creating district data")
+        print(f" >>>>> [{self.ns}] Step: creating district data")
 
         # configs
         self.dcfgs = DistrictConfgs()
@@ -51,7 +51,7 @@ class DistrictData:
     # ==================================================================================================================
 
     def create_zones(self):
-        print(f"[{self.ns}]: >>>>> Step: creating zone map data")
+        print(f" >>>>> [{self.ns}] Step: creating zone map data")
 
         # create zones rectangles
         zone_rectangles: list[Rectangle] = self.create_one_zone_rectangle()

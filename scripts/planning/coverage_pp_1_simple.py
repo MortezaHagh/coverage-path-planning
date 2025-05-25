@@ -10,7 +10,7 @@ class CoveragePP(CoveragePPBase):
     def __init__(self, zone_map_data: ZoneMapData):
         super().__init__(zone_map_data)
         self.ns = "CPPSimple" + "-" + str(self.zmd.ind)
-        print(f"[{self.ns}]: >>>>> Step: coverage path planning")
+        print(f" >>>>> [{self.ns}] Step: coverage path planning")
 
         # coverage path planning for all zones
         self.plan()

@@ -6,8 +6,7 @@ from scripts.boustrophedon.events import Event
 from scripts.boustrophedon.obstacles import Obstacle
 from scripts.boustrophedon.cell import Cell, CellGroup
 from scripts.boustrophedon.plotter import BoustPlotter
-from scripts.boustrophedon.post_process_mcells import create_cell_groups, create_sequence, find_cells_shared_edge_p
-# from scripts.boustrophedon.optimize_mcells_seq import OptimCellsSeq
+from scripts.boustrophedon.post_process_mcells import create_sequence, eval_cells_path_shift
 
 
 class MHDecomposition:
@@ -27,32 +26,33 @@ class MHDecomposition:
         self.n_events: int = 0
         self.n_cells: int = 0
         #
+        self.n_mcells: int = 0
         self.cells_groups: list[CellGroup] = []
         self.mcells: list[Cell] = []
         self.smcells: list[Cell] = []
-        self.n_mcells: int = 0
+        self.smcells_seq_length_px: float = 0.0
         #
         self.plotter: BoustPlotter = None
 
     def initiate(self):
         self.create_obstacles()
         self.create_events()
+
         #
         self.decompose_all()
         self.find_adjacents_cells()
         self.compleate_adjacency()
 
         # create merged cells & set_merged_cells_adjacents
-        cgs, mcells = create_cell_groups(self.cells)
-        self.cells_groups = cgs
-        self.mcells = mcells
-        self.n_mcells = len(mcells)
+        self.create_cell_groups()
+        self.set_merged_cells_adjacents()
+        self.n_mcells = len(self.mcells)
 
         # find if coverage pp in cell should be shifted based on boarder with adjacents
-        find_cells_shared_edge_p(self.mcells)
+        eval_cells_path_shift(self.mcells)
 
         #
-        self.eval_planning()
+        self.eval_planning_area()
         self.create_sequence()
 
         #
@@ -362,21 +362,77 @@ class MHDecomposition:
                     print(f"[{self.ns}][find_adjacents_cells][ERROR]: No parents found:")
                     print(f"e: {cell.event.sd_ind}, -- cell: {cell.id}")
 
-# ==============================================================================
+# cell groups and merged cells =========================================================================================
 
-    def eval_planning(self):
+    def create_cell_groups(self):
+        ncg = 0
+        cells_groups: list[CellGroup] = []
+        mcells: list[Cell] = []
+        #
+        for cell in self.cells[0:]:
+            if cell.done:
+                continue
+            base_cell = cell
+            base_cell.done = True
+            if base_cell.n_adj == 0:
+                new_group = CellGroup(base_cell, ncg)
+            elif base_cell.n_adj > 1:
+                new_group = CellGroup(base_cell, ncg)
+            else:
+                adj_cell: Cell = None
+                if base_cell.up_adj_ci:
+                    adj_cell = self.cells[base_cell.up_adj_ci]
+                elif base_cell.down_adj_ci:
+                    adj_cell = self.cells[base_cell.down_adj_ci]
+                else:
+                    adj_cell = self.cells[base_cell.mid_adjlist[0]]
+
+                #
+                new_group = CellGroup(base_cell, ncg)
+                while adj_cell.n_parent == 1 and not adj_cell.done:
+                    adj_cell.done = True
+                    new_group.add_cell(adj_cell)
+                    #
+                    if not adj_cell.n_adj == 1:
+                        break
+                    #
+                    if adj_cell.up_adj_ci:
+                        adj_cell = self.cells[adj_cell.up_adj_ci]
+                    elif adj_cell.down_adj_ci:
+                        adj_cell = self.cells[adj_cell.down_adj_ci]
+                    else:
+                        adj_cell = self.cells[adj_cell.mid_adjlist[0]]
+            # merge_cells
+            if new_group:
+                new_group.update_group()
+                cells_groups.append(new_group)
+                mcells.append(new_group.merged_cell)
+                ncg += 1
+        #
+        self.cells_groups = cells_groups
+        self.mcells = mcells
+
+    def set_merged_cells_adjacents(self):
+        for cellg in self.cells_groups:
+            parents_i = cellg.first_cell.mid_parentlist
+            successors_i = cellg.last_cell.mid_adjlist
+            cellg.merged_cell.mid_parentlist = [self.cells[i].group_id for i in parents_i]
+            cellg.merged_cell.mid_adjlist = [self.cells[i].group_id for i in successors_i]
+            adj = cellg.merged_cell.mid_parentlist.copy()
+            adj.extend(cellg.merged_cell.mid_adjlist)
+            cellg.merged_cell.adjacent_ids = adj
+
+# ======================================================================================================================
+
+    def eval_planning_area(self):
         for cell in self.mcells:
-            cell.eveal_planning(self.resolution, self.bcfgs.cleaning_r)
+            cell.eveal_planning_area(self.resolution, self.bcfgs.cleaning_r)
 
     def create_sequence(self):
-        tour = create_sequence(self.mcells)
+        tour, seq_l = create_sequence(self.mcells)
         new_mcells = [self.mcells[i] for i in tour]
         self.smcells = new_mcells
-
-    def get_event(self, ind: int) -> Event:
-        if ind < 0 or ind >= len(self.events):
-            return None
-        return self.events[ind]
+        self.smcells_seq_length_px = seq_l
 
     def visualize(self):
         self.plotter = BoustPlotter(self)

@@ -3,25 +3,15 @@ import numpy as np
 from scripts.boustrophedon.cell import Cell
 
 
-class SearchCells:
+class CellsGraph:
     def __init__(self, cells: list[Cell]):
-        #
         self.cells = cells
         self.n_cells = len(cells)
-
-        #
         self.dists_m = None
         self.adj_inds = None
 
         # Create adjacency distance matrix
         self.create_distance_matrix()
-
-        #
-        start_index = 0
-        end_index = 2
-        self.dijkstra(start_index, end_index)
-
-        #
 
     def create_distance_matrix(self):
         n = self.n_cells
@@ -29,7 +19,7 @@ class SearchCells:
         dists_m = np.ones((n, n), dtype=float)*np.inf
         for i in range(n):
             cxy1 = self.cells[i].cxy
-            for j in self.cells[i].adjacent_inds:
+            for j in self.cells[i].adjacent_ids:
                 adj_inds[i].append(j)
                 cxy2 = self.cells[j].cxy
                 dists_m[i, j] = np.linalg.norm(np.array(cxy1) - np.array(cxy2))

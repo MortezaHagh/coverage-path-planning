@@ -1,4 +1,5 @@
 import os
+import json
 import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
@@ -11,12 +12,12 @@ from scripts.base.my_utils import get_n_colors_cv, get_n_colors_plt
 
 
 class CoveragePP(CoveragePPBase):
-    """  DecCoveragePP  """
+    """  BoustCoveragePP  """
 
     def __init__(self, zone_map_data: ZoneMapData):
         super().__init__(zone_map_data)
-        self.ns = "DecCoveragePP" + "-Z" + str(self.zmd.ind)
-        print(f"[{self.ns}]: >>>>> Step: coverage path planning")
+        self.ns = "BoustCoveragePP" + "-Z" + str(self.zmd.ind)
+        print(f" >>>>> [{self.ns}] Step: coverage path planning")
 
         # configs
         self.dcfgs = DistrictConfgs()
@@ -38,8 +39,6 @@ class CoveragePP(CoveragePPBase):
         self.add_cells_to_map_planning()
         #
         self.coverage_planning_l()
-
-    # =================================================================================================================
 
     def decompose_map(self):
         print(f"[{self.ns}]: start decomposition")
@@ -63,13 +62,12 @@ class CoveragePP(CoveragePPBase):
             alpha = 0.1
             self.zmd.map_planning = cv.addWeighted(map_p_fill, alpha, map_p, 1 - alpha, 0)
 
-    # =================================================================================================================
-
     def coverage_planning_l(self):
         print(f"[{self.ns}]: start coverage path planning")
         self.zone_covpp()
         self.add_cell_paths_to_map_planning()
         self.plot_paths()
+        self.save_data()
 
     def zone_covpp(self):
         for mell in self.dec_interface.decomposed.smcells:
@@ -83,22 +81,13 @@ class CoveragePP(CoveragePPBase):
         connections = []
 
     def add_cell_paths_to_map_planning(self):
-        # robot_m = self.zmd.map_planning.copy()  # np.ones_like(self.zmd.map_planning) * 255
         map_planning = self.zmd.map_planning.copy()
         for i, cell_covp_planner in enumerate(self.all_cell_covp_planners):
             path_px = cell_covp_planner.path_px
             if path_px:
                 pp = np.array(path_px, dtype=np.int32)  # Ensure pp is a numpy array of integers
                 map_planning = cv.polylines(map_planning, [pp], isClosed=False, color=self.colors[i], thickness=2)
-                # #
-                # radius_px = int(np.ceil(self.scfgs.cleaning_r / self.zmd.orig_map_data.up_resolution))
-                # robot_m = cv.circle(robot_m, pp[0], radius_px, [40, 40, 40], -1)
-                # if len(pp) > 3:
-                #     robot_m = cv.circle(robot_m, pp[3], radius_px, [40, 40, 40], -1)
         self.zmd.map_planning = map_planning
-        # #
-        # alpha = 0.8
-        # self.zmd.map_planning = cv.addWeighted(map_planning, alpha, robot_m, 1 - alpha, 0)
 
     def plot_paths(self):
         n = self.dec_interface.decomposed.n_mcells
@@ -107,7 +96,6 @@ class CoveragePP(CoveragePPBase):
         for obs in self.dec_interface.decomposed.obstacles:
             x, y = obs.poly.exterior.xy
             ax.plot(x, y, color="gray", linewidth=1)
-        # fig, ax = self.dec_interface.decomposed.plotter.visualize_mcells()
 
         for i, cell_covp_planner in enumerate(self.all_cell_covp_planners):
             path_px = cell_covp_planner.path_px
@@ -127,3 +115,11 @@ class CoveragePP(CoveragePPBase):
         fig_path = os.path.join(boust_path, f"paths_{seq_method}.png")
         fig.savefig(fig_path, format="png", dpi=300)
         plt.show()
+
+    def save_data(self):
+        len_px = self.dec_interface.decomposed.smcells_seq_length_px
+        len_m = len_px * self.resolution
+        data = {"centers_seq_length": round(len_m, 2)}
+        with open(self.zmd.result_file, 'w') as f:
+            json.dump(data, f, indent=4)
+            f.write("\n")

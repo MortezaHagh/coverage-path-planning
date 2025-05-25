@@ -181,6 +181,5 @@ class ZoneData:
             "cleaning_area_px": float(self.cleaning_area_px),
             "cleaned_area_px": float(self.cleaned_area_px),
         }
-        result_path = self.zmd.path + f"/{self.dcfg.covpp_method}/result_{self.dcfg.ns}.json"
-        with open(result_path, 'w') as f:
+        with open(self.zmd.result_file, 'a') as f:
             json.dump(result, f, indent=4)
