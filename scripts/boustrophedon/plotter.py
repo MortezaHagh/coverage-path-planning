@@ -146,6 +146,12 @@ class BoustPlotter:
             self.fig_mcells = fig
 
     def visualize_cells_sequence(self, ax=None):
+        fig, ax_mc = self.visualize_mcells(ax)
+        self.visualize_sequence(ax_mc)
+        if fig:
+            self.fig_mcells_seq = fig
+
+    def visualize_mcells(self, ax=None):
         fig = None
         if ax is None:
             fig, ax = plt.subplots(1, 1, figsize=(15, 20))
@@ -163,23 +169,22 @@ class BoustPlotter:
             # merged cell
             x, y = cg.merged_cell.poly.exterior.xy
             cx, cy = cg.merged_cell.cxy
-            text = f"g{i}-({cg.merged_cell.opt_ind})"
+            text = f"g{i}-({cg.merged_cell.opt_id})"
             ax.text(cx, cy, text, color='black', fontsize=8)
             ax.plot(x, y, color=color, linewidth=4, linestyle='-')
             ax.plot(cx, cy, 'o', color='purple', markersize=6)
             ax.fill(x, y, alpha=0.2, fc=color)
+        return fig, ax
 
-            # sequence
+    def visualize_sequence(self, ax=None):
+        cg: CellGroup
+        for cg in self.dec_obj.cells_groups:
             next_ind = cg.merged_cell.next_cell_seq
             if next_ind is None:
                 continue
             x1, y1 = cg.merged_cell.cxy
             x2, y2 = self.dec_obj.mcells[next_ind].cxy
-            ax.plot([x1, x2], [y1, y2], color=color, linewidth=1, linestyle='--')
-
-        #
-        if fig:
-            self.fig_mcells_seq = fig
+            ax.plot([x1, x2], [y1, y2], color="gray", linewidth=1, linestyle='--')
 
     def plot_adj_gcells(self, ax, cell: Cell, adj_g_cell_ind: int, color='red'):
         c = cell.poly.centroid

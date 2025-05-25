@@ -3,18 +3,19 @@ from scripts.boustrophedon.optimize_mcells_seq import OptimCellsSeq
 
 
 def create_sequence(mcells: list[Cell]):
-    OptimCellsSeq(mcells)
+    opt_seq = OptimCellsSeq(mcells)
+    return opt_seq.tour_ids
 
 
 def set_merged_cells_adjacents(cells_groups: list[CellGroup], cells: list[Cell]):
     for cellg in cells_groups:
         parents_i = cellg.first_cell.mid_parentlist
         successors_i = cellg.last_cell.mid_adjlist
-        cellg.merged_cell.mid_parentlist = [cells[i].group_ind for i in parents_i]
-        cellg.merged_cell.mid_adjlist = [cells[i].group_ind for i in successors_i]
+        cellg.merged_cell.mid_parentlist = [cells[i].group_id for i in parents_i]
+        cellg.merged_cell.mid_adjlist = [cells[i].group_id for i in successors_i]
         adj = cellg.merged_cell.mid_parentlist.copy()
         adj.extend(cellg.merged_cell.mid_adjlist)
-        cellg.merged_cell.adjacent_inds = adj
+        cellg.merged_cell.adjacent_ids = adj
 
 
 def create_cell_groups(cells):

@@ -60,8 +60,8 @@ class ZoneData:
         self.save_map_cleaning_data()
         self.save_result()
         print(f"[{self.ns}-{self.zmd.ind}]: *************************************** ")
-        print(f"[{self.ns}-{self.zmd.ind}]: cleaning area: {self.cleaning_area_m:.2f} m^2")
         print(f"[{self.ns}-{self.zmd.ind}]: number of paths: {self.n_paths}")
+        print(f"[{self.ns}-{self.zmd.ind}]: cleaning area: {self.cleaning_area_m:.2f} m^2")
         print(f"[{self.ns}-{self.zmd.ind}]: cleaned area: {self.cleaned_area_m:.2f} m^2")
 
     def calculate_cleaning_area(self):
@@ -78,7 +78,7 @@ class ZoneData:
         area = paths_len * (2 * cleaning_r)
         area += np.pi*(cleaning_r**2) * self.n_paths  # add area of the end circles
         # overlaped_area_m
-        overlaped_area_m = area - self.cleaning_area_m
+        overlaped_area_m = area - self.cleaned_area_m
         self.overlaped_area_m = round(overlaped_area_m, 2)
         # uncleaned_area_m
         uncleaned_area_m = self.cleaning_area_m - self.cleaned_area_m

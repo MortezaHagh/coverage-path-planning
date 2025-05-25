@@ -4,14 +4,17 @@ import cv2 as cv
 from matplotlib import pyplot as plt
 
 
-def get_n_colors_bgr(n):
+def get_n_colors_plt(n):
     # Get n distinct colors from matplotlib's tab10/Set3 colormaps or HSV spectrum
     cmap = plt.get_cmap('hsv')  # You can use 'tab10', 'tab20', 'Set3', etc.
     colors_rgb = [cmap(i / n)[:3] for i in range(n)]  # RGB values (0-1)
+    return colors_rgb
 
+
+def get_n_colors_cv(n):
+    colors_rgb = get_n_colors_plt(n)
     # Convert to BGR and scale to 0-255
     colors_bgr = [tuple(int(255 * c) for c in reversed(rgb)) for rgb in colors_rgb]
-
     return colors_bgr
 
 

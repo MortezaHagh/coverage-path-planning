@@ -8,7 +8,7 @@ from scripts.boustrophedon.decomposition_1_mh_f import MHDecomposition as CellDe
 class DecompositionInterface:
     def __init__(self, zmd: ZoneMapData):
         self.ns = "Decomposition"
-        self.decomposed = CellDecomposition()
+        self.decomposed = CellDecomposition(zmd.reslolution)
         self.s_x: int = 0
         self.s_y: int = 0
         self.n_mcells: int = 0

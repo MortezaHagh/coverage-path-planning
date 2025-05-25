@@ -41,7 +41,7 @@ class CellCoveragePathPlanner:
     def eveal_cell(self):
         min_area = 0.5 * np.pi * self.pcfgs.cleaning_r**2
         if (self.cell.area*self.resolution**2) < min_area:
-            print(f"[{self.ns}]: [WARN] cell area is too small: {self.cell.ind}")
+            print(f"[{self.ns}]: [WARN] cell area is too small: {self.cell.id}")
             return False
         return True
 
@@ -70,7 +70,7 @@ class CellCoveragePathPlanner:
         d_shift = resolution * 5
 
         # #
-        # print(cell.ind, "l", cell.shift_le, "r", cell.shift_re)
+        # print(cell.id, "l", cell.shift_le, "r", cell.shift_re)
         # s_w_m = w_m - cleaning_d * (cell.shift_le + cell.shift_re)
         # if cell.shift_le:
         #     x_max -= cleaning_d

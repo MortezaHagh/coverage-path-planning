@@ -1,6 +1,7 @@
 """ Trapezoidal decomposition """
 import math
 from shapely import Polygon
+from scripts.base.configs import PlanningConfigs
 from scripts.boustrophedon.events import Event
 from scripts.boustrophedon.obstacles import Obstacle
 from scripts.boustrophedon.cell import Cell, CellGroup
@@ -10,11 +11,15 @@ from scripts.boustrophedon.post_process_mcells import create_cell_groups, create
 
 
 class MHDecomposition:
-    def __init__(self):
+    def __init__(self, resolution: float = 0.05):
         self.ns = "MHDecomposition"
+        self.resolution: float = resolution
+        self.bcfgs = PlanningConfigs()
+        #
         self.b_poly: Polygon = None
         self.b_obstacle: Obstacle = None
         self.polygons: list[Polygon] = []
+        #
         self.obstacles: list[Obstacle] = []
         self.events: list[Event] = []
         self.cells: list[Cell] = []
@@ -24,6 +29,7 @@ class MHDecomposition:
         #
         self.cells_groups: list[CellGroup] = []
         self.mcells: list[Cell] = []
+        self.smcells: list[Cell] = []
         self.n_mcells: int = 0
         #
         self.plotter: BoustPlotter = None
@@ -46,7 +52,8 @@ class MHDecomposition:
         find_cells_shared_edge_p(self.mcells)
 
         #
-        create_sequence(self.mcells)
+        self.eval_planning()
+        self.create_sequence()
 
         #
         self.visualize()
@@ -333,7 +340,7 @@ class MHDecomposition:
             if e.has_adj:
                 for next_c in self.cells[ic+1:]:
                     #
-                    if next_c.ind in cell.mid_adjlist:
+                    if next_c.id in cell.mid_adjlist:
                         continue
                     #
                     if cell.x_max == next_c.x_min:
@@ -341,19 +348,30 @@ class MHDecomposition:
                         if next_c.y_min < cell.y_mid < next_c.y_max or \
                                 cell.y_min < next_c.y_mid < cell.y_max:
                             # add adjacent cells
-                            cell.add_mid_adjlist(next_c.ind)
-                            next_c.add_mid_parentlist(cell.ind)
+                            cell.add_mid_adjlist(next_c.id)
+                            next_c.add_mid_parentlist(cell.id)
                 #
                 if cell.n_adj == 0:
                     cell.status = False
                     print(f"[{self.ns}][find_adjacents_cells][ERROR]: No adjacents found:")
-                    print(f"e: {cell.event.sd_ind}, -- cell: {cell.ind}")
+                    print(f"e: {cell.event.sd_ind}, -- cell: {cell.id}")
 
             if e.has_parent:
                 if cell.n_parent == 0:
                     cell.status = False
                     print(f"[{self.ns}][find_adjacents_cells][ERROR]: No parents found:")
-                    print(f"e: {cell.event.sd_ind}, -- cell: {cell.ind}")
+                    print(f"e: {cell.event.sd_ind}, -- cell: {cell.id}")
+
+# ==============================================================================
+
+    def eval_planning(self):
+        for cell in self.mcells:
+            cell.eveal_planning(self.resolution, self.bcfgs.cleaning_r)
+
+    def create_sequence(self):
+        tour = create_sequence(self.mcells)
+        new_mcells = [self.mcells[i] for i in tour]
+        self.smcells = new_mcells
 
     def get_event(self, ind: int) -> Event:
         if ind < 0 or ind >= len(self.events):

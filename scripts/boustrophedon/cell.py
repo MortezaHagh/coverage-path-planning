@@ -1,13 +1,15 @@
 from shapely import Polygon
 from shapely.ops import unary_union
 from scripts.boustrophedon.events import Event
+from scripts.base.configs import PlanningConfigs
 
 
 class Cell:
 
-    def __init__(self, ind: int, poly: Polygon, event: Event):
-        self.ind: int = ind
-        self.opt_ind: int = None
+    def __init__(self, id: int, poly: Polygon, event: Event):
+        self.id: int = id
+        #
+        self.opt_id: int = None
         self.next_cell_seq: int = None
         #
         self.event: Event = event
@@ -40,7 +42,7 @@ class Cell:
         #
         self.mid_adjlist = []
         self.mid_parentlist = []
-        self.adjacent_inds: list[int] = []
+        self.adjacent_ids: list[int] = []
         #
         self.done = False
         self.status = True
@@ -48,8 +50,9 @@ class Cell:
         self.first_cell: Cell = None
         self.last_cell: Cell = None
         #
-        self.group_ind: int = None
+        self.group_id: int = None
         # for cov planning
+        self.do_planning: bool = True
         self.shift_re: bool = False
         self.shift_le: bool = False
 
@@ -112,7 +115,7 @@ class Cell:
         if ci is not None:
             self.mid_adjlist.append(ci)
             self.n_adj += 1
-            self.add_adjacent_ind(ci)
+            self.add_adjacent_id(ci)
 
     def set_parent_up_ci(self, ci: int):
         if ci is not None:
@@ -130,17 +133,23 @@ class Cell:
         if ci is not None:
             self.mid_parentlist.append(ci)
             self.n_parent += 1
-            self.add_adjacent_ind(ci)
+            self.add_adjacent_id(ci)
 
-    def add_adjacent_ind(self, ind: int):
-        self.adjacent_inds.append(ind)
+    def add_adjacent_id(self, id: int):
+        self.adjacent_ids.append(id)
 
-    def set_optim_ind(self, ind: int, next_cell_ind: int = None):
-        self.opt_ind = ind
-        if next_cell_ind is not None:
-            self.next_cell_seq = next_cell_ind
+    def set_optim_id(self, id: int, next_cell_id: int = None):
+        self.opt_id = id
+        if next_cell_id is not None:
+            self.next_cell_seq = next_cell_id
         else:
             self.next_cell_seq = None
+
+    def eveal_planning(self, resolution, cleaning_r):
+        min_area = 0.5 * 3.14 * cleaning_r**2
+        if (self.area*resolution**2) < min_area:
+            print(f"[WARN] cell area is too small: {self.id}")
+            self.do_planning = False
 
 
 class CellGroup:
@@ -148,11 +157,11 @@ class CellGroup:
 
     def __init__(self, first_cell: Cell, ncg: int = None):
         if ncg is None:
-            self.ind = CellGroup._counter
-            self.opt_ind = CellGroup._counter
+            self.id = CellGroup._counter
+            self.opt_id = CellGroup._counter
         else:
-            self.ind = ncg
-            self.opt_ind = ncg
+            self.id = ncg
+            self.opt_id = ncg
         CellGroup._counter += 1
         self.cells: list[Cell] = [first_cell]
         self.first_cell: Cell = first_cell
@@ -180,8 +189,8 @@ class CellGroup:
         # Merge all polygons
         if self.cells:
             merged_polygon = unary_union([cell.poly for cell in self.cells])
-            self.merged_cell = Cell(self.ind, merged_polygon, self.first_cell.event)
+            self.merged_cell = Cell(self.id, merged_polygon, self.first_cell.event)
 
         # Update the group index for all cells in the group
         for cell in self.cells:
-            cell.group_ind = self.ind
+            cell.group_id = self.id
