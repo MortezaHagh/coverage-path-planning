@@ -75,7 +75,7 @@ class Event:
     def set_endpoint_down_edge(self, xy: tuple[float, float]):
         self.end_down_ed_xy = xy
 
-    # =======================================================================
+    # ==========================================================================
 
     def set_base_ci_up(self, ci):
         self.base_ci_up = ci
@@ -91,7 +91,7 @@ class Event:
         self.down_cil_d[base_ind] = ci
         self.down_cil_k.append(base_ind)
 
-    # =======================================================================
+    # ==========================================================================
 
     def update_name(self):
         name = f"{self.sd_ind}"

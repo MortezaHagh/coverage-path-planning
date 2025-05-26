@@ -54,7 +54,7 @@ class ZoneData:
     def post_planning(self):
         self.n_paths = self.cov_planner.n_paths
         self.calculate_cleaning_area()
-        self.add_cleaned_to_map()
+        self.add_cleaned_area_to_map()
         self.calculate_cleaned_area()
         self.save_map_planning()
         self.save_map_cleaning_data()
@@ -84,7 +84,7 @@ class ZoneData:
         uncleaned_area_m = self.cleaning_area_m - self.cleaned_area_m
         self.uncleaned_area_m = round(uncleaned_area_m, 2)
 
-    def add_cleaned_to_map(self):
+    def add_cleaned_area_to_map(self):
         map_cleaning = self.zmd.map_cleaning.copy()
         paths = self.cov_planner.paths_px
         cleaning_r_px = int(self.pcfgs.cleaning_r / self.zmd.reslolution)

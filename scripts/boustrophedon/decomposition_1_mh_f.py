@@ -422,7 +422,7 @@ class MHDecomposition:
             adj.extend(cellg.merged_cell.mid_adjlist)
             cellg.merged_cell.adjacent_ids = adj
 
-# ======================================================================================================================
+    # ==================================================================================================================
 
     def eval_planning_area(self):
         for cell in self.mcells:

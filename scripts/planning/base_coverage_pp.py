@@ -6,11 +6,11 @@ from scripts.boustrophedon.decomposition_interface import DecompositionInterface
 
 class CoveragePPBase:
     zmd: ZoneMapData  # zone data
-    dec_interface: DecompositionInterface
     paths_px: list[list[tuple[int, int]]]
     paths_m: list[list[tuple[float, float]]]
     n_paths: int
     total_path_len_m: float
+    dec_interface: DecompositionInterface
 
     def __init__(self, zone_map_data: ZoneMapData):
         self.ns = "CoveragePPBase"
@@ -19,17 +19,18 @@ class CoveragePPBase:
         self.zmd = zone_map_data
 
         # path
-        self.dec_interface = None
         self.paths_px = []
         self.paths_m = []
         self.n_paths = 0
         self.total_path_len_m = 0.0
 
+        # for boustrophedon decomposition
+        self.dec_interface = None
+
         # parameters and configurations
         self.scfgs = SpaceConfigs()
         self.pcfgs = PlanningConfigs()
 
-        # ---------------------------------------------
         # params
         self.cleaning_r = self.pcfgs.cleaning_r_ov
         self.cleaning_width = 2*self.pcfgs.cleaning_r_ov

@@ -22,8 +22,6 @@ class CoveragePP(CoveragePPBase):
         self.create_path_px()
         self.add_path_to_map_planning()
 
-    # =================================================================================================================
-
     def zone_covpp(self):
         print(f"[{self.ns}]: cpp for zone [{self.zmd.ind}]")
 

@@ -31,18 +31,32 @@ class CoveragePP(CoveragePPBase):
 
     def coverage_planning(self):
         self.decompose_map()
-        self.save_decomposition_plot()
-
-        #
-        n = self.dec_interface.decomposed.n_mcells
-        self.colors = get_n_colors_cv(n)
-        self.add_cells_to_map_planning()
-        #
-        self.coverage_planning_l()
+        self.zone_covpp()
+        self.save_data_figs()
 
     def decompose_map(self):
         print(f"[{self.ns}]: start decomposition")
         self.dec_interface = DecompositionInterface(self.zmd)
+
+    def zone_covpp(self):
+        print(f"[{self.ns}]: start coverage path planning for cells")
+        for mell in self.dec_interface.decomposed.smcells:
+            cell_covp_planner = CellCoveragePathPlanner(cell=mell, zone_ind=self.zmd.ind, resolution=self.resolution)
+            self.all_cell_covp_planners.append(cell_covp_planner)
+            if cell_covp_planner.path_m:
+                self.paths_m.append(cell_covp_planner.path_m)
+                self.paths_px.append(cell_covp_planner.path_px)
+
+    def save_data_figs(self):
+        n = self.dec_interface.decomposed.n_mcells
+        self.colors = get_n_colors_cv(n)
+        self.save_decomposition_plot()
+        self.add_cells_to_map_planning()
+        self.add_cell_paths_to_map_planning()
+        self.plot_paths()
+        self.save_data()
+
+    # ==================================================================================================================
 
     def save_decomposition_plot(self):
         if not self.dcfgs.save_decomposition_plot:
@@ -62,20 +76,7 @@ class CoveragePP(CoveragePPBase):
             alpha = 0.1
             self.zmd.map_planning = cv.addWeighted(map_p_fill, alpha, map_p, 1 - alpha, 0)
 
-    def coverage_planning_l(self):
-        print(f"[{self.ns}]: start coverage path planning")
-        self.zone_covpp()
-        self.add_cell_paths_to_map_planning()
-        self.plot_paths()
-        self.save_data()
-
-    def zone_covpp(self):
-        for mell in self.dec_interface.decomposed.smcells:
-            cell_covp_planner = CellCoveragePathPlanner(cell=mell, zone_ind=self.zmd.ind, resolution=self.resolution)
-            self.all_cell_covp_planners.append(cell_covp_planner)
-            if cell_covp_planner.path_m:
-                self.paths_m.append(cell_covp_planner.path_m)
-                self.paths_px.append(cell_covp_planner.path_px)
+    # ==========================================================================
 
     def connect_paths(self):
         connections = []
@@ -90,6 +91,9 @@ class CoveragePP(CoveragePPBase):
         self.zmd.map_planning = map_planning
 
     def plot_paths(self):
+        self.plot_coverage_paths()
+
+    def plot_coverage_paths(self):
         n = self.dec_interface.decomposed.n_mcells
         colors = get_n_colors_plt(n)
         fig, ax = plt.subplots(1, 1)
