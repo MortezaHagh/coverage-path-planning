@@ -169,10 +169,14 @@ class ZoneData:
         return (int(p[0] / res), int(p[1] / res))
 
     def save_result(self):
+        coverage_p = self.cleaned_area_m / self.cleaning_area_m * 100
+        coverage_p = round(coverage_p, 2)
+
         # save zone statistics to json file
         result = {
             "zone_index": self.ind,
             "n_paths": self.n_paths,
+            "coverage_percentage": float(coverage_p),
             "total_path_length_m": float(self.cov_planner.total_path_len_m),
             "cleaning_area_m2": float(self.cleaning_area_m),
             "cleaned_area_m2": float(self.cleaned_area_m),

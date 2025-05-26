@@ -79,7 +79,10 @@ class CoveragePP(CoveragePPBase):
     # ==========================================================================
 
     def connect_paths(self):
-        connections = []
+        start_end_points = []
+        for path in self.paths_px:
+            start_end_points.append((path[0], path[-1]))
+        return start_end_points
 
     def add_cell_paths_to_map_planning(self):
         map_planning = self.zmd.map_planning.copy()
@@ -91,12 +94,33 @@ class CoveragePP(CoveragePPBase):
         self.zmd.map_planning = map_planning
 
     def plot_paths(self):
-        self.plot_coverage_paths()
+        fig, ax = plt.subplots(1, 1)
+        self.plot_coverage_paths(ax)
+        self.plot_connections(ax)
 
-    def plot_coverage_paths(self):
+        #
+        ns = self.dcfgs.covpp_method
+        boust_path = os.path.join(self.zmd.path, ns)
+        seq_method = self.dcfgs.cell_sequence_method
+        fig_path = os.path.join(boust_path, f"paths_{seq_method}.png")
+        fig.savefig(fig_path, format="png", dpi=300)
+        # plt.show()
+
+    def plot_connections(self, ax):
+        start_end_points = self.connect_paths()
+        ends = [end for _, end in start_end_points]
+        starts = [start for start, _ in start_end_points]
+        ends = np.array(ends, dtype=np.int32)
+        starts = np.array(starts, dtype=np.int32)
+        # fig, ax = plt.subplots(1, 1)
+        for start, end in zip(starts[1:], ends[:-1]):
+            ax.annotate('', xy=(start), xytext=(end), arrowprops=dict(arrowstyle='->,head_width=0.4', color='gray', lw=1.5, ls="--"))
+            # ax.plot([end[0], start[0]], [end[1], start[1]], 'k--', linewidth=0.5)
+
+    def plot_coverage_paths(self, ax):
         n = self.dec_interface.decomposed.n_mcells
         colors = get_n_colors_plt(n)
-        fig, ax = plt.subplots(1, 1)
+        # fig, ax = plt.subplots(1, 1)
         for obs in self.dec_interface.decomposed.obstacles:
             x, y = obs.poly.exterior.xy
             ax.plot(x, y, color="gray", linewidth=1)
@@ -112,13 +136,6 @@ class CoveragePP(CoveragePPBase):
             ax.text(pp[0, 0], pp[0, 1], f'S{i}', fontsize=9, color='k')
             ax.plot(pp[-1, 0], pp[-1, 1], 's', color=colors[i], markersize=10)
             ax.text(pp[-1, 0], pp[-1, 1], f'E{i}', fontsize=9, color='k')
-        #
-        ns = self.dcfgs.covpp_method
-        boust_path = os.path.join(self.zmd.path, ns)
-        seq_method = self.dcfgs.cell_sequence_method
-        fig_path = os.path.join(boust_path, f"paths_{seq_method}.png")
-        fig.savefig(fig_path, format="png", dpi=300)
-        plt.show()
 
     def save_data(self):
         len_px = self.dec_interface.decomposed.smcells_seq_length_px
