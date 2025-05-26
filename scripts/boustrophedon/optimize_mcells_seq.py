@@ -177,24 +177,18 @@ class MILPSeq:
         # MTZ variables (u[i] = position of node i in the tour)
         u = [solver.IntVar(1, n, f"u_{i}") for i in range(n)]
 
-        # Objective: Minimize total distance (no return to start)
+        # Objective: Minimize total distance
         solver.Minimize(
-            sum(self.distm[i, j] * x[i, j] for i in range(n) for j in range(n) if i != j)
+            sum(self.distm[i, j] * x[i, j] for i in range(n) for j in range(n) if (i != j and j != 0))
         )
 
         # Constraints:
         # 1. Each city entered at most once (except start)
-        for j in range(1, n):
+        for j in range(n):
             solver.Add(sum(x[i, j] for i in range(n) if i != j) == 1)
         # 2. Each city exited at most once (except end)
-        for i in range(n - 1):
+        for i in range(n):
             solver.Add(sum(x[i, j] for j in range(n) if j != i) == 1)
-        # 3. Start node (0) has in-degree 0, out-degree 1
-        solver.Add(sum(x[i, 0] for i in range(n) if i != 0) == 0)
-        solver.Add(sum(x[0, j] for j in range(n) if j != 0) == 1)
-        # 4. End node (n-1) has out-degree 0, in-degree 1
-        solver.Add(sum(x[n-1, j] for j in range(n) if j != n-1) == 0)
-        solver.Add(sum(x[i, n-1] for i in range(n) if i != n-1) == 1)
 
         # 5. MTZ subtour elimination (for all except start)
         for i in range(1, n):
@@ -205,6 +199,7 @@ class MILPSeq:
         # Solve
         status = solver.Solve()
 
+        # solution
         if status == pywraplp.Solver.OPTIMAL:
             # print("Optimal solution found!")
             # print(f"Total cost = {solver.Objective().Value()}\n")
