@@ -9,8 +9,11 @@ from scripts.base.map_data import MapData
 
 class MapImageProcessor:
     """ process map pgm file """
-    __map_data = MapData
+    ns: str
+    __bcfg: BConfigs
     __orig_map: np.ndarray
+    #
+    __map_data = MapData
 
     def __init__(self, map_arr: np.ndarray, bconfigs: BConfigs):
 

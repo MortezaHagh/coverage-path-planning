@@ -3,7 +3,6 @@ import json
 import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
-from scripts.base.configs import DistrictConfgs
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase
 from scripts.boustrophedon.cell_bs_cov_planner import CellCoveragePathPlanner
@@ -13,6 +12,9 @@ from scripts.base.my_utils import get_n_colors_cv, get_n_colors_plt
 
 class CoveragePP(CoveragePPBase):
     """  BoustCoveragePP  """
+    colors: list
+    dec_interface: DecompositionInterface
+    all_cell_covp_planners: list[CellCoveragePathPlanner]
 
     def __init__(self, zone_map_data: ZoneMapData):
         super().__init__(zone_map_data)
@@ -20,8 +22,10 @@ class CoveragePP(CoveragePPBase):
         print(f" >>>>> [{self.ns}] Step: coverage path planning")
 
         # configs
-        self.dcfgs = DistrictConfgs()
         self.colors = []
+
+        # for boustrophedon decomposition
+        self.dec_interface = None
 
         # all cells coverage path planners
         self.all_cell_covp_planners: list[CellCoveragePathPlanner] = []
@@ -95,6 +99,8 @@ class CoveragePP(CoveragePPBase):
 
     def plot_paths(self):
         fig, ax = plt.subplots(1, 1)
+        ax.set_aspect('equal', adjustable='box')
+        #
         self.plot_coverage_paths(ax)
         self.plot_connections(ax)
 

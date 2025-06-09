@@ -11,8 +11,13 @@ from scripts.base.configs import DistrictConfgs, PlanningConfigs
 class ZoneData:
     ind: int
     zmd: ZoneMapData
+    #
+    dcfg: DistrictConfgs
+    pcfgs: PlanningConfigs
+    #
     cov_planner: CoveragePP
     cleaning_area: float
+    #
 
     def __init__(self, ind: int = None):
         self.ns = "ZoneData"
@@ -25,15 +30,16 @@ class ZoneData:
 
         # coverage path planner
         self.cov_planner = None
+        self.complete_path = None
 
         # statistics - todo
+        self.n_paths = 0
         self.cleaning_area_px = None
         self.cleaning_area_m = None
         self.cleaned_area_px = None
         self.cleaned_area_m = None
         self.uncleaned_area_m = None
         self.overlaped_area_m = None
-        self.n_paths = 0
 
     def set_map_data(self, zmd: ZoneMapData):
         self.zmd = zmd
@@ -122,16 +128,18 @@ class ZoneData:
         self.zmd.map_clean_data = map_clean_data
 
         # update map planning with cleaned paths
-        c = 40
-        color = (c, c, c)
-        map_p_c = self.zmd.map_planning.copy()
-        for path in paths:
-            for i in range(len(path) - 1):
-                pt1 = tuple(map(int, path[i]))
-                pt2 = tuple(map(int, path[i + 1]))
-                cv.line(map_p_c, pt1, pt2, color=color, thickness=2 * cleaning_r_px)
-        alpha = 0.6
-        self.zmd.map_planning = cv.addWeighted(self.zmd.map_planning, alpha, map_p_c, 1 - alpha, 0)
+        add_cleaned_area_to_map_planning = False
+        if add_cleaned_area_to_map_planning:
+            c = 40
+            color = (c, c, c)
+            map_p_c = self.zmd.map_planning.copy()
+            for path in paths:
+                for i in range(len(path) - 1):
+                    pt1 = tuple(map(int, path[i]))
+                    pt2 = tuple(map(int, path[i + 1]))
+                    cv.line(map_p_c, pt1, pt2, color=color, thickness=2 * cleaning_r_px)
+            alpha = 0.6
+            self.zmd.map_planning = cv.addWeighted(self.zmd.map_planning, alpha, map_p_c, 1 - alpha, 0)
 
         # Only count cleaned area where there was free space (white in map_cleaned)
         # cleaned_area_px = np.sum((cleaned_acc > 0) & (map_cleaned == 255))

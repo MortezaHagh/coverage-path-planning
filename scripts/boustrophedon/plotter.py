@@ -34,7 +34,7 @@ class BoustPlotter:
 
     def visualize_together(self):
         # fig, axs = plt.subplots(1, 3, constrained_layout=True)
-        fig, axs = plt.subplots(1, 3, constrained_layout=True, figsize=(20, 25))
+        fig, axs = plt.subplots(1, 3, constrained_layout=True, figsize=(20, 5))
         if self.set_aspect:
             axs[0].set_aspect('equal', adjustable='box')
             axs[1].set_aspect('equal', adjustable='box')
@@ -154,7 +154,7 @@ class BoustPlotter:
     def visualize_mcells(self, ax=None):
         fig = None
         if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=(15, 20))
+            fig, ax = plt.subplots(1, 1)  # , figsize=(15, 15)
             if self.set_aspect:
                 ax.set_aspect('equal', adjustable='box')
         ng = len(self.dec_obj.cells_groups)

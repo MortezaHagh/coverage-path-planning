@@ -10,12 +10,27 @@ class Rectangle:
     """ Rectangle class
         all data in pixels
     """
+    ns: str
+    point_radius: int
+    #
     rid: int = 0
-    data: dict
+    __data: dict
+    width: int
+    height: int
+    xc: float
+    yc: float
+    cp: tuple[float, float]
+    rot: float
+    #
+    xc_i: int
+    yc_i: int
+    cp_i: tuple[int, int]
+    #
     bbox: box
     vertices_t: tuple
     vertices_a: np.ndarray
     vertices_ccw: np.ndarray
+    #
     x_min: int
     y_min: int
 

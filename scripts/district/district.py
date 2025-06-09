@@ -9,6 +9,9 @@ from scripts.base.configs import DistrictConfgs
 
 
 class DistrictData:
+    ns: str                # namespace
+    dcfgs: DistrictConfgs  # district configs
+    #
     spa_obj: SpaceAnalyzer      # space_analyzer
     dmd: ZoneMapData            # district_map_data
     zone_datas: list[ZoneData]  # zones

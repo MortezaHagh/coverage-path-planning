@@ -21,19 +21,23 @@ class SpaceAnalyzer:
     f: filtered (island detection)
     bb: bounding box
     """
-    space_type: str
     scfg: SpaceConfigs
+    space_type: str
+    #
     orig_map_data: MapData
     orig_rectangle: Rectangle
     rectangle: Rectangle
     rect_data: dict                     # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
     vertices: list[tuple[int, int]]     # vertices  [(x, y), ...]
+    #
     hw_bd: dict                         # for map not rectangle {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
     hw_bd_local: dict                   # {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
     final_rect_data: dict               # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
     final_vertices = list[tuple[int, int]]         # vertices: [(x, y), ...]
     fs_selected_point: tuple[float, float]
+    #
     __zone_map_data: ZoneMapData
+    #
     cropped_mask: np.ndarray                # mask for cropped map
     binary_map_0: np.ndarray                # original base binary map
     map_c_orig: np.ndarray
@@ -69,10 +73,10 @@ class SpaceAnalyzer:
         # attributes
         self.hw_bd: dict[str:int] = None       # cropped hw limits
         self.hw_bd_local: dict[str:int] = None  # local hw limits
-        self.is_fs_point_selected = False
-        self.fs_selected_point = None
         self.final_rect_data = None
         self.final_vertices = None
+        self.is_fs_point_selected = False
+        self.fs_selected_point = None
 
         #
         self.__zone_map_data = None

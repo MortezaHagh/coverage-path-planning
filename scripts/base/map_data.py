@@ -19,6 +19,12 @@ class MapData:
     up_c_h: int  # updated center height
     origin_m: tuple[int, int]  # origin in meters
     #
+    wind_hw: tuple[int, int]  # window height and width
+    wind_h: int  # window height
+    wind_w: int  # window width
+    wind_center: tuple[int, int]  # window center (height, width)
+    zoom: float  # zoom factor
+    #
     orig_map: np.ndarray  # original grayscale map
     orig_bin_map: np.ndarray  # original binary map
     up_map: np.ndarray  # updated grayscale map

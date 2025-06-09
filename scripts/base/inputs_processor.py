@@ -13,6 +13,7 @@ class InputsProcessor:
     ns: str
     map_name: str
     paths: dict = {}
+    #
     __configs: BConfigs
     __orig_map: np.ndarray
 
@@ -23,6 +24,8 @@ class InputsProcessor:
         self.__configs = BConfigs()
         self.__orig_map = None
         self.paths["data"] = "/home/morteza/Documents/00-CPP/00-CPP/Data"
+
+        #
         print(f" >>>>> [{self.ns}] Step: processing inputs")
         print(f"[{self.ns}]: map name: {map_name}")
 
@@ -33,7 +36,7 @@ class InputsProcessor:
         self.check_directory()
 
         # read yaml file and write json file
-        map_yaml_data = self.read_yaml(self.paths["yaml"])
+        map_yaml_data = self.load_data(self.paths["yaml"])
         self.write_json(self.paths["json"], map_yaml_data)
 
         # complete configs from yaml data
@@ -77,7 +80,7 @@ class InputsProcessor:
         self.__configs.free_thresh = yaml_data["free_thresh"]
         self.__configs.occupied_thresh = yaml_data["occupied_thresh"]
 
-    def read_yaml(self, file_path):
+    def load_data(self, file_path):
         with open(file_path, 'r') as file:
             return yaml.safe_load(file)
 

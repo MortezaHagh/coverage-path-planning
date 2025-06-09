@@ -1,16 +1,17 @@
 import numpy as np
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.base.configs import SpaceConfigs, PlanningConfigs
+from scripts.base.configs import SpaceConfigs, PlanningConfigs, DistrictConfgs
 from scripts.boustrophedon.decomposition_interface import DecompositionInterface
 
 
 class CoveragePPBase:
+    ns: str  # namespace for logging
     zmd: ZoneMapData  # zone data
+    #
     paths_px: list[list[tuple[int, int]]]
     paths_m: list[list[tuple[float, float]]]
     n_paths: int
     total_path_len_m: float
-    dec_interface: DecompositionInterface
 
     def __init__(self, zone_map_data: ZoneMapData):
         self.ns = "CoveragePPBase"
@@ -24,11 +25,9 @@ class CoveragePPBase:
         self.n_paths = 0
         self.total_path_len_m = 0.0
 
-        # for boustrophedon decomposition
-        self.dec_interface = None
-
         # parameters and configurations
         self.scfgs = SpaceConfigs()
+        self.dcfgs = DistrictConfgs()
         self.pcfgs = PlanningConfigs()
 
         # params

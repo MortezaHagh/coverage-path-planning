@@ -5,12 +5,20 @@ from scripts.gui.visuals import VisualRectangle
 
 
 class RecEventHandler:
+    __ns: str
+    wind_name: str
+    #
     __map_img: np.ndarray
+    canvas: np.ndarray
+    #
     main_obj: VisualRectangle
     objects: list[VisualRectangle]
     #
     selected_ind: int
     highlighted_ind: int
+    #
+    __ctrl_down: bool
+    __button_down: bool
 
     def __init__(self, map_img: np.ndarray):
         #
@@ -181,5 +189,5 @@ class RecEventHandler:
 
     def get_main_obj(self) -> VisualRectangle:
         if self.main_obj is None:
-            raise f"[{self.__ns}]: main object is has not created!"
+            raise Exception(f"[{self.__ns}]: main object is has not created!")
         return self.main_obj

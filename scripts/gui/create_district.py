@@ -8,6 +8,11 @@ from scripts.gui.visuals import Rectangle, VisualRectangle
 
 
 class DistrictGen:
+    __ns: str
+    __wind_name: str
+    __md: MapData
+    __cfg: DistrictConfgs
+    #
     __rec_ev_hl: RecEventHandler
 
     def __init__(self, map_data: MapData):
@@ -58,11 +63,11 @@ class DistrictGen:
         with Listener(on_press=handler.on_key_press, on_release=handler.on_key_release) as listener:
             listener.join()
 
-    def get_district_vis(self) -> VisualRectangle:
-        if self.__cfg.whole_map:
-            print(f"[{self.__ns}]: whole map is selected as district for CPP! There is no rec_ev_hl!")
-            return None
-        return self.__rec_ev_hl.get_main_obj()
+    # def get_district_vis(self) -> VisualRectangle:
+    #     if self.__cfg.whole_map:
+    #         print(f"[{self.__ns}]: whole map is selected as district for CPP! There is no rec_ev_hl!")
+    #         return None
+    #     return self.__rec_ev_hl.get_main_obj()
 
     def get_district_rect(self) -> Rectangle:
         if not self.__cfg.whole_map:
