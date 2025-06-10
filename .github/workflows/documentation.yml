@@ -15,16 +15,21 @@ jobs:
           python-version: "3.13"
       - name: Install dependencies
         run: |
-          pip install sphinx sphinx_rtd_theme myst_parser sphinx-autodoc-typehints numpy shapely opencv-python matplotlib pynput
+          pip install sphinx sphinx_rtd_theme myst_parser sphinx-autodoc-typehints numpy shapely opencv-python matplotlib pynput ortools
       - name: Sphinx build
         run: |
-          cd docs
+          cd docs/source
+          sphinx-apidoc -o . -f --separate ../../scripts
+          cd ..
           make html
+          cd ..
+      - name: List generated files
+        run: ls -l docs/build/html
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/build/html
+          publish_dir: docs/build/html
           force_orphan: true
