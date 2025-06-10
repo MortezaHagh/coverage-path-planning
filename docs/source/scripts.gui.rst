@@ -1,38 +1,20 @@
-scripts.gui package
+scripts.gui
 ===================
 
-Submodules
-----------
+.. Submodules
+.. ----------
 
-scripts.gui.create\_district module
------------------------------------
+.. toctree::
+   :maxdepth: 2
 
-.. automodule:: scripts.gui.create_district
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   scripts.gui.visuals
+   scripts.gui.rect_event_hl
+   scripts.gui.create_district
 
-scripts.gui.rect\_event\_hl module
-----------------------------------
+.. Module contents
+.. ---------------
 
-.. automodule:: scripts.gui.rect_event_hl
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-scripts.gui.visuals module
---------------------------
-
-.. automodule:: scripts.gui.visuals
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: scripts.gui
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. .. automodule:: scripts.gui
+..    :members:
+..    :show-inheritance:
+..    :undoc-members:

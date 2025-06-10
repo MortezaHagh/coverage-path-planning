@@ -12,6 +12,8 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+from sphinx.ext import autodoc
+
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
@@ -42,6 +44,9 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',  # Optional: for Google/NumPy-style docstrings
+    'sphinx.ext.autosummary',
+    'sphinx_rtd_theme',
+
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -61,7 +66,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'English'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -77,7 +82,7 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -181,7 +186,24 @@ epub_exclude_files = ['search.html']
 
 autodoc_default_options = {
     'members': True,
+    'member-order': 'bysource',
+    # 'special-members': '__init__',
     'undoc-members': True,
     'show-inheritance': True,
     'autodoc_member_order': 'groupwise'
 }
+
+#
+add_module_names = False
+autodoc_member_order = 'groupwise'
+autosummary_generate = True  # Generate autosummary automatically
+
+# # Original order
+# autodoc.Documenter.member_order = 0
+# autodoc.ExceptionDocumenter.member_order = 10
+# autodoc.ClassDocumenter.member_order = 20
+# autodoc.FunctionDocumenter.member_order = 30
+# autodoc.DataDocumenter.member_order = 40
+# autodoc.MethodDocumenter.member_order = 50
+# autodoc.AttributeDocumenter.member_order = 60
+# autodoc.PropertyDocumenter.member_order = 60

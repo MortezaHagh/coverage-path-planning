@@ -1,38 +1,20 @@
-scripts.spa package
+scripts.spa
 ===================
 
-Submodules
-----------
+.. Submodules
+.. ----------
 
-scripts.spa.inscribed\_rectangle\_histogram module
---------------------------------------------------
+.. toctree::
+   :maxdepth: 2
 
-.. automodule:: scripts.spa.inscribed_rectangle_histogram
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   scripts.spa.space_analyzer
+   scripts.spa.spa_utils
+   scripts.spa.inscribed_rectangle_histogram
 
-scripts.spa.spa\_utils module
------------------------------
+.. Module contents
+.. ---------------
 
-.. automodule:: scripts.spa.spa_utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-scripts.spa.space\_analyzer module
-----------------------------------
-
-.. automodule:: scripts.spa.space_analyzer
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: scripts.spa
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. .. automodule:: scripts.spa
+..    :members:
+..    :show-inheritance:
+..    :undoc-members:

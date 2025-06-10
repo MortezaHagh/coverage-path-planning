@@ -1,42 +1,20 @@
-scripts.district package
+scripts.district
 ========================
 
-Submodules
-----------
+.. Submodules
+.. ----------
 
-scripts.district.district module
---------------------------------
+.. toctree::
+   :maxdepth: 2
 
-.. automodule:: scripts.district.district
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :member-order: groupwise
+   scripts.district.zone_map_data
+   scripts.district.district
+   scripts.district.zone
 
-scripts.district.zone module
-----------------------------
+.. Module contents
+.. ---------------
 
-.. automodule:: scripts.district.zone
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :member-order: groupwise
-
-scripts.district.zone\_map\_data module
----------------------------------------
-
-.. automodule:: scripts.district.zone_map_data
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :member-order: groupwise
-
-
-Module contents
----------------
-
-.. automodule:: scripts.district
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :member-order: groupwise
+.. .. automodule:: scripts.district
+..    :members:
+..    :show-inheritance:
+..    :undoc-members:

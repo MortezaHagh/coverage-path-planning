@@ -1,20 +1,20 @@
-scripts package
+covpp package
 ===============
 
 .. toctree::
-    :maxdepth: 2
-    :caption: Subpackages:
+   :maxdepth: 2
 
-    scripts.base
-    scripts.boustrophedon
-    scripts.district
-    scripts.gui
-    scripts.spa
+   scripts.base 
+   scripts.gui
+   scripts.spa
+   scripts.district
+   scripts.planning
+   scripts.boustrophedon
 
 .. Module contents
 .. ---------------
 
 .. .. automodule:: scripts
-..     :members:
-..     :undoc-members:
-..     :show-inheritance:
+..    :members:
+..    :show-inheritance:
+..    :undoc-members:
