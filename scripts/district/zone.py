@@ -163,6 +163,7 @@ class ZoneData:
         os.makedirs(map_hl_path, exist_ok=True)
         map_hl_path = map_hl_path + f"map_planning_{self.dcfg.ns}.png"
         cv.imwrite(map_hl_path, self.zmd.map_planning)
+        print(f"[save .... ][{self.ns}-{self.zmd.ind}]: map planning saved to: {map_hl_path}")
 
     def save_map_cleaning_data(self):
         if not self.dcfg.save_map_planning:
@@ -171,6 +172,7 @@ class ZoneData:
         os.makedirs(map_hl_path, exist_ok=True)
         map_hl_path = map_hl_path + f"clean_data_{self.dcfg.ns}.png"
         cv.imwrite(map_hl_path, self.zmd.map_clean_data)
+        print(f"[save .... ][{self.ns}-{self.zmd.ind}]: map cleaning saved to: {map_hl_path}")
 
     def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
         res = self.zmd.reslolution

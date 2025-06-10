@@ -4,7 +4,7 @@ Data/Map4
 *.json
 *.pgm
 __pycache__/
-.vscode/
+# .vscode/
 coverage_path_planning/
 venv/
 todo
@@ -13,3 +13,5 @@ todo
 # docs/build/
 # docs/source/.static/
 # docs/source/.templates/
+!devcontainer.json
+!settings.json

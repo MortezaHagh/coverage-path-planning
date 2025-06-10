@@ -1,0 +1,9 @@
+# python -m  pipreqs.pipreqs .
+numpy
+# opencv-python
+opencv-python-headless
+pynput
+PyYAML
+Shapely
+matplotlib
+ortools

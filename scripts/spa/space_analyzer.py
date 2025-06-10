@@ -302,6 +302,10 @@ class SpaceAnalyzer:
     def select_free_space(self, map_i: np.ndarray) -> None:
         print(f"[{self.ns}]: selecting the free space ...")
         free_map_disp = cv.addWeighted(self.map_c_orig, 0.4, map_i, 0.6, 0)
+        if not self.scfg.select_free_space:
+            self.is_fs_point_selected = True
+            self.fs_selected_point = (free_map_disp.shape[1] // 2, free_map_disp.shape[0] // 2)  # center of the map
+            return
         win_name = "select free space"
         cv.namedWindow(win_name, cv.WINDOW_NORMAL)
         cv.setMouseCallback(win_name, self.select_point)

@@ -1,0 +1,43 @@
+{
+    "editor.rulers": [
+        80,
+        120
+    ],
+    "files.exclude": {
+        "**/*.pyc": true,
+        "**/LICENSE": false,
+        "**/*gitignore": false,
+        "**/*pycache*": true,
+        "venv": true,
+        "LICENSE": true
+    },
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.autopep8",
+        "editor.formatOnSave": true,
+    },
+    "autopep8.args": [
+        "--max-line-length=140"
+    ],
+    "pylint.args": [
+        "--init-hook",
+        "import sys; sys.path.insert(0, './scripts')",
+        "--disable=C0114",
+        "--disable=C0301",
+        "--disable=C0115",
+        "--disable=C0116",
+        "--disable=W1514",
+        "--disable=E1101"
+    ],
+    "github.copilot.editor.enableAutoCompletions": true,
+    "python.pipenvPath": "/home/morteza/Documents/00-CPP/00-CPP/venv",
+    "python.autoComplete.extraPaths": [
+        "/home/morteza/mo_ws/devel/lib/python3/dist-packages",
+        "/home/morteza/catkin_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/morteza/mo_ws/devel/lib/python3/dist-packages",
+        "/home/morteza/catkin_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
+}

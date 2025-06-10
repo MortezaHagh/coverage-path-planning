@@ -29,7 +29,7 @@ class DistrictConfgs:
 
         # plots configs
         self.save_map_planning = True
-        self.save_decomposition_plot = True
+        self.save_decomposition_plot = False
         self.plot_decomposition = False
 
         # coverage path planning configs
@@ -46,6 +46,8 @@ class DistrictConfgs:
 @dataclasses.dataclass
 class SpaceConfigs:
     def __init__(self):
+        #
+        self.select_free_space = False  # select free space from image
         # robot configs
         self.robot_radius = 0.5
         # self.robot_circumscribed_r = 0.5

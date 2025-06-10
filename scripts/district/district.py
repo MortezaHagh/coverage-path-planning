@@ -84,6 +84,7 @@ class DistrictData:
             return
         map_planning_path = self.dmd.path + f"/map_planning_{self.dcfgs.ns}.png"
         cv.imwrite(map_planning_path, self.dmd.map_planning)
+        print(f"[save .... ][{self.ns}]: map planning saved to: {map_planning_path}")
 
     # ==================================================================================================================
 
