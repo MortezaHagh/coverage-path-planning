@@ -103,6 +103,96 @@
 <dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MHDecomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.ns">
+<span class="sig-name descname"><span class="pre">ns</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.ns" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.resolution">
+<span class="sig-name descname"><span class="pre">resolution</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.resolution" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.bcfgs">
+<span class="sig-name descname"><span class="pre">bcfgs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="scripts.base.configs.html#scripts.base.configs.PlanningConfigs" title="scripts.base.configs.PlanningConfigs"><span class="pre">PlanningConfigs</span></a></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.bcfgs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.b_poly">
+<span class="sig-name descname"><span class="pre">b_poly</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Polygon</span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.b_poly" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.b_obstacle">
+<span class="sig-name descname"><span class="pre">b_obstacle</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="scripts.boustrophedon.obstacles.html#scripts.boustrophedon.obstacles.Obstacle" title="scripts.boustrophedon.obstacles.Obstacle"><span class="pre">Obstacle</span></a></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.b_obstacle" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.polygons">
+<span class="sig-name descname"><span class="pre">polygons</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Polygon</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.polygons" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.obstacles">
+<span class="sig-name descname"><span class="pre">obstacles</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="scripts.boustrophedon.obstacles.html#scripts.boustrophedon.obstacles.Obstacle" title="scripts.boustrophedon.obstacles.Obstacle"><span class="pre">Obstacle</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.obstacles" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.events">
+<span class="sig-name descname"><span class="pre">events</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="scripts.boustrophedon.events.html#scripts.boustrophedon.events.Event" title="scripts.boustrophedon.events.Event"><span class="pre">Event</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.events" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.cells">
+<span class="sig-name descname"><span class="pre">cells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="scripts.boustrophedon.cell.html#scripts.boustrophedon.cell.Cell" title="scripts.boustrophedon.cell.Cell"><span class="pre">Cell</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.cells" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.trapezoids">
+<span class="sig-name descname"><span class="pre">trapezoids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Polygon</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.trapezoids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.n_events">
+<span class="sig-name descname"><span class="pre">n_events</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.n_events" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.n_cells">
+<span class="sig-name descname"><span class="pre">n_cells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.n_cells" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.n_mcells">
+<span class="sig-name descname"><span class="pre">n_mcells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.n_mcells" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.cells_groups">
+<span class="sig-name descname"><span class="pre">cells_groups</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="scripts.boustrophedon.cell.html#scripts.boustrophedon.cell.CellGroup" title="scripts.boustrophedon.cell.CellGroup"><span class="pre">CellGroup</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.cells_groups" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.mcells">
+<span class="sig-name descname"><span class="pre">mcells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="scripts.boustrophedon.cell.html#scripts.boustrophedon.cell.Cell" title="scripts.boustrophedon.cell.Cell"><span class="pre">Cell</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.mcells" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.smcells">
+<span class="sig-name descname"><span class="pre">smcells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="scripts.boustrophedon.cell.html#scripts.boustrophedon.cell.Cell" title="scripts.boustrophedon.cell.Cell"><span class="pre">Cell</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.smcells" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.smcells_seq_length_px">
+<span class="sig-name descname"><span class="pre">smcells_seq_length_px</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.smcells_seq_length_px" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.plotter">
+<span class="sig-name descname"><span class="pre">plotter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="scripts.boustrophedon.plotter.html#scripts.boustrophedon.plotter.BoustPlotter" title="scripts.boustrophedon.plotter.BoustPlotter"><span class="pre">BoustPlotter</span></a></em><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.plotter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.initiate">
 <span class="sig-name descname"><span class="pre">initiate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.boustrophedon.decomposition_1_mh_f.MHDecomposition.initiate" title="Link to this definition"></a></dt>
