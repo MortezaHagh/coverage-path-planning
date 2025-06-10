@@ -10,6 +10,6 @@ venv/
 todo
 *.zip
 *.png
-docs/build/
-docs/source/.static/
-docs/source/.templates/
+# docs/build/
+# docs/source/.static/
+# docs/source/.templates/

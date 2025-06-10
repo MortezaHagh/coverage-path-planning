@@ -7,8 +7,8 @@ scripts.spa
 .. toctree::
    :maxdepth: 2
 
-   scripts.spa.space_analyzer
    scripts.spa.spa_utils
+   scripts.spa.space_analyzer
    scripts.spa.inscribed_rectangle_histogram
 
 .. Module contents

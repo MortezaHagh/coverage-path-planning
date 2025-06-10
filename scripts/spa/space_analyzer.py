@@ -15,7 +15,6 @@ class SpaceAnalyzer:
     """
     ws: work space (max(wf and os distances)). displays feasible position for the center of the robot.
     cleaning: displays final cleaned area.
-    c_: cropped
     orig: original or eruded back after dilation
     sf: selected free space
     f: filtered (island detection)
@@ -448,9 +447,6 @@ class SpaceAnalyzer:
     def display_contour(self, c) -> None:
         """
         Display all contours from findContours, each contour with a different color.
-
-        Args:
-            c (list): List of contours.
         """
         # Create an empty image to draw contours
         contour_img = np.zeros_like(self.map_c_orig)

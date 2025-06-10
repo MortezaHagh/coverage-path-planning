@@ -1,0 +1,223 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scripts.district.zone &mdash; covpp 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2ed17a75"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="scripts.planning" href="scripts.planning.html" />
+    <link rel="prev" title="scripts.district.district" href="scripts.district.district.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            covpp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="scripts.html">covpp package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="scripts.base.html">scripts.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripts.gui.html">scripts.gui</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripts.spa.html">scripts.spa</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="scripts.district.html">scripts.district</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="scripts.district.zone_map_data.html">scripts.district.zone_map_data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="scripts.district.district.html">scripts.district.district</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">scripts.district.zone</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#scripts.district.zone.ZoneData"><code class="docutils literal notranslate"><span class="pre">ZoneData</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scripts.planning.html">scripts.planning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripts.boustrophedon.html">scripts.boustrophedon</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">covpp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="scripts.html">covpp package</a></li>
+          <li class="breadcrumb-item"><a href="scripts.district.html">scripts.district</a></li>
+      <li class="breadcrumb-item active">scripts.district.zone</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/scripts.district.zone.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-scripts.district.zone">
+<span id="scripts-district-zone"></span><h1>scripts.district.zone<a class="headerlink" href="#module-scripts.district.zone" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ZoneData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.district.zone.ZoneData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.cleaning_area">
+<span class="sig-name descname"><span class="pre">cleaning_area</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#scripts.district.zone.ZoneData.cleaning_area" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.ind">
+<span class="sig-name descname"><span class="pre">ind</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#scripts.district.zone.ZoneData.ind" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.zmd">
+<span class="sig-name descname"><span class="pre">zmd</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="scripts.district.zone_map_data.html#scripts.district.zone_map_data.ZoneMapData" title="scripts.district.zone_map_data.ZoneMapData"><span class="pre">ZoneMapData</span></a></em><a class="headerlink" href="#scripts.district.zone.ZoneData.zmd" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.dcfg">
+<span class="sig-name descname"><span class="pre">dcfg</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="scripts.base.configs.html#scripts.base.configs.DistrictConfgs" title="scripts.base.configs.DistrictConfgs"><span class="pre">DistrictConfgs</span></a></em><a class="headerlink" href="#scripts.district.zone.ZoneData.dcfg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.pcfgs">
+<span class="sig-name descname"><span class="pre">pcfgs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="scripts.base.configs.html#scripts.base.configs.PlanningConfigs" title="scripts.base.configs.PlanningConfigs"><span class="pre">PlanningConfigs</span></a></em><a class="headerlink" href="#scripts.district.zone.ZoneData.pcfgs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.cov_planner">
+<span class="sig-name descname"><span class="pre">cov_planner</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="scripts.planning.coverage_pp_2_bs_1.html#scripts.planning.coverage_pp_2_bs_1.CoveragePP" title="scripts.planning.coverage_pp_2_bs_1.CoveragePP"><span class="pre">CoveragePP</span></a></em><a class="headerlink" href="#scripts.district.zone.ZoneData.cov_planner" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.set_map_data">
+<span class="sig-name descname"><span class="pre">set_map_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="scripts.district.zone_map_data.html#scripts.district.zone_map_data.ZoneMapData" title="scripts.district.zone_map_data.ZoneMapData"><span class="pre">ZoneMapData</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.district.zone.ZoneData.set_map_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.district.zone.ZoneData.initialize" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.coverage_planning">
+<span class="sig-name descname"><span class="pre">coverage_planning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.district.zone.ZoneData.coverage_planning" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.post_planning">
+<span class="sig-name descname"><span class="pre">post_planning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.district.zone.ZoneData.post_planning" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.calculate_cleaning_area">
+<span class="sig-name descname"><span class="pre">calculate_cleaning_area</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.district.zone.ZoneData.calculate_cleaning_area" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.calculate_cleaned_area">
+<span class="sig-name descname"><span class="pre">calculate_cleaned_area</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.district.zone.ZoneData.calculate_cleaned_area" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.add_cleaned_area_to_map">
+<span class="sig-name descname"><span class="pre">add_cleaned_area_to_map</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.district.zone.ZoneData.add_cleaned_area_to_map" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.create_map_planning">
+<span class="sig-name descname"><span class="pre">create_map_planning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.district.zone.ZoneData.create_map_planning" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.save_map_planning">
+<span class="sig-name descname"><span class="pre">save_map_planning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.district.zone.ZoneData.save_map_planning" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.save_map_cleaning_data">
+<span class="sig-name descname"><span class="pre">save_map_cleaning_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.district.zone.ZoneData.save_map_cleaning_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.point_m_to_px">
+<span class="sig-name descname"><span class="pre">point_m_to_px</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#scripts.district.zone.ZoneData.point_m_to_px" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.district.zone.ZoneData.save_result">
+<span class="sig-name descname"><span class="pre">save_result</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.district.zone.ZoneData.save_result" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="scripts.district.district.html" class="btn btn-neutral float-left" title="scripts.district.district" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scripts.planning.html" class="btn btn-neutral float-right" title="scripts.planning" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MortezaH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
