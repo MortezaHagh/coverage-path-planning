@@ -5,13 +5,20 @@ from scripts.boustrophedon.events import Event
 
 
 class Obstacle:
+    ns: str
+    ind: int
+    poly: Polygon
+    events: list[Event]
+    s_events: list[Event]
+    n_v: int
+
     def __init__(self, ind: int, poly: Polygon):
         self.ns = "Obstacle"
-        self.ind: int = ind
-        self.poly: Polygon = poly
-        self.events: list[Event] = []
-        self.s_events: list[Event] = []
-        self.n_v: int = len(self.poly.exterior.coords)-1
+        self.ind = ind
+        self.poly = poly
+        self.events = []
+        self.s_events = []
+        self.n_v = len(self.poly.exterior.coords)-1
         #
         self.create_events()
         self.eval_events_line()

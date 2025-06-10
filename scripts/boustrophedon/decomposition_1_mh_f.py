@@ -10,29 +10,52 @@ from scripts.boustrophedon.post_process_mcells import create_sequence, eval_cell
 
 
 class MHDecomposition:
+    ns: str
+    resolution: float
+    bcfgs: PlanningConfigs
+    #
+    b_poly: Polygon
+    b_obstacle: Obstacle
+    polygons: list[Polygon]
+    #
+    obstacles: list[Obstacle]
+    events: list[Event]
+    cells: list[Cell]
+    trapezoids: list[Polygon]
+    n_events: int
+    n_cells: int
+    #
+    n_mcells: int
+    cells_groups: list[CellGroup]
+    mcells: list[Cell]
+    smcells: list[Cell]
+    smcells_seq_length_px: float
+    #
+    plotter: BoustPlotter
+
     def __init__(self, resolution: float = 0.05):
         self.ns = "MHDecomposition"
-        self.resolution: float = resolution
+        self.resolution = resolution
         self.bcfgs = PlanningConfigs()
         #
-        self.b_poly: Polygon = None
-        self.b_obstacle: Obstacle = None
-        self.polygons: list[Polygon] = []
+        self.b_poly = None
+        self.b_obstacle = None
+        self.polygons = []
         #
-        self.obstacles: list[Obstacle] = []
-        self.events: list[Event] = []
-        self.cells: list[Cell] = []
-        self.trapezoids: list[Polygon] = []
-        self.n_events: int = 0
-        self.n_cells: int = 0
+        self.obstacles = []
+        self.events = []
+        self.cells = []
+        self.trapezoids = []
+        self.n_events = 0
+        self.n_cells = 0
         #
-        self.n_mcells: int = 0
-        self.cells_groups: list[CellGroup] = []
-        self.mcells: list[Cell] = []
-        self.smcells: list[Cell] = []
-        self.smcells_seq_length_px: float = 0.0
+        self.n_mcells = 0
+        self.cells_groups = []
+        self.mcells = []
+        self.smcells = []
+        self.smcells_seq_length_px = 0.0
         #
-        self.plotter: BoustPlotter = None
+        self.plotter = None
 
     def initiate(self):
         self.create_obstacles()

@@ -10,6 +10,9 @@ class CellCoveragePathPlanner:
     poly_m: Polygon
     path_m: list[tuple[float, float]] = []
     path_px: list[tuple[int, int]] = []
+    #
+    pcfgs: PlanningConfigs
+    resolution: float
 
     def __init__(self, cell: Cell, zone_ind: int = 0, resolution: float = 0.05):
         self.ns = "CellCoverageP-Z" + str(zone_ind)

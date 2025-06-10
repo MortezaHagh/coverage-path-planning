@@ -6,12 +6,18 @@ from scripts.boustrophedon.decomposition_1_mh_f import MHDecomposition as CellDe
 
 
 class DecompositionInterface:
+    ns: str
+    decomposed: CellDecomposition
+    s_x: int
+    s_y: int
+    n_mcells: int
+
     def __init__(self, zmd: ZoneMapData):
         self.ns = "Decomposition"
         self.decomposed = CellDecomposition(zmd.reslolution)
-        self.s_x: int = 0
-        self.s_y: int = 0
-        self.n_mcells: int = 0
+        self.s_x = 0
+        self.s_y = 0
+        self.n_mcells = 0
 
         # settings
         self.dec_mid_dist = 10
