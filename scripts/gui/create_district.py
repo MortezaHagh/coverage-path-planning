@@ -1,10 +1,10 @@
 import threading
-# from pynput.keyboard import Listener
 import cv2 as cv
+from pynput.keyboard import Listener
 from scripts.base.map_data import MapData
 from scripts.base.configs import DistrictConfgs
 from scripts.gui.rect_event_hl import RecEventHandler
-from scripts.gui.visuals import Rectangle  # , VisualRectangle
+from scripts.gui.visuals import Rectangle
 
 
 class DistrictGen:
@@ -60,10 +60,8 @@ class DistrictGen:
         cv.namedWindow(self.__wind_name, cv.WINDOW_GUI_NORMAL)
 
     def key_listener(self, handler: RecEventHandler):
-        pass
-        # todo
-        # with Listener(on_press=handler.on_key_press, on_release=handler.on_key_release) as listener:
-        #     listener.join()
+        with Listener(on_press=handler.on_key_press, on_release=handler.on_key_release) as listener:
+            listener.join()
 
     # def get_district_vis(self) -> VisualRectangle:
     #     if self.__cfg.whole_map:

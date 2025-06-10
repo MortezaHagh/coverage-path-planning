@@ -11,6 +11,11 @@
         "venv": true,
         "LICENSE": true
     },
+    // exclude from search
+    "search.exclude": {
+        "docs/": true,
+        "**/*.drawio": true,
+    },
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8",
         "editor.formatOnSave": true,
