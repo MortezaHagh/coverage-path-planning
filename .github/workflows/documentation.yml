@@ -18,9 +18,7 @@ jobs:
           pip install sphinx sphinx_rtd_theme myst_parser sphinx-autodoc-typehints numpy shapely opencv-python matplotlib pynput ortools
       - name: Sphinx build
         run: |
-          cd docs/source
-          sphinx-apidoc -o . -f --separate ../../scripts
-          cd ..
+          cd docs
           make html
           cd ..
       - name: List generated files
