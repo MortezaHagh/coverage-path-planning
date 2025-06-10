@@ -107,6 +107,7 @@ class CoveragePP(CoveragePPBase):
         #
         ns = self.dcfgs.covpp_method
         boust_path = os.path.join(self.zmd.path, ns)
+        os.makedirs(boust_path, exist_ok=True)
         seq_method = self.dcfgs.cell_sequence_method
         fig_path = os.path.join(boust_path, f"paths_{seq_method}.png")
         fig.savefig(fig_path, format="png", dpi=300)
