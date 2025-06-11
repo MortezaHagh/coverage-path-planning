@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 from shapely import Polygon, Point
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.boustrophedon.decomposition_1_mh_f import MHDecomposition as CellDecomposition
+from scripts.boustrophedon.decomposition_1_mh import MHDecomposition as CellDecomposition
 
 
 class DecompositionInterface:
@@ -20,7 +20,7 @@ class DecompositionInterface:
         self.n_mcells = 0
 
         # settings
-        self.dec_mid_dist = 10
+        self.dec_mid_dist = 50
         self.set_start_coord(zmd)
 
         # set bounding polygon

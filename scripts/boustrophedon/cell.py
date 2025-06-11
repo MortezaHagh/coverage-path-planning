@@ -147,7 +147,7 @@ class Cell:
     def eveal_planning_area(self, resolution, cleaning_r):
         min_area = 0.5 * 3.14 * cleaning_r**2
         if (self.area*resolution**2) < min_area:
-            print(f"[WARN] cell area is too small: {self.id}")
+            # print(f"[WARN] cell area is too small: {self.id}")
             self.do_planning = False
 
 

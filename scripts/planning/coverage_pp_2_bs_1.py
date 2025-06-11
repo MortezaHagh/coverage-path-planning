@@ -11,7 +11,7 @@ from scripts.base.my_utils import get_n_colors_cv, get_n_colors_plt
 
 
 class CoveragePP(CoveragePPBase):
-    """  BoustCoveragePP  """
+    """  Boustrophedon coverage path planning."""
     colors: list
     dec_interface: DecompositionInterface
     all_cell_covp_planners: list[CellCoveragePathPlanner]
@@ -36,7 +36,7 @@ class CoveragePP(CoveragePPBase):
     def coverage_planning(self):
         self.decompose_map()
         self.zone_covpp()
-        self.save_data_figs()
+        self.bs_post_planning()
 
     def decompose_map(self):
         print(f"[{self.ns}]: start decomposition")
@@ -51,7 +51,7 @@ class CoveragePP(CoveragePPBase):
                 self.paths_m.append(cell_covp_planner.path_m)
                 self.paths_px.append(cell_covp_planner.path_px)
 
-    def save_data_figs(self):
+    def bs_post_planning(self):
         n = self.dec_interface.decomposed.n_mcells
         self.colors = get_n_colors_cv(n)
         self.save_decomposition_plot()
@@ -98,6 +98,8 @@ class CoveragePP(CoveragePPBase):
         self.zmd.map_planning = map_planning
 
     def plot_paths(self):
+        """ Plot the calculated coverage paths and connections between them.
+        """
         fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
         #

@@ -448,6 +448,7 @@ class MHDecomposition:
     # ==================================================================================================================
 
     def eval_planning_area(self):
+        """check if area of the cell is enough for planning"""
         for cell in self.mcells:
             cell.eveal_planning_area(self.resolution, self.bcfgs.cleaning_r)
 
@@ -462,4 +463,7 @@ class MHDecomposition:
         self.plotter.visualize()
 
     def save_figs(self, path: str):
+        """ plot and save boustrophedon decomposition figures 
+            plots: mcells - seq 
+        """
         self.plotter.save_figs(path)

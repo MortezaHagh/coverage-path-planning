@@ -29,7 +29,7 @@ class DistrictConfgs:
 
         # plots configs
         self.save_map_planning = True
-        self.save_decomposition_plot = False
+        self.save_decomposition_plot = True
         self.plot_decomposition = False
 
         # coverage path planning configs

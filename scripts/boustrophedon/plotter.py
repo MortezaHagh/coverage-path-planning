@@ -4,6 +4,10 @@ from scripts.boustrophedon.cell import Cell, CellGroup
 
 
 class BoustPlotter:
+    """Boustrophedon decomposition plotter.
+        plots: mcells - seq 
+    """
+
     def __init__(self, dec_obj):
         self.dec_obj = dec_obj
         self.dcfgs = DistrictConfgs()
