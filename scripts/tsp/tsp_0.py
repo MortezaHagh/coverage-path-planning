@@ -11,9 +11,8 @@ def solve_tsp(dist: np.ndarray, cities: np.ndarray, start: int = 0) -> tuple[lis
         start (int, optional): starting city. Defaults to 0.
 
     Returns:
-        tuple[list, float]: [tour, cost]
-        tour: tour of cities, starting and ending at the start city [0]
-        cost: total cost of the tour
+        tour (list): tour of cities, starting and ending at the start city [0].
+        cost (float): total cost of the tour.
     """
 
     print("Using TSP solver version 0")

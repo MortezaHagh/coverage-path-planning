@@ -19,7 +19,7 @@ class CoveragePP(CoveragePPBase):
         print(f"[{self.ns}]: simple coverage path planning")
         self.zone_covpp()
         self.rotate_waypoints()
-        self.create_path_px()
+        self.paths_px = self.path_m_to_px(self.paths_m)
         self.add_path_to_map_planning()
 
     def zone_covpp(self):

@@ -104,7 +104,7 @@ class ZoneData:
             for i in range(len(path) - 1):
                 segment_mask = np.zeros_like(map_cleaning, dtype=np.uint8)
                 pt1 = tuple([path[i][0]-w, path[i][1]-h])
-                pt2 = tuple([path[i + 1][0]-w, path[i+1][1]-h])
+                pt2 = tuple([path[i+1][0]-w, path[i+1][1]-h])
                 cv.line(segment_mask, pt1, pt2, color=color_p, thickness=2 * cleaning_r_px)
                 cleaned_acc = cv.add(cleaned_acc, segment_mask)
         max_overlap = np.max(cleaned_acc)

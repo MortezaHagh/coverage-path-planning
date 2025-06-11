@@ -20,7 +20,7 @@ class DecompositionInterface:
         self.n_mcells = 0
 
         # settings
-        self.dec_mid_dist = 50
+        self.dec_mid_dist = 20
         self.set_start_coord(zmd)
 
         # set bounding polygon

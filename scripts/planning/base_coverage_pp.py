@@ -1,7 +1,6 @@
 import numpy as np
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.configs import SpaceConfigs, PlanningConfigs, DistrictConfgs
-from scripts.boustrophedon.decomposition_interface import DecompositionInterface
 
 
 class CoveragePPBase:
@@ -59,8 +58,11 @@ class CoveragePPBase:
         # update
         self.paths_m = new_paths
 
-    def create_path_px(self):
-        self.paths_px = [[self.point_m_to_px(p) for p in path_m] for path_m in self.paths_m]
+    def path_m_to_px(self, paths_m: list[tuple[float, float]]):
+        return [[self.point_m_to_px(p) for p in path_m] for path_m in paths_m]
+
+    def path_px_to_m(self, paths_px: list[tuple[int, int]]):
+        return [[self.point_px_to_m(p) for p in path_px] for path_px in paths_px]
 
     def rotate_point(self, x, y, rotation):
         x_r = x * np.cos(rotation) - y * np.sin(rotation)
@@ -69,6 +71,9 @@ class CoveragePPBase:
 
     def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
         return (int(p[0] / self.resolution), int(p[1] / self.resolution))
+
+    def point_px_to_m(self, p: tuple[int, int]) -> tuple[float, float]:
+        return (p[0] * self.resolution, p[1] * self.resolution)
 
     def post_planning(self):
         self.n_paths = len(self.paths_px)

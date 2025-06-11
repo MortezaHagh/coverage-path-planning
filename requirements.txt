@@ -7,3 +7,5 @@ PyYAML
 Shapely
 matplotlib
 ortools
+# 
+scikit-image

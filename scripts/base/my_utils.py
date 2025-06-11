@@ -1,28 +1,50 @@
-from typing import Optional
+import dataclasses
 import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 
 
-def get_n_colors_plt(n):
+@dataclasses.dataclass
+class Point:
+    x = None
+    y = None
+
+
+class CPath:
+    """ Class for cell path """
+    path_px: list[tuple[int, int]] = None
+    path_m: list[tuple[float, float]] = None
+
+    def __init__(self, path_px: list[tuple[int, int]] = None):
+        self.path_px = path_px
+        self.path_m = []
+
+    def set_path_px(self, path_px: list[tuple[int, int]]) -> None:
+        self.path_px = path_px
+
+    def set_path_m(self, path_m: list[tuple[float, float]]) -> None:
+        self.path_m = path_m
+
+
+def get_n_colors_plt(n) -> list:
     # Get n distinct colors from matplotlib's tab10/Set3 colormaps or HSV spectrum
     cmap = plt.get_cmap('hsv')  # You can use 'tab10', 'tab20', 'Set3', etc.
     colors_rgb = [cmap(i / n)[:3] for i in range(n)]  # RGB values (0-1)
     return colors_rgb
 
 
-def get_n_colors_cv(n):
+def get_n_colors_cv(n) -> list:
     colors_rgb = get_n_colors_plt(n)
     # Convert to BGR and scale to 0-255
     colors_bgr = [tuple(int(255 * c) for c in reversed(rgb)) for rgb in colors_rgb]
     return colors_bgr
 
 
-def mod_angle(theta):
+def mod_angle(theta) -> float:
     return theta % (2 * np.pi)
 
 
-def visualize_map(pgm_data_in: Optional[np.ndarray], name=None) -> None:
+def visualize_map(pgm_data_in: np.ndarray, name=None) -> None:
     # ns = "utils"
     # print(f"[{ns}]: display map image")
 
@@ -64,7 +86,7 @@ def visualize_map(pgm_data_in: Optional[np.ndarray], name=None) -> None:
     # print(f"[{ns}]: Image window closed.")
 
 
-def visualize_map_s(pgm_data_in: Optional[np.ndarray], w_name=None, wait=True) -> None:
+def visualize_map_s(pgm_data_in: np.ndarray, w_name=None, wait=True) -> None:
     if w_name is None:
         w_name = "PGM Image"
     cv.namedWindow(w_name, cv.WINDOW_NORMAL)

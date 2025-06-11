@@ -6,7 +6,12 @@
 - optimizing entry and exit points
 - Create Sample maps with few rooms (no need to detect main sweeping direction)
 
+- more use of numpy arrays
+
+- two classes, merged cells (for planning) and normal cells (with less functionalities and data)
 - better boustrophedon
+
+
 
 # loggings
 

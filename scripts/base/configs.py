@@ -6,78 +6,73 @@ import dataclasses
 
 @dataclasses.dataclass
 class BConfigs:
-    def __init__(self):
-        # map configs
-        self.origin_m = None
-        self.resolution = None
-        self.free_thresh = None
-        self.occupied_thresh = None
-        # directions
-        self.map_name = None
-        self.map_path = None
-        self.data_dir = None
-        self.district_dir = None
-        self.district_folder = "District"
-        self.base_folder = "AMain"
+    # map configs
+    origin_m = None
+    resolution = None
+    free_thresh = None
+    occupied_thresh = None
+    # directions
+    map_name = None
+    map_path = None
+    data_dir = None
+    district_dir = None
+    district_folder = "District"
+    base_folder = "AMain"
 
 
 @dataclasses.dataclass
 class DistrictConfgs:
-    def __init__(self):
-        self.whole_map = True  # False True
-        self.ns = ""
+    whole_map = True  # False True
+    ns = ""
 
-        # plots configs
-        self.save_map_planning = True
-        self.save_decomposition_plot = False
-        self.plot_decomposition = False
+    # plots configs
+    save_map_planning = True
+    save_decomposition_plot = False
+    plot_decomposition = False
 
-        # coverage path planning configs
-        self.covpp_method = "m1_boust"  # m0_simple, m1_boust
+    # coverage path planning configs
+    covpp_method = "m1_boust"  # m0_simple, m1_boust
 
-        if self.covpp_method == "m0_simple":
-            pass
-        elif self.covpp_method == "m1_boust":
-            # boustrophedon configs
-            self.cell_sequence_method = "s3_milp"  # s1_simple, s2_dfs, s3_milp
-            self.ns = self.cell_sequence_method
+    if covpp_method == "m0_simple":
+        pass
+    elif covpp_method == "m1_boust":
+        # boustrophedon configs
+        cell_sequence_method = "s3_milp"  # s1_simple, s2_dfs, s3_milp
+        ns = cell_sequence_method
 
 
 @dataclasses.dataclass
 class SpaceConfigs:
-    def __init__(self):
-        #
-        self.select_free_space = False  # select free space from image
-        # robot configs
-        self.robot_radius = 0.5
-        # self.robot_circumscribed_r = 0.5
-        # self.robot_circumscribed_d = self.robot_circumscribed_r * 2
-        # distance thresholds
-        self.wf_safe_dist = 0.1  # wf distance
-        self.os_safe_dist = 0.2  # safe distance of os path from obstacles
-        self.ws_dist = max(self.wf_safe_dist, self.os_safe_dist)
-        #
-        self.wf_r_dist = self.robot_radius + self.wf_safe_dist  # distance of the wf path from walls and obstacles
-        self.os_r_dist = self.robot_radius + self.os_safe_dist  # min distance of the os path from walls and obstacles
-        self.ws_r_dist = self.ws_dist + self.robot_radius
-        #
-        self.cleaning_c = 1.0
-        self.cleaning_r = self.robot_radius * self.cleaning_c
-        self.uncleaned_dist = self.ws_dist + (self.robot_radius - self.cleaning_r)
-        # other
-        self.scaler_os_search = 2
-        self.black = 50
+    select_free_space = False  # select free space from image
+    # robot configs
+    robot_radius = 0.5
+    # robot_circumscribed_r = 0.5
+    # robot_circumscribed_d = robot_circumscribed_r * 2
+    # distance thresholds
+    wf_safe_dist = 0.1  # wf distance
+    os_safe_dist = 0.2  # safe distance of os path from obstacles
+    ws_dist = max(wf_safe_dist, os_safe_dist)
+    #
+    wf_r_dist = robot_radius + wf_safe_dist  # distance of the wf path from walls and obstacles
+    os_r_dist = robot_radius + os_safe_dist  # min distance of the os path from walls and obstacles
+    ws_r_dist = ws_dist + robot_radius
+    #
+    cleaning_c = 1.0
+    cleaning_r = robot_radius * cleaning_c
+    uncleaned_dist = ws_dist + (robot_radius - cleaning_r)
+    # other
+    scaler_os_search = 2
+    black = 50
 
 
 @dataclasses.dataclass
 class PlanningConfigs:
-    def __init__(self):
-        spa = SpaceConfigs()
-        self.cleaning_r = spa.cleaning_r
-        self.min_path_overlap = 0.0
-        self.min_wp_dist = 0.4
-        self.margin = 0.05
-        self.cleaning_r_ov = self.cleaning_r - self.min_path_overlap/2
+    spa = SpaceConfigs()
+    cleaning_r = spa.cleaning_r
+    min_path_overlap = 0.0
+    min_wp_dist = 0.4
+    margin = 0.05
+    cleaning_r_ov = cleaning_r - min_path_overlap/2
 
 
 if __name__ == "__main__":
