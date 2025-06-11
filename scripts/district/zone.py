@@ -65,10 +65,10 @@ class ZoneData:
         self.save_map_planning()
         self.save_map_cleaning_data()
         self.save_result()
-        print(f"[{self.ns}-{self.zmd.ind}]: *************************************** ")
-        print(f"[{self.ns}-{self.zmd.ind}]: number of paths: {self.n_paths}")
-        print(f"[{self.ns}-{self.zmd.ind}]: cleaning area: {self.cleaning_area_m:.2f} m^2")
-        print(f"[{self.ns}-{self.zmd.ind}]: cleaned area: {self.cleaned_area_m:.2f} m^2")
+        print(f"[{self.ns}-{self.zmd.ind}][Results]: *************************************** ")
+        print(f"[{self.ns}-{self.zmd.ind}][Results]: number of paths: {self.n_paths}")
+        print(f"[{self.ns}-{self.zmd.ind}][Results]: cleaning area: {self.cleaning_area_m:.2f} m^2")
+        print(f"[{self.ns}-{self.zmd.ind}][Results]: cleaned area: {self.cleaned_area_m:.2f} m^2")
 
     def calculate_cleaning_area(self):
         map_cleaning = self.zmd.map_cleaning
@@ -161,18 +161,20 @@ class ZoneData:
             return
         map_hl_path = self.zmd.path + f"/{self.dcfg.covpp_method}/"
         os.makedirs(map_hl_path, exist_ok=True)
-        map_hl_path = map_hl_path + f"map_planning_{self.dcfg.ns}.png"
+        m_name = f"map_planning_{self.dcfg.ns}.png"
+        map_hl_path = map_hl_path + m_name
         cv.imwrite(map_hl_path, self.zmd.map_planning)
-        print(f"[save .... ][{self.ns}-{self.zmd.ind}]: map planning saved to: {map_hl_path}")
+        print(f"[{self.ns}-{self.zmd.ind}][save]: map planning saved to: {m_name}")
 
     def save_map_cleaning_data(self):
         if not self.dcfg.save_map_planning:
             return
         map_hl_path = self.zmd.path + f"/{self.dcfg.covpp_method}/"
         os.makedirs(map_hl_path, exist_ok=True)
-        map_hl_path = map_hl_path + f"clean_data_{self.dcfg.ns}.png"
+        m_name = f"clean_data_{self.dcfg.ns}.png"
+        map_hl_path = map_hl_path + m_name
         cv.imwrite(map_hl_path, self.zmd.map_clean_data)
-        print(f"[save .... ][{self.ns}-{self.zmd.ind}]: map cleaning saved to: {map_hl_path}")
+        print(f"[{self.ns}-{self.zmd.ind}][save]: map cleaning saved to: {m_name}")
 
     def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
         res = self.zmd.reslolution

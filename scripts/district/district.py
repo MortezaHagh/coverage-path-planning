@@ -45,8 +45,9 @@ class DistrictData:
     def run_coverage_planning(self):
         """run coverage planning for all zones"""
         for zd in self.zone_datas:
-            print("zd ind: ", zd.ind, " -------------------------------- ")
+            print(f" ************** Zone: {zd.ind} ************** ")
             zd.coverage_planning()
+        print(" ************************************************* ")
         self.update_map_planning()
         self.save_map_planning()
 
@@ -82,9 +83,10 @@ class DistrictData:
     def save_map_planning(self):
         if not self.dcfgs.save_map_planning:
             return
-        map_planning_path = self.dmd.path + f"/map_planning_{self.dcfgs.ns}.png"
+        m_name = f"/map_planning_{self.dcfgs.ns}.png"
+        map_planning_path = self.dmd.path + m_name
         cv.imwrite(map_planning_path, self.dmd.map_planning)
-        print(f"[save .... ][{self.ns}]: map planning saved to: {map_planning_path}")
+        print(f"[{self.ns}][save]: map planning saved to: {m_name}")
 
     # ==================================================================================================================
 

@@ -1,3 +1,5 @@
+- statistics and path analyzer class
+
 - add selectino of start and end points to the MILP
 - optim seq based on start exit points not centers that may not even be in the cell area
 - GA for sequence opt
