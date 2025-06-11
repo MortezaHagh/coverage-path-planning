@@ -1,7 +1,11 @@
+import numpy as np
 from ortools.linear_solver import pywraplp
 
 
-def solve_tsp(dist, cities, start_node=0):
+def solve_tsp(dist: np.ndarray, cities: np.ndarray, start_node: int = 0) -> tuple[list, float]:
+    """TSP solver version 1.1 - from start_node to x
+    """
+
     print("Using TSP solver version 1.1")
     n = len(cities)
 

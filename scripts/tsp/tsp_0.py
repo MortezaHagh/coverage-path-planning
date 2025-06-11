@@ -1,7 +1,21 @@
+import numpy as np
 from ortools.linear_solver import pywraplp
 
 
-def solve_tsp(dist, cities, start=0):
+def solve_tsp(dist: np.ndarray, cities: np.ndarray, start: int = 0) -> tuple[list, float]:
+    """TSP solver version 0 - from 0 to 0 - loop
+
+    Args:
+        dist (np.ndarray): distance matrix
+        cities (np.ndarray): xy of ciries, shape (n, 2)
+        start (int, optional): starting city. Defaults to 0.
+
+    Returns:
+        tuple[list, float]: [tour, cost]
+        tour: tour of cities, starting and ending at the start city [0]
+        cost: total cost of the tour
+    """
+
     print("Using TSP solver version 0")
     n = len(cities)
 
@@ -34,7 +48,7 @@ def solve_tsp(dist, cities, start=0):
     # solution
     if status == pywraplp.Solver.OPTIMAL:
         # Reconstruct the path
-        tour = [0]
+        tour: list = [0]
         current = 0
         while len(tour) < n:
             for j in range(n):
@@ -45,7 +59,7 @@ def solve_tsp(dist, cities, start=0):
         tour.append(0)
 
         # cost
-        cost = solver.Objective().Value()
+        cost: float = solver.Objective().Value()
         return tour, cost
     else:
         return None, None

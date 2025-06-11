@@ -1,9 +1,31 @@
+import numpy as np
 from ortools.linear_solver import pywraplp
 
 
-def solve_tsp(dist, cities, start_node=0):
-    n = len(cities)
+def solve_tsp(dist_t: np.ndarray, cities: np.ndarray, start_node: int = 0) -> tuple[list, float]:
+    """TSP solver version 1.2 - from start_node to x
+    """
 
+    print("Using TSP solver version 1.2")
+    n = len(cities)
+    has_end_node = True
+
+    # add end node if needed
+    if has_end_node:
+        end_node = 2
+        print(f"Start node: {start_node}, End node: {end_node}")
+        # add new city with big ditance to all other cities except end_node
+        dist = np.array(dist_t, copy=True)
+        # Add new row and column with inf values
+        dist = np.pad(dist, ((0, 1), (0, 1)), constant_values=1000)
+        dist[end_node, -1] = 0
+        dist[n, end_node] = 0
+        n += 1
+    else:
+        dist = dist_t
+        print(f"Start node: {start_node}")
+
+    #
     solver = pywraplp.Solver.CreateSolver('CBC')
     x = {}
     for i in range(n):
@@ -42,6 +64,10 @@ def solve_tsp(dist, cities, start_node=0):
                     tour.append(j)
                     current = j
                     break
+
+        # remove end node from the tour
+        if has_end_node:
+            tour.remove(n-1)
 
         # cost
         cost = solver.Objective().Value()

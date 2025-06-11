@@ -10,13 +10,21 @@ elif m == 2:
 
 
 class TSPSolver:
+    cities: np.ndarray
+    n_nodes: int
+    start: int
+    tour: list
+    distance_matrix: list
+    cost: float
+    success: bool
+
     def __init__(self, cities_t, start=0, plot=True):
         self.cities = cities_t
-        self.n = len(cities_t)
+        self.n_nodes = len(cities_t)
         self.start = start
         self.do_plot = plot
-        self.distances = []
         self.tour = []
+        self.distance_matrix = []
         self.success = True
 
         #
@@ -36,11 +44,11 @@ class TSPSolver:
         if not self.success:
             print("No solution found.")
             return
-        print(f"Cost: {self.cost}")
+        print(f"Cost: {round(self.cost, 2)}")
         print(f"Tour: {self.tour}")
 
     def cal_distance_matrix(self):
-        dist = [[self.distance(i, j) for j in range(self.n)] for i in range(self.n)]
+        dist = [[self.distance(i, j) for j in range(self.n_nodes)] for i in range(self.n_nodes)]
         self.distance_matrix = dist
 
     def distance(self, i, j):
