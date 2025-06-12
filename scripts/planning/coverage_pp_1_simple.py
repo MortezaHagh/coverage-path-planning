@@ -21,11 +21,8 @@ class CoveragePP(CoveragePPBase):
         print(f"[{self.ns}]: simple coverage path planning")
         self.zone_covpp()
         self.rotate_waypoints()
-        self.paths_px = self.path_m_to_px(self.paths_m)
+        self.paths_px = self.path_m_to_px(self.paths_m[0])
         self.add_path_to_map_planning()
-        # there is only one path with no connection
-        self.f_path_px = self.paths_px[0]
-        self.f_path_m = self.paths_m[0]
 
     def zone_covpp(self) -> None:
         print(f"[{self.ns}]: cpp for zone [{self.zmd.ind}]")

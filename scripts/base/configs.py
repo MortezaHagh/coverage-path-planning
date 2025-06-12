@@ -26,8 +26,8 @@ class DistrictConfgs:
     ns = ""
 
     # plots configs
-    save_map_planning = True
-    save_decomposition_plot = True
+    save_map_planning = False
+    save_decomposition_plot = False
     plot_decomposition = False
 
     # coverage path planning configs
@@ -68,6 +68,7 @@ class SpaceConfigs:
 @dataclasses.dataclass
 class PlanningConfigs:
     spa = SpaceConfigs()
+    animation = True
     cleaning_r = spa.cleaning_r
     min_path_overlap = 0.0
     min_wp_dist = 0.4

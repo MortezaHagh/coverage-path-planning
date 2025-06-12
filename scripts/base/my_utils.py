@@ -30,7 +30,11 @@ class MyPath:
 
     def set_xys(self):
         if self.points is not None:
-            self.xy = [(p.x, p.y) for p in self.points]
+            xy = [(p.x, p.y) for p in self.points]
+            if isinstance(xy[0][0], (float, np.float32)):
+                self.xy = np.array(xy, dtype=np.float32)
+            else:
+                self.xy = np.array(xy, dtype=np.int32)
             self.n = len(self.points)
 
     def point(self, i: int) -> MyPoint:
