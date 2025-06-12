@@ -92,7 +92,7 @@ class ZoneData:
 
     def add_cleaned_area_to_map(self):
         map_cleaning = self.zmd.map_cleaning.copy()
-        paths = self.cov_planner.paths_px
+        f_path = self.cov_planner.f_path_px
         cleaning_r_px = int(self.pcfgs.cleaning_r / self.zmd.reslolution)
 
         # Draw cleaned paths on a mask
@@ -100,13 +100,13 @@ class ZoneData:
         hw_bd = self.zmd.hw_bd_px
         h, w = hw_bd["h_min"], hw_bd["w_min"]
         color_p = 1
-        for path in paths:
-            for i in range(path.n - 1):
-                segment_mask = np.zeros_like(map_cleaning, dtype=np.uint8)
-                pt1 = tuple([path.point(i).x-w, path.point(i).y-h])
-                pt2 = tuple([path.point(i+1).x-w, path.point(i+1).y-h])
-                cv.line(segment_mask, pt1, pt2, color=color_p, thickness=2 * cleaning_r_px)
-                cleaned_acc = cv.add(cleaned_acc, segment_mask)
+        # for path in paths:
+        for i in range(f_path.n - 1):
+            segment_mask = np.zeros_like(map_cleaning, dtype=np.uint8)
+            pt1 = tuple(map(int, [f_path.point(i).x-w, f_path.point(i).y-h]))
+            pt2 = tuple(map(int, [f_path.point(i+1).x-w, f_path.point(i+1).y-h]))
+            cv.line(segment_mask, pt1, pt2, color=color_p, thickness=2 * cleaning_r_px)
+            cleaned_acc = cv.add(cleaned_acc, segment_mask)
         max_overlap = np.max(cleaned_acc)
 
         # map_clean_data: show uncleaner area and overlaps
@@ -121,10 +121,10 @@ class ZoneData:
                         map_clean_data[i, j] = (0, 0, 200)  # bgr
                     else:
                         map_clean_data[i, j] = (0, d_c*cleaned_acc[i, j], 0)
-        for path in paths:
-            for p in path.points[1:-1]:
-                pz = (p.x-w, p.y-h)
-                map_clean_data = cv.circle(map_clean_data, pz, cleaning_r_px, (0, d_c, 0), -1)
+        # for path in paths:
+        for p in f_path.points[1:-1]:
+            pz = (int(p.x-w), int(p.y-h))
+            map_clean_data = cv.circle(map_clean_data, pz, cleaning_r_px, (0, d_c, 0), -1)
         self.zmd.map_clean_data = map_clean_data
 
         # update map planning with cleaned paths
@@ -133,11 +133,11 @@ class ZoneData:
             c = 40
             color = (c, c, c)
             map_p_c = self.zmd.map_planning.copy()
-            for path in paths:
-                for i in range(path.n - 1):
-                    pt1 = tuple(map(int, path.point(i)))
-                    pt2 = tuple(map(int, path.point(i+1)))
-                    cv.line(map_p_c, pt1, pt2, color=color, thickness=2 * cleaning_r_px)
+            # for path in paths:
+            for i in range(f_path.n - 1):
+                pt1 = tuple(map(int, f_path.point(i).xy))
+                pt2 = tuple(map(int, f_path.point(i+1).xy))
+                cv.line(map_p_c, pt1, pt2, color=color, thickness=2 * cleaning_r_px)
             alpha = 0.6
             self.zmd.map_planning = cv.addWeighted(self.zmd.map_planning, alpha, map_p_c, 1 - alpha, 0)
 
