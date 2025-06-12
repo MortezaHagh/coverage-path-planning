@@ -3,6 +3,7 @@ import json
 import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
+from scripts.base.my_utils import MyPath  # , MyPoint
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase
 from scripts.boustrophedon.cell_bs_cov_planner import CellCoveragePathPlanner
@@ -14,6 +15,8 @@ from scripts.planning.connect_paths import ConnectPaths  # , get_start_end_point
 class CoveragePP(CoveragePPBase):
     """  Boustrophedon coverage path planning."""
     colors: list
+    c_paths_px: list[MyPath]
+    c_paths_m: list[MyPath]
     dec_interface: DecompositionInterface
     all_cell_covp_planners: list[CellCoveragePathPlanner]
 
@@ -26,8 +29,8 @@ class CoveragePP(CoveragePPBase):
         self.colors = []
 
         # connection paths between cells
-        self.c_paths_px: list[list[tuple[int, int]]] = []
-        self.c_paths_m: list[list[tuple[float, float]]] = []
+        self.c_paths_px = []
+        self.c_paths_m = []
 
         # for boustrophedon decomposition
         self.dec_interface = None
@@ -38,16 +41,16 @@ class CoveragePP(CoveragePPBase):
         # run decomposition and coverage planning
         self.plan()
 
-    def coverage_planning(self):
+    def coverage_planning(self) -> None:
         self.decompose_map()
         self.zone_covpp()
         self.bs_post_planning()
 
-    def decompose_map(self):
+    def decompose_map(self) -> None:
         print(f"[{self.ns}]: start decomposition")
         self.dec_interface = DecompositionInterface(self.zmd)
 
-    def zone_covpp(self):
+    def zone_covpp(self) -> None:
         print(f"[{self.ns}]: start coverage path planning for cells")
         for mell in self.dec_interface.decomposed.smcells:
             cell_covp_planner = CellCoveragePathPlanner(cell=mell, zone_ind=self.zmd.ind, resolution=self.resolution)
@@ -56,7 +59,7 @@ class CoveragePP(CoveragePPBase):
                 self.paths_m.append(cell_covp_planner.path_m)
                 self.paths_px.append(cell_covp_planner.path_px)
 
-    def bs_post_planning(self):
+    def bs_post_planning(self) -> None:
         n = self.dec_interface.decomposed.n_mcells
         self.colors = get_n_colors_cv(n)
         self.save_decomposition_plot()
@@ -72,14 +75,14 @@ class CoveragePP(CoveragePPBase):
 
     # ==================================================================================================================
 
-    def connect_paths(self):
-        cp = ConnectPaths(self.zmd, self.paths_px, self.paths_m)
+    def connect_paths(self) -> None:
+        cp = ConnectPaths(self.zmd, self.paths_px)
         self.c_paths_px = cp.c_paths_px
         self.c_paths_m = self.path_px_to_m(self.c_paths_px)
 
     # ==================================================================================================================
 
-    def save_decomposition_plot(self):
+    def save_decomposition_plot(self) -> None:
         if not self.dcfgs.save_decomposition_plot:
             return
         ns = self.dcfgs.covpp_method
@@ -87,7 +90,7 @@ class CoveragePP(CoveragePPBase):
         os.makedirs(boust_path, exist_ok=True)
         self.dec_interface.decomposed.save_figs(boust_path)
 
-    def add_cells_to_map_planning(self):
+    def add_cells_to_map_planning(self) -> None:
         for i, cell in enumerate(self.dec_interface.decomposed.cells_groups):
             pp = cell.merged_cell.points
             pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
@@ -97,18 +100,18 @@ class CoveragePP(CoveragePPBase):
             alpha = 0.1
             self.zmd.map_planning = cv.addWeighted(map_p_fill, alpha, map_p, 1 - alpha, 0)
 
-    def add_cell_paths_to_map_planning(self):
+    def add_cell_paths_to_map_planning(self) -> None:
         map_planning = self.zmd.map_planning.copy()
         for i, cell_covp_planner in enumerate(self.all_cell_covp_planners):
             path_px = cell_covp_planner.path_px
             if path_px:
-                pp = np.array(path_px, dtype=np.int32)  # Ensure pp is a numpy array of integers
+                pp = np.array(path_px.xy, dtype=np.int32)  # Ensure pp is a numpy array of integers
                 map_planning = cv.polylines(map_planning, [pp], isClosed=False, color=self.colors[i], thickness=2)
         self.zmd.map_planning = map_planning
 
     # ==================================================================================================================
 
-    def plot_paths_px(self):
+    def plot_paths_px(self) -> None:
         """ Plot the calculated coverage paths and connections between them.
         """
         fig, ax = plt.subplots(1, 1)
@@ -137,9 +140,9 @@ class CoveragePP(CoveragePPBase):
 
         for i, cell_covp_planner in enumerate(self.all_cell_covp_planners):
             path = cell_covp_planner.path_px
-            if len(path) < 1:
+            if path is None:
                 continue
-            pp = np.array(path, dtype=np.int32)
+            pp = np.array(path.xy, dtype=np.int32)
             ax.plot(pp[:, 0], pp[:, 1], color=colors[i], linewidth=2, linestyle='-')
             # start and end points
             ax.plot(pp[0, 0], pp[0, 1], 'o', color=colors[i], markersize=10)
@@ -149,9 +152,9 @@ class CoveragePP(CoveragePPBase):
 
     def plot_connection_paths(self, ax):
         for c_path in self.c_paths_px:
-            if len(c_path) < 2:
+            if len(c_path.xy) < 2:
                 continue
-            pp = np.array(c_path, dtype=np.int32)
+            pp = np.array(c_path.xy, dtype=np.int32)
             ax.plot(pp[0, 0], pp[0, 1], "o", color='gray', markersize=3)
             ax.plot(pp[-1, 0], pp[-1, 1], "o", color='gray', markersize=3)
             ax.plot(pp[:, 0], pp[:, 1], color='gray', linestyle=':')
@@ -172,7 +175,7 @@ class CoveragePP(CoveragePPBase):
         n = self.dec_interface.decomposed.n_mcells
         colors = get_n_colors_plt(n)
         for i, cell_covp_planner in enumerate(self.all_cell_covp_planners):
-            path = cell_covp_planner.path_m
+            path = cell_covp_planner.path_m.xy
             if len(path) < 1:
                 continue
             pp = np.array(path, dtype=np.float32)

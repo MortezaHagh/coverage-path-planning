@@ -1,29 +1,42 @@
-import dataclasses
 import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 
 
-@dataclasses.dataclass
-class Point:
-    x = None
-    y = None
+class MyPoint:
+    def __init__(self, x=None, y=None):
+        self.x = x
+        self.y = y
+
+    @property
+    def xy(self):
+        return (self.x, self.y)
 
 
-class CPath:
-    """ Class for cell path """
-    path_px: list[tuple[int, int]] = None
-    path_m: list[tuple[float, float]] = None
+class MyPath:
+    points: list[MyPoint]
+    xy: list[tuple]
+    n: int
 
-    def __init__(self, path_px: list[tuple[int, int]] = None):
-        self.path_px = path_px
-        self.path_m = []
+    def __init__(self, points: list[MyPoint] = None):
+        self.points = points
+        self.xy = []
+        self.n = 0
+        self.set_xys()
 
-    def set_path_px(self, path_px: list[tuple[int, int]]) -> None:
-        self.path_px = path_px
+    def set_points(self, points: list[MyPoint]) -> None:
+        self.points = points
+        self.set_xys()
 
-    def set_path_m(self, path_m: list[tuple[float, float]]) -> None:
-        self.path_m = path_m
+    def set_xys(self):
+        if self.points is not None:
+            self.xy = [(p.x, p.y) for p in self.points]
+            self.n = len(self.points)
+
+    def point(self, i: int) -> MyPoint:
+        if i < 0 or i >= self.n:
+            raise IndexError("Index out of range")
+        return self.points[i]
 
 
 def get_n_colors_plt(n) -> list:

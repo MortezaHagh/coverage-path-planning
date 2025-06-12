@@ -3,13 +3,14 @@ import numpy as np
 from shapely.geometry import Polygon, Point, LineString
 from scripts.boustrophedon.cell import Cell
 from scripts.base.configs import PlanningConfigs
+from scripts.base.my_utils import MyPoint, MyPath
 
 
 class CellCoveragePathPlanner:
     cell: Cell
     poly_m: Polygon
-    path_m: list[tuple[float, float]] = []
-    path_px: list[tuple[int, int]] = []
+    path_m: MyPath
+    path_px: MyPath
     #
     pcfgs: PlanningConfigs
     resolution: float
@@ -18,8 +19,8 @@ class CellCoveragePathPlanner:
         self.ns = "CellCoverageP-Z" + str(zone_ind)
         self.cell = cell
         self.poly_m = None
-        self.path_m = []
-        self.path_px = []
+        self.path_m = None
+        self.path_px = None
         #
         self.xy_but = None
         self.xy_top = None
@@ -31,7 +32,7 @@ class CellCoveragePathPlanner:
         #
         self.coverage_planning()
 
-    def coverage_planning(self):
+    def coverage_planning(self) -> None:
         # if not self.eveal_cell():
         #     return
         if not self.cell.do_planning:
@@ -52,14 +53,14 @@ class CellCoveragePathPlanner:
     #         return False
     #     return True
 
-    def create_cell_polygon_in_meter(self):
+    def create_cell_polygon_in_meter(self) -> None:
         # create cell polygon in meter
         points = self.cell.points
         points_m = [(p[0] * self.resolution, p[1] * self.resolution) for p in points]
         points_m_p = [Point(p) for p in points_m]
         self.poly_m = Polygon(points_m_p)
 
-    def find_top_but_hit_points(self):
+    def find_top_but_hit_points(self) -> bool:
         # # parameters and configurations
         cleaning_d = 2*self.pcfgs.cleaning_r_ov
         resolution = self.resolution
@@ -127,7 +128,7 @@ class CellCoveragePathPlanner:
         self.xy_top = xy_top
         return True
 
-    def get_intersection_points(self, y_check: float, top_point: Point, polygon: Polygon):
+    def get_intersection_points(self, y_check: float, top_point: Point, polygon: Polygon) -> tuple[Point, Point]:
         vertical_line = LineString([top_point, (top_point.x, y_check + 1)])
 
         # Intersect that vertical line with the polygon
@@ -155,7 +156,7 @@ class CellCoveragePathPlanner:
         p2 = Point(xx[1], yy[1])
         return (p1, p2)
 
-    def calculate_path(self):
+    def calculate_path(self) -> None:
         points_d = self.xy_but
         points_u = self.xy_top
         points = [points_d.pop(0)]
@@ -177,10 +178,11 @@ class CellCoveragePathPlanner:
                 break  # no more points to add
 
         #
-        self.path_m = points
+        self.path_m = MyPath([MyPoint(p[0], p[1]) for p in points])
+        # self.path_m = points
 
-    def create_path_px(self):
-        self.path_px = [self.point_m_to_px(p) for p in self.path_m]
+    def create_path_px(self) -> None:
+        self.path_px = MyPath([self.point_m_to_px(p) for p in self.path_m.points])
 
-    def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
-        return (int(p[0] / self.resolution), int(p[1] / self.resolution))
+    def point_m_to_px(self, p: MyPoint) -> MyPoint:
+        return MyPoint(int(p.x / self.resolution), int(p.y / self.resolution))

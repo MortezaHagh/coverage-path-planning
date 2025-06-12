@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+from scripts.base.my_utils import MyPoint, MyPath
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase
 
@@ -9,20 +10,24 @@ class CoveragePP(CoveragePPBase):
 
     def __init__(self, zone_map_data: ZoneMapData):
         super().__init__(zone_map_data)
+
         self.ns = "CPPSimple" + "-" + str(self.zmd.ind)
         print(f" >>>>> [{self.ns}] Step: coverage path planning")
 
         # coverage path planning for all zones
         self.plan()
 
-    def coverage_planning(self):
+    def coverage_planning(self) -> None:
         print(f"[{self.ns}]: simple coverage path planning")
         self.zone_covpp()
         self.rotate_waypoints()
         self.paths_px = self.path_m_to_px(self.paths_m)
         self.add_path_to_map_planning()
+        # there is only one path with no connection
+        self.f_path_px = self.paths_px[0]
+        self.f_path_m = self.paths_m[0]
 
-    def zone_covpp(self):
+    def zone_covpp(self) -> None:
         print(f"[{self.ns}]: cpp for zone [{self.zmd.ind}]")
 
         # margin rectangle
@@ -66,7 +71,7 @@ class CoveragePP(CoveragePPBase):
         # y_max_p = h - margin - w_l_p / 2
 
         # initial point
-        init_point = (x_min_p, y_min_p)
+        init_point = MyPoint(x_min_p, y_min_p)
         n_points = int(n_lines * 2)
 
         # dy dy
@@ -77,18 +82,18 @@ class CoveragePP(CoveragePPBase):
 
         for i in range(1, n_points):
             if i % 2 == 0:
-                new_x = base_path[-1][0]
-                new_y = base_path[-1][1] + dy
+                new_x = base_path[-1].x
+                new_y = base_path[-1].y + dy
             else:
-                new_x = base_path[-1][0] + dx
-                new_y = base_path[-1][1]
+                new_x = base_path[-1].x + dx
+                new_y = base_path[-1].y
                 dx = -1 * dx
-            base_path.append((new_x, new_y))
+            base_path.append(MyPoint(new_x, new_y))
 
         # save path
-        self.paths_m = [base_path]
+        self.paths_m = [MyPath(base_path)]
 
-    def add_path_to_map_planning(self):
+    def add_path_to_map_planning(self) -> None:
         path = self.paths_px[0]
         for (p1, p2) in zip(path[:-1], path[1:]):
             self.zmd.map_planning = cv.line(self.zmd.map_planning, p1, p2, (0, 255, 10), 2)
@@ -100,8 +105,8 @@ class CoveragePP(CoveragePPBase):
         radius_px_2 = int(np.ceil(self.scfgs.robot_radius / self.zmd.orig_map_data.up_resolution))
         radius_px_3 = int(np.ceil(self.scfgs.cleaning_r / self.zmd.orig_map_data.up_resolution))
         overlay = self.zmd.map_planning.copy()
-        cv.circle(overlay, pose, radius_px_1, [200, 200, 250], -1)
-        cv.circle(overlay, pose, radius_px_2, [0, 0, 250], -1)
-        cv.circle(overlay, pose, radius_px_3, [100, 0, 100], -1)
-        cv.circle(overlay, pose, 5, [250, 250, 250], -1)
+        cv.circle(overlay, pose.xy, radius_px_1, [200, 200, 250], -1)
+        cv.circle(overlay, pose.xy, radius_px_2, [0, 0, 250], -1)
+        cv.circle(overlay, pose.xy, radius_px_3, [100, 0, 100], -1)
+        cv.circle(overlay, pose.xy, 5, [250, 250, 250], -1)
         self.zmd.map_planning = cv.addWeighted(overlay, alpha, self.zmd.map_planning, 1 - alpha, 0)

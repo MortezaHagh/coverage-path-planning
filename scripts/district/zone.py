@@ -101,10 +101,10 @@ class ZoneData:
         h, w = hw_bd["h_min"], hw_bd["w_min"]
         color_p = 1
         for path in paths:
-            for i in range(len(path) - 1):
+            for i in range(path.n - 1):
                 segment_mask = np.zeros_like(map_cleaning, dtype=np.uint8)
-                pt1 = tuple([path[i][0]-w, path[i][1]-h])
-                pt2 = tuple([path[i+1][0]-w, path[i+1][1]-h])
+                pt1 = tuple([path.point(i).x-w, path.point(i).y-h])
+                pt2 = tuple([path.point(i+1).x-w, path.point(i+1).y-h])
                 cv.line(segment_mask, pt1, pt2, color=color_p, thickness=2 * cleaning_r_px)
                 cleaned_acc = cv.add(cleaned_acc, segment_mask)
         max_overlap = np.max(cleaned_acc)
@@ -122,8 +122,8 @@ class ZoneData:
                     else:
                         map_clean_data[i, j] = (0, d_c*cleaned_acc[i, j], 0)
         for path in paths:
-            for p in path[1:-1]:
-                pz = (p[0]-w, p[1]-h)
+            for p in path.points[1:-1]:
+                pz = (p.x-w, p.y-h)
                 map_clean_data = cv.circle(map_clean_data, pz, cleaning_r_px, (0, d_c, 0), -1)
         self.zmd.map_clean_data = map_clean_data
 
@@ -134,9 +134,9 @@ class ZoneData:
             color = (c, c, c)
             map_p_c = self.zmd.map_planning.copy()
             for path in paths:
-                for i in range(len(path) - 1):
-                    pt1 = tuple(map(int, path[i]))
-                    pt2 = tuple(map(int, path[i + 1]))
+                for i in range(path.n - 1):
+                    pt1 = tuple(map(int, path.point(i)))
+                    pt2 = tuple(map(int, path.point(i+1)))
                     cv.line(map_p_c, pt1, pt2, color=color, thickness=2 * cleaning_r_px)
             alpha = 0.6
             self.zmd.map_planning = cv.addWeighted(self.zmd.map_planning, alpha, map_p_c, 1 - alpha, 0)

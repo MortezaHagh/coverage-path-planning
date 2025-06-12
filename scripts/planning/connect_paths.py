@@ -1,5 +1,6 @@
 import numpy as np
 from skimage.graph import route_through_array
+from scripts.base.my_utils import MyPath, MyPoint
 from scripts.district.zone_map_data import ZoneMapData
 
 FREE = 255
@@ -8,24 +9,25 @@ OCCUPIED = 0
 
 class ConnectPaths:
     """ Connect cell paths """
-    c_paths_px: list[list[tuple[int, int]]] = []
+    c_paths_px: list[MyPath]
 
-    def __init__(self, zone_map_data: ZoneMapData, paths_px: list, paths_m: list):
+    def __init__(self, zone_map_data: ZoneMapData, paths_px: list[MyPath]):
         self.ns = "ConnectPaths"
         print(f"[{self.ns}] Step: connect paths")
+
+        #
         self.zmd = zone_map_data
         self.c_paths_px = []
 
         #
-        # paths_px: list[list[tuple[int, int]]]
         self.c_paths_px = self.connect_1(paths_px)
 
-    def connect_1(self, paths_px):
+    def connect_1(self, paths_px: list[MyPath]) -> list[MyPath]:
         fp = FindPathInMap(self.zmd)
-        c_paths: list[list[tuple[int, int]]] = []
+        c_paths = []
         for ip in range(len(paths_px) - 1):
-            p0 = paths_px[ip][-1]
-            p1 = paths_px[ip+1][0]
+            p0 = paths_px[ip].points[-1]
+            p1 = paths_px[ip+1].points[0]
             # c_paths.append([p0, p1])
             c_paths.append(fp.find_path(start=p0, end=p1))
         return c_paths
@@ -42,7 +44,7 @@ class FindPathInMap:
         self.s_x = zmd.rectangle.x_min
         self.s_y = zmd.rectangle.y_min
 
-    def find_path(self, start: tuple[int, int], end: tuple[int, int]) -> list[tuple[int, int]]:
+    def find_path(self, start: MyPoint, end: MyPoint) -> MyPath:
         """ Find path in map from start to end """
 
         # get map
@@ -54,8 +56,8 @@ class FindPathInMap:
 
         # start - end
         # shift to map coordinates
-        start = (start[0] - self.s_x, start[1] - self.s_y)
-        end = (end[0] - self.s_x, end[1] - self.s_y)  # shift to map coordinates
+        start = (start.x - self.s_x, start.y - self.s_y)
+        end = (end.x - self.s_x, end.y - self.s_y)  # shift to map coordinates
         start = self.find_closest_free_cell(start)
         end = self.find_closest_free_cell(end)
 
@@ -72,7 +74,7 @@ class FindPathInMap:
 
         # shift paths based on the zone map rectangle
         path_px = np.array(path_px) + np.array([self.s_y, self.s_x])
-        path_px = [tuple(np.flip(p)) for p in path_px]  # swap x y
+        path_px = MyPath([MyPoint(p[1], p[0]) for p in path_px])  # swap x y
         return path_px
 
     def find_closest_free_cell(self, point: tuple[int, int]) -> tuple[int, int]:
@@ -94,13 +96,13 @@ class FindPathInMap:
         return (x[min_index], y[min_index])
 
 
-def get_start_end_points(paths_px) -> list:
-    start_end_points = []
+def get_start_end_points(paths_px: list[MyPath]) -> list:
+    start_end_points: list[MyPoint] = []
     for path in paths_px:
         start_end_points.append((path[0], path[-1]))
 
-    ends = [end for _, end in start_end_points]
-    starts = [start for start, _ in start_end_points]
+    ends = [end.xy for _, end in start_end_points]
+    starts = [start.xy for start, _ in start_end_points]
     ends = np.array(ends, dtype=np.int32)
     starts = np.array(starts, dtype=np.int32)
     return start_end_points
