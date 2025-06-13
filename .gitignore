@@ -1,17 +1,18 @@
-#*.png
-Data/Map3
-Data/Map4
-*.json
-*.pgm
-__pycache__/
 # .vscode/
-coverage_path_planning/
-venv/
-todo
-*.zip
-*.png
 # docs/build/
 # docs/source/.static/
 # docs/source/.templates/
+coverage_path_planning/
+__pycache__/
+Data/Map3
+Data/Map4
+venv/
+#*.png
+*.json
+*.pgm
+*.zip
+*.png
+*.gif
+# 
 !devcontainer.json
 !settings.json

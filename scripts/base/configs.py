@@ -38,7 +38,7 @@ class DistrictConfgs:
         pass
     elif covpp_method == "m1_boust":
         # boustrophedon configs
-        cell_sequence_method = "s3_milp"  # s1_simple, s2_dfs, s3_milp
+        cell_sequence_method = "s2_dfs"  # s1_simple, s2_dfs, s3_milp
         covpp_method = covpp_method + "_" + cell_sequence_method
     method = covpp_method
 
@@ -70,7 +70,7 @@ class SpaceConfigs:
 @dataclasses.dataclass
 class PlanningConfigs:
     spa = SpaceConfigs()
-    animation = True  # True
+    animation = False  # True False
     cleaning_r = spa.cleaning_r
     min_path_overlap = 0.0
     min_wp_dist = 0.4

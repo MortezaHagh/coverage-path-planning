@@ -8,16 +8,43 @@ from scripts.base.configs import DistrictConfgs, PlanningConfigs
 # from scripts.planning.coverage_pp_1_simple import CoveragePP
 
 
+class ZoneStats:
+    """Zone statistics class to store zone statistics"""
+
+    def __init__(self):
+        self.cleaning_area_px = None
+        self.cleaning_area_m = None
+        self.cleaned_area_px = None
+        self.cleaned_area_m = None
+        self.uncleaned_area_m = None
+        self.overlaped_area_m = None
+        self.coverage_p = None
+
+    def get_data_dict(self) -> dict:
+        """Get statistics data as a dictionary."""
+        return {
+            "cleaning_area_px": int(self.cleaning_area_px),
+            "cleaning_area_m": float(self.cleaning_area_m),
+            "cleaned_area_px": int(self.cleaned_area_px),
+            "cleaned_area_m": float(self.cleaned_area_m),
+            "uncleaned_area_m": float(self.uncleaned_area_m),
+            "overlaped_area_m": float(self.overlaped_area_m),
+            "coverage_p": float(self.coverage_p)
+        }
+
+    def print_stats(self):
+        print("[Results]: *************************************** ")
+        print(f"[Results]: cleaning area: {self.cleaning_area_m:.2f} m^2")
+        print(f"[Results]: cleaned area: {self.cleaned_area_m:.2f} m^2")
+
+
 class ZoneData:
     ind: int
     zmd: ZoneMapData
-    #
     dcfg: DistrictConfgs
     pcfgs: PlanningConfigs
-    #
     cov_planner: CoveragePP
-    cleaning_area: float
-    #
+    st: ZoneStats
 
     def __init__(self, ind: int = None):
         self.ns = "ZoneData"
@@ -32,14 +59,8 @@ class ZoneData:
         self.cov_planner = None
         self.complete_path = None
 
-        # statistics - todo
-        self.n_paths = 0
-        self.cleaning_area_px = None
-        self.cleaning_area_m = None
-        self.cleaned_area_px = None
-        self.cleaned_area_m = None
-        self.uncleaned_area_m = None
-        self.overlaped_area_m = None
+        # statistics
+        self.st = ZoneStats()
 
     def set_map_data(self, zmd: ZoneMapData):
         self.zmd = zmd
@@ -58,37 +79,28 @@ class ZoneData:
     # ==================================================================================================================
 
     def post_planning(self):
-        self.n_paths = self.cov_planner.n_paths
         self.calculate_cleaning_area()
         self.add_cleaned_area_to_map()
         self.calculate_cleaned_area()
         self.save_map_planning()
         self.save_map_cleaning_data()
         self.save_result()
-        print(f"[{self.ns}-{self.zmd.ind}][Results]: *************************************** ")
-        print(f"[{self.ns}-{self.zmd.ind}][Results]: number of paths: {self.n_paths}")
-        print(f"[{self.ns}-{self.zmd.ind}][Results]: cleaning area: {self.cleaning_area_m:.2f} m^2")
-        print(f"[{self.ns}-{self.zmd.ind}][Results]: cleaned area: {self.cleaned_area_m:.2f} m^2")
+        self.st.print_stats()
 
     def calculate_cleaning_area(self):
-        map_cleaning = self.zmd.map_cleaning
-        # calculate the area of the free (white) pixels in the map
-        self.cleaning_area_px = np.sum(map_cleaning == 255)
-        # convert pixel area to square meters
-        self.cleaning_area_m = self.cleaning_area_px * (self.zmd.reslolution**2)
-        self.cleaning_area_m = round(self.cleaning_area_m, 2)
+        self.st.cleaning_area_px = np.sum(self.zmd.map_cleaning == 255)
+        self.st.cleaning_area_m = round(self.st.cleaning_area_px * (self.zmd.reslolution**2), 2)
 
     def calculate_cleaned_area(self):
-        paths_len = self.cov_planner.total_path_len_m
+        paths_len = self.cov_planner.st.f_path_len_m
         cleaning_r = self.pcfgs.cleaning_r
         area = paths_len * (2 * cleaning_r)
-        area += np.pi*(cleaning_r**2) * self.n_paths  # add area of the end circles
         # overlaped_area_m
-        overlaped_area_m = area - self.cleaned_area_m
-        self.overlaped_area_m = round(overlaped_area_m, 2)
+        self.st.overlaped_area_m = round(area - self.st.cleaned_area_m, 2)
         # uncleaned_area_m
-        uncleaned_area_m = self.cleaning_area_m - self.cleaned_area_m
-        self.uncleaned_area_m = round(uncleaned_area_m, 2)
+        self.st.uncleaned_area_m = round(self.st.cleaning_area_m - self.st.cleaned_area_m, 2)
+        # coverage percentage
+        self.st.coverage_p = round(self.st.cleaned_area_m / self.st.cleaning_area_m * 100, 2)
 
     def add_cleaned_area_to_map(self):
         map_cleaning = self.zmd.map_cleaning.copy()
@@ -145,8 +157,8 @@ class ZoneData:
         # cleaned_area_px = np.sum((cleaned_acc > 0) & (map_cleaned == 255))
         cleaned_area_px = np.sum(cleaned_acc > 0)
         cleaned_area_m = cleaned_area_px * (self.zmd.reslolution ** 2)
-        self.cleaned_area_px = cleaned_area_px
-        self.cleaned_area_m = round(cleaned_area_m, 2)
+        self.st.cleaned_area_px = cleaned_area_px
+        self.st.cleaned_area_m = round(cleaned_area_m, 2)
 
     # ==================================================================================================================
 
@@ -177,22 +189,15 @@ class ZoneData:
         return (int(p[0] / res), int(p[1] / res))
 
     def save_result(self):
-        coverage_p = self.cleaned_area_m / self.cleaning_area_m * 100
-        coverage_p = round(coverage_p, 2)
-
         # save zone statistics to json file
+        zone_stats = self.st.get_data_dict()
+        planner_stats = self.cov_planner.st.get_data_dict()
         result = {
-            "zone_index": self.ind,
-            "method": self.dcfg.covpp_method,
-            "n_paths": self.n_paths,
-            "coverage_percentage": float(coverage_p),
-            "total_path_length_m": float(self.cov_planner.total_path_len_m),
-            "cleaning_area_m2": float(self.cleaning_area_m),
-            "cleaned_area_m2": float(self.cleaned_area_m),
-            "uncleaned_area_m2": float(self.uncleaned_area_m),
-            "overlaped_area_m2": float(self.overlaped_area_m),
-            "cleaning_area_px": float(self.cleaning_area_px),
-            "cleaned_area_px": float(self.cleaned_area_px),
+            "zone_ind": self.zmd.ind,
+            "method": self.dcfg.method,
+            "zone_stats": zone_stats,
+            "planner_stats": planner_stats
         }
-        with open(self.zmd.result_file, 'a') as f:
+        # rewrite result file
+        with open(self.zmd.result_file, 'wt') as f:
             json.dump(result, f, indent=4)

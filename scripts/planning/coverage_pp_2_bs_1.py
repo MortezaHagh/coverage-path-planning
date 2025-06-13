@@ -1,7 +1,5 @@
-import os
 import cv2 as cv
 import numpy as np
-from scripts.base.my_utils import MyPath
 from scripts.base.my_utils import get_n_colors_cv
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase

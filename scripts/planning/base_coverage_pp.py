@@ -10,11 +10,22 @@ from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.configs import SpaceConfigs, PlanningConfigs, DistrictConfgs
 
 
+class PlannerStats:
+    def __init__(self):
+        self.n_paths = 0
+        self.f_path_len_m = 0.0
+
+    def get_data_dict(self) -> dict:
+        return {
+            "n_paths": int(self.n_paths),
+            "f_path_len_m": float(self.f_path_len_m)
+        }
+
+
 class CoveragePPBase:
     ns: str  # namespace for logging
     zmd: ZoneMapData  # zone data
     map_polygons: MapPolygons  # map polygons
-    # paths
     f_path_px: MyPath
     f_path_m: MyPath
     paths_px: list[MyPath]
@@ -22,7 +33,7 @@ class CoveragePPBase:
     c_paths_px: list[MyPath]
     c_paths_m: list[MyPath]
     n_paths: int = 0
-    total_path_len_m: float
+    st: PlannerStats
 
     def __init__(self, zone_map_data: ZoneMapData):
         self.ns = "CoveragePPBase"
@@ -42,8 +53,8 @@ class CoveragePPBase:
         self.c_paths_px = []
         self.c_paths_m = []
 
-        self.n_paths = 0
-        self.total_path_len_m = 0.0
+        # statistics
+        self.st = PlannerStats()
 
         # parameters and configurations
         self.scfgs = SpaceConfigs()
@@ -72,7 +83,7 @@ class CoveragePPBase:
 
     def post_planning(self) -> None:
         self.create_ful_path()
-        self.process_full_path()
+        self.process_full_path_distances()
         self.calculate_path_statistics()
         #
         self.plot_paths_px()
@@ -82,9 +93,9 @@ class CoveragePPBase:
             self.animate_robot_paths()
 
     def create_ful_path(self) -> None:
-        self.n_paths = len(self.paths_px)
+        self.st.n_paths = len(self.paths_px)
         f_path_px = []
-        for i in range(self.n_paths-1):
+        for i in range(self.st.n_paths-1):
             f_path_px.extend(self.paths_px[i].points)
             f_path_px.extend(self.c_paths_px[i].points)
         f_path_px.extend(self.paths_px[-1].points)
@@ -97,9 +108,9 @@ class CoveragePPBase:
             p2 = self.f_path_m.point(i+1)
             dist = np.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2)
             total_length += dist
-        self.total_path_len_m = round(total_length, 2)
+        self.st.f_path_len_m = round(total_length, 2)
 
-    def process_full_path(self) -> None:
+    def process_full_path_distances(self) -> None:
         # if distance between points is less than min_points_distance, remove the point
         min_wp_dist_px = self.min_points_distance / self.resolution  # convert to px
         new_points = []
@@ -178,7 +189,7 @@ class CoveragePPBase:
         self.save_path_fig(fig)
 
     def plot_coverage_paths(self, ax):
-        n = self.n_paths
+        n = self.st.n_paths
         colors = get_n_colors_plt(n)
         # fig, ax = plt.subplots(1, 1)
         x, y = self.map_polygons.b_poly.exterior.xy
@@ -217,7 +228,7 @@ class CoveragePPBase:
             self.anim.save(fig_path)
 
     def save_data(self):
-        len_m = self.total_path_len_m
+        len_m = self.st.f_path_len_m
         data = {"centers_seq_length": round(len_m, 2)}
         with open(self.zmd.result_file, 'w') as f:
             json.dump(data, f, indent=4)
@@ -228,7 +239,7 @@ class CoveragePPBase:
         ax.set_aspect('equal', adjustable='box')
         ax.set_title("paths_m")
         #
-        n = self.n_paths
+        n = self.st.n_paths
         colors = get_n_colors_plt(n)
         for i, path in enumerate(self.paths_m):
             if path is None:
