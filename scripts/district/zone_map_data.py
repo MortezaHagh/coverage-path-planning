@@ -22,8 +22,10 @@ class ZoneMapData:
     """
     ind: int
     name: str
-    path: str
-    result_file: str = None
+    zone_path: str
+    maps_path: str
+    result_path: str
+    result_file: str
     reslolution: float           # resolution m/px
     orig_map_data: MapData
     orig_rectangle: Rectangle
@@ -46,7 +48,9 @@ class ZoneMapData:
     def __init__(self, ind: int = 0):
         self.ind = ind
         self.name = f"Zone_{self.ind}"
-        self.path = None
+        self.zone_path = None
+        self.maps_path = None
+        self.result_path = None
         self.result_file = None
         self.reslolution = None
         self.orig_map_data = None
@@ -72,23 +76,27 @@ class ZoneMapData:
     def set_orig_map_data(self, map_data: MapData):
         self.orig_map_data = map_data
         self.reslolution = map_data.up_resolution
-        self.path = os.path.join(self.orig_map_data.bcfg.district_dir, self.name)
         self.set_result_path()
 
     def set_name(self, name: str):
         self.name = name
-        self.path = os.path.join(self.orig_map_data.bcfg.district_dir, self.name)
         self.set_result_path()
 
     def set_ind(self, ind: int):
         self.ind = ind
         self.name = f"Zone_{self.ind}"
-        self.path = os.path.join(self.orig_map_data.bcfg.district_dir, self.name)
         self.set_result_path()
 
     def set_result_path(self):
+        self.zone_path = os.path.join(self.orig_map_data.bcfg.district_dir, self.name)
+        os.makedirs(self.zone_path, exist_ok=True)
         dcfg = DistrictConfgs()
-        self.result_file = self.path + f"/{dcfg.covpp_method}/result_{dcfg.ns}.json"
+        self.result_file = self.zone_path + f"/{dcfg.covpp_method}/result.json"
+        self.result_path = os.path.join(self.zone_path, dcfg.covpp_method)
+        os.makedirs(self.result_path, exist_ok=True)
+        #
+        self.maps_path = os.path.join(self.zone_path, "maps")
+        os.makedirs(self.maps_path, exist_ok=True)
 
     def set_orig_rectangle(self, rectangle: Rectangle):
         self.orig_rectangle = rectangle
@@ -130,13 +138,12 @@ class ZoneMapData:
         self.final_rectangle = Rectangle(self.final_rect_data)
 
     def save_data(self) -> None:
-        res_path = self.path
-        os.makedirs(res_path, exist_ok=True)
+
         #
-        cv.imwrite(res_path + "/" + "local_map_1_orig.png", self.map_orig)
-        cv.imwrite(res_path + "/" + "local_map_2_sf_orig.png", self.map_sf_orig)
-        cv.imwrite(res_path + "/" + "local_map_3_cleaning.png", self.map_cleaning)
-        cv.imwrite(res_path + "/" + "local_map_4_viz.png", self.map_planning)
+        cv.imwrite(self.maps_path + "/" + "local_map_1_orig.png", self.map_orig)
+        cv.imwrite(self.maps_path + "/" + "local_map_2_sf_orig.png", self.map_sf_orig)
+        cv.imwrite(self.maps_path + "/" + "local_map_3_cleaning.png", self.map_cleaning)
+        cv.imwrite(self.maps_path + "/" + "local_map_4_viz.png", self.map_planning)
         #
         zone_data_d = dict()
         zone_data_d["origin_m"] = self.orig_map_data.origin_m
@@ -145,7 +152,7 @@ class ZoneMapData:
         zone_data_d["rect_data"] = convert_to_native(self.rect_data)
         zone_data_d["final_rect_data"] = convert_to_native(self.final_rect_data)
 
-        with open(res_path + "/" + "local_map.json", "w") as f:
+        with open(self.maps_path + "/" + "local_map.json", "w") as f:
             json_object = json.dumps(zone_data_d, indent=4)
             f.write(json_object)
 

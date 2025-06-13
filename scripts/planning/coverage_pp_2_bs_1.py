@@ -71,10 +71,7 @@ class CoveragePP(CoveragePPBase):
     def save_decomposition_plot(self) -> None:
         if not self.dcfgs.save_decomposition_plot:
             return
-        ns = self.dcfgs.covpp_method
-        boust_path = os.path.join(self.zmd.path, ns)  # boustrophedon
-        os.makedirs(boust_path, exist_ok=True)
-        self.dec_interface.decomposed.save_figs(boust_path)
+        self.dec_interface.decomposed.save_figs(self.zmd.result_path)
 
     def add_cells_to_map_planning(self) -> None:
         for i, cell in enumerate(self.dec_interface.decomposed.cells_groups):

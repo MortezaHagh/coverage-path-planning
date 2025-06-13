@@ -159,22 +159,18 @@ class ZoneData:
     def save_map_planning(self):
         if not self.dcfg.save_map_planning:
             return
-        map_hl_path = self.zmd.path + f"/{self.dcfg.covpp_method}/"
-        os.makedirs(map_hl_path, exist_ok=True)
-        m_name = f"map_planning_{self.dcfg.ns}.png"
-        map_hl_path = map_hl_path + m_name
+        m_name = "map_planning.png"
+        map_hl_path = os.path.join(self.zmd.result_path, m_name)
         cv.imwrite(map_hl_path, self.zmd.map_planning)
-        print(f"[{self.ns}-{self.zmd.ind}][save]: map planning saved to: {m_name}")
+        # print(f"[{self.ns}-{self.zmd.ind}][save]: map planning saved to: {m_name}")
 
     def save_map_cleaning_data(self):
         if not self.dcfg.save_map_planning:
             return
-        map_hl_path = self.zmd.path + f"/{self.dcfg.covpp_method}/"
-        os.makedirs(map_hl_path, exist_ok=True)
-        m_name = f"clean_data_{self.dcfg.ns}.png"
-        map_hl_path = map_hl_path + m_name
+        m_name = "map_cleaned.png"
+        map_hl_path = os.path.join(self.zmd.result_path, m_name)
         cv.imwrite(map_hl_path, self.zmd.map_clean_data)
-        print(f"[{self.ns}-{self.zmd.ind}][save]: map cleaning saved to: {m_name}")
+        # print(f"[{self.ns}-{self.zmd.ind}][save]: map cleaning saved to: {m_name}")
 
     def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
         res = self.zmd.reslolution
@@ -187,6 +183,7 @@ class ZoneData:
         # save zone statistics to json file
         result = {
             "zone_index": self.ind,
+            "method": self.dcfg.covpp_method,
             "n_paths": self.n_paths,
             "coverage_percentage": float(coverage_p),
             "total_path_length_m": float(self.cov_planner.total_path_len_m),

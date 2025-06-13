@@ -84,10 +84,10 @@ class DistrictData:
     def save_map_planning(self):
         if not self.dcfgs.save_map_planning:
             return
-        m_name = f"/map_planning_{self.dcfgs.ns}.png"
-        map_planning_path = self.dmd.path + m_name
+        m_name = f"/map_planning_{self.dcfgs.method}.png"
+        map_planning_path = self.dmd.zone_path + m_name
         cv.imwrite(map_planning_path, self.dmd.map_planning)
-        print(f"[{self.ns}][save]: map planning saved to: {m_name}")
+        # print(f"[{self.ns}][save]: map planning saved to: {m_name}")
 
     # ==================================================================================================================
 

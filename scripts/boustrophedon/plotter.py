@@ -198,11 +198,10 @@ class BoustPlotter:
     def save_figs(self, path: str):
         ns = "/"
         dpi = 200
-        seq_method = self.dcfgs.cell_sequence_method
         if self.viz_together:
-            self.fig_all.savefig(path + f"{ns}mcells_seq_{seq_method}.png", format="png", dpi=dpi)
-            self.fig_mcells_seq.savefig(path + f"{ns}seq_{seq_method}.png", format="png", dpi=dpi)
+            self.fig_all.savefig(path + f"{ns}mcells_seq.png", format="png", dpi=dpi)
+            self.fig_mcells_seq.savefig(path + f"{ns}seq.png", format="png", dpi=dpi)
         else:
-            self.fig_mcells_seq.savefig(path + f"{ns}seq_{seq_method}.png", format="png", dpi=dpi)
+            self.fig_mcells_seq.savefig(path + f"{ns}seq.png", format="png", dpi=dpi)
             self.fig_mcells.savefig(path + f"{ns}mcells.png", format="png", dpi=dpi)
             self.fig_cells_events.savefig(path + f"{ns}cells.png", format="png", dpi=dpi)

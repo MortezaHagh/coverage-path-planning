@@ -24,10 +24,11 @@ class BConfigs:
 class DistrictConfgs:
     whole_map = True  # False True
     ns = ""
+    method = ""
 
     # plots configs
-    save_map_planning = False
-    save_decomposition_plot = False
+    save_map_planning = True
+    save_decomposition_plot = True
     plot_decomposition = False
 
     # coverage path planning configs
@@ -38,7 +39,8 @@ class DistrictConfgs:
     elif covpp_method == "m1_boust":
         # boustrophedon configs
         cell_sequence_method = "s3_milp"  # s1_simple, s2_dfs, s3_milp
-        ns = cell_sequence_method
+        covpp_method = covpp_method + "_" + cell_sequence_method
+    method = covpp_method
 
 
 @dataclasses.dataclass
@@ -68,7 +70,7 @@ class SpaceConfigs:
 @dataclasses.dataclass
 class PlanningConfigs:
     spa = SpaceConfigs()
-    animation = True
+    animation = True  # True
     cleaning_r = spa.cleaning_r
     min_path_overlap = 0.0
     min_wp_dist = 0.4

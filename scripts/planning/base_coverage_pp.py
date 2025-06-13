@@ -77,7 +77,7 @@ class CoveragePPBase:
         #
         self.plot_paths_px()
         # self.plot_paths_m()
-        self.save_data()
+        # self.save_data()
         if self.pcfgs.animation:
             self.animate_robot_paths()
 
@@ -208,16 +208,12 @@ class CoveragePPBase:
             ax.plot(pp[:, 0], pp[:, 1], color='gray', linestyle=':')
 
     def save_path_fig(self, fig, is_anim=False):
-        ns = self.dcfgs.covpp_method
-        boust_path = os.path.join(self.zmd.path, ns)
-        os.makedirs(boust_path, exist_ok=True)
-        seq_method = self.dcfgs.cell_sequence_method
         if not is_anim:
-            fig_path = os.path.join(boust_path, f"paths_{seq_method}.png")
+            fig_path = os.path.join(self.zmd.result_path, "paths.png")
             fig.savefig(fig_path, format="png", dpi=300)
         else:
             print(f"saving animation ... n_frames: {self.f_path_px.n}")
-            fig_path = os.path.join(boust_path, f"paths_{seq_method}.gif")
+            fig_path = os.path.join(self.zmd.result_path, "paths.gif")
             self.anim.save(fig_path)
 
     def save_data(self):
