@@ -3,8 +3,8 @@ import numpy as np
 from scripts.base.my_utils import get_n_colors_cv
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase
-from scripts.boustrophedon.cell_bs_cov_planner import CellCoveragePathPlanner
-from scripts.boustrophedon.decomposition_interface import DecompositionInterface
+from scripts.planning.boustrophedon.cell_bs_cov_planner import CellCoveragePathPlanner
+from scripts.planning.boustrophedon.decomposition_interface import DecompositionInterface
 from scripts.planning.connect_paths import ConnectPaths
 
 

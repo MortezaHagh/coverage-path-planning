@@ -2,11 +2,11 @@
 import math
 from shapely import Polygon
 from scripts.base.configs import PlanningConfigs
-from scripts.boustrophedon.events import Event
-from scripts.boustrophedon.obstacles import Obstacle
-from scripts.boustrophedon.cell import Cell, CellGroup
-from scripts.boustrophedon.plotter import BoustPlotter
-from scripts.boustrophedon.post_process_mcells import create_sequence, eval_cells_path_shift
+from scripts.planning.boustrophedon.events import Event
+from scripts.planning.boustrophedon.obstacles import Obstacle
+from scripts.planning.boustrophedon.cell import Cell, CellGroup
+from scripts.planning.boustrophedon.plotter import BoustPlotter
+from scripts.planning.boustrophedon.post_process_mcells import create_sequence, eval_cells_path_shift
 
 
 class MHDecomposition:

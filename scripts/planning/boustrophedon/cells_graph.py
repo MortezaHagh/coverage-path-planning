@@ -1,6 +1,6 @@
 import heapq
 import numpy as np
-from scripts.boustrophedon.cell import Cell
+from scripts.planning.boustrophedon.cell import Cell
 
 
 class CellsGraph:

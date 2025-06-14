@@ -1,5 +1,5 @@
 from shapely import Polygon
-from scripts.boustrophedon.decomposition_1_mh import MHDecomposition
+from scripts.planning.boustrophedon.decomposition_1_mh import MHDecomposition
 # from scripts.decomposition.decomposition_2_bs_mh_f import BoustraphedonDecomposition
 
 # example

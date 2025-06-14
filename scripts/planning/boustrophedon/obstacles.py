@@ -1,7 +1,7 @@
 """ obstacles for decomposition """
 import math
 from shapely import Polygon, Point
-from scripts.boustrophedon.events import Event
+from scripts.planning.boustrophedon.events import Event
 
 
 class Obstacle:

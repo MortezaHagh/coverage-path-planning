@@ -1,5 +1,5 @@
-from scripts.boustrophedon.cell import Cell
-from scripts.boustrophedon.optimize_mcells_seq import OptimCellsSeq
+from scripts.planning.boustrophedon.cell import Cell
+from scripts.planning.boustrophedon.optimize_mcells_seq import OptimCellsSeq
 
 
 def create_sequence(mcells: list[Cell]):
