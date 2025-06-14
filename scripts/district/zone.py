@@ -2,6 +2,7 @@ import os
 import json
 import cv2 as cv
 import numpy as np
+from scripts.base.logger import MyLogger
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.coverage_pp_2_bs_1 import CoveragePP
 from scripts.base.configs import DistrictConfgs, PlanningConfigs
@@ -48,6 +49,7 @@ class ZoneData:
 
     def __init__(self, ind: int = None):
         self.ns = "ZoneData"
+        self.lg = MyLogger(self.ns)
         self.ind = ind
         self.zmd = None
 
@@ -174,7 +176,7 @@ class ZoneData:
         m_name = "map_planning.png"
         map_hl_path = os.path.join(self.zmd.result_path, m_name)
         cv.imwrite(map_hl_path, self.zmd.map_planning)
-        # print(f"[{self.ns}-{self.zmd.ind}][save]: map planning saved to: {m_name}")
+        # self.lg.info(f"{self.zmd.ind}][save]: map planning saved to: {m_name}")
 
     def save_map_cleaning_data(self):
         if not self.dcfg.save_map_planning:
@@ -182,7 +184,7 @@ class ZoneData:
         m_name = "map_cleaned.png"
         map_hl_path = os.path.join(self.zmd.result_path, m_name)
         cv.imwrite(map_hl_path, self.zmd.map_clean_data)
-        # print(f"[{self.ns}-{self.zmd.ind}][save]: map cleaning saved to: {m_name}")
+        # self.lg.info(f"{self.zmd.ind}][save]: map cleaning saved to: {m_name}")
 
     def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
         res = self.zmd.reslolution

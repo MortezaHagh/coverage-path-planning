@@ -1,6 +1,7 @@
 """ boustrophedon coverage planning inside the given cell """
 import numpy as np
 from shapely.geometry import Polygon, Point, LineString
+from scripts.base.logger import MyLogger
 from scripts.planning.boustrophedon.cell import Cell
 from scripts.base.configs import PlanningConfigs
 from scripts.base.my_utils import MyPoint, MyPath
@@ -17,6 +18,7 @@ class CellCoveragePathPlanner:
 
     def __init__(self, cell: Cell, zone_ind: int = 0, resolution: float = 0.05):
         self.ns = "CellCoverageP-Z" + str(zone_ind)
+        self.lg = MyLogger(self.ns)
         self.cell = cell
         self.poly_m = None
         self.path_m = None
@@ -36,7 +38,7 @@ class CellCoveragePathPlanner:
         # if not self.eveal_cell():
         #     return
         if not self.cell.do_planning:
-            print(f"[{self.ns}]: [WARN] cell {self.cell.id} does not require planning.")
+            self.lg.warn(f"cell {self.cell.id} does not require planning.")
             return
 
         self.create_cell_polygon_in_meter()
@@ -49,7 +51,7 @@ class CellCoveragePathPlanner:
     # def eveal_cell(self):
     #     min_area = 0.5 * np.pi * self.pcfgs.cleaning_r**2
     #     if (self.cell.area*self.resolution**2) < min_area:
-    #         print(f"[{self.ns}]: [WARN] cell area is too small: {self.cell.id}")
+    #         self.lg.warn(f"cell area is too small: {self.cell.id}")
     #         return False
     #     return True
 
@@ -78,7 +80,7 @@ class CellCoveragePathPlanner:
         d_shift = resolution * 5
 
         # #
-        # print(cell.id, "l", cell.shift_le, "r", cell.shift_re)
+        # self.lg.info(cell.id, "l", cell.shift_le, "r", cell.shift_re)
         # s_w_m = w_m - cleaning_d * (cell.shift_le + cell.shift_re)
         # if cell.shift_le:
         #     x_max -= cleaning_d
@@ -122,7 +124,7 @@ class CellCoveragePathPlanner:
                 xy_but.append((p1.x, p1.y+d_shift))
                 xy_top.append((p2.x, p2.y-d_shift))
         if len(xy_but) < 1:
-            print(f"[{self.ns}]: [WARN] no hitting points")
+            self.lg.warn("no hitting points")
             return False
         self.xy_but = xy_but
         self.xy_top = xy_top
@@ -136,20 +138,20 @@ class CellCoveragePathPlanner:
 
         #
         if intersection.is_empty:
-            print(f"[{self.ns}]: [WARN] no intersection")
+            self.lg.warn("no intersection")
             return None
         elif intersection.geom_type == 'Point':
-            print(f"[{self.ns}]: [WARN] only one intersection point: {intersection.x}, {intersection.y}")
+            self.lg.warn(f"only one intersection point: {intersection.x}, {intersection.y}")
             return None
         elif intersection.geom_type == 'LineString':
             xy = intersection.coords.xy
             xx = list(xy[0])
             yy = list(xy[1])
             if len(xx) != 2:
-                print(f"[{self.ns}]: [WARN] number of intersection points: {len(xx)}")
+                self.lg.warn(f"number of intersection points: {len(xx)}")
                 return None
         else:
-            print("[{self.ns}]: [WARN] No valid intersection below the point.")
+            self.lg.warn("No valid intersection below the point.")
             return None
         #
         p1 = Point(xx[0], yy[0])

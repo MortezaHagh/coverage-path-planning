@@ -22,7 +22,7 @@ class RecEventHandler:
 
     def __init__(self, map_img: np.ndarray):
         #
-        self.__ns = "RecEventHandler"
+        self.ns = "RecEventHandler"
         self.wind_name = "Select"
 
         #
@@ -78,19 +78,19 @@ class RecEventHandler:
                         self.highlighted_ind = None
                 else:
                     self.highlighted_ind = None
-                    print(f"[{self.__ns}]: highlighted_ind >= len(self.objects)")
+                    print(f"[{self.ns}]: highlighted_ind >= len(self.objects)")
         elif self.__button_down:
             if self.selected_ind < len(self.objects):
                 self.objects[self.selected_ind].button_move(x, y)
             else:
-                print(f"[{self.__ns}]: selected_ind >= len(self.objects)")
+                print(f"[{self.ns}]: selected_ind >= len(self.objects)")
 
         #
         # if self.navigation_click_position:
         #     self.move_center(x, y)
 
     def on_lb_db_click(self, x, y, flags):
-        # print(f"[{self.__ns}]: ldb: [x,y], [{(x, y)}]")
+        # print(f"[{self.ns}]: ldb: [x,y], [{(x, y)}]")
         params = {"xc": x, "yc": y, "rot": 0, "w": 200, "h": 200}
         main_obj = VisualRectangle(data=params)
         self.objects.append(main_obj)
@@ -107,7 +107,7 @@ class RecEventHandler:
         #
         if self.highlighted_ind is not None:
             if self.highlighted_ind >= len(self.objects):
-                print(f"[{self.__ns}]: highlighted_ind >= len(self.objects)")
+                print(f"[{self.ns}]: highlighted_ind >= len(self.objects)")
                 self.highlighted_ind = None
 
         #
@@ -129,7 +129,7 @@ class RecEventHandler:
                 self.__button_down = True
                 self.objects[self.selected_ind].button_down(x, y)
             else:
-                print(f"[{self.__ns}]: selected_ind >= len(self.objects)")
+                print(f"[{self.ns}]: selected_ind >= len(self.objects)")
                 self.selected_ind = None
 
     def on_button_up(self, x, y, flags):
@@ -140,7 +140,7 @@ class RecEventHandler:
                 self.selected_ind = None
             except:
                 if self.selected_ind >= len(self.objects):
-                    print(f"[{self.__ns}]: selected_ind >= len(self.objects)")
+                    print(f"[{self.ns}]: selected_ind >= len(self.objects)")
                 raise
         else:
             self.selected_ind = None
@@ -152,7 +152,7 @@ class RecEventHandler:
             return False
 
         if key == Key.ctrl:
-            print(f"[{self.__ns}]: crtls key is down")
+            print(f"[{self.ns}]: crtls key is down")
 
     def on_key_release(self, key):
         if key == Key.esc or key == Key.enter:
@@ -184,10 +184,10 @@ class RecEventHandler:
             vos = self.objects
         #
         if not vos:
-            print(f"[{self.__ns}]: There is no object to return!")
+            print(f"[{self.ns}]: There is no object to return!")
         return vos
 
     def get_main_obj(self) -> VisualRectangle:
         if self.main_obj is None:
-            raise Exception(f"[{self.__ns}]: main object is has not created!")
+            raise Exception(f"[{self.ns}]: main object is has not created!")
         return self.main_obj

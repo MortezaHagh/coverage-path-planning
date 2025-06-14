@@ -17,7 +17,8 @@ class CoveragePP(CoveragePPBase):
     def __init__(self, zone_map_data: ZoneMapData):
         super().__init__(zone_map_data)
         self.ns = "BoustCoveragePP" + "-Z" + str(self.zmd.ind)
-        print(f" >>>>> [{self.ns}] Step: coverage path planning")
+        self.lg.name = self.ns
+        self.lg.info1("Step: coverage path planning")
 
         # configs
         self.colors = []
@@ -37,11 +38,11 @@ class CoveragePP(CoveragePPBase):
         self.bs_post_planning()
 
     def decompose_map(self) -> None:
-        print(f"[{self.ns}]: start decomposition")
+        self.lg.info2("start decomposition")
         self.dec_interface = DecompositionInterface(self.map_polygons, self.zmd.reslolution)
 
     def zone_covpp(self) -> None:
-        print(f"[{self.ns}]: start coverage path planning for cells")
+        self.lg.info2("start coverage path planning for cells")
         for mell in self.dec_interface.decomposed.smcells:
             cell_covp_planner = CellCoveragePathPlanner(cell=mell, zone_ind=self.zmd.ind, resolution=self.resolution)
             self.all_cell_covp_planners.append(cell_covp_planner)

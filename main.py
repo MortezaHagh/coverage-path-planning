@@ -1,6 +1,6 @@
 """ Main function to run the program """
 import sys
-import cv2 as cv
+# import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
 from scripts.base.configs import BConfigs
@@ -18,7 +18,7 @@ def main():
     ns = "main"
     lg = MyLogger(ns)
     if len(sys.argv) < 2:
-        print(f"[{ns}] Usage: python main.py <map_name>")
+        lg.error("Usage: python main.py <map_name>")
         map_name = "Map2"
     else:
         map_name = sys.argv[1]
@@ -55,13 +55,11 @@ def main():
     district_data.run_coverage_planning()
     print(" ============================================================================== ")
 
-    # display map_planning
-    map_planning = district_data.dmd.map_planning
-    cv.imshow("map_planning", map_planning)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
-
-    print(f"[{ns}]: resolution:", spa.orig_map_data.up_resolution)
+    # # display map_planning
+    # map_planning = district_data.dmd.map_planning
+    # cv.imshow("map_planning", map_planning)
+    # cv.waitKey(0)
+    # cv.destroyAllWindows()
 
 
 if __name__ == "__main__":

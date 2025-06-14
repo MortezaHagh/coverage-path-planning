@@ -1,6 +1,7 @@
 import threading
 import cv2 as cv
 from pynput.keyboard import Listener
+from scripts.base.logger import MyLogger
 from scripts.base.map_data import MapData
 from scripts.base.configs import DistrictConfgs
 from scripts.gui.rect_event_hl import RecEventHandler
@@ -18,8 +19,9 @@ class DistrictGen:
     def __init__(self, map_data: MapData):
         #
         self.__ns = "DistrictEvent"
+        self.lg = MyLogger(self.__ns)
         self.__wind_name = "Select District"
-        print(f" >>>>> [{self.__ns}] Step: Creating district for CPP")
+        self.lg.info1("Step: creating district for CovPP")
 
         #
         self.__md = map_data
@@ -27,9 +29,9 @@ class DistrictGen:
 
         #
         if self.__cfg.whole_map:
-            print(f"[{self.__ns}]: whole map is selected as district for CPP!")
+            self.lg.info2("whole map is selected as district for CPP!")
             return None
-        print(f"[{self.__ns}]: Selecting district for CPP ... ")
+        self.lg.info2("Selecting district for CPP ... ")
 
         # init window
         self.init_wind()

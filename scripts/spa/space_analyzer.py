@@ -1,6 +1,7 @@
 import copy
 import cv2 as cv
 import numpy as np
+from scripts.base.logger import MyLogger
 from scripts.base.map_data import MapData
 from scripts.gui.visuals import Rectangle
 from scripts.base.configs import SpaceConfigs
@@ -53,7 +54,8 @@ class SpaceAnalyzer:
 
     def __init__(self, map_data: MapData, rectangle: Rectangle):
         self.ns = "SpaceAnalyzer"
-        print(f" >>>>> [{self.ns}] Step: Analyzing space for creating free space [local map]")
+        self.lg = MyLogger(self.ns)
+        self.lg.info1("Step: Analyzing space for creating free space [local map]")
 
         # configs
         self.scfg = SpaceConfigs()
@@ -220,7 +222,7 @@ class SpaceAnalyzer:
 
         #
         if local_rect is None:
-            print(f"[{self.ns}, get_final_freespace_rect]: Failed to find a valid rectangle")
+            self.lg.info(f"[get_final_freespace_rect]: Failed to find a valid rectangle")
             return {"vertices": None, "rect_data": None}
 
         # local to global rectangle
@@ -267,19 +269,19 @@ class SpaceAnalyzer:
         Returns:
             np.ndarray: selected_free_space.
         """
-        print(f"[{self.ns}]: selecting the open space based on the selecting point.")
+        self.lg.info("selecting the open space based on the selecting point.")
 
         # get contours
         contours, hierarchy = cv.findContours(c_map, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)  # pylint: disable=W0612
         if len(contours) == 0:
-            print(f"[{self.ns}]: contours is empty")
+            self.lg.info("contours is empty")
             return c_map
 
         # # display contours
         # self.display_contour(contours)
 
         # find selected_contour
-        print(f"[{self.ns}]: number of contours (free islands): {len(contours)}")
+        self.lg.info(f"number of contours (free islands): {len(contours)}")
         for contour in contours:
             if cv.pointPolygonTest(contour, self.fs_selected_point, True) >= 0:
                 selected_contour = contour
@@ -296,11 +298,11 @@ class SpaceAnalyzer:
         map_fs = cv.bitwise_and(c_map, selected_free_space)
 
         #
-        print(f"[{self.ns}]: free space is selected.")
+        self.lg.info("free space is selected.")
         return map_fs
 
     def select_free_space(self, map_i: np.ndarray) -> None:
-        print(f"[{self.ns}]: selecting the free space ...")
+        self.lg.info("selecting the free space ...")
         free_map_disp = cv.addWeighted(self.map_c_orig, 0.4, map_i, 0.6, 0)
         if not self.scfg.select_free_space:
             self.is_fs_point_selected = True
@@ -318,7 +320,7 @@ class SpaceAnalyzer:
         return self.detect_free_spaces_dist_occ(map_full=map_full, dist_from_occ_m=self.scfg.ws_r_dist)
 
     def detect_free_spaces_dist_occ(self, map_full: np.ndarray, dist_from_occ_m: float = 0.0) -> np.ndarray:
-        print(f"[{self.ns}]: detecting all free spaces conidering distance {dist_from_occ_m} from obstacles.")
+        self.lg.info("detecting all free spaces conidering distance {dist_from_occ_m} from obstacles.")
         # current map
         if map_full is None:
             map_full = self.binary_map_0
@@ -378,7 +380,7 @@ class SpaceAnalyzer:
         return map_framed
 
     def crop_map(self, map_i: np.ndarray) -> np.ndarray:
-        # print(f"[{self.ns}]: cropping map based on the district rectangle.")
+        # self.lg.info("cropping map based on the district rectangle.")
 
         # cropped map and vertices
         map_cropped = copy.copy(map_i[self.hw_bd["h_min"]:self.hw_bd["h_max"], self.hw_bd["w_min"]:self.hw_bd["w_max"]])

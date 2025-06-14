@@ -4,6 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 from scripts.base.my_utils import MyPoint, MyPath
+from scripts.base.logger import MyLogger
 from scripts.base.my_utils import get_n_colors_plt
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
@@ -37,6 +38,7 @@ class CoveragePPBase:
 
     def __init__(self, zone_map_data: ZoneMapData):
         self.ns = "CoveragePPBase"
+        self.lg = MyLogger(self.ns)
 
         # zone data
         self.zmd = zone_map_data
@@ -223,7 +225,7 @@ class CoveragePPBase:
             fig_path = os.path.join(self.zmd.result_path, "paths.png")
             fig.savefig(fig_path, format="png", dpi=300)
         else:
-            print(f"saving animation ... n_frames: {self.f_path_px.n}")
+            self.lg.info(f"saving animation ... n_frames: {self.f_path_px.n}")
             fig_path = os.path.join(self.zmd.result_path, "paths.gif")
             self.anim.save(fig_path)
 
@@ -273,7 +275,7 @@ class CoveragePPBase:
         # mx = self.zmd.orig_map_data.updated_w * self.zmd.reslolution  # original map size in m
         # nx = int(fig.get_figwidth() * fig.dpi)
         # lw = 0.5 * self.cleaning_width * nx / mx
-        # print("lw:", lw)
+        # self.lg.info("lw:", lw)
 
         # paths
         line_0, = ax.plot(self.f_path_px.xy[:2, 0], self.f_path_px.xy[:2, 1], "-", color='gray', linewidth=20, alpha=0.5)

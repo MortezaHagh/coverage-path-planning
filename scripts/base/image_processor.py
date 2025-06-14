@@ -1,7 +1,8 @@
 """ processing map pgm file """
 import copy
-import numpy as np
 import cv2 as cv
+import numpy as np
+from scripts.base.logger import MyLogger
 from scripts.base.configs import BConfigs
 from scripts.base.map_data import MapData
 
@@ -18,7 +19,8 @@ class MapImageProcessor:
 
         # init
         self.ns = "MapImageProcessor"
-        print(f" >>>>> [{self.ns}] Step: processing map image")
+        self.lg = MyLogger(self.ns)
+        self.lg.info1("Step: processing map image")
 
         # read configs and eval original map arr
         self.__bcfg = bconfigs
@@ -51,27 +53,27 @@ class MapImageProcessor:
             raise ValueError("Image must be grayscale")
 
     def set_map_data(self):
-        print(f"[{self.ns}]: loading map image data")
+        self.lg.info2("loading map image data")
         map_arr = self.__orig_map.copy()
         self.__map_data.set_basic_configs(self.__bcfg, self.__bcfg.map_name)
         self.__map_data.set_origin_m(self.__bcfg.origin_m)
         self.__map_data.set_orig_map(map_arr)
 
     def process_map(self) -> np.ndarray:
-        print(f"[{self.ns}]: first processing of the map image")
+        self.lg.info2("processing of the map image")
         binary_map = self.convert_to_binary()
         denoised_map = self.remove_noise(binary_map)
-        print(f"[{self.ns}]: Binary-denoised image created.")
+        self.lg.info("Binary-denoised image created.")
         return denoised_map
 
     def convert_to_binary(self):
-        print(f"[{self.ns}]: converting image to binary")
+        self.lg.info("converting image to binary")
         # threshold = self.__bcfg.occupied_thresh
         _, binary_map = cv.threshold(self.__orig_map, 220, 255, cv.THRESH_BINARY)
         return binary_map
 
     def remove_noise(self, binary_map, kernel_size=(3, 3)) -> np.ndarray:
-        print(f"[{self.ns}]: removing noise")
+        self.lg.info("removing noise")
         kernel = np.ones(kernel_size, np.uint8)
         denoised_map = cv.morphologyEx(binary_map, cv.MORPH_OPEN, kernel)
         return denoised_map
@@ -80,13 +82,13 @@ class MapImageProcessor:
         self.__map_data.set_resolution(self.__bcfg.resolution)
 
     def visualize_map(self, pgm_data_in: np.ndarray, disp_name: str = "Map") -> None:
-        print(f"[{self.ns}]: display map image")
+        self.lg.info("display map image")
 
         # original map mage data
         map_data = pgm_data_in.copy()
         height, width = map_data.shape[:2]
         updated_h, updated_w = height, width
-        print(f"[{self.ns}]: Map size [w,h]: {width}x{height}")
+        self.lg.info("Map size [w,h]: {width}x{height}")
 
         # cv window
         wind_hw = self.__map_data.wind_hw
@@ -107,4 +109,4 @@ class MapImageProcessor:
                 break
 
         cv.destroyAllWindows()
-        print(f"[{self.ns}]: Image window closed.")
+        self.lg.info("Image window closed.")

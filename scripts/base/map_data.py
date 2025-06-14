@@ -1,6 +1,7 @@
 """ MapData data classes """
 import numpy as np
 import cv2 as cv
+from scripts.base.logger import MyLogger
 from scripts.base.configs import BConfigs
 
 
@@ -36,6 +37,7 @@ class MapData:
 
     def __init__(self):
         self.ns = "MapData"
+        self.lg = MyLogger(self.ns)
         #
         self.bcfg = None
         self.name = None
@@ -95,7 +97,7 @@ class MapData:
         height, width = self.orig_map.shape[:2]
         self.orig_h = height
         self.orig_w = width
-        print(f"[{self.ns}]: Map size [w,h]: {width}x{height}")
+        self.lg.info2(f"Map size [w,h]: {width}x{height}")
 
     def set_wind_wh(self, wind_hw=None):
         if wind_hw is None:
@@ -115,7 +117,7 @@ class MapData:
         self.updated_h = h
         self.updated_w = w
         self.updated_wh = (w, h)
-        print(f"[{self.ns}]: Updated Map size [w,h]: {w}x{h}")
+        self.lg.info2(f"Updated Map size [w,h]: {w}x{h}")
 
     def resize_map(self):
         self.up_map = cv.resize(self.orig_map, self.updated_wh, interpolation=cv.INTER_AREA)

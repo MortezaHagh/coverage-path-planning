@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp
+from scripts.base.logger import MyLogger
 from scripts.base.configs import DistrictConfgs
 from scripts.planning.boustrophedon.cell import Cell
 from scripts.planning.boustrophedon.cells_graph import CellsGraph
@@ -9,8 +10,9 @@ from scripts.planning.boustrophedon.cells_graph import CellsGraph
 class OptimCellsSeq:
     def __init__(self, mcells: list[Cell]):
         self.ns = "OptimCellsSeq"
+        self.lg = MyLogger(self.ns)
         dcfgs = DistrictConfgs()
-        print(f" >>>>> [{self.ns}] Step: creating optimization cells sequence")
+        self.lg.info1("Step: creating optimization cells sequence")
 
         #
         self.cells_graph = CellsGraph(mcells)
@@ -32,12 +34,12 @@ class OptimCellsSeq:
         elif dcfgs.cell_sequence_method == "s3_milp":
             optimizer = MILPSeq(self.cells_graph, mcells)
         else:
-            print(f"[{self.ns}][ERROR]: Invalid cell sequence method: {dcfgs.cell_sequence_method}")
+            self.lg.error(f"Invalid cell sequence method: {dcfgs.cell_sequence_method}")
             return
 
         #
         if optimizer.tour_indxs is None or len(optimizer.tour_indxs) == 0:
-            print(f"[{self.ns}][ERROR]: No cells sequence found.")
+            self.lg.error(f"No cells sequence found.")
             return
         #
         self.tour_indxs = optimizer.tour_indxs
@@ -73,7 +75,7 @@ class OptimCellsSeq:
         ax.set_aspect('equal', adjustable='box')
 
         # #
-        # print(self.tour)
+        # self.lg.info(self.tour)
         for cell in self.cells:
             ax.plot(cell.cxy[0], cell.cxy[1], "ro")
             text = f"{cell.id}-{cell.opt_id}"

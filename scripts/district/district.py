@@ -1,6 +1,7 @@
 from copy import deepcopy
 import cv2 as cv
 import numpy as np
+from scripts.base.logger import MyLogger
 from scripts.gui.visuals import Rectangle
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.spa.space_analyzer import SpaceAnalyzer
@@ -18,7 +19,8 @@ class DistrictData:
 
     def __init__(self, spa: SpaceAnalyzer):
         self.ns = "DistrictData"
-        print(f" >>>>> [{self.ns}] Step: creating district data")
+        self.lg = MyLogger(self.ns)
+        self.lg.info1("Step: creating district data")
 
         # configs
         self.dcfgs = DistrictConfgs()
@@ -54,14 +56,14 @@ class DistrictData:
     # ==================================================================================================================
 
     def create_zones(self):
-        print(f" >>>>> [{self.ns}] Step: creating zone map data")
+        self.lg.info1("Step: creating zone map data")
 
         # create zones rectangles
         zone_rectangles: list[Rectangle] = self.create_one_zone_rectangle()
 
         # create zone map data and zones
         for i, zr in enumerate(zone_rectangles):
-            print(f"[{self.ns}]: creating map data for zone [{i}]")
+            self.lg.info("creating map data for zone [{i}]")
             z_spa: SpaceAnalyzer = deepcopy(self.spa_obj)
             z_spa.update_by_rectangle(zr)
             zmd = z_spa.zone_map_data  # zone_map_data
@@ -87,7 +89,7 @@ class DistrictData:
         m_name = f"/map_planning_{self.dcfgs.method}.png"
         map_planning_path = self.dmd.zone_path + m_name
         cv.imwrite(map_planning_path, self.dmd.map_planning)
-        # print(f"[{self.ns}][save]: map planning saved to: {m_name}")
+        # self.lg.info(f"[save]: map planning saved to: {m_name}")
 
     # ==================================================================================================================
 

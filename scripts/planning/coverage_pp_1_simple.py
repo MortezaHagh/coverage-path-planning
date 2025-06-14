@@ -12,20 +12,21 @@ class CoveragePP(CoveragePPBase):
         super().__init__(zone_map_data)
 
         self.ns = "CPPSimple" + "-" + str(self.zmd.ind)
-        print(f" >>>>> [{self.ns}] Step: coverage path planning")
+        self.lg.name = self.ns
+        self.lg.info1("Step: coverage path planning")
 
         # coverage path planning for all zones
         self.plan()
 
     def coverage_planning(self) -> None:
-        print(f"[{self.ns}]: simple coverage path planning")
+        self.lg.info2("simple coverage path planning")
         self.zone_covpp()
         self.rotate_waypoints()
         self.paths_px = self.path_m_to_px(self.paths_m[0])
         self.add_path_to_map_planning()
 
     def zone_covpp(self) -> None:
-        print(f"[{self.ns}]: cpp for zone [{self.zmd.ind}]")
+        self.lg.info2(f"cpp for zone [{self.zmd.ind}]")
 
         # margin rectangle
         margin = self.pcfgs.margin

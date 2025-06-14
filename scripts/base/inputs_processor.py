@@ -5,6 +5,7 @@ import copy
 import yaml
 import cv2 as cv
 import numpy as np
+from scripts.base.logger import MyLogger
 from scripts.base.configs import BConfigs
 
 
@@ -20,14 +21,15 @@ class InputsProcessor:
     def __init__(self, map_name="Map1"):
         # init
         self.ns = "InputsProcessor"
+        self.lg = MyLogger(self.ns)
         self.map_name = map_name
         self.__configs = BConfigs()
         self.__orig_map = None
         self.paths["data"] = "./Data"
 
         #
-        print(f" >>>>> [{self.ns}] Step: processing inputs")
-        print(f"[{self.ns}]: map name: {map_name}")
+        self.lg.info1("Step: processing inputs")
+        self.lg.info2(f"map name: {map_name}")
 
         # define paths
         self.set_paths()
@@ -66,7 +68,7 @@ class InputsProcessor:
     def check_directory(self) -> None:
         """ check if directory and map files exist """
         if not os.path.isdir(self.paths["map"]):
-            print(f"Directory {self.paths['map']} does not exist")
+            self.lg.error(f"Directory {self.paths['map']} does not exist")
             raise FileNotFoundError(f"Directory {self.paths['map']} does not exist")
 
     def set_configs(self, yaml_data: dict) -> None:
@@ -89,11 +91,11 @@ class InputsProcessor:
             json.dump(data, file, indent=4)
 
     def visualize_map(self, pgm_data) -> None:
-        print(f"[{self.ns}]: visualizing")
+        self.lg.info(f"[{self.ns}]: visualizing")
 
         # check if map is loaded
         if pgm_data is None:
-            print(f"[{self.ns}]: Failed to load PGM file.")
+            self.lg.error(f"[{self.ns}]: Failed to load PGM file.")
             return
         #
         w_name = "PGM Image"

@@ -1,3 +1,4 @@
+from scripts.base.logger import MyLogger
 from scripts.base.map_data import MapData
 from scripts.base.configs import DistrictConfgs
 from scripts.gui.visuals import Rectangle
@@ -11,7 +12,8 @@ class DistrictGen:
     def __init__(self, map_data: MapData):
         #
         self.__ns = "DistrictEvent"
-        print(f" >>>>> [{self.__ns}] Step: Creating district for CPP")
+        self.lg = MyLogger(self.__ns)
+        self.lg.info1("Step: creating district for CovPP")
 
         #
         self.__md = map_data
@@ -19,7 +21,7 @@ class DistrictGen:
 
         #
         if self.__cfg.whole_map:
-            print(f"[{self.__ns}]: whole map is selected as district for CPP!")
+            self.lg.info2("whole map is selected as district for CPP!")
         else:
             raise ValueError("DistrictGen is not implemented for non-whole map configurations.")
 

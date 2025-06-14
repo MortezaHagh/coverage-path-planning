@@ -13,7 +13,10 @@ class MyLogger:
         print(f"{Fore.GREEN}[{self.name}]: {message}{Style.RESET_ALL}")
 
     def info(self, message):
-        print(f"{Fore.BLACK}[{self.name}]: {message}{Style.RESET_ALL}")
+        print(f"{Fore.WHITE}[{self.name}]: {message}{Style.RESET_ALL}")
+
+    def debug(self, message):
+        print(f"{Fore.BLUE}[{self.name}]: {message}{Style.RESET_ALL}")
 
     def warn(self, message):
         print(f"{Fore.YELLOW}[{self.name}]: {message}{Style.RESET_ALL}")

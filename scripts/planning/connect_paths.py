@@ -1,5 +1,6 @@
 import numpy as np
 from skimage.graph import route_through_array
+from scripts.base.logger import MyLogger
 from scripts.base.my_utils import MyPath, MyPoint
 from scripts.district.zone_map_data import ZoneMapData
 
@@ -13,7 +14,8 @@ class ConnectPaths:
 
     def __init__(self, zone_map_data: ZoneMapData, paths_px: list[MyPath]):
         self.ns = "ConnectPaths"
-        print(f"[{self.ns}] Step: connect paths")
+        self.lg = MyLogger(self.ns)
+        self.lg.info1("Step: connect paths")
 
         #
         self.zmd = zone_map_data
@@ -40,6 +42,7 @@ class FindPathInMap:
 
     def __init__(self, zmd: ZoneMapData):
         self.ns = "FindPathInMap"
+        self.lg = MyLogger(self.ns)
         self.occ_map = zmd.map_ws
         self.s_x = zmd.rectangle.x_min
         self.s_y = zmd.rectangle.y_min
@@ -70,7 +73,7 @@ class FindPathInMap:
 
         # convert to list of tuples
         if not path_px:
-            print(f"[{self.ns}]: No path found from {start} to {end}")
+            self.lg.error(f"No path found from {start} to {end}")
 
         # shift paths based on the zone map rectangle
         path_px = np.array(path_px) + np.array([self.s_y, self.s_x])
@@ -87,7 +90,7 @@ class FindPathInMap:
         if occ_map[y, x] == FREE:
             return point
         else:
-            print(f"[{self.ns}]: Point {point} is not free, finding closest free cell")
+            self.lg.debug(f"Point {point} is not free, finding closest free cell")
 
         # find closest free cell
         y, x = np.where(occ_map == FREE)
