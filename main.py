@@ -2,6 +2,7 @@
 import sys
 import cv2 as cv
 import numpy as np
+from scripts.base.logger import MyLogger
 from scripts.base.configs import BConfigs
 from scripts.base.map_data import MapData
 from scripts.gui.visuals import Rectangle
@@ -11,11 +12,11 @@ from scripts.base.image_processor import MapImageProcessor
 from scripts.gui.create_district_simple import DistrictGen
 from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.district import DistrictData
-# from scripts.planning.coverage_pp_2_tp_decompose_1 import CoveragePP
 
 
 def main():
     ns = "main"
+    lg = MyLogger(ns)
     if len(sys.argv) < 2:
         print(f"[{ns}] Usage: python main.py <map_name>")
         map_name = "Map2"

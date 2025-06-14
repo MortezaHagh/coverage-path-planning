@@ -1,12 +1,14 @@
 # python -m  pipreqs.pipreqs .
-numpy
+colorama
+PyYAML
+pynput
 # opencv-python
 opencv-python-headless
-pynput
-PyYAML
-Shapely
-matplotlib
-ortools
 # 
+numpy
+matplotlib
+Shapely
+# 
+ortools
 scikit-image
 scipy

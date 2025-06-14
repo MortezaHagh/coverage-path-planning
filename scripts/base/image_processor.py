@@ -1,5 +1,4 @@
 """ processing map pgm file """
-from typing import Optional
 import copy
 import numpy as np
 import cv2 as cv
@@ -80,7 +79,7 @@ class MapImageProcessor:
     def complete_data(self):
         self.__map_data.set_resolution(self.__bcfg.resolution)
 
-    def visualize_map(self, pgm_data_in: Optional[np.ndarray], disp_name: str = "Map") -> None:
+    def visualize_map(self, pgm_data_in: np.ndarray, disp_name: str = "Map") -> None:
         print(f"[{self.ns}]: display map image")
 
         # original map mage data
