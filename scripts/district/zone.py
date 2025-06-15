@@ -4,8 +4,9 @@ import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.planning.coverage_pp_2_bs_1 import CoveragePP
 from scripts.base.configs import DistrictConfgs, PlanningConfigs
+from scripts.planning.coverage_pp_3_contour import CoveragePP
+# from scripts.planning.coverage_pp_2_bs_1 import CoveragePP
 # from scripts.planning.coverage_pp_1_simple import CoveragePP
 
 

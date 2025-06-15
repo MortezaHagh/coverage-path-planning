@@ -32,14 +32,12 @@ class DistrictConfgs:
     plot_decomposition = False
 
     # coverage path planning configs
-    covpp_method = "m1_boust"  # m0_simple, m1_boust
-
-    if covpp_method == "m0_simple":
-        pass
-    elif covpp_method == "m1_boust":
-        # boustrophedon configs
+    covpp_method = "m3_contour"  # m0_simple, m1_boust, m3_contour
+    if covpp_method == "m1_boust":
         cell_sequence_method = "s2_dfs"  # s1_simple, s2_dfs, s3_milp
         covpp_method = covpp_method + "_" + cell_sequence_method
+
+    #
     method = covpp_method
 
 

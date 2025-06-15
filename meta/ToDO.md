@@ -8,6 +8,10 @@
 
 - more use of numpy arrays
 
+- another seq optimization: multiple sequences, each till there is no adj (so only one pass from each node)
+
+- contour method: voronoi decomposition params as optimization params
+
 - two classes, merged cells (for planning) and normal cells (with less functionalities and data)
 - better boustrophedon
 
