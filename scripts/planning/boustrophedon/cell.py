@@ -69,7 +69,7 @@ class Cell:
     def cell_specs(self):
         # center
         self.cxy = self.poly.centroid.coords[0]
-        # nounds
+        # bounds
         minx, miny, maxx, maxy = self.poly.bounds
         self.x_min, self.y_min = minx, miny
         self.x_max, self.y_max = maxx, maxy

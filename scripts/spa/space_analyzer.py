@@ -222,7 +222,7 @@ class SpaceAnalyzer:
 
         #
         if local_rect is None:
-            self.lg.info(f"[get_final_freespace_rect]: Failed to find a valid rectangle")
+            self.lg.info("[get_final_freespace_rect]: Failed to find a valid rectangle")
             return {"vertices": None, "rect_data": None}
 
         # local to global rectangle

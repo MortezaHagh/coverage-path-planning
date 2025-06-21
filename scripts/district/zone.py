@@ -5,15 +5,24 @@ import numpy as np
 from scripts.base.logger import MyLogger
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.configs import DistrictConfgs, PlanningConfigs
-from scripts.planning.coverage_pp_3_contour import CoveragePP
-# from scripts.planning.coverage_pp_2_bs_1 import CoveragePP
-# from scripts.planning.coverage_pp_1_simple import CoveragePP
+
+DCFG = DistrictConfgs()
+if DCFG.covpp_method == "m1_simple":
+    from scripts.planning.coverage_pp_1_simple import CoveragePP
+elif DCFG.covpp_method == "m2_boust":
+    from scripts.planning.coverage_pp_2_bs_1 import CoveragePP
+elif DCFG.covpp_method == "m3_contour":
+    from scripts.planning.coverage_pp_3_contour import CoveragePP
+else:
+    raise ValueError(f"Unknown coverage path planning method: {DCFG.covpp_method}. "
+                     f"Available methods: m0_simple, m1_boust, m3_contour.")
 
 
 class ZoneStats:
     """Zone statistics class to store zone statistics"""
 
     def __init__(self):
+        self.path_len_m = None
         self.cleaning_area_px = None
         self.cleaning_area_m = None
         self.cleaned_area_px = None
@@ -25,6 +34,7 @@ class ZoneStats:
     def get_data_dict(self) -> dict:
         """Get statistics data as a dictionary."""
         return {
+            "path_len_m": float(self.path_len_m),
             "cleaning_area_px": int(self.cleaning_area_px),
             "cleaning_area_m": float(self.cleaning_area_m),
             "cleaned_area_px": int(self.cleaned_area_px),
@@ -60,7 +70,7 @@ class ZoneData:
 
         # coverage path planner
         self.cov_planner = None
-        self.complete_path = None
+        self.complete_path = None  # todo
 
         # statistics
         self.st = ZoneStats()
@@ -96,6 +106,8 @@ class ZoneData:
 
     def calculate_cleaned_area(self):
         paths_len = self.cov_planner.st.f_path_len_m
+        self.st.path_len_m = round(paths_len, 2)
+
         cleaning_r = self.pcfgs.cleaning_r
         area = paths_len * (2 * cleaning_r)
         # overlaped_area_m

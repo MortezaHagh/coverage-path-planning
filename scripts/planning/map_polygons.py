@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 from shapely import Polygon, Point
+from scripts.base.logger import MyLogger
 from scripts.district.zone_map_data import ZoneMapData
 
 
@@ -11,11 +12,13 @@ class MapPolygons:
     obs_polys: list[Polygon]
 
     def __init__(self, zmd: ZoneMapData):
+        self.ns = "MapPolygons"
+        self.lg = MyLogger(self.ns)
         self.b_poly = None  # bounding polygon
         self.obs_polys = []  # obstacle polygons
 
         # settings
-        self.dec_mid_dist = 20
+        self.dec_mid_dist = 10
         self.set_start_coord(zmd)
 
         # set bounding polygon
@@ -50,7 +53,7 @@ class MapPolygons:
 
         #
         if len(obs_contours) == 0:
-            print(f"[{self.ns}]: no obstacle contours found in zone {zmd.ind}")
+            self.lg.info(f"No obstacle contours found in zone {zmd.ind}")
             return
 
         # obstacle polygons
@@ -59,7 +62,7 @@ class MapPolygons:
             filtered_c = self.filter_contour_points(c)
             # get the polygon
             if len(filtered_c) < 3:
-                print(f"[{self.ns}]: not enough points to create polygon")
+                self.lg.warning(f"Not enough points to create polygon for contour in zone {zmd.ind}")
                 continue
             poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
             obs_polys.append(poly)

@@ -27,30 +27,29 @@ class DistrictConfgs:
     method = ""
 
     # plots configs
-    save_map_planning = False
-    save_decomposition_plot = False
+    save_map_planning = True
+    save_decomposition_plot = True
     plot_decomposition = False
 
     # coverage path planning configs
-    covpp_method = "m3_contour"  # m0_simple, m1_boust, m3_contour
-    if covpp_method == "m1_boust":
-        cell_sequence_method = "s2_dfs"  # s1_simple, s2_dfs, s3_milp
-        covpp_method = covpp_method + "_" + cell_sequence_method
-
-    #
-    method = covpp_method
+    covpp_method = "m2_boust"  # m1_simple, m2_boust, m3_contour
+    if covpp_method == "m2_boust":
+        cell_sequence_method = "s3_milp"  # s1_simple, s2_dfs, s3_milp
+        method = covpp_method + "_" + cell_sequence_method
+    else:
+        method = covpp_method
 
 
 @dataclasses.dataclass
 class SpaceConfigs:
     select_free_space = False  # select free space from image
     # robot configs
-    robot_radius = 0.5
+    robot_radius = 0.5  # 0.5
     # robot_circumscribed_r = 0.5
     # robot_circumscribed_d = robot_circumscribed_r * 2
     # distance thresholds
-    wf_safe_dist = 0.1  # wf distance
-    os_safe_dist = 0.2  # safe distance of os path from obstacles
+    wf_safe_dist = 0.0  # 0.1 # wf distance
+    os_safe_dist = 0.1  # 0.2 # safe distance of os path from obstacles
     ws_dist = max(wf_safe_dist, os_safe_dist)
     #
     wf_r_dist = robot_radius + wf_safe_dist  # distance of the wf path from walls and obstacles
@@ -68,7 +67,7 @@ class SpaceConfigs:
 @dataclasses.dataclass
 class PlanningConfigs:
     spa = SpaceConfigs()
-    animation = False  # True False
+    animation = True  # True False
     cleaning_r = spa.cleaning_r
     min_path_overlap = 0.0
     min_wp_dist = 0.4

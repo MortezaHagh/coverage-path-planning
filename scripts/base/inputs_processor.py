@@ -44,7 +44,7 @@ class InputsProcessor:
         # complete configs from yaml data
         self.set_configs(map_yaml_data)
 
-        # read pgm file
+        # read image file
         map_arr = cv.imread(self.paths["pgm"], cv.IMREAD_GRAYSCALE)
         self.__orig_map = map_arr
         # self.visualize_map(map_arr)
