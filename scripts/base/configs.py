@@ -27,13 +27,13 @@ class DistrictConfgs:
     method = ""
 
     # plots configs
-    save_map_planning = True
-    save_decomposition_plot = True
+    save_map_planning = False
+    save_decomposition_plot = False
     plot_decomposition = False
 
     # coverage path planning configs
     covpp_method = "m2_boust"  # m1_simple, m2_boust, m3_contour
-    if covpp_method == "m2_boust":
+    if covpp_method == "m3_contour":
         cell_sequence_method = "s3_milp"  # s1_simple, s2_dfs, s3_milp
         method = covpp_method + "_" + cell_sequence_method
     else:
@@ -67,7 +67,7 @@ class SpaceConfigs:
 @dataclasses.dataclass
 class PlanningConfigs:
     spa = SpaceConfigs()
-    animation = True  # True False
+    animation = False  # True False
     cleaning_r = spa.cleaning_r
     min_path_overlap = 0.0
     min_wp_dist = 0.4

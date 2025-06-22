@@ -66,7 +66,7 @@ class BoustPlotter:
         # plot cells
         for cell in self.dec_obj.cells:
             color = 'yellow'
-            if not cell.status:
+            if not cell.found_connection:
                 color = 'red'
 
             # fill

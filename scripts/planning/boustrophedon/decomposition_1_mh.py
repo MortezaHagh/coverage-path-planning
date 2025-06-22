@@ -1,6 +1,7 @@
 """ Trapezoidal decomposition """
 import math
 from shapely import Polygon
+from scripts.base.logger import MyLogger
 from scripts.base.configs import PlanningConfigs
 from scripts.planning.boustrophedon.events import Event
 from scripts.planning.boustrophedon.obstacles import Obstacle
@@ -35,6 +36,8 @@ class MHDecomposition:
 
     def __init__(self, resolution: float = 0.05):
         self.ns = "MHDecomposition"
+        self.lg = MyLogger(self.ns)
+        #
         self.resolution = resolution
         self.bcfgs = PlanningConfigs()
         #
@@ -282,10 +285,10 @@ class MHDecomposition:
                     trap_down = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.end_down_ed_xy,
                                  hit_down_event.end_up_ed_xy, (base_e.xy[0], hit_down_y)]
                 else:
-                    print((f"[{self.ns}][create_trapezoid][WARN]: hit_up_event and hit_down_event are both None [updown-in]"))
+                    self.lg.warn("[create_trapezoid]: updown: hit_up_event and hit_down_event are both None [updown-out]")
                     return
             if not (hit_up_event or hit_down_event):
-                print((f"[{self.ns}][create_trapezoid][WARN]: updown: hit_up_event and hit_down_event are None"))
+                self.lg.warn("[create_trapezoid]: updown: hit_up_event and hit_down_event are both None")
 
         # up
         elif base_e.etype == 'up' and hit_up_event:
@@ -314,7 +317,7 @@ class MHDecomposition:
         if trap_down:
             self.add_cell(Polygon(trap_down), base_e)
         if trap_up is None and trap_down is None:
-            print((f"[{self.ns}][create_trapezoid][ERROR]: Invalid trapezoid creation"))
+            self.lg.error("[create_trapezoid]: Invalid trapezoid creation")
 
     # find_adjacents_cells =============================================================================================
 
@@ -375,15 +378,15 @@ class MHDecomposition:
                             next_c.add_mid_parentlist(cell.id)
                 #
                 if cell.n_adj == 0:
-                    cell.status = False
-                    print(f"[{self.ns}][find_adjacents_cells][ERROR]: No adjacents found:")
-                    print(f"e: {cell.event.sd_ind}, -- cell: {cell.id}")
+                    cell.found_connection = False
+                    self.lg.error("[find_adjacents_cells]: No adjacents found:")
+                    # print(f"e: {cell.event.sd_ind}, -- cell: {cell.id}")
 
             if e.has_parent:
                 if cell.n_parent == 0:
-                    cell.status = False
-                    print(f"[{self.ns}][find_adjacents_cells][ERROR]: No parents found:")
-                    print(f"e: {cell.event.sd_ind}, -- cell: {cell.id}")
+                    cell.found_connection = False
+                    self.lg.error("[find_adjacents_cells]: No parents found:")
+                    # print(f"e: {cell.event.sd_ind}, -- cell: {cell.id}")
 
 # cell groups and merged cells =========================================================================================
 
@@ -393,10 +396,10 @@ class MHDecomposition:
         mcells: list[Cell] = []
         #
         for cell in self.cells[0:]:
-            if cell.done:
+            if cell.grouped:
                 continue
             base_cell = cell
-            base_cell.done = True
+            base_cell.grouped = True
             if base_cell.n_adj == 0:
                 new_group = CellGroup(base_cell, ncg)
             elif base_cell.n_adj > 1:
@@ -412,8 +415,8 @@ class MHDecomposition:
 
                 #
                 new_group = CellGroup(base_cell, ncg)
-                while adj_cell.n_parent == 1 and not adj_cell.done:
-                    adj_cell.done = True
+                while adj_cell.n_parent == 1 and not adj_cell.grouped:
+                    adj_cell.grouped = True
                     new_group.add_cell(adj_cell)
                     #
                     if not adj_cell.n_adj == 1:
@@ -441,9 +444,9 @@ class MHDecomposition:
             successors_i = cellg.last_cell.mid_adjlist
             cellg.merged_cell.mid_parentlist = [self.cells[i].group_id for i in parents_i]
             cellg.merged_cell.mid_adjlist = [self.cells[i].group_id for i in successors_i]
-            adj = cellg.merged_cell.mid_parentlist.copy()
-            adj.extend(cellg.merged_cell.mid_adjlist)
-            cellg.merged_cell.adjacent_ids = adj
+            adjs = cellg.merged_cell.mid_parentlist.copy()
+            adjs.extend(cellg.merged_cell.mid_adjlist)
+            cellg.merged_cell.adjacent_ids = adjs
 
     # ==================================================================================================================
 

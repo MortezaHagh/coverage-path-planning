@@ -47,10 +47,10 @@ def eval_cells_path_shift(cells: list[Cell]):
         if p0 < prob_lim:
             continue
         if l_sum > l0:
-            cell.shift_re = True
+            cell.set_shift_re(True)
         else:
             for i in inds:
-                cells[cell.mid_adjlist[i]].shift_le = True
+                cells[cell.mid_adjlist[i]].set_shift_le(True)
 
     # check parent cells
     for cell in cells:
@@ -91,7 +91,7 @@ def eval_cells_path_shift(cells: list[Cell]):
         if p0 < prob_lim:
             continue
         if l_sum > l0:
-            cell.shift_le = True
+            cell.set_shift_le(True)
         else:
             for i in inds:
-                cells[cell.mid_parentlist[i]].shift_re = True
+                cells[cell.mid_parentlist[i]].set_shift_re(True)

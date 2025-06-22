@@ -3,15 +3,14 @@ from shapely.ops import unary_union
 from scripts.planning.boustrophedon.events import Event
 
 
-class Cell:
+class BaseCell:
+    """Base class for cells in the boustrophedon coverage path planning."""
 
-    def __init__(self, ind: int, poly: Polygon, event: Event):
+    def __init__(self, ind: int, poly: Polygon):
         self.id: int = ind
-        #
         self.opt_id: int = None
         self.next_cell_seq: int = None
         #
-        self.event: Event = event
         self.poly: Polygon = poly
         self.points: list[tuple[int, int]] = []
         #
@@ -25,37 +24,6 @@ class Cell:
         self.width: float = None
         self.height: float = None
         self.area: float = None
-        #
-        self.ld: tuple[float, float] = None
-        self.lu: tuple[float, float] = None
-        self.rd: tuple[float, float] = None
-        self.ru: tuple[float, float] = None
-        #
-        self.up_adj_ci = None
-        self.down_adj_ci = None
-        self.parent_up_ci = None
-        self.parent_down_ci = None
-        #
-        self.n_adj = 0
-        self.n_parent = 0
-        #
-        self.mid_adjlist = []
-        self.mid_parentlist = []
-        self.adjacent_ids: list[int] = []
-        #
-        self.done = False
-        self.status = True
-        #
-        self.first_cell: Cell = None
-        self.last_cell: Cell = None
-        #
-        self.group_id: int = None
-        # for cov planning
-        self.do_planning: bool = True
-        self.shift_re: bool = False
-        self.shift_le: bool = False
-
-        # --------------------------------------
 
         # calculate cell specs
         self.cell_specs()
@@ -63,8 +31,12 @@ class Cell:
         # create cell points
         self.create_cell_points()
 
-        # find corners
-        self.find_corner()
+    def set_optim_id(self, ind: int, next_cell_id: int = None):
+        self.opt_id = ind
+        if next_cell_id is not None:
+            self.next_cell_seq = next_cell_id
+        else:
+            self.next_cell_seq = None
 
     def cell_specs(self):
         # center
@@ -88,6 +60,53 @@ class Cell:
             self.points = [(int(p[0]), int(p[1])) for p in self.poly.exterior.coords]
         else:
             self.points = []
+
+
+class Cell (BaseCell):
+
+    def __init__(self, ind: int, poly: Polygon, event: Event):
+        # initialize base class
+        super().__init__(ind, poly)
+
+        #
+        self.group_id: int = None
+        self.event: Event = event
+
+        #
+        self.ld: tuple[float, float] = None
+        self.lu: tuple[float, float] = None
+        self.rd: tuple[float, float] = None
+        self.ru: tuple[float, float] = None
+        #
+        self.up_adj_ci = None
+        self.down_adj_ci = None
+        self.parent_up_ci = None
+        self.parent_down_ci = None
+        #
+        self.n_adj = 0
+        self.n_parent = 0
+        #
+        self.mid_adjlist = []
+        self.mid_parentlist = []
+        self.adjacent_ids: list[int] = []
+        #
+        self.grouped = False
+        self.found_connection = True
+        #
+        # for cov planning
+        self.do_planning: bool = True
+        self.shift_re: bool = False
+        self.shift_le: bool = False
+
+        # --------------------------------------
+
+        # find corners
+        self.find_corner()
+
+    def set_group_id(self, group_id: int):
+        if group_id is None:
+            raise ValueError("Group ID cannot be None")
+        self.group_id = group_id
 
     def find_corner(self):
         lps = [xy for xy in self.points if xy[0] == self.x_min]
@@ -137,18 +156,17 @@ class Cell:
     def add_adjacent_id(self, ind: int):
         self.adjacent_ids.append(ind)
 
-    def set_optim_id(self, ind: int, next_cell_id: int = None):
-        self.opt_id = ind
-        if next_cell_id is not None:
-            self.next_cell_seq = next_cell_id
-        else:
-            self.next_cell_seq = None
-
     def eveal_planning_area(self, resolution, cleaning_r):
         min_area = 0.5 * 3.14 * cleaning_r**2
         if (self.area*resolution**2) < min_area:
             # print(f"[WARN] cell area is too small: {self.id}")
             self.do_planning = False
+
+    def set_shift_re(self, shift: bool):
+        self.shift_re = shift
+
+    def set_shift_le(self, shift: bool):
+        self.shift_le = shift
 
 
 class CellGroup:
@@ -181,7 +199,7 @@ class CellGroup:
 
     def update_group(self):
         if self.cells:
-            self.last_cell = self.cells[-1]
+            self.set_last_cell(self.cells[-1])
             self.merge_cells()
 
     def merge_cells(self):
@@ -192,4 +210,4 @@ class CellGroup:
 
         # Update the group index for all cells in the group
         for cell in self.cells:
-            cell.group_id = self.id
+            cell.set_group_id(self.id)

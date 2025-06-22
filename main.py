@@ -19,7 +19,7 @@ def main():
     lg = MyLogger(ns)
     if len(sys.argv) < 2:
         lg.error("Usage: python main.py <map_name>")
-        map_name = "Map3"  # map_fr52 Map2
+        map_name = "Map1"  # map_fr52 Map2
     else:
         map_name = sys.argv[1]
 
