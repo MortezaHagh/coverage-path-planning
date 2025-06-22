@@ -23,7 +23,7 @@ class VPoint:
         self.basis_idxs = None  # two closest basis points
         self.basis_points = None  # two closest basis points in the Voronoi diagram
         self.basis_dists = None  # distances to the basis points
-        self.clearance: float = None  # clearance to the obstacles
+        self.clearance: float = np.inf  # clearance to the obstacles
         self.adjacent_vp_idxs = []  # indices of adjacent Voronoi points
         self.adjacent_vp_dists = []  # distances to adjacent Voronoi points
         # #
@@ -63,7 +63,7 @@ class VoronoiSegmentation:
         self.adj_dist_lb: float = 50.0  # distance threshold for adjacent Voronoi vertices
         self.fixed_min_n_adj: int = 4  # fixed minimum number of adjacent Voronoi vertices
         self.fixed_max_n_adj: int = 12  # maximum number of adjacent Voronoi vertices
-        self.d_clearance_thresh_p: float = 0.1  # percentage of the clearance difference in finding critical points
+        self.d_clearance_thresh_p: float = 0.05  # percentage of the clearance difference in finding critical points
         self.robot_r_px: int = self.pcfgs.spa.robot_radius / zmd.reslolution
         # self.n_max_up_min_poly_p_dist: int = 5
         # computed
@@ -71,7 +71,7 @@ class VoronoiSegmentation:
         self.min_n_adjacents: int = None  # minimum number of adjacent Voronoi vertices
 
         # logging
-        self.lg.debug(f"Robot radius in pixels: {self.robot_r_px}")
+        self.lg.debug(f"Robot radius in pixels: {self.robot_r_px:.2f}")
 
         #
         self.zmd: ZoneMapData = zmd
@@ -190,10 +190,9 @@ class VoronoiSegmentation:
             if vps[v_idxs[0]].n_feas_ridges >= 1 and vps[v_idxs[1]].n_feas_ridges >= 1:  # todo eval
                 vps[v_idxs[0]].set_basis_points(np.array(point_indices), vor.points)
                 vps[v_idxs[1]].set_basis_points(np.array(point_indices), vor.points)
-                if vps[v_idxs[0]].n_feas_ridges >= 2:
-                    if vps[v_idxs[1]].n_feas_ridges >= 2:
-                        vps[v_idxs[0]].feasible = True
-                        vps[v_idxs[1]].feasible = True
+                if vps[v_idxs[0]].n_feas_ridges >= 2 and vps[v_idxs[1]].n_feas_ridges >= 2:
+                    vps[v_idxs[0]].feasible = True
+                    vps[v_idxs[1]].feasible = True
 
     # adjacents - critical poin ================================================
 
@@ -211,7 +210,7 @@ class VoronoiSegmentation:
         # dist_threshold = mean_wh / 10.0  # Adjust the divisor as needed
         #
         dist_threshold = 2 * self.robot_r_px
-        self.lg.debug(f"Calculated distance threshold: {dist_threshold}")
+        self.lg.debug(f"Calculated distance threshold: {dist_threshold:.2f}")
         return dist_threshold
 
     def find_adjacents_by_distance(self, adj_dist_ub: float = 10.0):
