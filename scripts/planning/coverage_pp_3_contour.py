@@ -37,6 +37,9 @@ class CoveragePP(CoveragePPBase):
     def decompose_map(self) -> None:
         self.lg.info2("start voronoi decomposition")
         self.dec_interface = DecompositionInterface(self.zmd, self.map_polygons)
+        self.plotter.run(self.dec_interface.cells)
+        print(" ====================================================================== ")
+        raise NotImplementedError("DecompositionInterface is not fully implemented yet.")
 
     def zone_covpp(self) -> None:
         self.lg.info2("start coverage path planning for cells")

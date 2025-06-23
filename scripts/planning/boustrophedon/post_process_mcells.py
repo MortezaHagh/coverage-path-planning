@@ -1,14 +1,4 @@
 from scripts.planning.boustrophedon.cell import Cell
-from scripts.planning.boustrophedon.optimize_mcells_seq import OptimCellsSeq
-
-
-def create_sequence(mcells: list[Cell]):
-    if len(mcells) == 0:
-        return [], 0
-    elif len(mcells) == 1:
-        return [mcells[0].id], 0
-    opt_seq = OptimCellsSeq(mcells)
-    return opt_seq.tour_ids, opt_seq.cells_seq_length
 
 
 def eval_cells_path_shift(cells: list[Cell]):

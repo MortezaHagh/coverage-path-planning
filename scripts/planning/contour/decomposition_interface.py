@@ -3,10 +3,12 @@ from matplotlib import pyplot as plt
 from shapely import Polygon
 from scipy.spatial import Voronoi  # pylint: disable=no-name-in-module
 from scripts.base.logger import MyLogger
-from scripts.district.zone_map_data import ZoneMapData
+from scripts.planning.base_cell import BaseCell
 from scripts.planning.map_polygons import MapPolygons
+from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.contour.common import CriticalPoint
 from scripts.planning.contour.decomposition_voronoi import VoronoiSegmentation
+from scripts.planning.optimize_mcells_seq import OptimCellsSeq
 
 
 class DecompositionInterface:
@@ -16,9 +18,14 @@ class DecompositionInterface:
         self.ns = "DecompositionInterface"
         self.lg = MyLogger(self.ns)
         #
-        self.zmd = zmd
-        self.map_polygs = map_polygs
+        self.zmd: ZoneMapData = zmd
+        self.map_polygs: MapPolygons = map_polygs
         self.vor: Voronoi = None
+        #
+        self.cells: list[BaseCell] = []
+        self.smcells: list[BaseCell]
+        self.smcells_seq_length_px: float
+
         #
         self.start_idxs: list[int] = []  # start indices of the polygons
         self.end_idxs: list[int] = []  # end indices of the polygons
@@ -27,6 +34,8 @@ class DecompositionInterface:
         self.critical_idxs_2: list[int] = []
         self.rings: list[np.ndarray] = []  # segments created from critical points
         self.rings_cp_idxs: list[list[int]] = []  # critical point indices in the rings
+
+        # run the decomposition
         self.run()
 
     def run(self) -> None:
@@ -40,11 +49,13 @@ class DecompositionInterface:
         if self.check_critical_points(vor_dec.b_poly):
             self.main_segmentation(vor_dec.b_poly, vor_dec.obs_polys)
 
+        # create cells
+        self.create_cells()
+        self.create_sequence()
+
         #
         self.plot_rings()
-        plt.show()
-        print(" ====================================================================== ")
-        raise NotImplementedError("DecompositionInterface is not fully implemented yet.")
+        # plt.show()
 
     def main_segmentation(self, b_poly: Polygon, obs_polys: list[Polygon]) -> None:
         # post process
@@ -108,8 +119,7 @@ class DecompositionInterface:
                     self.lg.warn(f"Critical point {i} with vp.idx {cp.vp.idx} segment creation failed, None ring.")
                     continue
                 self.rings.append(ring)
-        #
-        self.lg.info(f"Created {len(self.rings)} critical segments")
+        self.lg.info(f"Created {len(self.rings)} rungs.")
 
     def create_cp_segment(self, i_cp: int, cp: CriticalPoint) -> np.ndarray:
         n_points = len(self.vor.points)
@@ -211,5 +221,26 @@ class DecompositionInterface:
             ax.plot(cp.vp.v[0], cp.vp.v[1], 'o', color='red', markersize=5)
             ax.annotate(f"{i}", (cp.vp.v[0], cp.vp.v[1]), fontsize=6, color='blue')
         #
-        save_path = self.zmd.result_path + "/mcells.png"
+        save_path = self.zmd.result_path + "/rings.png"
         fig.savefig(save_path, dpi=300)
+
+    def create_cells(self):
+        """Create cells from the rings."""
+        self.lg.info(f"Creating cells from {len(self.rings)} rings.")
+        for i, ring in enumerate(self.rings):
+            if len(ring) < 3:
+                self.lg.warn(f"Ring {i} has less than 3 points, skipping.")
+                continue
+            cell = BaseCell(ind=i, poly=Polygon(ring))
+            self.cells.append(cell)
+        self.lg.info(f"Created {len(self.cells)} cells from the rings.")
+
+    def create_sequence(self):
+        if len(self.cells) == 0:
+            return [], 0
+        elif len(self.cells) == 1:
+            return [self.cells[0].id], 0
+        opt_seq = OptimCellsSeq(self.cells)
+        new_mcells = [self.cells[i] for i in opt_seq.tour_ids]
+        self.smcells = new_mcells
+        self.smcells_seq_length_px = opt_seq.cells_seq_length

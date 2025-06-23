@@ -14,7 +14,7 @@ class OptimCellsSeq:
         dcfgs = DistrictConfgs()
         self.lg.info1("Step: creating optimization cells sequence")
 
-        #
+        # cell graph
         self.cells_graph = CellsGraph(mcells)
 
         #
@@ -66,6 +66,9 @@ class OptimCellsSeq:
             i1 = self.tour_ids[i]
             i2 = self.tour_ids[i+1]
             d = self.cells_graph.get_distance(i1, i2)
+            if d is None:
+                self.lg.error(f"Distance between cells {i1} and {i2} is None.")
+                continue
             total_length += d
         self.cells_seq_length = total_length
 

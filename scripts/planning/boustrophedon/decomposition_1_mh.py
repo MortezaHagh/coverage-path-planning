@@ -7,7 +7,8 @@ from scripts.planning.boustrophedon.events import Event
 from scripts.planning.boustrophedon.obstacles import Obstacle
 from scripts.planning.boustrophedon.cell import Cell, CellGroup
 from scripts.planning.boustrophedon.plotter import BoustPlotter
-from scripts.planning.boustrophedon.post_process_mcells import create_sequence, eval_cells_path_shift
+from scripts.planning.optimize_mcells_seq import OptimCellsSeq
+from scripts.planning.boustrophedon.post_process_mcells import eval_cells_path_shift
 
 
 class MHDecomposition:
@@ -456,10 +457,14 @@ class MHDecomposition:
             cell.eveal_planning_area(self.resolution, self.bcfgs.cleaning_r)
 
     def create_sequence(self):
-        tour, seq_l = create_sequence(self.mcells)
-        new_mcells = [self.mcells[i] for i in tour]
+        if len(self.mcells) == 0:
+            return [], 0
+        elif len(self.mcells) == 1:
+            return [self.mcells[0].id], 0
+        opt_seq = OptimCellsSeq(self.mcells)
+        new_mcells = [self.mcells[i] for i in opt_seq.tour_ids]
         self.smcells = new_mcells
-        self.smcells_seq_length_px = seq_l
+        self.smcells_seq_length_px = opt_seq.cells_seq_length
 
     def visualize(self):
         self.plotter = BoustPlotter(self)

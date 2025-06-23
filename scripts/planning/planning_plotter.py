@@ -1,10 +1,13 @@
 import matplotlib.pyplot as plt
+from scripts.base.configs import DistrictConfgs
 from scripts.planning.boustrophedon.cell import Cell
 
 
 class PlannerPlotter:
     def __init__(self, result_path: str):
         self.result_path = result_path
+        self.dcfgs = DistrictConfgs()
+        #
         self.fig_mcells = None
         self.fig_mcells_seq = None
 
@@ -14,9 +17,9 @@ class PlannerPlotter:
         #
         self.visualize_cells_sequence(mcells)
 
-        # todo
-        # if not self.dcfgs.save_decomposition_plot:
-        self.save_figs()
+        # save figures
+        if self.dcfgs.save_decomposition_plot:
+            self.save_figs()
 
     def visualize_cells_sequence(self, mcells: list[Cell]):
         fig_mcells, ax_mcells = self.visualize_mcells(mcells)
@@ -46,18 +49,20 @@ class PlannerPlotter:
 
     def visualize_sequence(self, mcells: list[Cell], ax):
         for i, cell in enumerate(mcells):
+            # text = f"g{i}-({cell.opt_id})"
+            x1, y1 = cell.cxy
+            text = f"{i}"
+            ax.text(x1, y1, text, color='black', fontsize=8)
+
+            # connection line
             next_ind = cell.next_cell_seq
             if next_ind is None:
                 continue
-            x1, y1 = cell.cxy
             x2, y2 = mcells[next_ind].cxy
             ax.plot([x1, x2], [y1, y2], color="gray", linewidth=1, linestyle='--')
-            #
-            # text = f"g{i}-({cell.opt_id})"
-            text = f"{i}"
-            ax.text(x1, y1, text, color='black', fontsize=8)
 
     def save_figs(self):
         dpi = 300
         self.fig_mcells.savefig(self.result_path + "/mcells.png", format="png", dpi=dpi)
-        self.fig_mcells_seq.savefig(self.result_path + "/sequence.png", format="png", dpi=dpi)
+        if self.fig_mcells_seq:
+            self.fig_mcells_seq.savefig(self.result_path + "/sequence.png", format="png", dpi=dpi)
