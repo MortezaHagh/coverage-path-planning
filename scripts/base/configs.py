@@ -27,8 +27,8 @@ class DistrictConfgs:
     method = ""
 
     # plots configs
-    save_map_planning = False
-    save_decomposition_plot = False
+    save_map_planning = True
+    save_decomposition_plot = True
     plot_decomposition = False
 
     # coverage path planning configs

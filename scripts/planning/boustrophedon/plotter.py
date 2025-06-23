@@ -5,7 +5,7 @@ from scripts.planning.boustrophedon.cell import Cell, CellGroup
 
 class BoustPlotter:
     """Boustrophedon decomposition plotter.
-        plots: mcells - seq 
+        plots: boust cells and mcells 
     """
 
     def __init__(self, dec_obj):
@@ -34,19 +34,14 @@ class BoustPlotter:
     def visualize_seperate(self):
         self.vizualize_cells_events()
         self.visualize_cells_groups()
-        self.visualize_cells_sequence()
 
     def visualize_together(self):
-        # fig, axs = plt.subplots(1, 3, constrained_layout=True)
-        fig, axs = plt.subplots(1, 3, constrained_layout=True, figsize=(20, 5))
+        fig, axs = plt.subplots(1, 2, constrained_layout=True, figsize=(15, 10))
         if self.set_aspect:
             axs[0].set_aspect('equal', adjustable='box')
             axs[1].set_aspect('equal', adjustable='box')
-            axs[2].set_aspect('equal', adjustable='box')
         self.vizualize_cells_events(axs[0])
         self.visualize_cells_groups(axs[1])
-        self.visualize_cells_sequence(axs[2])
-        self.visualize_cells_sequence()
         self.fig_all = fig
 
     def vizualize_cells_events(self, ax=None):
@@ -92,15 +87,10 @@ class BoustPlotter:
 
     def visualize_events(self):
         for e in self.dec_obj.events:
-            # name
-            # ct = "concave" if e.concave else "convex"
-            # text1 = f"{e.name}:{e.sd_ind}-{e.etype}-{e.etype_2}"
-            # text1 = f"{e.name}:{e.etype}-{e.etype_2}"
             text1 = e.name
             self.ax_cell_event.text(e.xy[0], e.xy[1], text1, fontsize=10, color='blue')
 
     def plot_contours(self):
-        # plot contours
         for obs in self.dec_obj.obstacles:
             if obs.ind == 0:
                 color = 'blue'
@@ -149,47 +139,6 @@ class BoustPlotter:
         if fig:
             self.fig_mcells = fig
 
-    def visualize_cells_sequence(self, ax=None):
-        fig, ax_mc = self.visualize_mcells(ax)
-        self.visualize_sequence(ax_mc)
-        if fig:
-            self.fig_mcells_seq = fig
-
-    def visualize_mcells(self, ax=None):
-        fig = None
-        if ax is None:
-            fig, ax = plt.subplots(1, 1)  # , figsize=(15, 15)
-            if self.set_aspect:
-                ax.set_aspect('equal', adjustable='box')
-        ng = len(self.dec_obj.cells_groups)
-        cg: CellGroup
-        colors = plt.cm.get_cmap('tab20', 2*ng).colors
-        for i, cg in enumerate(self.dec_obj.cells_groups):
-            if i % 2:
-                color = colors[i]
-            else:
-                color = colors[i+ng]
-
-            # merged cell
-            x, y = cg.merged_cell.poly.exterior.xy
-            cx, cy = cg.merged_cell.cxy
-            text = f"g{i}-({cg.merged_cell.opt_id})"
-            ax.text(cx, cy, text, color='black', fontsize=8)
-            ax.plot(x, y, color=color, linewidth=4, linestyle='-')
-            ax.plot(cx, cy, 'o', color='purple', markersize=6)
-            ax.fill(x, y, alpha=0.2, fc=color)
-        return fig, ax
-
-    def visualize_sequence(self, ax=None):
-        cg: CellGroup
-        for cg in self.dec_obj.cells_groups:
-            next_ind = cg.merged_cell.next_cell_seq
-            if next_ind is None:
-                continue
-            x1, y1 = cg.merged_cell.cxy
-            x2, y2 = self.dec_obj.mcells[next_ind].cxy
-            ax.plot([x1, x2], [y1, y2], color="gray", linewidth=1, linestyle='--')
-
     def plot_adj_gcells(self, ax, cell: Cell, adj_g_cell_ind: int, color='red'):
         c = cell.poly.centroid
         adj_c = self.dec_obj.cells_groups[adj_g_cell_ind].merged_cell.poly.centroid
@@ -197,11 +146,9 @@ class BoustPlotter:
 
     def save_figs(self, path: str):
         ns = "/"
-        dpi = 200
+        dpi = 300
         if self.viz_together:
-            self.fig_all.savefig(path + f"{ns}mcells_seq.png", format="png", dpi=dpi)
-            self.fig_mcells_seq.savefig(path + f"{ns}seq.png", format="png", dpi=dpi)
+            self.fig_all.savefig(path + f"{ns}boust_decomposition.png", format="png", dpi=dpi)
         else:
-            self.fig_mcells_seq.savefig(path + f"{ns}seq.png", format="png", dpi=dpi)
             self.fig_mcells.savefig(path + f"{ns}mcells.png", format="png", dpi=dpi)
             self.fig_cells_events.savefig(path + f"{ns}cells.png", format="png", dpi=dpi)

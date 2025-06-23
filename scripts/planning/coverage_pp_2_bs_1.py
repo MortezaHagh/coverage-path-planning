@@ -40,6 +40,7 @@ class CoveragePP(CoveragePPBase):
     def decompose_map(self) -> None:
         self.lg.info2("start boustrophedon decomposition")
         self.dec_interface = DecompositionInterface(self.map_polygons, self.zmd.reslolution)
+        self.plotter.run(self.dec_interface.decomposed.mcells)
 
     def zone_covpp(self) -> None:
         self.lg.info2("start coverage path planning for cells")

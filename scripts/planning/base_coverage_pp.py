@@ -8,6 +8,7 @@ from scripts.base.logger import MyLogger
 from scripts.base.my_utils import get_n_colors_plt
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
+from scripts.planning.planning_plotter import PlannerPlotter
 from scripts.base.configs import SpaceConfigs, PlanningConfigs, DistrictConfgs
 
 
@@ -35,6 +36,7 @@ class CoveragePPBase:
     c_paths_m: list[MyPath]
     n_paths: int = 0
     st: PlannerStats
+    plotter: PlannerPlotter
 
     def __init__(self, zone_map_data: ZoneMapData):
         self.ns = "CoveragePPBase"
@@ -57,6 +59,9 @@ class CoveragePPBase:
 
         # statistics
         self.st = PlannerStats()
+
+        # plotter
+        self.plotter = PlannerPlotter(zone_map_data.result_path)
 
         # parameters and configurations
         self.scfgs = SpaceConfigs()
@@ -206,9 +211,9 @@ class CoveragePPBase:
             pp = np.array(path.xy, dtype=np.int32)
             ax.plot(pp[:, 0], pp[:, 1], color=colors[i], linewidth=2, linestyle='-')
             # start and end points
-            ax.plot(pp[0, 0], pp[0, 1], 'o', color=colors[i], markersize=10)
+            ax.plot(pp[0, 0], pp[0, 1], 'o', color=colors[i], markersize=6)
             ax.text(pp[0, 0], pp[0, 1], f'S{i}', fontsize=9, color='k')
-            ax.plot(pp[-1, 0], pp[-1, 1], 's', color=colors[i], markersize=10)
+            ax.plot(pp[-1, 0], pp[-1, 1], 's', color=colors[i], markersize=6)
             ax.text(pp[-1, 0], pp[-1, 1], f'E{i}', fontsize=9, color='k')
 
     def plot_connection_paths(self, ax):
@@ -226,7 +231,7 @@ class CoveragePPBase:
             fig.savefig(fig_path, format="png", dpi=300)
         else:
             self.lg.info(f"saving animation ... n_frames: {self.f_path_px.n}")
-            fig_path = os.path.join(self.zmd.result_path, "paths.gif")
+            fig_path = os.path.join(self.zmd.result_path, "anim_paths.gif")
             self.anim.save(fig_path)
 
     def save_data(self):

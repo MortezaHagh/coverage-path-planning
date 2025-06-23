@@ -26,6 +26,7 @@ class DecompositionInterface:
         self.critical_idxs_1: list[int] = []
         self.critical_idxs_2: list[int] = []
         self.rings: list[np.ndarray] = []  # segments created from critical points
+        self.rings_cp_idxs: list[list[int]] = []  # critical point indices in the rings
         self.run()
 
     def run(self) -> None:
@@ -100,21 +101,27 @@ class DecompositionInterface:
             for i, cp in enumerate(self.critical_points):
                 if cp.n_passed > 1 or cp.skip:
                     continue
-                ring = self.create_cp_segment(cp)
+
+                # create segment for the critical point
+                ring, ring_cp_idxs = self.create_cp_segment(i, cp)
                 if ring is None:
                     self.lg.warn(f"Critical point {i} with vp.idx {cp.vp.idx} segment creation failed, None ring.")
                     continue
                 self.rings.append(ring)
+        #
         self.lg.info(f"Created {len(self.rings)} critical segments")
 
-    def create_cp_segment(self, cp: CriticalPoint) -> np.ndarray | None:
+    def create_cp_segment(self, i_cp: int, cp: CriticalPoint) -> np.ndarray:
         n_points = len(self.vor.points)
         if cp.n_passed > 2:
             raise ValueError("Critical point has been passed more than twice, this should not happen.")
 
+        #
         ring = [cp.vp.v]
-        ring_cp_idxs = [cp.vp.idx]
+        ring_cp_idxs = [i_cp]
         ring_cp_ring_idxs = [0]
+
+        #
         if cp.passed_21:
             ring.append(cp.bs2_vp)
             next_idx = cp.bs2_idx
@@ -163,7 +170,7 @@ class DecompositionInterface:
 
             #
             if new_cp:
-                new_cp_idx = self.critical_points[idx_cp].vp.idx
+                new_cp_idx = idx_cp  # self.critical_points[idx_cp].vp.idx
                 if new_cp_idx in ring_cp_idxs:
                     idx = ring_cp_idxs.index(new_cp_idx)
                     found_cp_idx = ring_cp_ring_idxs[idx]
@@ -184,14 +191,13 @@ class DecompositionInterface:
             #
             i += 1
             if i > n_points:
-                return None  # todo
                 raise ValueError("Infinite loop detected in creating critical point segment.")
 
         # add the last point
         next_p = self.vor.points[next_idx]
         ring.append(next_p)
         ring.append(cp.vp.v)
-        return np.array(ring)
+        return np.array(ring), ring_cp_idxs
 
     def plot_rings(self) -> None:
         fig, ax = plt.subplots(figsize=(15, 10))
