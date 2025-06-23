@@ -3,13 +3,14 @@ import numpy as np
 from scripts.base.my_utils import get_n_colors_cv
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.base_coverage_pp import CoveragePPBase
-from scripts.planning.contour.voronoi import VoronoiSegmentation
+from scripts.planning.contour.decomposition_interface import DecompositionInterface
 # from scripts.planning.connect_paths import ConnectPaths
 
 
 class CoveragePP(CoveragePPBase):
     """  contour based coverage path planning."""
     colors: list
+    dec_interface: DecompositionInterface
 
     def __init__(self, zone_map_data: ZoneMapData):
         super().__init__(zone_map_data)
@@ -20,21 +21,22 @@ class CoveragePP(CoveragePPBase):
         # configs
         self.colors = []
 
-        #
-        self.voronoi = VoronoiSegmentation(self.zmd, self.map_polygons)
+        # voronoi decomposition
+        self.dec_interface = None
 
         # run decomposition and coverage planning
         self.plan()
 
     def coverage_planning(self) -> None:
-        self.apply_voronoi()
+        self.decompose_map()
         # self.zone_covpp()
         # self.bs_post_planning()
 
     print(" ============================================================= ")
 
-    def apply_voronoi(self) -> None:
-        self.voronoi.voronoi_decomposition()
+    def decompose_map(self) -> None:
+        self.lg.info2("start voronoi decomposition")
+        self.dec_interface = DecompositionInterface(self.zmd, self.map_polygons)
 
     def zone_covpp(self) -> None:
         self.lg.info2("start coverage path planning for cells")

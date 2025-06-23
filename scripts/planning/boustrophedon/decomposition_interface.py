@@ -8,7 +8,7 @@ class DecompositionInterface:
     n_mcells: int
 
     def __init__(self, map_polygons: MapPolygons, reslolution: float):
-        self.ns = "Decomposition"
+        self.ns = "DecompositionInterface"
         self.decomposed = CellDecomposition(reslolution)
         self.n_mcells = 0
 

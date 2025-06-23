@@ -1,59 +1,20 @@
 from collections import defaultdict
 import numpy as np
+from matplotlib import pyplot as plt
 from shapely import Polygon, Point
 # from shapely.affinity import scale
 # from scipy import ndimage
-from matplotlib import pyplot as plt
-from scipy.spatial import Voronoi, voronoi_plot_2d
+from scipy.spatial import Voronoi, voronoi_plot_2d  # pylint: disable=no-name-in-module
 from scripts.base.logger import MyLogger
 from scripts.base.configs import PlanningConfigs
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.map_polygons import MapPolygons
-
-
-class VPoint:
-    def __init__(self, v: np.ndarray, idx: int):
-        self.idx = idx  # index in the Voronoi vertices
-        self.v = v
-        self.in_poly_o1 = False  # inside the outer bounding polygon 1
-        self.free = False
-        self.feasible = False
-        self.critical = False  # critical Voronoi vertex
-        self.has_inf_adj = False  # has adjacent Voronoi vertices with infinite distance
-        self.basis_idxs = None  # two closest basis points
-        self.basis_points = None  # two closest basis points in the Voronoi diagram
-        self.basis_dists = None  # distances to the basis points
-        self.clearance: float = np.inf  # clearance to the obstacles
-        self.adjacent_vp_idxs = []  # indices of adjacent Voronoi points
-        self.adjacent_vp_dists = []  # distances to adjacent Voronoi points
-        # #
-        self.n_feas_ridges = 0  # number of feasible adjacent Voronoi points
-        self.ridge_vps: list[VPoint] = []  # Voronoi vertex that is a ridge point for this Voronoi vertex
-
-    def set_basis_points(self, basis_idxs: np.ndarray, points: np.ndarray):
-        if basis_idxs is None or len(basis_idxs) < 2:
-            raise ValueError("Basis indices must be provided and contain at least two indices.")
-        self.basis_idxs = basis_idxs
-        self.basis_points = points[basis_idxs]
-        basis_dist = np.linalg.norm(self.basis_points - self.v, axis=1)
-        self.set_basis_dists(basis_dist)
-
-    def set_basis_dists(self, dists: np.ndarray):
-        if dists is None or len(dists) < 1:
-            raise ValueError("Basis distances must be provided and contain at least one distances.")
-        self.basis_dists = dists
-        self.clearance = round(np.sum(dists), 2)
-
-    def set_adjacent_vp_idxs(self, adj_vp_idxs: np.ndarray):
-        self.adjacent_vp_idxs = adj_vp_idxs
-
-    def set_adjacents_vp_dists(self, dists: np.ndarray):
-        self.adjacent_vp_dists = dists
+from scripts.planning.contour.common import VPoint, CriticalPoint
 
 
 class VoronoiSegmentation:
     def __init__(self, zmd: ZoneMapData, map_polygs: MapPolygons):
-        self.ns = "Voronoi"
+        self.ns = "VoronoiSegmentation"
         self.lg = MyLogger(self.ns)
         self.lg.info1("Step: Voronoi decomposition.")
 
@@ -65,7 +26,6 @@ class VoronoiSegmentation:
         self.fixed_max_n_adj: int = 12  # maximum number of adjacent Voronoi vertices
         self.d_clearance_thresh_p: float = 0.05  # percentage of the clearance difference in finding critical points
         self.robot_r_px: int = self.pcfgs.spa.robot_radius / zmd.reslolution
-        # self.n_max_up_min_poly_p_dist: int = 5
         # computed
         self.mean_wh: float = None
         self.min_n_adjacents: int = None  # minimum number of adjacent Voronoi vertices
@@ -73,7 +33,7 @@ class VoronoiSegmentation:
         # logging
         self.lg.debug(f"Robot radius in pixels: {self.robot_r_px:.2f}")
 
-        #
+        # basic data
         self.zmd: ZoneMapData = zmd
         self.b_poly: Polygon = None  # bounding polygon
         self.obs_polys: list[Polygon] = []  # obstacle polygons
@@ -81,11 +41,12 @@ class VoronoiSegmentation:
         self.obs_polys = map_polygs.obs_polys
         # self.map_polygs: MapPolygons = map_polygs  # store the original polygons for reference
 
-        #
+        # data for Voronoi decomposition
         self.vor: Voronoi = None
         self.vps_free = None  # vertices inside the bounding polygon
         self.v_points: list[VPoint] = []  # Voronoi vertices as VPoint objects
         self.critical_idxs: list[int] = []  # indices of critical Voronoi vertices
+        self.critical_points: list[CriticalPoint] = []  # critical points
 
     def reset(self):
         self.vor = None
@@ -94,25 +55,17 @@ class VoronoiSegmentation:
         self.critical_idxs = []
 
     def voronoi_decomposition(self) -> None:
-        # success = False
-        # n_up_min_poly_p_dist = 0
-        # while n_up_min_poly_p_dist < self.n_max_up_min_poly_p_dist:
-        #     self.reset()
-        #     n_up_min_poly_p_dist += 1
-        #     success = self.update_min_min_f_edge_l()
-        # if success:
-        #   break
-        #
         self.process_polygons()
         self.find_voronoi()
         self.find_free_vertices()
         self.find_basis_points()
-
         #
         self.find_min_n_adjacents()
         adj_dist_ub = self.calculate_adj_dist_ub()
         self.find_adjacents_by_distance(adj_dist_ub=adj_dist_ub)
         self.find_critical_points()
+        self.create_critical_points_list()
+        #
         self.plot_voronoi()
 
     def process_polygons(self):
@@ -122,9 +75,10 @@ class VoronoiSegmentation:
         self.b_poly = b_poly
         obs_polys = []
         for poly in self.obs_polys:
-            new_poly = self.process_polygon(poly)
-            if new_poly is not None:
-                obs_polys.append(new_poly)
+            new_poly = self.process_polygon(poly, reverse=True)
+            if new_poly is None:
+                raise ValueError("Obstacle polygon processing failed.")
+            obs_polys.append(new_poly)
         self.obs_polys = obs_polys
 
     def find_voronoi(self):
@@ -238,11 +192,6 @@ class VoronoiSegmentation:
             sorted_indices = np.argsort(dists)
             sorted_adj_idxs = [adj_idxs[i] for i in sorted_indices]
             sorted_dists = dists[sorted_indices]
-            #  find number of adjacents with smaller dists than the threshold
-            # start_idx = np.searchsorted(sorted_dists, self.adj_dist_lb)
-            # start_idx = start_idx - max((self.min_n_adjacents - len(sorted_dists) - start_idx), 0)
-            # sorted_dists = sorted_dists[start_idx:]
-            # sorted_adj_idxs = sorted_adj_idxs[start_idx:]
             n_adj = max(np.sum(sorted_dists < adj_dist_ub), self.min_n_adjacents)
             n_adj = min(n_adj, self.fixed_max_n_adj)
 
@@ -334,78 +283,20 @@ class VoronoiSegmentation:
                 vp.critical = True
         self.critical_idxs = critical_idxs
 
-    # ==========================================================================
-
-    def plot_voronoi(self):
-        fig, ax = plt.subplots(figsize=(15, 10))
-        ax.set_aspect('equal', adjustable='box')
-        x_min = self.b_poly.bounds[0]
-        x_max = self.b_poly.bounds[2]
-        y_min = self.b_poly.bounds[1]
-        y_max = self.b_poly.bounds[3]
-        ax.set_xlim(x_min - 10, x_max + 10)
-        ax.set_ylim(y_min - 10, y_max + 10)
-        ax.set_title('Voronoi Diagram')
-
-        # plot the bounding polygon
-        x, y = self.b_poly.exterior.xy
-        ax.plot(x, y, color='black', linewidth=2, label='Bounding Polygon')
-        # plot the polygons
-        for poly in self.obs_polys:
-            x, y = poly.exterior.xy
-            ax.plot(x, y, color='black', linewidth=1, label='Obstacle Polygon')
-            # ax.fill(x, y, alpha=0.5, fc='lightgray', ec='black')
-
-        # plot Voronoi diagram
-        voronoi_plot_2d(self.vor, ax=ax, show_vertices=False, line_colors='orange', line_width=1, line_alpha=0.6)
-
-        # plot Voronoi vertices
-        for vp in self.v_points:
-            if vp.feasible:
-                ax.plot(vp.v[0], vp.v[1], 'o', color='red', markersize=2)
-                # ax.annotate(f"[{vp.idx}]{int(vp.clearance)}", (vp.v[0], vp.v[1]), fontsize=6, color='black', ha='right', va='bottom')
-                # ax.annotate(vp.idx, (vp.v[0], vp.v[1]), fontsize=8, color='black', ha='right', va='bottom')
-
-        # plot basis points
-        for vp in self.v_points:
-            if vp.basis_idxs is not None:
-                ax.plot(vp.basis_points[:, 0], vp.basis_points[:, 1], 'x', color='blue', markersize=2, label='Basis Points')
-
-        # plot critical vertices
+    def create_critical_points_list(self):
+        """ Create a list of critical points from the Voronoi vertices. """
         for idx in self.critical_idxs:
             vp = self.v_points[idx]
-            ax.plot(vp.v[0], vp.v[1], 'o', color='green', markersize=5, label='Critical Vertex')
-            # connect critical vertices to their basis points
-            if vp.basis_points is None:
-                continue
-                # raise ValueError(f"Basis points for critical vertex {idx} are not set.")
-            for basis_point in vp.basis_points:
-                ax.plot([vp.v[0], basis_point[0]], [vp.v[1], basis_point[1]], color='blue', linewidth=2.5, label='Critical Basis Line')
+            cp = CriticalPoint(vp)
+            self.critical_points.append(cp)
 
-        # # plot adjacency lines
-        # for vp in self.v_points:
-        #     if not vp.free:
-        #         continue
-        #     if vp.adjacent_vp_idxs is not None:
-        #         for adj_idx in vp.adjacent_vp_idxs:
-        #             adj_vp = self.v_points[adj_idx]
-        #             ax.plot([vp.v[0], adj_vp.v[0]], [vp.v[1], adj_vp.v[1]], color='green', linewidth=0.5, label='Adjacency Line')
+    # ==========================================================================
 
-        # # plot Voronoi regions
-        # for region in self.vor.regions:
-        #     if not -1 in region and len(region) > 0:
-        #         polygon = self.vor.vertices[region]
-        #         ax.fill(*zip(*polygon), alpha=0.3, fc='blue', ec='black', label='Voronoi Region')
-
-        #
-        save_path = self.zmd.result_path + "/voronoi_diagram.png"
-        fig.savefig(save_path, dpi=300)
-        plt.show()
-        raise NotImplementedError("Plotting Voronoi diagram is not implemented yet.")
-
-    def process_polygon(self, poly_t: Polygon):
+    def process_polygon(self, poly_t: Polygon, reverse: bool = False):
         poly = self.process_polygon_1(poly_t)
         poly = self.process_polygon_2(poly)
+        if reverse:
+            poly = poly.reverse()
         return poly
         # method = 2
         # if method == 1:
@@ -424,7 +315,7 @@ class VoronoiSegmentation:
         robot_r_px = self.robot_r_px
         robot_r_px = 2 * int(robot_r_px)
         min_dist = max(robot_r_px, 1)
-        points = np.array(poly.exterior.coords[:-1])
+        points = np.array(poly.exterior.coords)
         dists = np.linalg.norm(points[:-1] - points[1:], axis=1)
         if np.any(dists > min_dist):
             new_points = []
@@ -511,6 +402,78 @@ class VoronoiSegmentation:
         return True
 
     # ==========================================================================
+
+    def plot_voronoi(self):
+        fig, ax = plt.subplots(figsize=(15, 10))
+        ax.set_aspect('equal', adjustable='box')
+        x_min = self.b_poly.bounds[0]
+        x_max = self.b_poly.bounds[2]
+        y_min = self.b_poly.bounds[1]
+        y_max = self.b_poly.bounds[3]
+        ax.set_xlim(x_min - 10, x_max + 10)
+        ax.set_ylim(y_min - 10, y_max + 10)
+        ax.set_title('Voronoi Diagram')
+
+        # plot the bounding polygon
+        x, y = self.b_poly.exterior.xy
+        ax.plot(x, y, color='black', linewidth=2, label='Bounding Polygon')
+        # plot the polygons
+        for poly in self.obs_polys:
+            x, y = poly.exterior.xy
+            ax.plot(x, y, color='black', linewidth=1, label='Obstacle Polygon')
+            # ax.fill(x, y, alpha=0.5, fc='lightgray', ec='black')
+
+        # plot Voronoi diagram
+        voronoi_plot_2d(self.vor, ax=ax, show_vertices=False, line_colors='orange', line_width=1, line_alpha=0.6)
+
+        # plot Voronoi vertices
+        for vp in self.v_points:
+            if vp.feasible:
+                ax.plot(vp.v[0], vp.v[1], 'o', color='red', markersize=2)
+                # ax.annotate(f"[{vp.idx}]{int(vp.clearance)}", (vp.v[0], vp.v[1]), fontsize=6, color='black', ha='right', va='bottom')
+                # ax.annotate(vp.idx, (vp.v[0], vp.v[1]), fontsize=8, color='black', ha='right', va='bottom')
+
+        # plot basis points
+        for vp in self.v_points:
+            if vp.basis_idxs is not None:
+                ax.plot(vp.basis_points[:, 0], vp.basis_points[:, 1], 'x', color='blue', markersize=2, label='Basis Points')
+
+        # plot critical vertices
+        for idx in self.critical_idxs:
+            vp = self.v_points[idx]
+            ax.plot(vp.v[0], vp.v[1], 'o', color='green', markersize=5, label='Critical Vertex')
+            # connect critical vertices to their basis points
+            if vp.basis_points is None:
+                continue
+                # raise ValueError(f"Basis points for critical vertex {idx} are not set.")
+            for basis_point in vp.basis_points:
+                ax.plot([vp.v[0], basis_point[0]], [vp.v[1], basis_point[1]], color='blue', linewidth=2.5, label='Critical Basis Line')
+
+        # # plot points
+        # for i, p in enumerate(self.vor.points):
+        #     # ax.plot(p[0], p[1], 'o', color='black', markersize=3, label='Voronoi Point')
+        #     ax.annotate(f"{i}", (p[0], p[1]), fontsize=6, color='black', ha='right', va='bottom')
+
+        # # plot adjacency lines
+        # for vp in self.v_points:
+        #     if not vp.free:
+        #         continue
+        #     if vp.adjacent_vp_idxs is not None:
+        #         for adj_idx in vp.adjacent_vp_idxs:
+        #             adj_vp = self.v_points[adj_idx]
+        #             ax.plot([vp.v[0], adj_vp.v[0]], [vp.v[1], adj_vp.v[1]], color='green', linewidth=0.5, label='Adjacency Line')
+
+        # # plot Voronoi regions
+        # for region in self.vor.regions:
+        #     if not -1 in region and len(region) > 0:
+        #         polygon = self.vor.vertices[region]
+        #         ax.fill(*zip(*polygon), alpha=0.3, fc='blue', ec='black', label='Voronoi Region')
+
+        #
+        save_path = self.zmd.result_path + "/voronoi.png"
+        fig.savefig(save_path, dpi=300)
+
+    # ==========================================================================
     # self.find_adjacents()
     # trees, troots = self.create_trees()
     # self.connect_trees(troots)
@@ -584,3 +547,5 @@ class VoronoiSegmentation:
                 self.depth_first_search(self.v_points[adj_idx], tree, visited, troot)
         if is_last:
             troot.append(start_vp.idx)
+
+    # ==========================================================================
