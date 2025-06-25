@@ -6,9 +6,9 @@ from shapely import Polygon, Point
 # from scipy import ndimage
 from scipy.spatial import Voronoi, voronoi_plot_2d  # pylint: disable=no-name-in-module
 from scripts.base.logger import MyLogger
-from scripts.base.configs import PlanningConfigs
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.map_polygons import MapPolygons
+from scripts.base.configs import PlanningConfigs, DistrictConfgs
 from scripts.planning.contour.common import VPoint, CriticalPoint
 
 
@@ -20,6 +20,7 @@ class VoronoiSegmentation:
 
         # settings
         self.pcfgs: PlanningConfigs = PlanningConfigs()
+        self.dcfgs: DistrictConfgs = DistrictConfgs()
         self.min_poly_points_dist = 100.0
         self.adj_dist_lb: float = 50.0  # distance threshold for adjacent Voronoi vertices
         self.fixed_min_n_adj: int = 4  # fixed minimum number of adjacent Voronoi vertices
@@ -404,6 +405,10 @@ class VoronoiSegmentation:
     # ==========================================================================
 
     def plot_voronoi(self):
+        if not (self.dcfgs.plot_decomposition or self.dcfgs.save_decomposition_plot):
+            self.lg.info("Skipping Voronoi plot.")
+            return
+
         fig, ax = plt.subplots(figsize=(15, 10))
         ax.set_aspect('equal', adjustable='box')
         x_min = self.b_poly.bounds[0]
@@ -470,8 +475,9 @@ class VoronoiSegmentation:
         #         ax.fill(*zip(*polygon), alpha=0.3, fc='blue', ec='black', label='Voronoi Region')
 
         #
-        save_path = self.zmd.result_path + "/voronoi.png"
-        fig.savefig(save_path, dpi=300)
+        if self.dcfgs.save_decomposition_plot:
+            save_path = self.zmd.result_path + "/voronoi.png"
+            fig.savefig(save_path, dpi=300)
 
     # ==========================================================================
     # self.find_adjacents()

@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 from shapely import Polygon
 from scipy.spatial import Voronoi  # pylint: disable=no-name-in-module
 from scripts.base.logger import MyLogger
+from scripts.base.configs import DistrictConfgs
 from scripts.planning.base_cell import BaseCell
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
@@ -18,6 +19,7 @@ class DecompositionInterface:
         self.ns = "DecompositionInterface"
         self.lg = MyLogger(self.ns)
         #
+        self.dcfgs: DistrictConfgs = DistrictConfgs()
         self.zmd: ZoneMapData = zmd
         self.map_polygs: MapPolygons = map_polygs
         self.vor: Voronoi = None
@@ -53,9 +55,8 @@ class DecompositionInterface:
         self.create_cells()
         self.create_sequence()
 
-        #
+        # plotting
         self.plot_rings()
-        # plt.show()
 
     def main_segmentation(self, b_poly: Polygon, obs_polys: list[Polygon]) -> None:
         # post process
@@ -209,21 +210,6 @@ class DecompositionInterface:
         ring.append(cp.vp.v)
         return np.array(ring), ring_cp_idxs
 
-    def plot_rings(self) -> None:
-        fig, ax = plt.subplots(figsize=(15, 10))
-        ax.set_aspect('equal', adjustable='box')
-        n_rings = len(self.rings)
-        colors = plt.cm.viridis(np.linspace(0, 1, n_rings))
-        for i, ring in enumerate(self.rings):
-            ax.plot(ring[:, 0], ring[:, 1], color=colors[i, :], linewidth=1, label='Critical Segment')
-
-        for i, cp in enumerate(self.critical_points):
-            ax.plot(cp.vp.v[0], cp.vp.v[1], 'o', color='red', markersize=5)
-            ax.annotate(f"{i}", (cp.vp.v[0], cp.vp.v[1]), fontsize=6, color='blue')
-        #
-        save_path = self.zmd.result_path + "/rings.png"
-        fig.savefig(save_path, dpi=300)
-
     def create_cells(self):
         """Create cells from the rings."""
         self.lg.info(f"Creating cells from {len(self.rings)} rings.")
@@ -244,3 +230,26 @@ class DecompositionInterface:
         new_mcells = [self.cells[i] for i in opt_seq.tour_ids]
         self.smcells = new_mcells
         self.smcells_seq_length_px = opt_seq.cells_seq_length
+
+    def plot_rings(self) -> None:
+        if not (self.dcfgs.plot_decomposition or self.dcfgs.save_decomposition_plot):
+            self.lg.info("Skipping voronoi decomposition.")
+            return
+        fig, ax = plt.subplots(figsize=(15, 10))
+        ax.set_aspect('equal', adjustable='box')
+        n_rings = len(self.rings)
+        colors = plt.cm.viridis(np.linspace(0, 1, n_rings))
+        for i, ring in enumerate(self.rings):
+            ax.plot(ring[:, 0], ring[:, 1], color=colors[i, :], linewidth=1, label='Critical Segment')
+
+        for i, cp in enumerate(self.critical_points):
+            ax.plot(cp.vp.v[0], cp.vp.v[1], 'o', color='red', markersize=5)
+            ax.annotate(f"{i}", (cp.vp.v[0], cp.vp.v[1]), fontsize=6, color='blue')
+        #
+        if self.dcfgs.save_decomposition_plot:
+            save_path = self.zmd.result_path + "/rings.png"
+            fig.savefig(save_path, dpi=300)
+
+        #
+        if self.dcfgs.plot_decomposition:
+            plt.show()
