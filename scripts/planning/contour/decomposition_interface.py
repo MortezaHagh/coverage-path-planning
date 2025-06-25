@@ -24,9 +24,10 @@ class DecompositionInterface:
         self.map_polygs: MapPolygons = map_polygs
         self.vor: Voronoi = None
         #
-        self.cells: list[BaseCell] = []
+        self.mcells: list[BaseCell] = []
         self.smcells: list[BaseCell]
         self.smcells_seq_length_px: float
+        self.n_mcells: int = 0
 
         #
         self.start_idxs: list[int] = []  # start indices of the polygons
@@ -53,6 +54,7 @@ class DecompositionInterface:
 
         # create cells
         self.create_cells()
+        self.n_mcells = len(self.mcells)
         self.create_sequence()
 
         # plotting
@@ -218,16 +220,16 @@ class DecompositionInterface:
                 self.lg.warn(f"Ring {i} has less than 3 points, skipping.")
                 continue
             cell = BaseCell(ind=i, poly=Polygon(ring))
-            self.cells.append(cell)
-        self.lg.info(f"Created {len(self.cells)} cells from the rings.")
+            self.mcells.append(cell)
+        self.lg.info(f"Created {len(self.mcells)} cells from the rings.")
 
     def create_sequence(self):
-        if len(self.cells) == 0:
+        if len(self.mcells) == 0:
             return [], 0
-        elif len(self.cells) == 1:
-            return [self.cells[0].id], 0
-        opt_seq = OptimCellsSeq(self.cells)
-        new_mcells = [self.cells[i] for i in opt_seq.tour_ids]
+        elif len(self.mcells) == 1:
+            return [self.mcells[0].id], 0
+        opt_seq = OptimCellsSeq(self.mcells)
+        new_mcells = [self.mcells[i] for i in opt_seq.tour_ids]
         self.smcells = new_mcells
         self.smcells_seq_length_px = opt_seq.cells_seq_length
 

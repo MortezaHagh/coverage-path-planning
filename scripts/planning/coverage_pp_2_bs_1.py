@@ -23,7 +23,7 @@ class CoveragePP(CoveragePPBase):
         # configs
         self.colors = []
 
-        # for boustrophedon decomposition
+        # boustrophedon decomposition interface
         self.dec_interface = None
 
         # all cells coverage path planners
@@ -35,6 +35,7 @@ class CoveragePP(CoveragePPBase):
     def coverage_planning(self) -> None:
         self.decompose_map()
         self.zone_covpp()
+        self.connect_paths()
         self.bs_post_planning()
 
     def decompose_map(self) -> None:
@@ -58,8 +59,6 @@ class CoveragePP(CoveragePPBase):
         #
         self.add_cells_to_map_planning()
         self.add_cell_paths_to_map_planning()
-        #
-        self.connect_paths()
 
     # ==================================================================================================================
 
@@ -74,8 +73,8 @@ class CoveragePP(CoveragePPBase):
         self.dec_interface.decomposed.save_figs(self.zmd.result_path)
 
     def add_cells_to_map_planning(self) -> None:
-        for i, cell in enumerate(self.dec_interface.decomposed.cells_groups):
-            pp = cell.merged_cell.points
+        for i, cell in enumerate(self.dec_interface.decomposed.mcells):
+            pp = cell.points
             pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
             map_p = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(100, 100, 100), thickness=2)
             map_p_fill = self.zmd.map_planning.copy()

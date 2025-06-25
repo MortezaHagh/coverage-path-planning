@@ -20,10 +20,10 @@ class CellCoveragePathPlanner:
         self.ns = "CellCoverageP-Z" + str(zone_ind)
         self.lg = MyLogger(self.ns)
         self.cell = cell
-        self.poly_m = None
         self.path_m = None
         self.path_px = None
         #
+        self.poly_m = None
         self.xy_but = None
         self.xy_top = None
 
