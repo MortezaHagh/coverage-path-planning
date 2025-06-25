@@ -9,9 +9,9 @@ from scripts.base.my_utils import MyPoint, MyPath
 
 class CellCoveragePathPlanner:
     cell: Cell
-    poly_m: Polygon
     path_m: MyPath
     path_px: MyPath
+    poly_m: Polygon
     #
     pcfgs: PlanningConfigs
     resolution: float

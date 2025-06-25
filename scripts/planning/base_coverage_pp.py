@@ -155,6 +155,18 @@ class CoveragePPBase:
 
     # ==================================================================================================================
 
+    def path_m_to_px(self, path_m: MyPath) -> MyPath:
+        return MyPath([self.point_m_to_px(p) for p in path_m.points])
+
+    def path_px_to_m(self, path_px: MyPath) -> MyPath:
+        return MyPath([self.point_px_to_m(p) for p in path_px.points])
+
+    def point_m_to_px(self, p: MyPoint) -> MyPoint:
+        return MyPoint(int(p.x / self.resolution), int(p.y / self.resolution))
+
+    def point_px_to_m(self, p: MyPoint) -> MyPoint:
+        return MyPoint(p.x * self.resolution, p.y * self.resolution)
+
     def rotate_waypoints(self) -> None:
         rect_data = self.zmd.final_rect_data
         rot = rect_data["rot"]
@@ -168,22 +180,10 @@ class CoveragePPBase:
         # update
         self.paths_m = new_paths
 
-    def path_m_to_px(self, path_m: MyPath) -> MyPath:
-        return MyPath([self.point_m_to_px(p) for p in path_m.points])
-
-    def path_px_to_m(self, path_px: MyPath) -> MyPath:
-        return MyPath([self.point_px_to_m(p) for p in path_px.points])
-
     def rotate_point(self, p: MyPoint, rotation) -> MyPoint:
         x_r = p.x * np.cos(rotation) - p.y * np.sin(rotation)
         y_r = p.x * np.sin(rotation) + p.y * np.cos(rotation)
         return MyPoint(x_r, y_r)
-
-    def point_m_to_px(self, p: MyPoint) -> MyPoint:
-        return MyPoint(int(p.x / self.resolution), int(p.y / self.resolution))
-
-    def point_px_to_m(self, p: MyPoint) -> MyPoint:
-        return MyPoint(p.x * self.resolution, p.y * self.resolution)
 
     # ==================================================================================================================
 
