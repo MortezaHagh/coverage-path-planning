@@ -1,5 +1,5 @@
 from scripts.planning.map_polygons import MapPolygons
-from scripts.planning.boustrophedon.decomposition_1_mh import MHDecomposition as CellDecomposition
+from scripts.planning.boustrophedon.decomposition_bs_mh import MHDecomposition as CellDecomposition
 
 
 class DecompositionInterface:

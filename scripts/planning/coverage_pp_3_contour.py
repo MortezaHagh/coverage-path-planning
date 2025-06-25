@@ -43,8 +43,8 @@ class CoveragePP(CoveragePPBase):
 
     def zone_covpp(self) -> None:
         self.lg.info2("start coverage path planning for cells")
-        for mell in self.dec_interface.decomposed.smcells:
-            cell_covp_planner = CellCoveragePathPlanner(cell=mell, zone_ind=self.zmd.ind, resolution=self.resolution)
+        for cell in self.dec_interface.cells:
+            cell_covp_planner = CellCoveragePathPlanner(cell=cell, zone_ind=self.zmd.ind, resolution=self.resolution)
             self.all_cell_covp_planners.append(cell_covp_planner)
             if cell_covp_planner.path_m:
                 self.paths_m.append(cell_covp_planner.path_m)
