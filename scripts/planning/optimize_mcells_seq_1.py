@@ -65,7 +65,7 @@ class OptimCellsSeq:
     tour_idxs: list[int]
     tour_ids: list[int]
 
-    def __init__(self, mcells: list[BaseCell], zmd: ZoneMapData):
+    def __init__(self, mcells: list[BaseCell], zmd: ZoneMapData, distances: np.ndarray = None):
         self.ns = "OptimCellsSeq"
         self.lg = MyLogger(self.ns)
         self.lg.info1("Step: creating optimized cell sequence")
@@ -75,8 +75,8 @@ class OptimCellsSeq:
         dcfgs = DistrictConfgs()
 
         #
-        self.tour_idxs: list = None
-        self.tour_ids: list = None
+        self.tour_idxs: list = []
+        self.tour_ids: list = []
 
         #
         optimizer: BaseSeqOpt = None
@@ -86,8 +86,11 @@ class OptimCellsSeq:
             optimizer = DepthFirstSearch(mcells)
         elif dcfgs.cell_sequence_method == "s3_milp":
             # cell graph
-            distances = CellDistances(mcells, zmd)
-            optimizer = MILPSeq(mcells, distances.distances)
+            if distances is None:
+                self.lg.error("Distances matrix is required for MILPSeq optimization.")
+                distances = CellDistances(mcells, zmd).distances
+                # return
+            optimizer = MILPSeq(mcells, distances)
         else:
             self.lg.error(f"Invalid cell sequence method: {dcfgs.cell_sequence_method}")
             return
@@ -207,6 +210,11 @@ class MILPSeq(BaseSeqOpt):
         self.n_p_cells = len(p_idxs)
 
         #
+        if self.n_p_cells == 0:
+            self.lg.error("No planning cells found. Cannot create tour.")
+            return
+
+        #
         self.tour = None
         self.distm = np.zeros((self.n_p_cells, self.n_p_cells), dtype=float)
 
@@ -224,7 +232,7 @@ class MILPSeq(BaseSeqOpt):
     def create_tour(self):
         self.success = self.solve_tsp_milp()
         if not self.success:
-            print(f"[{self.ns}][ERROR]: No optimal solution found.")
+            self.lg.error("No optimal solution found.")
             return
 
         c_ids = [c.id for c in self.p_cells]

@@ -89,6 +89,10 @@ class CoveragePPBase:
         raise NotImplementedError("coverage_planning() must be implemented by subclasses.")
 
     def post_planning(self) -> None:
+        if len(self.paths_px) == 0 or len(self.paths_m) == 0:
+            self.lg.error("No paths found. Cannot post_planning.")
+            return
+
         self.create_ful_path()
         self.process_full_path_distances()
         self.calculate_path_statistics()
@@ -118,6 +122,11 @@ class CoveragePPBase:
         self.st.f_path_len_m = round(total_length, 2)
 
     def process_full_path_distances(self) -> None:
+
+        if self.f_path_px is None:
+            self.lg.error("Full path is empty or has less than 2 points. Cannot process distances.")
+            return
+
         # if distance between points is less than min_points_distance, remove the point
         min_wp_dist_px = self.min_points_distance / self.resolution  # convert to px
         new_points = []

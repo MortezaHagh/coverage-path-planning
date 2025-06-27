@@ -42,6 +42,7 @@ class DecompositionInterface:
             return
         elif len(self.mcells) == 1:
             self.smcells = self.mcells
+            return
 
         # create optimized sequence of cells
         opt_seq = OptimCellsSeq(self.mcells, self.zmd)

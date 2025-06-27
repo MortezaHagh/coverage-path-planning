@@ -64,7 +64,8 @@ class CoveragePP(CoveragePPBase):
         self.paths_px = [cell.path_px for cell in self.dec_interface.smcells if cell.do_planning]
 
     def connect_paths(self) -> None:
-        cp = ConnectPaths(self.zmd, self.paths_px)
+        cp = ConnectPaths(self.zmd)
+        cp.connect_paths(self.paths_px)
         self.c_paths_px = cp.c_paths_px
         self.c_paths_m = [self.path_px_to_m(path_px) for path_px in self.c_paths_px]
 

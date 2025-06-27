@@ -220,14 +220,15 @@ class DecompositionInterface:
             cell = BaseCell(ind=i, poly=Polygon(ring))
             self.mcells.append(cell)
 
-    def create_sequence(self):
+    def create_sequence(self, distances: np.ndarray = None) -> None:
         if len(self.mcells) == 0:
             return
         elif len(self.mcells) == 1:
             self.smcells = self.mcells
+            return
 
         # create optimized sequence of cells
-        opt_seq = OptimCellsSeq(self.mcells, self.zmd)
+        opt_seq = OptimCellsSeq(mcells=self.mcells, zmd=self.zmd, distances=distances)
         self.smcells = [self.mcells[i] for i in opt_seq.tour_idxs]
 
     def plot_rings(self) -> None:

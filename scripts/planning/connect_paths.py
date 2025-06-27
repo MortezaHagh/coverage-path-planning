@@ -1,6 +1,7 @@
 import numpy as np
 from skimage.graph import route_through_array  # pylint: disable=E0611
 from scripts.base.logger import MyLogger
+from scripts.planning.base_cell import BaseCell
 from scripts.base.my_utils import MyPath, MyPoint
 from scripts.district.zone_map_data import ZoneMapData
 
@@ -10,29 +11,68 @@ OCCUPIED = 0
 
 class ConnectPaths:
     """ Connect cell paths """
+    zmd: ZoneMapData
+    all_connection_paths: np.ndarray  # 2D array of paths between cells
+    all_distances: np.ndarray | None  # 2D array of distances between cells
     c_paths_px: list[MyPath]
 
-    def __init__(self, zone_map_data: ZoneMapData, paths_px: list[MyPath]):
+    def __init__(self, zone_map_data: ZoneMapData):
         self.ns = "ConnectPaths"
         self.lg = MyLogger(self.ns)
         self.lg.info1("Step: connect paths")
 
         #
         self.zmd = zone_map_data
+        self.all_connection_paths = np.array([])
+        self.all_distances = None
         self.c_paths_px = []
 
-        #
-        self.c_paths_px = self.connect_1(paths_px)
-
-    def connect_1(self, paths_px: list[MyPath]) -> list[MyPath]:
+    def find_all_connections(self, mcells: list[BaseCell]):
         fp = FindPathInMap(self.zmd)
+        n = len(mcells)
+        all_connections = np.zeros((n, n), dtype=object)
+        for i in range(n):
+            for j in range(i + 1, n):
+                if mcells[i].end_point is None or mcells[j].start_point is None:
+                    all_connections[i, j] = None
+                    all_connections[j, i] = None
+                else:
+                    all_connections[i, j] = fp.find_path(mcells[i].end_point, mcells[j].start_point)
+                    all_connections[j, i] = fp.find_path(mcells[j].end_point, mcells[i].start_point)
+        self.all_connection_paths = all_connections
+
+    def find_all_distances(self):
+        n = self.all_connection_paths.shape[0]
+        all_distances = np.zeros((n, n), dtype=object)
+        for i in range(n):
+            for j in range(i + 1, n):
+                path: MyPath = self.all_connection_paths[i, j]
+                if path is None or path.n == 0:
+                    all_distances[i, j] = float('inf')
+                    all_distances[j, i] = float('inf')
+                else:
+                    length = 0.0
+                    p: MyPoint
+                    for k, p in enumerate(path.points[:-1]):
+                        length += np.linalg.norm(np.array(p.xy) - np.array(path.points[k+1].xy))
+                    all_distances[i, j] = length
+                    all_distances[j, i] = length
+        self.all_distances = all_distances
+
+    def connect_paths(self, paths_px: list[MyPath]) -> list[MyPath]:
         c_paths = []
-        for ip in range(len(paths_px) - 1):
-            p0 = paths_px[ip].points[-1]
-            p1 = paths_px[ip+1].points[0]
-            # c_paths.append([p0, p1])
-            c_paths.append(fp.find_path(start=p0, end=p1))
-        return c_paths
+        if self.all_connection_paths is None or self.all_connection_paths.shape[0] == 0:
+            fp = FindPathInMap(self.zmd)
+            for ip in range(len(paths_px) - 1):
+                p0 = paths_px[ip].points[-1]
+                p1 = paths_px[ip+1].points[0]
+                # c_paths.append([p0, p1])
+                c_paths.append(fp.find_path(start=p0, end=p1))
+        else:
+            # if already calculated all connections and distances
+            for ip in range(len(paths_px) - 1):
+                c_paths.append(self.all_connection_paths[ip, ip + 1])
+        self.c_paths_px = c_paths
 
 
 class FindPathInMap:

@@ -14,14 +14,10 @@ from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.district import DistrictData
 
 
-def main():
-    ns = "main"
+def run_pipeline(map_name: str) -> None:
+    ns = "PipeLine"
     lg = MyLogger(ns)
-    if len(sys.argv) < 2:
-        lg.error("Usage: python main.py <map_name>")
-        map_name = "Map2"  # map_fr52 Map2
-    else:
-        map_name = sys.argv[1]
+    start_time = np.datetime64('now')
 
     #  process inputs: configs and map
     inp_processor = InputsProcessor(map_name)
@@ -55,11 +51,26 @@ def main():
     district_data.run_coverage_planning()
     print(" ============================================================================== ")
 
+    #
+    end_time = np.datetime64('now')
+    lg.info(f"Total time: {end_time - start_time}")
+
     # # display map_planning
     # map_planning = district_data.dmd.map_planning
     # cv.imshow("map_planning", map_planning)
     # cv.waitKey(0)
     # cv.destroyAllWindows()
+
+
+def main():
+    ns = "main"
+    lg = MyLogger(ns)
+    if len(sys.argv) < 2:
+        lg.error("Usage: python main.py <map_name>")
+        map_name = "Map2"  # map_fr52 Map2 Map4
+    else:
+        map_name = sys.argv[1]
+    run_pipeline(map_name)
 
 
 if __name__ == "__main__":

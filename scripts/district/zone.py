@@ -25,8 +25,8 @@ class ZoneStats:
         self.path_len_m = None
         self.cleaning_area_px = None
         self.cleaning_area_m = None
-        self.cleaned_area_px = None
-        self.cleaned_area_m = None
+        self.cleaned_area_px = 0
+        self.cleaned_area_m = 0
         self.uncleaned_area_m = None
         self.overlaped_area_m = None
         self.coverage_p = None
@@ -121,6 +121,11 @@ class ZoneData:
         map_cleaning = self.zmd.map_cleaning.copy()
         f_path = self.cov_planner.f_path_px
         cleaning_r_px = int(self.pcfgs.cleaning_r / self.zmd.reslolution)
+
+        if f_path is None:
+            self.lg.error("fill path is None. Cannot add cleaned area to map.")
+            self.zmd.map_clean_data = map_cleaning.copy()
+            return
 
         # Draw cleaned paths on a mask
         cleaned_acc = np.zeros_like(map_cleaning, dtype=np.uint8)
