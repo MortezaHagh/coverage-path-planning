@@ -7,13 +7,13 @@ from scripts.planning.boustrophedon.events import Event
 from scripts.planning.boustrophedon.obstacles import Obstacle
 from scripts.planning.boustrophedon.cell import Cell, CellGroup
 from scripts.planning.boustrophedon.plotter import BoustPlotter
-from scripts.planning.optimize_mcells_seq import OptimCellsSeq
 from scripts.planning.boustrophedon.post_process_mcells import eval_cells_path_shift
 
 
 class MHDecomposition:
     ns: str
     resolution: float
+    result_path: str
     bcfgs: PlanningConfigs
     #
     b_poly: Polygon
@@ -30,15 +30,14 @@ class MHDecomposition:
     n_mcells: int
     cells_groups: list[CellGroup]
     mcells: list[Cell]
-    smcells: list[Cell]
-    smcells_seq_length_px: float
     #
     plotter: BoustPlotter
 
-    def __init__(self, resolution: float = 0.05):
+    def __init__(self, resolution: float = 0.05, result_path: str = None):
         self.ns = "MHDecomposition"
         self.lg = MyLogger(self.ns)
         #
+        self.result_path = result_path
         self.resolution = resolution
         self.bcfgs = PlanningConfigs()
         #
@@ -56,8 +55,6 @@ class MHDecomposition:
         self.n_mcells = 0
         self.cells_groups = []
         self.mcells = []
-        self.smcells = []
-        self.smcells_seq_length_px = 0.0
         #
         self.plotter = None
 
@@ -80,9 +77,6 @@ class MHDecomposition:
 
         #
         self.eval_planning_area()
-        self.create_sequence()
-
-        #
         self.visualize()
 
     def set_bounding_polygon(self, poly: Polygon):
@@ -456,22 +450,6 @@ class MHDecomposition:
         for cell in self.mcells:
             cell.eveal_planning_area(self.resolution, self.bcfgs.cleaning_r)
 
-    def create_sequence(self):
-        if len(self.mcells) == 0:
-            return [], 0
-        elif len(self.mcells) == 1:
-            return [self.mcells[0].id], 0
-        opt_seq = OptimCellsSeq(self.mcells)
-        new_mcells = [self.mcells[i] for i in opt_seq.tour_ids]
-        self.smcells = new_mcells
-        self.smcells_seq_length_px = opt_seq.cells_seq_length
-
     def visualize(self):
         self.plotter = BoustPlotter(self)
         self.plotter.visualize()
-
-    def save_figs(self, path: str):
-        """ plot and save boustrophedon decomposition figures 
-            plots: mcells - seq 
-        """
-        self.plotter.save_figs(path)

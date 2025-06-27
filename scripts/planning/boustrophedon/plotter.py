@@ -11,6 +11,7 @@ class BoustPlotter:
     def __init__(self, dec_obj):
         self.dec_obj = dec_obj
         self.dcfgs = DistrictConfgs()
+        self.result_path: str = dec_obj.result_path
         #
         self.viz_together = True
         self.set_aspect = True
@@ -30,6 +31,10 @@ class BoustPlotter:
             self.visualize_seperate()
         if self.dcfgs.plot_decomposition:
             plt.show()
+
+        # save figures
+        if self.dcfgs.save_decomposition_plot:
+            self.save_figs()
 
     def visualize_seperate(self):
         self.vizualize_cells_events()
@@ -144,9 +149,10 @@ class BoustPlotter:
         adj_c = self.dec_obj.cells_groups[adj_g_cell_ind].merged_cell.poly.centroid
         ax.plot([c.x, adj_c.x], [c.y, adj_c.y], color=color, linewidth=1, linestyle='--')
 
-    def save_figs(self, path: str):
+    def save_figs(self):
         ns = "/"
         dpi = 300
+        path = self.result_path
         if self.viz_together:
             self.fig_all.savefig(path + f"{ns}boust_decomposition.png", format="png", dpi=dpi)
         else:

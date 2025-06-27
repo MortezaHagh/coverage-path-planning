@@ -35,6 +35,7 @@ class CoveragePP(CoveragePPBase):
     def coverage_planning(self) -> None:
         self.decompose_map()
         self.zone_covpp()
+        self.create_sequence()
         self.connect_paths()
 
         # print(" ====================================================================== ")
@@ -45,7 +46,6 @@ class CoveragePP(CoveragePPBase):
     def decompose_map(self) -> None:
         self.lg.info2("start voronoi decomposition")
         self.dec_interface = DecompositionInterface(self.zmd, self.map_polygons)
-        self.plotter.run(self.dec_interface.mcells)
 
     def zone_covpp(self) -> None:
         self.lg.info2("start coverage path planning for cells")
@@ -53,22 +53,32 @@ class CoveragePP(CoveragePPBase):
             cell_covp_planner = CellCoveragePathPlanner(cell=cell, zone_ind=self.zmd.ind, resolution=self.resolution)
             self.all_cell_covp_planners.append(cell_covp_planner)
             if cell_covp_planner.path_m:
-                self.paths_m.append(cell_covp_planner.path_m)
-                self.paths_px.append(cell_covp_planner.path_px)
+                # self.paths_m.append(cell_covp_planner.path_m)
+                # self.paths_px.append(cell_covp_planner.path_px)
+                cell.set_path_m(cell_covp_planner.path_m)
+                cell.set_path_px(cell_covp_planner.path_px)
+            else:
+                cell.do_planning = False
+                self.lg.warn(f"Cell {cell.id} has no path after coverage planning.")
 
-    def bs_post_planning(self) -> None:
-        n = self.dec_interface.n_mcells
-        self.colors = get_n_colors_cv(n)
-        #
-        self.add_cells_to_map_planning()
-        self.add_cell_paths_to_map_planning()
-
-    # ==================================================================================================================
+    def create_sequence(self) -> None:
+        self.dec_interface.create_sequence()
+        self.paths_m = [cell.path_m for cell in self.dec_interface.smcells if cell.do_planning]
+        self.paths_px = [cell.path_px for cell in self.dec_interface.smcells if cell.do_planning]
 
     def connect_paths(self) -> None:
         cp = ConnectPaths(self.zmd, self.paths_px)
         self.c_paths_px = cp.c_paths_px
         self.c_paths_m = [self.path_px_to_m(path_px) for path_px in self.c_paths_px]
+
+    def bs_post_planning(self) -> None:
+        self.plotter.run(self.dec_interface.mcells)
+        n = self.dec_interface.n_mcells
+        self.colors = get_n_colors_cv(n)
+        self.add_cells_to_map_planning()
+        self.add_cell_paths_to_map_planning()
+
+    # plot and save ====================================================================================================
 
     def add_cells_to_map_planning(self) -> None:
         for i, cell in enumerate(self.dec_interface.mcells):

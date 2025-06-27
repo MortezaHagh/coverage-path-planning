@@ -1,22 +1,48 @@
+from scripts.planning.boustrophedon.cell import Cell
 from scripts.planning.map_polygons import MapPolygons
+from scripts.district.zone_map_data import ZoneMapData
+from scripts.planning.optimize_mcells_seq_1 import OptimCellsSeq
 from scripts.planning.boustrophedon.decomposition_bs_mh import MHDecomposition as CellDecomposition
 
 
 class DecompositionInterface:
     ns: str
+    zmd: ZoneMapData
     decomposed: CellDecomposition
     n_mcells: int
+    mcells: list[Cell]
+    smcells: list[Cell]
 
-    def __init__(self, map_polygons: MapPolygons, reslolution: float):
+    def __init__(self, map_polygons: MapPolygons, zmd: ZoneMapData):
         self.ns = "DecompositionInterface"
-        self.decomposed = CellDecomposition(reslolution)
-        self.n_mcells = 0
+        self.zmd = zmd
 
         #
+        self.n_mcells = 0
+        self.mcells = []
+        self.smcells = []
+        self.seq = []
+
+        # cell decomposition
+        self.decomposed = CellDecomposition(zmd.reslolution, zmd.result_path)
+        # set bounding polygon
         self.decomposed.set_bounding_polygon(map_polygons.b_poly)
         # set obstacle polygons
         self.decomposed.set_obstacle_polygons(map_polygons.obs_polys)
 
         # initiate decomposition
         self.decomposed.initiate()
+
+        # resulting cells
+        self.mcells = self.decomposed.mcells
         self.n_mcells = self.decomposed.n_mcells
+
+    def create_sequence(self):
+        if len(self.mcells) == 0:
+            return
+        elif len(self.mcells) == 1:
+            self.smcells = self.mcells
+
+        # create optimized sequence of cells
+        opt_seq = OptimCellsSeq(self.mcells, self.zmd)
+        self.smcells = [self.mcells[i] for i in opt_seq.tour_idxs]

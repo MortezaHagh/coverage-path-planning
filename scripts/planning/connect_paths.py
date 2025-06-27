@@ -1,5 +1,5 @@
 import numpy as np
-from skimage.graph import route_through_array
+from skimage.graph import route_through_array  # pylint: disable=E0611
 from scripts.base.logger import MyLogger
 from scripts.base.my_utils import MyPath, MyPoint
 from scripts.district.zone_map_data import ZoneMapData
@@ -46,6 +46,16 @@ class FindPathInMap:
         self.occ_map = zmd.map_ws
         self.s_x = zmd.rectangle.x_min
         self.s_y = zmd.rectangle.y_min
+
+    def distance(self, p1: MyPoint, p2: MyPoint) -> float:
+        path: MyPath = self.find_path(p1, p2)
+        if path is None or len(path.points) == 0:
+            return float('inf')
+        # calculate path length
+        length = 0.0
+        for i in range(len(path.points) - 1):
+            length += np.linalg.norm(np.array(path.points[i].xy) - np.array(path.points[i + 1].xy))
+        return length
 
     def find_path(self, start: MyPoint, end: MyPoint) -> MyPath:
         """ Find path in map from start to end """
@@ -97,15 +107,3 @@ class FindPathInMap:
         distances = np.sqrt((y - point[1])**2 + (x - point[0])**2)
         min_index = np.argmin(distances)
         return (x[min_index], y[min_index])
-
-
-def get_start_end_points(paths_px: list[MyPath]) -> list:
-    start_end_points: list[MyPoint] = []
-    for path in paths_px:
-        start_end_points.append((path[0], path[-1]))
-
-    ends = [end.xy for _, end in start_end_points]
-    starts = [start.xy for start, _ in start_end_points]
-    ends = np.array(ends, dtype=np.int32)
-    starts = np.array(starts, dtype=np.int32)
-    return start_end_points

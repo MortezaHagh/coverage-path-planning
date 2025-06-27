@@ -39,9 +39,10 @@ class PlannerPlotter:
 
             # merged cell
             x, y = cell.poly.exterior.xy
-            # cx, cy = cell.cxy
+            cx, cy = cell.cxy
             # text = f"g{i}-({cell.opt_id})"
-            # ax.text(cx, cy, text, color='black', fontsize=8)
+            text = f"{cell.id}"
+            ax.text(cx, cy, text, color='black', fontsize=8)
             # ax.plot(cx, cy, 'o', color='purple', markersize=6)
             ax.plot(x, y, color=color, linewidth=4, linestyle='-')
             ax.fill(x, y, alpha=0.2, fc=color)

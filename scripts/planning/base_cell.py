@@ -1,4 +1,5 @@
 from shapely.geometry import Polygon
+from scripts.base.my_utils import MyPoint, MyPath
 
 
 class BaseCell:
@@ -27,16 +28,24 @@ class BaseCell:
         #
         self.do_planning: bool = True
 
+        # start-end points
+        self.start_point: MyPoint = None
+        self.end_point: MyPoint = None
+
+        # paths
+        self.path_m: MyPath = None  # path in meters
+        self.path_px: MyPath = None  # path in pixels
+
         # calculate cell specs
         self.cell_specs()
 
         # create cell points
         self.create_cell_points()
 
-    def set_optim_id(self, ind: int, next_cell_id: int = None):
+    def set_optim_id(self, ind: int, next_cell_idx: int = None):
         self.opt_id = ind
-        if next_cell_id is not None:
-            self.next_cell_seq = next_cell_id
+        if next_cell_idx is not None:
+            self.next_cell_seq = next_cell_idx
         else:
             self.next_cell_seq = None
 
@@ -65,3 +74,17 @@ class BaseCell:
 
     def add_adjacent_id(self, ind: int):
         self.adjacent_ids.append(ind)
+
+    def set_path_m(self, path: MyPath):
+        self.path_m = path
+
+    def set_path_px(self, path: MyPath):
+        self.path_px = path
+        self.set_start_point(path.points[0])
+        self.set_end_point(path.points[-1])
+
+    def set_start_point(self, point: MyPoint):
+        self.start_point = point
+
+    def set_end_point(self, point: MyPoint):
+        self.end_point = point

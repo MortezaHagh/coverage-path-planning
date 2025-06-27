@@ -8,8 +8,8 @@ from scripts.planning.base_cell import BaseCell
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.contour.common import CriticalPoint
+from scripts.planning.optimize_mcells_seq_1 import OptimCellsSeq
 from scripts.planning.contour.decomposition_voronoi import VoronoiSegmentation
-from scripts.planning.optimize_mcells_seq import OptimCellsSeq
 
 
 class DecompositionInterface:
@@ -26,7 +26,6 @@ class DecompositionInterface:
         #
         self.mcells: list[BaseCell] = []
         self.smcells: list[BaseCell]
-        self.smcells_seq_length_px: float
         self.n_mcells: int = 0
 
         #
@@ -55,7 +54,6 @@ class DecompositionInterface:
         # create cells
         self.create_cells()
         self.n_mcells = len(self.mcells)
-        self.create_sequence()
 
         # plotting
         self.plot_rings()
@@ -122,7 +120,7 @@ class DecompositionInterface:
                     self.lg.warn(f"Critical point {i} with vp.idx {cp.vp.idx} segment creation failed, None ring.")
                     continue
                 self.rings.append(ring)
-        self.lg.info(f"Created {len(self.rings)} rungs.")
+        self.lg.info(f"Created {len(self.rings)} rings.")
 
     def create_cp_segment(self, i_cp: int, cp: CriticalPoint) -> np.ndarray:
         n_points = len(self.vor.points)
@@ -221,17 +219,16 @@ class DecompositionInterface:
                 continue
             cell = BaseCell(ind=i, poly=Polygon(ring))
             self.mcells.append(cell)
-        self.lg.info(f"Created {len(self.mcells)} cells from the rings.")
 
     def create_sequence(self):
         if len(self.mcells) == 0:
-            return [], 0
+            return
         elif len(self.mcells) == 1:
-            return [self.mcells[0].id], 0
-        opt_seq = OptimCellsSeq(self.mcells)
-        new_mcells = [self.mcells[i] for i in opt_seq.tour_ids]
-        self.smcells = new_mcells
-        self.smcells_seq_length_px = opt_seq.cells_seq_length
+            self.smcells = self.mcells
+
+        # create optimized sequence of cells
+        opt_seq = OptimCellsSeq(self.mcells, self.zmd)
+        self.smcells = [self.mcells[i] for i in opt_seq.tour_idxs]
 
     def plot_rings(self) -> None:
         if not (self.dcfgs.plot_decomposition or self.dcfgs.save_decomposition_plot):

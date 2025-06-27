@@ -12,13 +12,13 @@ class OptimCellsSeq:
         self.ns = "OptimCellsSeq"
         self.lg = MyLogger(self.ns)
         dcfgs = DistrictConfgs()
-        self.lg.info1("Step: creating optimization cells sequence")
+        self.lg.info1("Step: creating optimized cell sequence")
 
         # cell graph
         self.cells_graph = CellsGraph(mcells)
 
         #
-        self.tour_indxs = None
+        self.tour_idxs = None
         self.tour_ids = None
         self.cells_seq_length = None
 
@@ -28,7 +28,7 @@ class OptimCellsSeq:
         #
         optimizer = None
         if dcfgs.cell_sequence_method == "s1_simple":
-            optimizer = SimpleSeq(pmcells)
+            optimizer = SimpleSeqOpt(pmcells)
         elif dcfgs.cell_sequence_method == "s2_dfs":
             optimizer = DepthFirstSearch(pmcells)
         elif dcfgs.cell_sequence_method == "s3_milp":
@@ -38,18 +38,18 @@ class OptimCellsSeq:
             return
 
         #
-        if optimizer.tour_indxs is None or len(optimizer.tour_indxs) == 0:
-            self.lg.error(f"No cells sequence found.")
+        if optimizer.tour_idxs is None or len(optimizer.tour_idxs) == 0:
+            self.lg.error("No cells sequence found.")
             return
         #
-        self.tour_indxs = optimizer.tour_indxs
+        self.tour_idxs = optimizer.tour_idxs
         self.tour_ids = optimizer.tour_ids
         self.set_cells_optim_ind(pmcells)
         self.cal_cells_seq_length()
         # self.plot()
 
     def set_cells_optim_ind(self, mcells: list[Cell]):
-        new_cells = [mcells[i] for i in self.tour_indxs]
+        new_cells = [mcells[i] for i in self.tour_idxs]
         for i, c in enumerate(new_cells):
             ind = i
             next_cell_id = None
@@ -92,11 +92,11 @@ class OptimCellsSeq:
         plt.show()
 
 
-class SimpleSeq:
+class SimpleSeqOpt:
     def __init__(self, mcells: list[Cell]):
-        self.ns = "SimpleSeq"
+        self.ns = "SimpleSeqOpt"
         print(f"[{self.ns}]: creating cells sequence.")
-        self.tour_indxs = list(range(len(mcells)))
+        self.tour_idxs = list(range(len(mcells)))
         self.tour_ids = [c.id for c in mcells]
 
 
@@ -107,12 +107,12 @@ class DepthFirstSearch:
         #
         self.cells = cells
         self.c_ids = [c.id for c in cells]
-        self.c_ids_ind_dict = {c.id: i for i, c in enumerate(cells)}
+        self.c_id_idx_dict = {c.id: i for i, c in enumerate(cells)}
         self.tour_ids: list[int] = []
         self.visited_ids_d: dict = {i: False for i in self.c_ids}
         self.depth_ids_d: dict = {i: 0 for i in self.c_ids}
         self.create_tour()
-        self.tour_indxs = [self.c_ids_ind_dict[i] for i in self.tour_ids]
+        self.tour_idxs = [self.c_id_idx_dict[i] for i in self.tour_ids]
 
     def create_tour(self):
         # Start DFS from the first cell
@@ -125,7 +125,7 @@ class DepthFirstSearch:
     def dfs(self, c_id: int, level: int):
         self.visited_ids_d[c_id] = True
         self.tour_ids.append(c_id)
-        ind = self.c_ids_ind_dict[c_id]
+        ind = self.c_id_idx_dict[c_id]
         neighbors = self.cells[ind].adjacent_ids
         neighbors = [n for n in neighbors if n in self.c_ids]
         new_level = 0
@@ -148,7 +148,7 @@ class MILPSeq:
         self.ids = [c.id for c in self.cells]
 
         #
-        self.tour_indxs: list[int] = []
+        self.tour_idxs: list[int] = []
         self.cells_graph = search
         self.distm: np.ndarray = None
 
@@ -157,7 +157,7 @@ class MILPSeq:
         success = self.solve_tsp_milp()
         if not success:
             print(f"[{self.ns}][ERROR]: No optimal solution found.")
-        self.tour_ids = [self.ids[i] for i in self.tour_indxs]
+        self.tour_ids = [self.ids[i] for i in self.tour_idxs]
 
     def create_dist_matrix(self):
         n = self.n_cells
@@ -221,7 +221,7 @@ class MILPSeq:
                         break
                 if not found:
                     break
-            self.tour_indxs = tour
+            self.tour_idxs = tour
 
         else:
             print("[solve_tsp_milp]: No optimal solution found.")
