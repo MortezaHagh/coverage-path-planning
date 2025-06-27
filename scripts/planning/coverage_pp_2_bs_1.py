@@ -49,9 +49,6 @@ class CoveragePP(CoveragePPBase):
             cell_covp_planner = CellCoveragePathPlanner(cell=mell, zone_ind=self.zmd.ind, resolution=self.resolution)
             self.all_cell_covp_planners.append(cell_covp_planner)
             if cell_covp_planner.path_m:
-                # self.paths_m.append(cell_covp_planner.path_m)
-                # self.paths_px.append(cell_covp_planner.path_px)
-                # set paths
                 mell.set_path_m(cell_covp_planner.path_m)
                 mell.set_path_px(cell_covp_planner.path_px)
             else:
@@ -70,6 +67,8 @@ class CoveragePP(CoveragePPBase):
         self.c_paths_m = [self.path_px_to_m(path_px) for path_px in self.c_paths_px]
 
     def bs_post_planning(self) -> None:
+        if not self.dcfgs.save_map_planning:
+            return
         self.plotter.run(self.dec_interface.mcells)
         n = self.dec_interface.n_mcells
         self.colors = get_n_colors_cv(n)
@@ -79,7 +78,7 @@ class CoveragePP(CoveragePPBase):
     # plot and save ====================================================================================================
 
     def add_cells_to_map_planning(self) -> None:
-        for i, cell in enumerate(self.dec_interface.decomposed.mcells):
+        for i, cell in enumerate(self.dec_interface.mcells):
             pp = cell.points
             pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
             map_p = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(100, 100, 100), thickness=2)

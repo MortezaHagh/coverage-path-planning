@@ -69,7 +69,7 @@ class MapData:
 
     def set_basic_configs(self, bcfg: BConfigs, name: str = None):
         if name:
-            name = self.name
+            self.name = name
         self.bcfg = bcfg
 
     def set_origin_m(self, origin_m: tuple[float, float]):

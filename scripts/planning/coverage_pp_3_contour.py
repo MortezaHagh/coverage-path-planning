@@ -37,10 +37,6 @@ class CoveragePP(CoveragePPBase):
         self.zone_covpp()
         self.create_sequence()
         self.connect_paths()
-
-        # print(" ====================================================================== ")
-        # raise NotImplementedError("DecompositionInterface is not fully implemented yet.")
-
         self.bs_post_planning()
 
     def decompose_map(self) -> None:
@@ -53,8 +49,6 @@ class CoveragePP(CoveragePPBase):
             cell_covp_planner = CellCoveragePathPlanner(cell=cell, zmd=self.zmd, zone_ind=self.zmd.ind)
             self.all_cell_covp_planners.append(cell_covp_planner)
             if cell_covp_planner.path_m:
-                # self.paths_m.append(cell_covp_planner.path_m)
-                # self.paths_px.append(cell_covp_planner.path_px)
                 cell.set_path_m(cell_covp_planner.path_m)
                 cell.set_path_px(cell_covp_planner.path_px)
             else:
@@ -62,10 +56,10 @@ class CoveragePP(CoveragePPBase):
                 self.lg.warn(f"Cell {cell.id} has no path after coverage planning.")
 
     def create_sequence(self) -> None:
-        if self.dcfgs.cell_sequence_method == "s3_milp":
-            # calculate paths and distances between cells
-            self.connections.find_all_connections(self.dec_interface.mcells)
-            self.connections.find_all_distances()
+        # if self.dcfgs.cell_sequence_method == "s3_milp":
+        #     # calculate paths and distances between cells
+        #     self.connections.find_all_connections(self.dec_interface.mcells)
+        #     self.connections.find_all_distances()
         #
         self.dec_interface.create_sequence(self.connections.all_distances)
         self.paths_m = [cell.path_m for cell in self.dec_interface.smcells if cell.do_planning]
@@ -77,6 +71,8 @@ class CoveragePP(CoveragePPBase):
         self.c_paths_m = [self.path_px_to_m(path_px) for path_px in self.c_paths_px]
 
     def bs_post_planning(self) -> None:
+        if not self.dcfgs.save_map_planning:
+            return
         self.plotter.run(self.dec_interface.mcells)
         n = self.dec_interface.n_mcells
         self.colors = get_n_colors_cv(n)

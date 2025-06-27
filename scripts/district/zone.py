@@ -22,7 +22,6 @@ class ZoneStats:
     """Zone statistics class to store zone statistics"""
 
     def __init__(self):
-        self.path_len_m = None
         self.cleaning_area_px = None
         self.cleaning_area_m = None
         self.cleaned_area_px = 0
@@ -34,7 +33,6 @@ class ZoneStats:
     def get_data_dict(self) -> dict:
         """Get statistics data as a dictionary."""
         return {
-            "path_len_m": float(self.path_len_m),
             "cleaning_area_px": int(self.cleaning_area_px),
             "cleaning_area_m": float(self.cleaning_area_m),
             "cleaned_area_px": int(self.cleaned_area_px),
@@ -105,9 +103,7 @@ class ZoneData:
         self.st.cleaning_area_m = round(self.st.cleaning_area_px * (self.zmd.reslolution**2), 2)
 
     def calculate_cleaned_area(self):
-        paths_len = self.cov_planner.st.f_path_len_m
-        self.st.path_len_m = round(paths_len, 2)
-
+        paths_len = self.cov_planner.st.len_m
         cleaning_r = self.pcfgs.cleaning_r
         area = paths_len * (2 * cleaning_r)
         # overlaped_area_m
@@ -213,6 +209,7 @@ class ZoneData:
         zone_stats = self.st.get_data_dict()
         planner_stats = self.cov_planner.st.get_data_dict()
         result = {
+            "map": self.zmd.orig_map_data.name,
             "zone_ind": self.zmd.ind,
             "method": self.dcfg.method,
             "zone_stats": zone_stats,

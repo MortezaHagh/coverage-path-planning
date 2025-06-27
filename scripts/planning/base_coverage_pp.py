@@ -1,5 +1,4 @@
 import os
-import json
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
@@ -15,12 +14,14 @@ from scripts.base.configs import SpaceConfigs, PlanningConfigs, DistrictConfgs
 class PlannerStats:
     def __init__(self):
         self.n_paths = 0
-        self.f_path_len_m = 0.0
+        self.len_m = 0.0
+        self.yaw_changes = 0.0
 
     def get_data_dict(self) -> dict:
         return {
             "n_paths": int(self.n_paths),
-            "f_path_len_m": float(self.f_path_len_m)
+            "len_m": float(self.len_m),
+            "yaw_changes": float(self.yaw_changes)
         }
 
 
@@ -98,8 +99,7 @@ class CoveragePPBase:
         self.calculate_path_statistics()
         #
         self.plot_paths_px()
-        # self.plot_paths_m()
-        # self.save_data()
+        # self.plot_final_path_m()
         if self.pcfgs.animation:
             self.animate_robot_paths()
 
@@ -114,12 +114,32 @@ class CoveragePPBase:
         self.f_path_px = MyPath(f_path_px)
 
     def calculate_path_statistics(self) -> None:
+        # length
         total_length = 0.0
         for i, p1 in enumerate(self.f_path_m.points[:-1]):
             p2 = self.f_path_m.point(i+1)
             dist = np.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2)
             total_length += dist
-        self.st.f_path_len_m = round(total_length, 2)
+        self.st.len_m = round(total_length, 2)
+
+        # yaw changes
+        angles = []
+        for i, p in enumerate(self.f_path_m.points[:-1]):
+            p2 = self.f_path_m.point(i + 1)
+            dx = p2.x - p.x
+            dy = p2.y - p.y
+            if dx == 0 and dy == 0:
+                continue
+            angle = np.arctan2(dy, dx)  # angle in radians
+            angles.append(angle)
+
+        yaw_changes = 0.0
+        for i in range(1, len(angles)):
+            angle_diff = angles[i] - angles[i-1]
+            # Normalize the angle difference to the range [-pi, pi]
+            angle_diff = (angle_diff + np.pi) % (2 * np.pi) - np.pi
+            yaw_changes += abs(angle_diff)
+        self.st.yaw_changes = round(yaw_changes, 2)
 
     def process_full_path_distances(self) -> None:
 
@@ -149,7 +169,7 @@ class CoveragePPBase:
             dx = point.x - prev_point.x
             dy = point.y - prev_point.y
             dist = np.sqrt((dx) ** 2 + (dy) ** 2)
-            if dist > min_wp_dist_px:
+            if dist > 1.1*min_wp_dist_px:
                 n_points = int(np.ceil(dist / min_wp_dist_px))
                 for j in range(1, n_points):
                     new_x = prev_point.x + dx * j / n_points
@@ -198,6 +218,8 @@ class CoveragePPBase:
 
     def plot_paths_px(self) -> None:
         """ Plot the calculated coverage paths and connections between them."""
+        if not self.dcfgs.save_map_planning:
+            return
         fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
         self.plot_coverage_paths(ax)
@@ -243,13 +265,6 @@ class CoveragePPBase:
             fig_path = os.path.join(self.zmd.result_path, "anim_paths.gif")
             self.anim.save(fig_path)
 
-    def save_data(self):
-        len_m = self.st.f_path_len_m
-        data = {"centers_seq_length": round(len_m, 2)}
-        with open(self.zmd.result_file, 'w') as f:
-            json.dump(data, f, indent=4)
-            f.write("\n")
-
     def plot_paths_m(self):
         _, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
@@ -270,6 +285,14 @@ class CoveragePPBase:
             ax.plot(pp[:, 0], pp[:, 1], color='gray', linestyle=':')
         # plt.show()
 
+    def plot_final_path_m(self):
+        _, ax = plt.subplots(1, 1)
+        ax.set_aspect('equal', adjustable='box')
+        ax.set_title("Final Path")
+        if self.f_path_m is not None:
+            pp = np.array(self.f_path_m.xy, dtype=np.float32)
+            ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2, linestyle='-')
+        plt.show()
     # ==================================================================================================================
 
     def animate_robot_paths(self):
