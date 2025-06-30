@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="-ojF3WQpcmlekAffjkCv" name="Page-1">
-        <mxGraphModel dx="2603" dy="-184" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="3357" dy="622" grid="1" gridSize="10" guides="1" tooltips="1" connect="0" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -405,12 +405,6 @@
                 </mxCell>
                 <mxCell id="905" value="&lt;div style=&quot;line-height: 16px; white-space: pre;&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0); font-size: 18px;&quot;&gt;CellCoveragePathPlanner&lt;/span&gt;&lt;/div&gt;" style="swimlane;whiteSpace=wrap;html=1;fontStyle=1;fontSize=17;fillColor=#f8cecc;strokeColor=#b85450;fontFamily=Helvetica;swimlaneFillColor=#F8F1F0;" parent="890" vertex="1">
                     <mxGeometry x="30" y="400" width="280" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="906" value="&lt;h3 style=&quot;text-align: left;&quot;&gt;Paths Post Processing&lt;/h3&gt;" style="swimlane;whiteSpace=wrap;html=1;startSize=23;fontSize=13;fontFamily=Helvetica;fontStyle=1" vertex="1" parent="1">
-                    <mxGeometry x="810" y="1440" width="230" height="240" as="geometry"/>
-                </mxCell>
-                <mxCell id="907" value="Connect Paths" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fontSize=13;" vertex="1" parent="906">
-                    <mxGeometry x="50" y="50" width="130" height="50" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>

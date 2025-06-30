@@ -43,7 +43,7 @@ class ConnectPaths:
 
     def find_all_distances(self):
         n = self.all_connection_paths.shape[0]
-        all_distances = np.zeros((n, n), dtype=object)
+        all_distances = np.zeros((n, n), dtype=float)
         for i in range(n):
             for j in range(i + 1, n):
                 path: MyPath = self.all_connection_paths[i, j]
@@ -59,19 +59,19 @@ class ConnectPaths:
                     all_distances[j, i] = length
         self.all_distances = all_distances
 
-    def connect_paths(self, paths_px: list[MyPath]) -> list[MyPath]:
+    def connect_paths(self, paths_px: list[MyPath], seq_idxs: list[int] = None) -> list[MyPath]:
         c_paths = []
-        if self.all_connection_paths is None or self.all_connection_paths.shape[0] == 0:
+        if (not seq_idxs) or (self.all_connection_paths is None) or (self.all_connection_paths.shape[0] == 0):
+            self.lg.warn("Calculating connections between paths, not using pre-calculated connections.")
             fp = FindPathInMap(self.zmd)
             for ip in range(len(paths_px) - 1):
                 p0 = paths_px[ip].points[-1]
                 p1 = paths_px[ip+1].points[0]
-                # c_paths.append([p0, p1])
                 c_paths.append(fp.find_path(start=p0, end=p1))
         else:
             # if already calculated all connections and distances
-            for ip in range(len(paths_px) - 1):
-                c_paths.append(self.all_connection_paths[ip, ip + 1])
+            for ip, idx in enumerate(seq_idxs[:-1]):
+                c_paths.append(self.all_connection_paths[idx, seq_idxs[ip+1]])
         self.c_paths_px = c_paths
 
 

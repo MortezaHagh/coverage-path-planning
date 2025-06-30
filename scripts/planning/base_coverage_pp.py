@@ -99,7 +99,7 @@ class CoveragePPBase:
         self.calculate_path_statistics()
         #
         self.plot_paths_px()
-        # self.plot_final_path_m()
+        self.plot_final_path_m()
         if self.pcfgs.animation:
             self.animate_robot_paths()
 

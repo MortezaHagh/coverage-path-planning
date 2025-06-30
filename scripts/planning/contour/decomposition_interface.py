@@ -26,6 +26,7 @@ class DecompositionInterface:
         #
         self.mcells: list[BaseCell] = []
         self.smcells: list[BaseCell]
+        self.seq_idxs: list[int] = []
         self.n_mcells: int = 0
 
         #
@@ -229,6 +230,7 @@ class DecompositionInterface:
 
         # create optimized sequence of cells
         opt_seq = OptimCellsSeq(mcells=self.mcells, zmd=self.zmd, distances=distances)
+        self.seq_idxs = opt_seq.tour_idxs
         self.smcells = [self.mcells[i] for i in opt_seq.tour_idxs]
 
     def plot_rings(self) -> None:

@@ -1,3 +1,4 @@
+import numpy as np
 from scripts.planning.boustrophedon.cell import Cell
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
@@ -9,19 +10,20 @@ class DecompositionInterface:
     ns: str
     zmd: ZoneMapData
     decomposed: CellDecomposition
-    n_mcells: int
     mcells: list[Cell]
     smcells: list[Cell]
+    seq_idxs: list[int]
+    n_mcells: int
 
     def __init__(self, map_polygons: MapPolygons, zmd: ZoneMapData):
         self.ns = "DecompositionInterface"
         self.zmd = zmd
 
         #
-        self.n_mcells = 0
         self.mcells = []
         self.smcells = []
-        self.seq = []
+        self.seq_idxs = None
+        self.n_mcells = 0
 
         # cell decomposition
         self.decomposed = CellDecomposition(zmd.reslolution, zmd.result_path)
@@ -37,7 +39,7 @@ class DecompositionInterface:
         self.mcells = self.decomposed.mcells
         self.n_mcells = self.decomposed.n_mcells
 
-    def create_sequence(self):
+    def create_sequence(self, distances: np.ndarray = None):
         if len(self.mcells) == 0:
             return
         elif len(self.mcells) == 1:
@@ -45,5 +47,6 @@ class DecompositionInterface:
             return
 
         # create optimized sequence of cells
-        opt_seq = OptimCellsSeq(self.mcells, self.zmd)
+        opt_seq = OptimCellsSeq(mcells=self.mcells, zmd=self.zmd, distances=distances)
+        self.seq_idxs = opt_seq.tour_idxs
         self.smcells = [self.mcells[i] for i in opt_seq.tour_idxs]

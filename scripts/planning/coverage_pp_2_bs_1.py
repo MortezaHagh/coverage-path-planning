@@ -13,6 +13,7 @@ class CoveragePP(CoveragePPBase):
     colors: list
     dec_interface: DecompositionInterface
     all_cell_covp_planners: list[CellCoveragePathPlanner]
+    connections: ConnectPaths
 
     def __init__(self, zone_map_data: ZoneMapData):
         super().__init__(zone_map_data)
@@ -23,10 +24,10 @@ class CoveragePP(CoveragePPBase):
         # configs
         self.colors = []
 
-        # boustrophedon decomposition interface
-        self.dec_interface = None
+        # main
 
-        # all cells coverage path planners
+        self.connections = ConnectPaths(self.zmd)   # connect paths interface
+        self.dec_interface = None                   # boustrophedon decomposition interface
         self.all_cell_covp_planners: list[CellCoveragePathPlanner] = []
 
         # run decomposition and coverage planning
@@ -56,14 +57,18 @@ class CoveragePP(CoveragePPBase):
                 self.lg.warn(f"Cell {mell.id} has no path after coverage planning.")
 
     def create_sequence(self) -> None:
-        self.dec_interface.create_sequence()
+        if self.dcfgs.cell_sequence_method == "s3_milp":
+            # calculate paths and distances between cells
+            self.connections.find_all_connections(self.dec_interface.mcells)
+            self.connections.find_all_distances()
+        #
+        self.dec_interface.create_sequence(self.connections.all_distances)
         self.paths_m = [cell.path_m for cell in self.dec_interface.smcells if cell.do_planning]
         self.paths_px = [cell.path_px for cell in self.dec_interface.smcells if cell.do_planning]
 
     def connect_paths(self) -> None:
-        cp = ConnectPaths(self.zmd)
-        cp.connect_paths(self.paths_px)
-        self.c_paths_px = cp.c_paths_px
+        self.connections.connect_paths(self.paths_px, self.dec_interface.seq_idxs)
+        self.c_paths_px = self.connections.c_paths_px
         self.c_paths_m = [self.path_px_to_m(path_px) for path_px in self.c_paths_px]
 
     def bs_post_planning(self) -> None:
