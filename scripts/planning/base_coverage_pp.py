@@ -286,13 +286,15 @@ class CoveragePPBase:
         # plt.show()
 
     def plot_final_path_m(self):
-        _, ax = plt.subplots(1, 1)
+        fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
         ax.set_title("Final Path")
         if self.f_path_m is not None:
             pp = np.array(self.f_path_m.xy, dtype=np.float32)
-            ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2, linestyle='-')
-        plt.show()
+            ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2, linestyle='-', markersize=3)
+        fig_path = os.path.join(self.zmd.result_path, "final_path.png")
+        fig.savefig(fig_path, format="png", dpi=300)
+        # plt.show()
     # ==================================================================================================================
 
     def animate_robot_paths(self):

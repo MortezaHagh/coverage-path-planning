@@ -60,11 +60,11 @@ def create_table(data):
 def main():
     # Define available parameters
     parameters = {
-        'len_m': ['planner_stats', 'len_m'],
-        'coverage_p': ['zone_stats', 'coverage_p'],
-        'cleaning_area_m': ['zone_stats', 'cleaning_area_m'],
         'n_paths': ['planner_stats', 'n_paths'],
-        'yaw_changes': ['planner_stats', 'yaw_changes']
+        'len_m': ['planner_stats', 'len_m'],
+        'yaw_changes': ['planner_stats', 'yaw_changes'],
+        'coverage_p': ['zone_stats', 'coverage_p'],
+        'overlap_p': ['zone_stats', 'overlap_p']
     }
 
     # User selection (you can modify this part)

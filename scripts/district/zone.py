@@ -29,6 +29,7 @@ class ZoneStats:
         self.uncleaned_area_m = None
         self.overlaped_area_m = None
         self.coverage_p = None
+        self.overlap_p = None
 
     def get_data_dict(self) -> dict:
         """Get statistics data as a dictionary."""
@@ -39,7 +40,8 @@ class ZoneStats:
             "cleaned_area_m": float(self.cleaned_area_m),
             "uncleaned_area_m": float(self.uncleaned_area_m),
             "overlaped_area_m": float(self.overlaped_area_m),
-            "coverage_p": float(self.coverage_p)
+            "coverage_p": float(self.coverage_p),
+            "overlap_p": float(self.overlap_p)
         }
 
     def print_stats(self):
@@ -108,6 +110,7 @@ class ZoneData:
         area = paths_len * (2 * cleaning_r)
         # overlaped_area_m
         self.st.overlaped_area_m = round(area - self.st.cleaned_area_m, 2)
+        self.st.overlap_p = round(self.st.overlaped_area_m / self.st.cleaning_area_m * 100, 2)
         # uncleaned_area_m
         self.st.uncleaned_area_m = round(self.st.cleaning_area_m - self.st.cleaned_area_m, 2)
         # coverage percentage
