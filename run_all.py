@@ -5,8 +5,8 @@ map_names = [
     "Map0",
     "Map1",
     "Map2",
-    "Map4",]
-# "map_fr52",]
+    "Map4",
+    "map_fr52",]
 
 if __name__ == "__main__":
     for map_name in map_names:

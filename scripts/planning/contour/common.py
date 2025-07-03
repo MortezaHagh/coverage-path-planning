@@ -43,9 +43,10 @@ class VPoint:
 
 
 class CriticalPoint:
-    def __init__(self, vp: VPoint):
+    def __init__(self, vp: VPoint, sid: int = None):
         if vp is None:
             raise ValueError("Voronoi point must be provided.")
+        self.id = sid
         self.vp: VPoint = vp
         self.bs1_idx: int = None  # index of the first basis point
         self.bs2_idx: int = None  # index of the second basis point

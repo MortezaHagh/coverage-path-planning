@@ -1,10 +1,10 @@
 import numpy as np
-from matplotlib import pyplot as plt
 from shapely import Polygon
+from matplotlib import pyplot as plt
 from scipy.spatial import Voronoi  # pylint: disable=no-name-in-module
 from scripts.base.logger import MyLogger
 from scripts.base.configs import DistrictConfgs
-from scripts.planning.base_cell import BaseCell
+from scripts.planning.contour.cell import Cell
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.contour.common import CriticalPoint
@@ -24,19 +24,24 @@ class DecompositionInterface:
         self.map_polygs: MapPolygons = map_polygs
         self.vor: Voronoi = None
         #
-        self.mcells: list[BaseCell] = []
-        self.smcells: list[BaseCell]
+        self.mcells: list[Cell] = []
+        self.smcells: list[Cell]
         self.seq_idxs: list[int] = []
         self.n_mcells: int = 0
 
         #
-        self.start_idxs: list[int] = []  # start indices of the polygons
-        self.end_idxs: list[int] = []  # end indices of the polygons
+        self.poly_start_idxs: list[int] = []  # start indices of the polygons
+        self.poly_end_idxs: list[int] = []  # end indices of the polygons
         self.critical_points: list[CriticalPoint] = []
-        self.critical_idxs_1: list[int] = []
-        self.critical_idxs_2: list[int] = []
-        self.rings: list[np.ndarray] = []  # segments created from critical points
-        self.rings_cp_idxs: list[list[int]] = []  # critical point indices in the rings
+        self.cp_base1_idxs: list[int] = []
+        self.cp_base2_idxs: list[int] = []
+        # segments created from critical points
+        self.rings: list[np.ndarray] = []
+
+        #
+        # self.critp_ring_dict: dict[int, set[int]] = {}  # critical point index to ring indices mapping
+        # ring index to critical point indices mapping
+        self.ring_critp_dict: dict[int, set[int]] = {}
 
         # run the decomposition
         self.run()
@@ -54,6 +59,7 @@ class DecompositionInterface:
 
         # create cells
         self.create_cells()
+        # self.eval_cells()
         self.n_mcells = len(self.mcells)
 
         # plotting
@@ -75,34 +81,37 @@ class DecompositionInterface:
         return False
 
     def create_poly_points_start_ends(self, b_poly: Polygon, obs_polys: list[Polygon]) -> None:
-        start_idxs = [0]
-        end_idxs = [len(b_poly.exterior.coords)-1 - 1]
+        poly_start_idxs = [0]
+        poly_end_idxs = [len(b_poly.exterior.coords)-1 - 1]
         for poly in obs_polys:
             n_p = len(poly.exterior.coords)
             if n_p < 3:
                 self.lg.warn("Skipping polygon with less than 3 points.")
                 continue
-            start_idxs.append(end_idxs[-1] + 1)
-            end_idxs.append(end_idxs[-1] + n_p - 1)
-        self.start_idxs = start_idxs
-        self.end_idxs = end_idxs
+            poly_start_idxs.append(poly_end_idxs[-1] + 1)
+            poly_end_idxs.append(poly_end_idxs[-1] + n_p - 1)
+        self.poly_start_idxs = poly_start_idxs
+        self.poly_end_idxs = poly_end_idxs
 
     def create_critical_idxs(self) -> None:
-        self.critical_idxs_1 = [c.bs1_idx for c in self.critical_points]
-        self.critical_idxs_2 = [c.bs2_idx for c in self.critical_points]
+        self.cp_base1_idxs = [c.bs1_idx for c in self.critical_points]
+        self.cp_base2_idxs = [c.bs2_idx for c in self.critical_points]
+        # initialize critical point dictionary
+        # self.critp_ring_dict = {i: set() for i in range(len(self.critical_points))}
 
     def process_loop_basis(self) -> None:
-        for i in range(1, len(self.start_idxs)):
+        """ find critical points that if starintg from them, """
+        for i in range(1, len(self.poly_start_idxs)):
             n_bs = 0
-            start_idx = self.start_idxs[i]
-            end_idx = self.end_idxs[i]
+            start_idx = self.poly_start_idxs[i]
+            end_idx = self.poly_end_idxs[i]
             cp_idx = None
             for j in range(start_idx, end_idx + 1):
-                if j in self.critical_idxs_1:
-                    cp_idx = self.critical_idxs_1.index(j)
+                if j in self.cp_base1_idxs:
+                    cp_idx = self.cp_base1_idxs.index(j)
                     n_bs += 1
-                elif j in self.critical_idxs_2:
-                    cp_idx = self.critical_idxs_2.index(j)
+                elif j in self.cp_base2_idxs:
+                    cp_idx = self.cp_base2_idxs.index(j)
                     n_bs += 1
             #
             if n_bs == 1:
@@ -110,17 +119,25 @@ class DecompositionInterface:
                 self.lg.warn(f"Critical point {cp_idx} is skipped.")
 
     def create_all_segments(self) -> None:
+        n_ring = 0
         for _ in range(2):
             for i, cp in enumerate(self.critical_points):
                 if cp.n_passed > 1 or cp.skip:
                     continue
 
                 # create segment for the critical point
-                ring, ring_cp_idxs = self.create_cp_segment(i, cp)
+                ring, ring_cp_idxs_set = self.create_cp_segment(i, cp)
                 if ring is None:
                     self.lg.warn(f"Critical point {i} with vp.idx {cp.vp.idx} segment creation failed, None ring.")
                     continue
                 self.rings.append(ring)
+
+                # ring and critical point mappings
+                self.ring_critp_dict[n_ring] = ring_cp_idxs_set
+                # for cp_idx in ring_cp_idxs_set:
+                #     self.critp_ring_dict[cp_idx].add(n_ring)
+
+                n_ring += 1
         self.lg.info(f"Created {len(self.rings)} rings.")
 
     def create_cp_segment(self, i_cp: int, cp: CriticalPoint) -> np.ndarray:
@@ -145,9 +162,9 @@ class DecompositionInterface:
         cp.n_passed += 1
 
         # next_idx
-        if next_idx in self.end_idxs:
-            end_idx = self.end_idxs.index(next_idx)
-            next_idx = self.start_idxs[end_idx]
+        if next_idx in self.poly_end_idxs:
+            end_idx = self.poly_end_idxs.index(next_idx)
+            next_idx = self.poly_start_idxs[end_idx]
         else:
             next_idx = next_idx + 1
 
@@ -159,34 +176,33 @@ class DecompositionInterface:
             # check if the next index is a critical point
             new_cp = False
             idx_cp = None
-            if next_idx in self.critical_idxs_1:
-                idx_cp = self.critical_idxs_1.index(next_idx)
+            if next_idx in self.cp_base1_idxs:
+                idx_cp = self.cp_base1_idxs.index(next_idx)
                 if not self.critical_points[idx_cp].skip:
-                    # ring.append(self.vor.points[self.critical_idxs_1[idx_cp]])
                     ring.append(self.critical_points[idx_cp].vp.v)
-                    ring.append(self.vor.points[self.critical_idxs_2[idx_cp]])
-                    next_idx = self.critical_idxs_2[idx_cp]
+                    ring.append(self.vor.points[self.cp_base2_idxs[idx_cp]])
+                    next_idx = self.cp_base2_idxs[idx_cp]
                     self.critical_points[idx_cp].passed_12 = True
                     self.critical_points[idx_cp].n_passed += 1
                     new_cp = True
-            elif next_idx in self.critical_idxs_2:
-                idx_cp = self.critical_idxs_2.index(next_idx)
+            elif next_idx in self.cp_base2_idxs:
+                idx_cp = self.cp_base2_idxs.index(next_idx)
                 if not self.critical_points[idx_cp].skip:
-                    # ring.append(self.vor.points[self.critical_idxs_2[idx_cp]])
                     ring.append(self.critical_points[idx_cp].vp.v)
-                    ring.append(self.vor.points[self.critical_idxs_1[idx_cp]])
-                    next_idx = self.critical_idxs_1[idx_cp]
+                    ring.append(self.vor.points[self.cp_base1_idxs[idx_cp]])
+                    next_idx = self.cp_base1_idxs[idx_cp]
                     self.critical_points[idx_cp].passed_21 = True
                     self.critical_points[idx_cp].n_passed += 1
                     new_cp = True
 
-            #
+            # check if the critical point is already in the ring
             if new_cp:
-                new_cp_idx = idx_cp  # self.critical_points[idx_cp].vp.idx
+                new_cp_idx = idx_cp
                 if new_cp_idx in ring_cp_idxs:
                     idx = ring_cp_idxs.index(new_cp_idx)
                     found_cp_idx = ring_cp_ring_idxs[idx]
-                    ring = ring[:found_cp_idx]  # cut the ring at the found critical point
+                    # cut the ring at the found critical point
+                    ring = ring[:found_cp_idx]
                     self.critical_points[idx_cp].skip = True
                     self.lg.warn(f"Critical point {idx_cp} already in the ring, skipping.")
                 else:
@@ -194,9 +210,9 @@ class DecompositionInterface:
                     ring_cp_ring_idxs.append(len(ring) - 2)
 
             # check if reached end of the polygon
-            if next_idx in self.end_idxs:
-                end_idx = self.end_idxs.index(next_idx)
-                next_idx = self.start_idxs[end_idx]
+            if next_idx in self.poly_end_idxs:
+                end_idx = self.poly_end_idxs.index(next_idx)
+                next_idx = self.poly_start_idxs[end_idx]
             else:
                 next_idx = next_idx + 1
 
@@ -209,7 +225,7 @@ class DecompositionInterface:
         next_p = self.vor.points[next_idx]
         ring.append(next_p)
         ring.append(cp.vp.v)
-        return np.array(ring), ring_cp_idxs
+        return np.array(ring), set(ring_cp_idxs)
 
     def create_cells(self):
         """Create cells from the rings."""
@@ -218,8 +234,14 @@ class DecompositionInterface:
             if len(ring) < 3:
                 self.lg.warn(f"Ring {i} has less than 3 points, skipping.")
                 continue
-            cell = BaseCell(ind=i, poly=Polygon(ring))
+            cell = Cell(ind=i, poly=Polygon(ring))
+            c_crit_points = [self.critical_points[j] for j in self.ring_critp_dict.get(i, set())]
+            cell.set_critical_points(c_crit_points)
             self.mcells.append(cell)
+
+    def eval_cells(self) -> None:
+        for cell in self.mcells:
+            cell.eval_cell()
 
     def create_sequence(self, distances: np.ndarray = None) -> None:
         if len(self.mcells) == 0:

@@ -16,6 +16,8 @@
 - better boustrophedon
 
 
+** GA for selecting the critical points
+
 
 # loggings
 

@@ -22,7 +22,7 @@ class VoronoiSegmentation:
         self.pcfgs: PlanningConfigs = PlanningConfigs()
         self.dcfgs: DistrictConfgs = DistrictConfgs()
         self.min_poly_points_dist = 100.0
-        self.adj_dist_lb: float = 50.0  # distance threshold for adjacent Voronoi vertices
+        # self.adj_dist_lb: float = 50.0  # distance threshold for adjacent Voronoi vertices
         self.fixed_min_n_adj: int = 4  # fixed minimum number of adjacent Voronoi vertices
         self.fixed_max_n_adj: int = 12  # maximum number of adjacent Voronoi vertices
         self.d_clearance_thresh_p: float = 0.05  # percentage of the clearance difference in finding critical points
@@ -286,9 +286,9 @@ class VoronoiSegmentation:
 
     def create_critical_points_list(self):
         """ Create a list of critical points from the Voronoi vertices. """
-        for idx in self.critical_idxs:
+        for i, idx in enumerate(self.critical_idxs):
             vp = self.v_points[idx]
-            cp = CriticalPoint(vp)
+            cp = CriticalPoint(vp, i)
             self.critical_points.append(cp)
 
     # ==========================================================================

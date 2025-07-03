@@ -41,11 +41,11 @@ class CellCoveragePathPlanner:
         if not self.cell.do_planning:
             self.lg.warn(f"cell {self.cell.id} does not require planning.")
             return
-        # self.calculate_path_by_poly_px()
+        # self.calculate_path_by_poly_buffer()
         self.calculate_path_by_distance_transform()
         self.create_path_m()
 
-    def calculate_path_by_poly_px(self) -> None:
+    def calculate_path_by_poly_buffer(self) -> None:
         poly = self.cell.poly
         # scale the polygon to smaller size
 
@@ -57,32 +57,25 @@ class CellCoveragePathPlanner:
 
         # scaled_poly = scale(poly, xfact=0.5, yfact=0.5, origin='center')
 
-        i = 1
+        #
         scaled_poly = poly.buffer(-1, join_style=2, resolution=8)  # initial scale
+
+        #
+        i = 1
         while not (scaled_poly.is_empty or scaled_poly is None):
+            print(i)
             #  if result is MultiPolygon
             if isinstance(scaled_poly, MultiPolygon):
                 scaled_poly = scaled_poly.geoms[0]  # take the first polygon
             scaled_polys.append(scaled_poly)
-            points.extend(list(scaled_poly.exterior.coords))
-            scaled_poly = poly.buffer(-robot_d_px*i, join_style=2, resolution=8)  # scale down the polygon
+            new_points = scaled_poly.exterior.coords
+            points.extend(list(new_points))
+            scaled_poly = poly.buffer(-robot_d_px*i, join_style=2, resolution=16)  # scale down the polygon
             i += 1
-
-        # if scaled_poly.is_empty or scaled_poly is None:
-        #     self.lg.error(f"Scaled polygon for cell {self.cell.id} is empty or None.")
-        #     # raise ValueError(f"Scaled polygon for cell {self.cell.id} is empty or None.")
-        #     return
 
         # create a path from the scaled polygon
         points = [MyPoint(int(p[0]), int(p[1])) for p in points]
         self.path_px = MyPath(points)
-
-    def create_path_m(self) -> None:
-        if self.path_px:
-            self.path_m = MyPath([self.point_px_to_m(p) for p in self.path_px.points])
-
-    def point_px_to_m(self, p: MyPoint) -> MyPoint:
-        return MyPoint(p.x * self.resolution, p.y * self.resolution)
 
     def calculate_path_by_distance_transform(self) -> None:
 
@@ -91,7 +84,6 @@ class CellCoveragePathPlanner:
         robot_d_px = int(robot_r_px * 2)
 
         #
-        scaled_polys = []
         points = []
 
         #
@@ -101,7 +93,6 @@ class CellCoveragePathPlanner:
             return
         if isinstance(scaled_poly, MultiPolygon):
             scaled_poly = scaled_poly.geoms[0]
-        scaled_polys.append(scaled_poly)
         points.extend(list(scaled_poly.exterior.coords))
 
         s_x = self.zmd.rectangle.x_min
@@ -114,6 +105,8 @@ class CellCoveragePathPlanner:
         cv.fillPoly(c_map, [np.array(self.cell.points)-s_xy], color=255)
         mask = c_map == 255
         c_map[mask] = z_map[mask]
+
+        # todo could crop the c_map to the cell polygon map
 
         # cv.imshow("c_map", c_map)
         # cv.waitKey()
@@ -128,18 +121,27 @@ class CellCoveragePathPlanner:
 
         # find polygon for each distance
         while curr_dist < 0.99*max_dist:
-            poly = self.find_poly_by_dist(c_map, dist_transform, curr_dist)
-            if poly is None:
+            polys = self.find_poly_by_dist(c_map, dist_transform, curr_dist)
+            if polys is None or len(polys) == 0:
                 break
-            new_points = poly.exterior.coords + s_xy
-            points.extend(list(new_points))
+
+            # rearrange polygons by area
+            polys = self.rearrange_polys_by_area(polys)
+
+            # add points from the polygons to the path
+            for poly in polys:
+                new_points = poly.exterior.coords + s_xy
+                # rearrange points starting from the closest point to the last point in points
+                new_points = self.rearrange_points(points[-1], new_points)
+                points.extend(list(new_points))
+            #
             curr_dist += robot_d_px
 
         # create a path from the scaled polygon
         points = [MyPoint(int(p[0]), int(p[1])) for p in points]
         self.path_px = MyPath(points)
 
-    def find_poly_by_dist(self, c_map, dist_transform: np.ndarray, dist: int, tolerance: int = 1) -> Polygon:
+    def find_poly_by_dist(self, c_map, dist_transform: np.ndarray, dist: int, tolerance: int = 1) -> list[Polygon]:
 
         # Binary mask of pixels close to target distance
         mask = (dist_transform >= dist - tolerance) & (dist_transform <= dist + tolerance)
@@ -166,12 +168,47 @@ class CellCoveragePathPlanner:
         # cv.destroyAllWindows()
 
         #
-        cnt = contours[0]
-        if cnt is None or len(cnt) < 3:
-            self.lg.error(f"Contour for cell {self.cell.id} is empty or has less than 3 points.")
-            return None
+        polys = []
+        for cnt in contours:
+            if len(cnt) < 3:
+                self.lg.warn(f"Contour has less than 3 points, skipping.")
+                continue
+            # create a polygon from the contour points
+            dist_points = [tuple(p[0]) for p in cnt]
+            poly = Polygon(dist_points)
+            polys.append(poly)
+        return polys
 
-        # create a polygon from the contour points
-        dist_points = [tuple(p[0]) for p in cnt]  # convert to list of tuples
-        poly = Polygon(dist_points)
-        return poly
+    def rearrange_polys_by_area(self, polys: list[Polygon]) -> list[Polygon]:
+        """ Rearrange polygons by area in descending order """
+        polys.sort(key=lambda p: p.area, reverse=True)
+        return polys
+
+    def rearrange_points(self, point: np.ndarray, points: np.ndarray) -> np.ndarray:
+        """ Rearrange points starting from the closest point to the given point """
+        # Find the index of the closest point to the given point
+        idx = self.find_closest_point_idx(point, points)
+        # Rearrange points starting from the closest point
+        rearranged_points = self.rearrange_points_by_idx(idx, points)
+        # add first point to the end of the list
+        rearranged_points = np.concatenate((rearranged_points, [rearranged_points[0]]), axis=0)
+        return rearranged_points
+
+    def rearrange_points_by_idx(self, idx: int, points: np.ndarray) -> np.ndarray:
+        """ Rearrange points starting from idx """
+        if idx < 0 or idx >= len(points):
+            self.lg.error(f"Index {idx} is out of bounds for points list.")
+            return points
+        return np.concatenate((points[idx:], points[:idx]), axis=0)
+
+    def find_closest_point_idx(self, p: np.ndarray, points: np.ndarray) -> int:
+        """ Find the index of the closest point to p in points """
+        dists = [np.linalg.norm(np.array(p) - np.array(pt)) for pt in points]
+        return np.argmin(dists)
+
+    def create_path_m(self) -> None:
+        if self.path_px:
+            self.path_m = MyPath([self.point_px_to_m(p) for p in self.path_px.points])
+
+    def point_px_to_m(self, p: MyPoint) -> MyPoint:
+        return MyPoint(p.x * self.resolution, p.y * self.resolution)
