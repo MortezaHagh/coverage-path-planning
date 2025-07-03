@@ -62,7 +62,6 @@ class SpaceConfigs:
     uncleaned_dist = ws_dist + (robot_radius - cleaning_r)
     # other
     scaler_os_search = 2
-    black = 50
 
 
 @dataclasses.dataclass

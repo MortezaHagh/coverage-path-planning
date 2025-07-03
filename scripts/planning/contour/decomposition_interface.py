@@ -234,7 +234,7 @@ class DecompositionInterface:
             if len(ring) < 3:
                 self.lg.warn(f"Ring {i} has less than 3 points, skipping.")
                 continue
-            cell = Cell(ind=i, poly=Polygon(ring))
+            cell = Cell(ind=i, poly=Polygon(ring), resolution=self.zmd.reslolution)
             c_crit_points = [self.critical_points[j] for j in self.ring_critp_dict.get(i, set())]
             cell.set_critical_points(c_crit_points)
             self.mcells.append(cell)

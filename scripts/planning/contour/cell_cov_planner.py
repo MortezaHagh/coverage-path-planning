@@ -2,7 +2,7 @@
 import cv2 as cv
 import numpy as np
 # from shapely.affinity import scale
-from shapely.geometry import MultiPolygon, MultiPoint, Polygon
+from shapely.geometry import MultiPolygon, Polygon
 from scripts.base.logger import MyLogger
 from scripts.planning.base_cell import BaseCell
 from scripts.base.configs import PlanningConfigs
@@ -171,7 +171,7 @@ class CellCoveragePathPlanner:
         polys = []
         for cnt in contours:
             if len(cnt) < 3:
-                self.lg.warn(f"Contour has less than 3 points, skipping.")
+                self.lg.warn("Contour has less than 3 points, skipping.")
                 continue
             # create a polygon from the contour points
             dist_points = [tuple(p[0]) for p in cnt]
