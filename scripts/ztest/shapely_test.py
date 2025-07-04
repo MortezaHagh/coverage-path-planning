@@ -16,6 +16,12 @@ def plot_polygon(poly):
     x, y = poly.exterior.xy
     ax.plot(x, y, color='blue', label='Polygon')
 
+    # scale polygon
+    scale_factor = 0.5
+    poly_scaled = shapely.affinity.scale(poly, xfact=scale_factor, yfact=scale_factor)
+    x_scaled, y_scaled = poly_scaled.exterior.xy
+    ax.plot(x_scaled, y_scaled, color='red', linestyle='--', label='Scaled Polygon')
+
     # plot centroid
     centroid = poly.centroid
     ax.plot(centroid.x, centroid.y, 'ro', label='Centroid')

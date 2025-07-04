@@ -59,7 +59,7 @@ class DecompositionInterface:
 
         # create cells
         self.create_cells()
-        # self.eval_cells()
+        self.eval_cells()
         self.n_mcells = len(self.mcells)
 
         # plotting
