@@ -57,7 +57,7 @@ class Cell (BaseCell):
         self.min_clearance = min(clearances)
 
     def eval_cell(self):
-        print(f"Cell {self.id} evaluation:")
+        self.lg.info("Cell evaluation")
 
         poly_area = self.area
 
@@ -79,10 +79,11 @@ class Cell (BaseCell):
         self.eval_rectangle_like_circumscribed(rect_circ_area, poly_area)
         inscribed_rect_poly = self.create_inscribed_rectangle(rect_circ_poly, circle_insc_center, circle_insc_radius)
         expanded_inscribed_rectangle = self.expand_inscribed_rectangle(inscribed_rect_poly, circle_insc_center)
-        print(f"cell/rect_circ area: {self.rect_circ_like}")
-        print(" --------------------- ")
 
-        #
+        # print(f"cell/rect_circ area: {self.rect_circ_like}")
+        # print(" --------------------- ")
+
+        # #
         # self.plot_cell_evaluation(
         #     rect_circ_poly=rect_circ_poly,
         #     inscribed_rect_poly=inscribed_rect_poly,
@@ -122,7 +123,7 @@ class Cell (BaseCell):
         expanded_rect_poly_1 = self.expand_inscribed_rectangle_1(inscribed_rect_poly, circle_insc_center)
         area_1 = expanded_rect_poly_1.area
         rect_cell_a_r = area_1 / self.area
-        print(f"r1: {rect_cell_a_r:.2f}")
+        # print(f"r1: {rect_cell_a_r:.2f}")
         if rect_cell_a_r > k1:
             self.rect_circ_like = True
             return expanded_rect_poly_1
@@ -131,16 +132,16 @@ class Cell (BaseCell):
         expanded_rect_poly_2 = self.expand_inscribed_rectangle_2(inscribed_rect_poly, circle_insc_center)
         area_2 = expanded_rect_poly_2.area
         rect_cell_a_r = area_2 / self.area
-        print(f"r2: {rect_cell_a_r:.2f}")
+        # print(f"r2: {rect_cell_a_r:.2f}")
         if rect_cell_a_r > k1:
             self.rect_circ_like = True
             return expanded_rect_poly_2
 
         # third expansion
-        expanded_rect_poly_3 = self.expand_inscribed_rectangle_3()
+        expanded_rect_poly_3 = self.expand_inscribed_rectangle_3(inscribed_rect_poly)
         area_3 = expanded_rect_poly_3.area
         rect_cell_a_r = area_3 / self.area
-        print(f"r3: {rect_cell_a_r:.2f}")
+        # print(f"r3: {rect_cell_a_r:.2f}")
         if rect_cell_a_r > k1:
             self.rect_circ_like = True
             return expanded_rect_poly_3
@@ -168,7 +169,7 @@ class Cell (BaseCell):
         idx1s = [0, 1, 2, 3]
         idx2s = [1, 2, 3, 0]
         steps = [step for _ in range(len(idx2s))]
-        # last_try = [False for _ in range(len(idx2s))]
+        n_e = np.ones(4, dtype=int)        # number of expansions in each direction
 
         # calculate the angles of the midpoints of the edges
         thetas = []
@@ -179,32 +180,36 @@ class Cell (BaseCell):
             th = np.arctan2(midp[1] - circle_insc_center[1], midp[0] - circle_insc_center[0])
             thetas.append(th)
 
-        # expand seuentially
-        any_valid = True
-        while any_valid:
-            any_valid = False
-            for i, (idx1, idx2, th) in enumerate(zip(idx1s, idx2s, thetas)):
-                step = steps[i]
-                p1 = coords[idx1]
-                p2 = coords[idx2]
-                midp = np.mean([p1, p2], axis=0)
-                success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, th, step)
-                if success:
-                    any_valid = True
-                    coords[idx1] = new_p1
-                    coords[idx2] = new_p2
-                elif steps[i] > min_step:
-                    any_valid = True
-                    steps[i] = step / 2  # reduce the step size
-                # elif not last_try[i]:
-                #     any_valid = True
-                #     last_try[i] = True
-                #     success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, th, step)
-                #     coords[idx1] = new_p1
-                #     coords[idx2] = new_p2
+        # expand in all directions
+        for _ in range(2):
+            new_coords = coords.copy()
+
+            # update steps for each direction based on n_e
+            max_n_e = np.max(n_e)
+            if max_n_e == 0:
+                break
+            steps = [step*(ne/max_n_e) for step, ne in zip(steps, n_e)]
+
+            any_valid = True
+            while any_valid:
+                any_valid = False
+                for i, (idx1, idx2, th) in enumerate(zip(idx1s, idx2s, thetas)):
+                    step = steps[i]
+                    p1 = new_coords[idx1]
+                    p2 = new_coords[idx2]
+                    midp = np.mean([p1, p2], axis=0)
+                    success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, th, step)
+                    if success:
+                        n_e[i] += 1
+                        any_valid = True
+                        new_coords[idx1] = new_p1
+                        new_coords[idx2] = new_p2
+                    elif steps[i] > min_step:
+                        any_valid = True
+                        steps[i] = step / 2  # reduce the step size
 
         # create the expanded rectangle polygon
-        expanded_rect_poly = Polygon(coords)
+        expanded_rect_poly = Polygon(new_coords)
         return expanded_rect_poly
 
     def expand_inscribed_rectangle_2(self, inscribed_rect_poly: Polygon, circle_insc_center) -> Polygon:
@@ -229,7 +234,7 @@ class Cell (BaseCell):
         idx1s = [0, 1, 2, 3]
         idx2s = [1, 2, 3, 0]
         steps = [step for _ in range(4)]
-        # last_try = [False for _ in range(len(idx2s))]
+        n_e = np.zeros(4, dtype=int)        # number of expansions in each direction
 
         # calculate the angles of the midpoints of the edges
         thetas = []
@@ -252,47 +257,56 @@ class Cell (BaseCell):
                 midp = np.mean([p1, p2], axis=0)
                 success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, th, step)
                 if success:
+                    n_e[i] += 1
                     coords_cand[i][idx1] = new_p1
                     coords_cand[i][idx2] = new_p2
                 else:
                     is_valid = False
 
-        # find the best candidate
-        best_area = 0.0
-        best_coords = None
-        for coords_cand_i in coords_cand:
-            expanded_rect_poly_cand = Polygon(coords_cand_i)
-            area = expanded_rect_poly_cand.area
-            if area > best_area:
-                best_area = area
-                best_coords = coords_cand_i
+        # max step direction
+        max_step_idx = np.argmax(n_e)
+        best_coords = coords_cand[max_step_idx]
+        best_coords_poly = Polygon(best_coords)  # todo todel
 
-        # normal expansion in the all directions
-        # expand seqentially
-        any_valid = True
-        for i, (idx1, idx2, th) in enumerate(zip(idx1s, idx2s, thetas)):
+        # remove the max_step_idx item from idx1s, idx2s, thetas
+        idx1s = [idx for i, idx in enumerate(idx1s) if i != max_step_idx]
+        idx2s = [idx for i, idx in enumerate(idx2s) if i != max_step_idx]
+        thetas = [th for i, th in enumerate(thetas) if i != max_step_idx]
+        n_e = np.ones(3, dtype=int)        # reset
+
+        # expand in the other 3 directions
+        for _ in range(2):
+            new_coords = best_coords.copy()  # reset best_coords for each iteration
+
+            # update steps for each direction based on n_e
+            max_n_e = np.max(n_e)
+            if max_n_e == 0:
+                break
+            steps = [step*(ne/max_n_e) for step, ne in zip(steps, n_e)]
+
             any_valid = True
             while any_valid:
-                step = steps[i]
-                p1 = best_coords[idx1]
-                p2 = best_coords[idx2]
-                midp = np.mean([p1, p2], axis=0)
-                success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, th, step)
-                if success:
-                    any_valid = True
-                    best_coords[idx1] = new_p1
-                    best_coords[idx2] = new_p2
-                elif steps[i] > min_step:
-                    any_valid = True
-                    steps[i] = step / 2  # reduce the step size
-                else:
-                    any_valid = False
+                any_valid = False
+                for i, (idx1, idx2, th) in enumerate(zip(idx1s, idx2s, thetas)):
+                    step = steps[i]
+                    p1 = new_coords[idx1]
+                    p2 = new_coords[idx2]
+                    midp = np.mean([p1, p2], axis=0)
+                    success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, th, step)
+                    if success:
+                        n_e[i] += 1
+                        any_valid = True
+                        new_coords[idx1] = new_p1
+                        new_coords[idx2] = new_p2
+                    elif steps[i] > min_step:
+                        any_valid = True
+                        steps[i] = step / 2  # reduce the step size
 
         # create the expanded rectangle polygon
-        expanded_rect_poly = Polygon(best_coords)
+        expanded_rect_poly = Polygon(new_coords)
         return expanded_rect_poly
 
-    def expand_inscribed_rectangle_3(self) -> Polygon:
+    def expand_inscribed_rectangle_3(self, inscribed_rect_poly: Polygon) -> Polygon:
         """ expand based on the biggest edge """
 
         # step
@@ -321,7 +335,7 @@ class Cell (BaseCell):
 
         # create third and fourth points
         # p3 is the point from p2 perpendicular to edge p1-p2
-        th3 = np.pi / 2 + th,
+        th3 = th + np.pi / 2,
         p3 = (
             s_p2[0] + step * np.cos(th3),
             s_p2[1] + step * np.sin(th3)
@@ -333,7 +347,9 @@ class Cell (BaseCell):
                 s_p1[1] + step * np.sin(th3)
             )
         if not self.poly.contains(Point(p3)):
-            raise ValueError("Cannot find a valid point p3 for the inscribed rectangle expansion.")
+            self.lg.error("Cannot find a valid point p3 for the inscribed rectangle expansion.")
+            return inscribed_rect_poly
+            # raise ValueError("Cannot find a valid point p3 for the inscribed rectangle expansion.")
 
         # move p1 and p2 alittle inside
         delta = step/5
@@ -346,7 +362,9 @@ class Cell (BaseCell):
         p4 = (s_p1[0] + step * np.cos(th3),
               s_p1[1] + step * np.sin(th3))
         if not self.poly.contains(Point(p4)):
-            raise ValueError("Cannot find a valid point p4 for the inscribed rectangle expansion.")
+            self.lg.error("Cannot find a valid point p4 for the inscribed rectangle expansion.")
+            return inscribed_rect_poly
+            # raise ValueError("Cannot find a valid point p4 for the inscribed rectangle expansion.")
 
         # create new polygon
         coords = [p1, p2, p3, p4]  # new polygon
@@ -358,6 +376,7 @@ class Cell (BaseCell):
         idx1s = [1, 2, 3]
         idx2s = [2, 3, 0]
         steps = [step for _ in range(3)]
+        n_e = np.ones(3, dtype=int)        # number of expansions in each direction
 
         # calculate the angles of the midpoints of the edges
         thetas = []
@@ -368,45 +387,37 @@ class Cell (BaseCell):
             th = np.arctan2(midp[1] - center[1], midp[0] - center[0])
             thetas.append(th)
 
-        # expand seqentially
-        any_valid = True
-        for i, (idx1, idx2, th) in enumerate(zip(idx1s, idx2s, thetas)):
+        # expand in all directions
+        for _ in range(2):
+            new_coords = coords.copy()
+
+            # update steps for each direction based on n_e
+            max_n_e = np.max(n_e)
+            if max_n_e == 0:
+                break
+            steps = [step*(ne/max_n_e) for step, ne in zip(steps, n_e)]
+
+            #
             any_valid = True
             while any_valid:
-                step = steps[i]
-                p1 = coords[idx1]
-                p2 = coords[idx2]
-                midp = np.mean([p1, p2], axis=0)
-                success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, th, step)
-                if success:
-                    any_valid = True
-                    coords[idx1] = new_p1
-                    coords[idx2] = new_p2
-                elif steps[i] > min_step:
-                    any_valid = True
-                    steps[i] = step / 2  # reduce the step size
-                else:
-                    any_valid = False
+                any_valid = False
+                for i, (idx1, idx2, th) in enumerate(zip(idx1s, idx2s, thetas)):
+                    step = steps[i]
+                    p1 = new_coords[idx1]
+                    p2 = new_coords[idx2]
+                    midp = np.mean([p1, p2], axis=0)
+                    success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, th, step)
+                    if success:
+                        n_e[i] += 1
+                        any_valid = True
+                        new_coords[idx1] = new_p1
+                        new_coords[idx2] = new_p2
+                    elif steps[i] > min_step:
+                        any_valid = True
+                        steps[i] = step / 2  # reduce the step size
 
         # create the expanded rectangle polygon
-        expanded_rect_poly = Polygon(coords)
-
-        #
-        fig, ax = plt.subplots()
-        # main polygon
-        x, y = self.poly.exterior.xy
-        ax.plot(x, y, 'o-', color='blue', label='Polygon')
-        # rect circumscribed polygon
-        x, y = new_poly.exterior.xy
-        ax.plot(x, y, color='purple', label='new_poly')
-        #
-        x, y = expanded_rect_poly.exterior.xy
-        ax.plot(x, y, color='magenta', label='Expanded Rectangle')
-        ax.set_aspect('equal', adjustable='box')
-        #
-        plt.legend()
-        plt.show()
-
+        expanded_rect_poly = Polygon(new_coords)
         return expanded_rect_poly
 
     def expand_2_points_eval(self, p1, p2, th, step):
@@ -493,6 +504,22 @@ class Cell (BaseCell):
     #     #
     #     plt.legend()
     #     plt.show()
+
+    #  expand 3
+    # fig, ax = plt.subplots()
+    # # main polygon
+    # x, y = self.poly.exterior.xy
+    # ax.plot(x, y, 'o-', color='blue', label='Polygon')
+    # # rect circumscribed polygon
+    # x, y = new_poly.exterior.xy
+    # ax.plot(x, y, color='purple', label='new_poly')
+    # #
+    # x, y = expanded_rect_poly.exterior.xy
+    # ax.plot(x, y, color='magenta', label='Expanded Rectangle')
+    # ax.set_aspect('equal', adjustable='box')
+    # #
+    # plt.legend()
+    # plt.show()
 
     # def eval_min_side_clearance_ratio(self, rect_circ_poly: Polygon) -> None:
     #     mrr_coords = np.array(rect_circ_poly.exterior.coords)

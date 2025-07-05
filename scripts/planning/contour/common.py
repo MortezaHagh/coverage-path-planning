@@ -7,19 +7,19 @@ class VPoint:
         self.v: np.ndarray = v
         self.free: bool = False
         self.feasible: bool = False
-        self.critical: bool = False  # critical Voronoi vertex
+        self.critical: bool = False     # critical Voronoi vertex
         self.has_inf_adj: bool = False  # has adjacent Voronoi vertices with infinite distance
-        self.in_poly_o1: bool = False  # inside the outer bounding polygon 1
+        self.in_bd_poly: bool = False   # inside the outer bounding polygon 1
         #
-        self.basis_idxs = None  # two closest basis points
-        self.basis_points = None  # two closest basis points in the Voronoi diagram
-        self.basis_dists = None  # distances to the basis points
+        self.basis_idxs: np.ndarray = None          # two closest basis points
+        self.basis_points: np.ndarray = None        # two closest basis points in the Voronoi diagram
+        self.basis_dists: np.ndarray = None         # distances to the basis points
         self.clearance: float = np.inf  # clearance to the obstacles
-        self.adjacent_vp_idxs = []  # indices of adjacent Voronoi points
-        self.adjacent_vp_dists = []  # distances to adjacent Voronoi points
+        self.adjacent_vp_idxs: list[int] = []      # indices of adjacent Voronoi points
+        self.adjacent_vp_dists: list[float] = []     # distances to adjacent Voronoi points
         # #
-        self.n_feas_ridges = 0  # number of feasible adjacent Voronoi points
-        self.ridge_vps: list[VPoint] = []  # Voronoi vertex that is a ridge point for this Voronoi vertex
+        self.n_feas_ridges: int = 0              # number of feasible adjacent Voronoi points
+        self.ridge_vps: list[VPoint] = []   # Free Voronoi vertex that is a ridge point for this Voronoi vertex
 
     def set_basis_points(self, basis_idxs: np.ndarray, points: np.ndarray):
         if basis_idxs is None or len(basis_idxs) < 2:
