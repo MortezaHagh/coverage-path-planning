@@ -70,7 +70,7 @@ class PlanningConfigs:
     animation = False  # True False
     cleaning_r = spa.cleaning_r
     min_path_overlap = 0.0
-    min_wp_dist = 0.4
+    min_wp_dist = 0.2
     margin = 0.05
     cleaning_r_ov = cleaning_r - min_path_overlap/2
 

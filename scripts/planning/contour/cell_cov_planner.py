@@ -116,11 +116,13 @@ class CellCoveragePathPlanner:
         dist_transform = cv.distanceTransform(c_map, cv.DIST_L2, 5)
 
         # max value in the distance transform
-        curr_dist = robot_d_px
+        curr_dist = 0
         max_dist = dist_transform.max()
 
         # find polygon for each distance
-        while curr_dist < 0.99*max_dist:
+        while curr_dist < (max_dist-robot_d_px):
+            curr_dist += robot_d_px
+
             polys = self.find_poly_by_dist(c_map, dist_transform, curr_dist)
             if polys is None or len(polys) == 0:
                 break
@@ -134,8 +136,16 @@ class CellCoveragePathPlanner:
                 # rearrange points starting from the closest point to the last point in points
                 new_points = self.rearrange_points(points[-1], new_points)
                 points.extend(list(new_points))
-            #
-            curr_dist += robot_d_px
+
+        # last try
+        if (max_dist - curr_dist) > robot_r_px:
+            polys = self.find_poly_by_dist(c_map, dist_transform, max_dist)
+            if polys is not None and len(polys) > 0:
+                for poly in polys:
+                    new_points = poly.exterior.coords + s_xy
+                    # rearrange points starting from the closest point to the last point in points
+                    new_points = self.rearrange_points(points[-1], new_points)
+                    points.extend(list(new_points))
 
         # create a path from the scaled polygon
         points = [MyPoint(int(p[0]), int(p[1])) for p in points]
