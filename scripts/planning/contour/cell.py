@@ -11,16 +11,13 @@ from scripts.planning.contour.common import CriticalPoint
 
 
 class Cell (BaseCell):
-    basic: bool  # whether the cell is basic or not
-    critical_points: list[CriticalPoint]  # critical points of the cell
-    rect_circ_like: bool  # whether the cell is rectangle-like or not
-    min_clearance: float  # minimum clearance of the cell
-    clearance_regular: bool  # whether the cell is regular or not
-    mic_cell_area_regular: bool  # maximum inscribed circle area ratio to cell area
-    cell_mbc_area_regular: bool  # minimum bounding circle area ratio to cell area
+    basic: bool                             # whether the cell is basic or not
+    critical_points: list[CriticalPoint]    # critical points of the cell
+    min_clearance: float                    # minimum clearance of the cell
+    rect_circ_like: bool                    # whether the cell is rectangle-like or not
+    rect_insc_like: bool                    # whether the cell is inscribed rectangle-like or not
 
     def __init__(self, ind: int, poly: Polygon, resolution: float = None) -> None:
-        # initialize base class
         super().__init__(ind, poly)
         self.ns = f"Cell-{self.id}"
         self.lg = MyLogger(self.ns)
@@ -33,33 +30,31 @@ class Cell (BaseCell):
         #
         self.basic = False
         self.critical_points = []
+        self.min_clearance = 0.0
         #
         self.rect_circ_like = False
-        #
-        self.min_clearance = 0.0
-        self.clearance_regular = False
-        self.mic_cell_area_regular = False
-        self.cell_mrr_area_regular = False
+        self.rect_insc_like = False
 
     def set_critical_points(self, critical_points: list[CriticalPoint]) -> None:
+        """ set list of critical points in the cell and calculate minimum clearance """
         self.critical_points = critical_points
         self.find_min_clearance()
 
     def find_min_clearance(self) -> None:
+        """ Find the minimum clearance of the cell based on critical points """
         if not self.critical_points:
             self.basic = True
             self.lg.warn("No critical points set for the cell, marking as basic.")
-            # raise ValueError("Critical points are not set for the cell.")
             return
-
         cp: CriticalPoint
         clearances = [cp.vp.clearance for cp in self.critical_points]
         self.min_clearance = min(clearances)
 
-    def eval_cell(self):
-        self.lg.info("Cell evaluation")
+    # ==========================================================================
 
-        poly_area = self.area
+    def eval_cell(self):
+        """ Evaluate the cell for rectangle-like and inscribed rectangle-like properties """
+        self.lg.info("Cell evaluation")
 
         # minimum_rotated_rectangle polygon
         rect_circ_poly = self.poly.minimum_rotated_rectangle
@@ -76,7 +71,7 @@ class Cell (BaseCell):
         # circle_circ_area = circle_circ_poly.area
 
         # # eval regularities
-        self.eval_rectangle_like_circumscribed(rect_circ_area, poly_area)
+        self.eval_rectangle_like_circumscribed(rect_circ_area)
         inscribed_rect_poly = self.create_inscribed_rectangle(rect_circ_poly, circle_insc_center, circle_insc_radius)
         expanded_inscribed_rectangle = self.expand_inscribed_rectangle(inscribed_rect_poly, circle_insc_center)
 
@@ -93,13 +88,15 @@ class Cell (BaseCell):
         #     # circle_circ_poly=circle_circ_poly,
         # )
 
-    def eval_rectangle_like_circumscribed(self, rect_circ_area, poly_area) -> None:
+    def eval_rectangle_like_circumscribed(self, rect_circ_area) -> None:
+        """ Evaluate if the cell is rectangle-like based on the area ratio of the cell and the circumscribed rectangle """
         k1 = 0.8
-        # based on inscribed and circumscribed rectangles
-        cell_rect_circ_area_ratio = poly_area/rect_circ_area
+        cell_rect_circ_area_ratio = self.area/rect_circ_area
         self.rect_circ_like = cell_rect_circ_area_ratio >= k1
 
     def create_inscribed_rectangle(self, rect_circ_poly, circle_insc_center, circle_insc_radius) -> Polygon:
+        """ Create an inscribed rectangle inside the circumscribed rectangle of the cell basde on the inscribed circle """
+
         # calculate the angle of the rectangle
         rect_circ_coords = np.array(rect_circ_poly.exterior.coords)
         angle = np.arctan2(rect_circ_coords[1, 1] - rect_circ_coords[0, 1],
@@ -118,14 +115,16 @@ class Cell (BaseCell):
         return inscribed_rect_poly
 
     def expand_inscribed_rectangle(self, inscribed_rect_poly: Polygon, circle_insc_center) -> Polygon:
+        """ Expand the inscribed rectangle in 3 different ways and return the best one """
         k1 = 0.8
+
         # first expansion
         expanded_rect_poly_1 = self.expand_inscribed_rectangle_1(inscribed_rect_poly, circle_insc_center)
         area_1 = expanded_rect_poly_1.area
         rect_cell_a_r = area_1 / self.area
         # print(f"r1: {rect_cell_a_r:.2f}")
         if rect_cell_a_r > k1:
-            self.rect_circ_like = True
+            self.rect_insc_like = True
             return expanded_rect_poly_1
 
         # second expansion
@@ -134,7 +133,7 @@ class Cell (BaseCell):
         rect_cell_a_r = area_2 / self.area
         # print(f"r2: {rect_cell_a_r:.2f}")
         if rect_cell_a_r > k1:
-            self.rect_circ_like = True
+            self.rect_insc_like = True
             return expanded_rect_poly_2
 
         # third expansion
@@ -143,7 +142,7 @@ class Cell (BaseCell):
         rect_cell_a_r = area_3 / self.area
         # print(f"r3: {rect_cell_a_r:.2f}")
         if rect_cell_a_r > k1:
-            self.rect_circ_like = True
+            self.rect_insc_like = True
             return expanded_rect_poly_3
 
         #
@@ -213,7 +212,8 @@ class Cell (BaseCell):
         return expanded_rect_poly
 
     def expand_inscribed_rectangle_2(self, inscribed_rect_poly: Polygon, circle_insc_center) -> Polygon:
-        """ first find the main direction of expansion, then expand in that direction and then in the other 3 directions """
+        """ first find the main direction of expansion buy expanding in each direction separately till collision, 
+        then expand in that direction and then in the other 3 directions """
 
         # find step
         # smallest length of the rectangle side
@@ -234,7 +234,7 @@ class Cell (BaseCell):
         idx1s = [0, 1, 2, 3]
         idx2s = [1, 2, 3, 0]
         steps = [step for _ in range(4)]
-        n_e = np.zeros(4, dtype=int)        # number of expansions in each direction
+        n_e = np.zeros(4, dtype=int)  # number of expansions in each direction
 
         # calculate the angles of the midpoints of the edges
         thetas = []
@@ -266,7 +266,6 @@ class Cell (BaseCell):
         # max step direction
         max_step_idx = np.argmax(n_e)
         best_coords = coords_cand[max_step_idx]
-        best_coords_poly = Polygon(best_coords)  # todo todel
 
         # remove the max_step_idx item from idx1s, idx2s, thetas
         idx1s = [idx for i, idx in enumerate(idx1s) if i != max_step_idx]
@@ -484,58 +483,3 @@ class Cell (BaseCell):
         plt.legend()
         plt.title(f"Cell {self.id} Evaluation")
         plt.show()
-
-    # #
-    # if self.id == 11:
-    #     fig, ax = plt.subplots()
-    #     # main polygon
-    #     x, y = self.poly.exterior.xy
-    #     ax.plot(x, y, color='blue', label='Polygon')
-    #     # rect circumscribed polygon
-    #     x, y = inscribed_rect_poly.exterior.xy
-    #     ax.plot(x, y, color='purple', label='inscribed_rect_poly')
-    #     # scaled rectangle
-    #     x, y = s_rect_poly.exterior.xy
-    #     ax.plot(x, y, color='red', linestyle='--', label='inscribed_rect_poly')
-    #     #
-    #     x, y = expanded_rect_poly.exterior.xy
-    #     ax.plot(x, y, color='magenta', label='Expanded Rectangle')
-    #     ax.set_aspect('equal', adjustable='box')
-    #     #
-    #     plt.legend()
-    #     plt.show()
-
-    #  expand 3
-    # fig, ax = plt.subplots()
-    # # main polygon
-    # x, y = self.poly.exterior.xy
-    # ax.plot(x, y, 'o-', color='blue', label='Polygon')
-    # # rect circumscribed polygon
-    # x, y = new_poly.exterior.xy
-    # ax.plot(x, y, color='purple', label='new_poly')
-    # #
-    # x, y = expanded_rect_poly.exterior.xy
-    # ax.plot(x, y, color='magenta', label='Expanded Rectangle')
-    # ax.set_aspect('equal', adjustable='box')
-    # #
-    # plt.legend()
-    # plt.show()
-
-    # def eval_min_side_clearance_ratio(self, rect_circ_poly: Polygon) -> None:
-    #     mrr_coords = np.array(rect_circ_poly.exterior.coords)
-    #     mrr_side_lengths = np.linalg.norm(np.diff(mrr_coords, axis=0), axis=1)
-    #     mrr_min_side_length = np.min(mrr_side_lengths)
-    #     s_ratio = self.min_clearance/mrr_min_side_length
-    #     if s_ratio > 0.7:
-    #         self.clearance_regular = True
-    #     print(f"s_ratio: {s_ratio:.2f}, {self.clearance_regular}")
-
-    # def eval_mic_cell_area_ratio(self, mic_area) -> None:
-    #     mic_cell_area_ration = mic_area / self.poly.area
-    #     self.mic_cell_area_regular = mic_cell_area_ration >= 0.8
-    #     print(f"MIC area ratio: {mic_cell_area_ration:.2f}, {self.mic_cell_area_regular}")
-
-    # def eval_cell_mrr_area_ratio(self, mrr_area) -> None:
-    #     cell_mrr_area_ration = self.poly.area / mrr_area
-    #     self.cell_mrr_area_regular = cell_mrr_area_ration >= 0.7
-    #     print(f"MBC area ratio: {cell_mrr_area_ration:.2f}, {self.cell_mrr_area_regular}")
