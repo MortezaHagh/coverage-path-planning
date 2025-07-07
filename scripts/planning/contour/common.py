@@ -57,8 +57,8 @@ class CriticalPoint:
         self.vp: VPoint = vp            # Voronoi point associated with this critical point
         self.bs1_idx: int = None        # index of the first basis point
         self.bs2_idx: int = None        # index of the second basis point
-        self.bs1_vp: VPoint = None      # basis point 1
-        self.bs2_vp: VPoint = None      # basis point 2
+        self.bs1_vp: np.ndarray = None  # basis point 1
+        self.bs2_vp: np.ndarray = None  # basis point 2
         self.passed_12: bool = False    # whether this critical point has been passed from basis point 1 to basis point 2
         self.passed_21: bool = False    # whether this critical point has been passed from basis point 2 to basis point 1
         self.n_passed: int = 0          # number of passings through this critical point in the ring creation

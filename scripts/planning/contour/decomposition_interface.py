@@ -63,7 +63,7 @@ class DecompositionInterface:
 
         # create cells
         self.create_cells()
-        # self.eval_cells()
+        self.process_cells()
         self.n_mcells = len(self.mcells)
 
         # plotting
@@ -163,7 +163,8 @@ class DecompositionInterface:
             raise ValueError("Critical point has been passed more than twice, this should not happen.")
 
         #
-        ring = [cp.vp.v]
+        # ring = [cp.vp.v]
+        ring = []
         ring_cp_idxs = [i_cp]
         ring_cp_ring_idxs = [0]
 
@@ -196,7 +197,7 @@ class DecompositionInterface:
             if next_idx in self.cp_base1_idxs:
                 idx_cp = self.cp_base1_idxs.index(next_idx)
                 if not self.critical_points[idx_cp].skip:
-                    ring.append(self.critical_points[idx_cp].vp.v)
+                    # ring.append(self.critical_points[idx_cp].vp.v)
                     ring.append(self.vor.points[self.cp_base2_idxs[idx_cp]])
                     next_idx = self.cp_base2_idxs[idx_cp]
                     self.critical_points[idx_cp].passed_12 = True
@@ -205,7 +206,7 @@ class DecompositionInterface:
             elif next_idx in self.cp_base2_idxs:
                 idx_cp = self.cp_base2_idxs.index(next_idx)
                 if not self.critical_points[idx_cp].skip:
-                    ring.append(self.critical_points[idx_cp].vp.v)
+                    # ring.append(self.critical_points[idx_cp].vp.v)
                     ring.append(self.vor.points[self.cp_base1_idxs[idx_cp]])
                     next_idx = self.cp_base1_idxs[idx_cp]
                     self.critical_points[idx_cp].passed_21 = True
@@ -241,7 +242,7 @@ class DecompositionInterface:
         # add the last point
         next_p = self.vor.points[next_idx]
         ring.append(next_p)
-        ring.append(cp.vp.v)
+        # ring.append(cp.vp.v)
         return np.array(ring), set(ring_cp_idxs)
 
     # Cell =====================================================================
@@ -258,16 +259,10 @@ class DecompositionInterface:
             cell.set_critical_points(c_crit_points)
             self.mcells.append(cell)
 
-    def modify_all_cells(self):
+    def process_cells(self) -> None:
+        """processing cells"""
         for cell in self.mcells:
-            self.modify_cell(cell)
-
-    def modify_cell(self):
-        pass
-
-    def eval_cells(self) -> None:
-        for cell in self.mcells:
-            cell.eval_cell()
+            cell.process_cell()
 
     # Sequence =====================================================================
 

@@ -50,7 +50,48 @@ class Cell (BaseCell):
         clearances = [cp.vp.clearance for cp in self.critical_points]
         self.min_clearance = min(clearances)
 
-    # ==========================================================================
+    # modify cell ==============================================================
+
+    def process_cell(self) -> None:
+        """ main function to process the cell """
+        self.lg.info(f"Processing cell {self.id}")
+
+        # modify the cell by removing points that are too close to critical points
+        self.modify_cell()
+
+        # # evaluate the cell for rectangle-like and inscribed rectangle-like properties
+        # self.eval_cell()
+
+    def modify_cell(self) -> None:
+        """ Modify the cell by removing points that are too close to critical points """
+
+        # list of basis points from critical points with more than one pass (adjacent to other cells)
+        bsps = []  # basis points
+        cp: CriticalPoint
+        for cp in self.critical_points:
+            if cp.n_passed > 1:
+                bsps.append(cp.bs1_vp)
+                bsps.append(cp.bs2_vp)
+
+        # remove poly points that are closer than the minimum clearance to the selected critical points (cps)
+        min_d = self.robot_r_px * 0.6
+        cell_points = self.poly.exterior.coords
+        new_points = []
+        for p in cell_points:
+            p_valid = True
+            for bp in bsps:
+                d = np.linalg.norm(np.array(p) - np.array(bp))
+                if d < min_d:
+                    p_valid = False
+                    break
+            if p_valid:
+                new_points.append(p)
+        #
+        if len(new_points) > 3:
+            self.poly = Polygon(new_points)
+            self.create_cell_points()
+
+    # eval cell ================================================================
 
     def eval_cell(self):
         """ Evaluate the cell for rectangle-like and inscribed rectangle-like properties """

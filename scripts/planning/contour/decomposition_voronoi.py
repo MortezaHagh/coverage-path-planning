@@ -315,7 +315,7 @@ class VoronoiSegmentation:
         """
 
         robot_r_px = self.robot_r_px
-        robot_r_px = 2 * int(robot_r_px)
+        robot_r_px = 1 * int(robot_r_px)
         min_dist = max(robot_r_px, 1)
         #
         points = np.array(poly.exterior.coords)
