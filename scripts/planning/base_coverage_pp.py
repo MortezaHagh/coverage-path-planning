@@ -82,6 +82,7 @@ class CoveragePPBase:
     def plan(self) -> None:
         self.coverage_planning()
         self.post_planning()
+        self.method_post_planning()
 
     def coverage_planning(self) -> None:
         """
@@ -89,13 +90,19 @@ class CoveragePPBase:
         """
         raise NotImplementedError("coverage_planning() must be implemented by subclasses.")
 
+    def method_post_planning(self) -> None:
+        """
+        Virtual method to be implemented by subclasses.
+        """
+        raise NotImplementedError("method_post_planning() must be implemented by subclasses.")
+
     def post_planning(self) -> None:
         if len(self.paths_px) == 0 or len(self.paths_m) == 0:
             self.lg.error("No paths found. Cannot post_planning.")
             return
 
+        self.apply_distance_filter_all_paths()
         self.create_ful_path()
-        self.process_full_path_distances()
         self.calculate_path_statistics()
         #
         self.plot_paths_px()
@@ -112,6 +119,7 @@ class CoveragePPBase:
         f_path_px.extend(self.paths_px[-1].points)
         #
         self.f_path_px = MyPath(f_path_px)
+        self.f_path_m = self.path_px_to_m(self.f_path_px)
 
     def calculate_path_statistics(self) -> None:
         # length
@@ -140,6 +148,53 @@ class CoveragePPBase:
             angle_diff = (angle_diff + np.pi) % (2 * np.pi) - np.pi
             yaw_changes += abs(angle_diff)
         self.st.yaw_changes = round(yaw_changes, 2)
+
+    # filters ==========================================================================================================
+
+    def apply_distance_filter_all_paths(self) -> None:
+        """ FIlter all paths based on the minimum distance between waypoints."""
+        min_wp_dist_px = self.min_points_distance / self.resolution  # convert to px
+
+        # pixel paths
+        new_paths_px = []
+        for path_px in self.paths_px:
+            new_path_px = self.apply_distance_filter_path(path_px, min_wp_dist_px)
+            new_paths_px.append(new_path_px)
+        self.paths_px = new_paths_px
+
+        # c paths pixel
+        new_c_paths_px = []
+        for c_path_px in self.c_paths_px:
+            new_c_path_px = self.apply_distance_filter_path(c_path_px, min_wp_dist_px)
+            new_c_paths_px.append(new_c_path_px)
+        self.c_paths_px = new_c_paths_px
+
+        # meter paths
+        new_paths_m = []
+        for path_m in self.paths_m:
+            new_path_m = self.apply_distance_filter_path(path_m, min_wp_dist_px)
+            new_paths_m.append(new_path_m)
+        self.paths_m = new_paths_m
+
+        # c paths meter
+        new_c_paths_m = []
+        for c_path_m in self.c_paths_m:
+            new_c_path_m = self.apply_distance_filter_path(c_path_m, min_wp_dist_px)
+            new_c_paths_m.append(new_c_path_m)
+        self.c_paths_m = new_c_paths_m
+
+    def apply_distance_filter_path(self, path: MyPath, min_wp_dist_px: int) -> MyPath:
+        """ Filter the full path based on the minimum distance between waypoints."""
+        new_points = []
+        prev_point = path.point(0)
+        new_points.append(prev_point)
+        for i in range(1, path.n):
+            point = path.point(i)
+            dist = np.sqrt((point.x - prev_point.x) ** 2 + (point.y - prev_point.y) ** 2)
+            if dist >= min_wp_dist_px:
+                new_points.append(point)
+                prev_point = point
+        return MyPath(new_points)
 
     def process_full_path_distances(self) -> None:
 

@@ -65,13 +65,13 @@ class Cell (BaseCell):
     def modify_cell(self) -> None:
         """ Modify the cell by removing points that are too close to critical points """
 
-        # list of basis points from critical points with more than one pass (adjacent to other cells)
-        bsps = []  # basis points
-        cp: CriticalPoint
-        for cp in self.critical_points:
-            if cp.n_passed > 1:
-                bsps.append(cp.bs1_vp)
-                bsps.append(cp.bs2_vp)
+        # # list of basis points from critical points with more than one pass (adjacent to other cells)
+        # bsps = []  # basis points
+        # cp: CriticalPoint
+        # for cp in self.critical_points:
+        #     if cp.n_passed > 1:
+        #         bsps.append(cp.bs1_vp)
+        # bsps.append(cp.bs2_vp)
 
         # remove poly points that are closer than the minimum clearance to the selected critical points (cps)
         min_d = self.robot_r_px * 0.6
@@ -79,11 +79,15 @@ class Cell (BaseCell):
         new_points = []
         for p in cell_points:
             p_valid = True
-            for bp in bsps:
-                d = np.linalg.norm(np.array(p) - np.array(bp))
-                if d < min_d:
-                    p_valid = False
-                    break
+            for cp in self.critical_points:
+                if cp.n_passed > 1:
+                    dcp = np.linalg.norm(np.array(p) - np.array(cp.vp.v))
+                    d1 = np.linalg.norm(np.array(p) - np.array(cp.bs1_vp))
+                    d2 = np.linalg.norm(np.array(p) - np.array(cp.bs2_vp))
+                    d = min(dcp, d1, d2)
+                    if d < min_d:
+                        p_valid = False
+                        break
             if p_valid:
                 new_points.append(p)
         #

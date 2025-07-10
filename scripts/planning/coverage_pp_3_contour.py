@@ -37,7 +37,6 @@ class CoveragePP(CoveragePPBase):
         self.zone_covpp()
         self.create_sequence()
         self.connect_paths()
-        self.bs_post_planning()
 
     def decompose_map(self) -> None:
         self.lg.info2("start voronoi decomposition")
@@ -70,7 +69,7 @@ class CoveragePP(CoveragePPBase):
         self.c_paths_px = self.connections.c_paths_px
         self.c_paths_m = [self.path_px_to_m(path_px) for path_px in self.c_paths_px]
 
-    def bs_post_planning(self) -> None:
+    def method_post_planning(self) -> None:
         if not self.dcfgs.save_map_planning:
             return
         self.plotter.run(self.dec_interface.mcells)
@@ -95,8 +94,8 @@ class CoveragePP(CoveragePPBase):
         map_planning = self.zmd.map_planning.copy()
         robot_r_px = int(self.pcfgs.cleaning_r_ov / self.resolution)
         robot_d_px = robot_r_px * 2
-        for i, cell_covp_planner in enumerate(self.all_cell_covp_planners):
-            path_px = cell_covp_planner.path_px
+        p_r = 5  # int(robot_r_px/10)
+        for i, path_px in enumerate(self.paths_px):
             if path_px:
                 pp = np.array(path_px.xy, dtype=np.int32)  # Ensure pp is a numpy array of integers
                 map_planning = cv.polylines(map_planning, [pp], isClosed=False, color=self.colors[i], thickness=2)
@@ -104,6 +103,7 @@ class CoveragePP(CoveragePPBase):
                 cv.polylines(overlay, [pp], isClosed=False, color=self.colors[i], thickness=robot_d_px)
                 alpha = 0.2  # Adjust transparency (0.0 transparent, 1.0 opaque)
                 map_planning = cv.addWeighted(overlay, alpha, map_planning, 1 - alpha, 0)
-                # add robot radius around the path
-                # cv.circle(map_planning, pp[0], int(robot_r_px), self.colors[i], thickness=2)
+                # add points
+                for point in pp:
+                    cv.circle(map_planning, tuple(point), p_r, self.colors[i], -1)
         self.zmd.map_planning = map_planning

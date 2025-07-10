@@ -38,7 +38,6 @@ class CoveragePP(CoveragePPBase):
         self.zone_covpp()
         self.create_sequence()
         self.connect_paths()
-        self.bs_post_planning()
 
     def decompose_map(self) -> None:
         self.lg.info2("start boustrophedon decomposition")
@@ -71,7 +70,7 @@ class CoveragePP(CoveragePPBase):
         self.c_paths_px = self.connections.c_paths_px
         self.c_paths_m = [self.path_px_to_m(path_px) for path_px in self.c_paths_px]
 
-    def bs_post_planning(self) -> None:
+    def method_post_planning(self) -> None:
         if not self.dcfgs.save_map_planning:
             return
         self.plotter.run(self.dec_interface.mcells)

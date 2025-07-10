@@ -164,3 +164,64 @@
 #     # test = np.zeros_like(norm_lap)
 #     # test[norm_lap < min_lap + 50] = 255
 #     # visualize_map(test, "test")
+
+
+# def modify_cell_2(self) -> None:
+#     """ Modify the cell by removing points that are too close to critical points """
+
+#     cxy = self.cxy
+
+#     # list of basis points from critical points with more than one pass (adjacent to other cells)
+#     bsps = []  # basis points
+#     thetas = []
+#     cp: CriticalPoint
+#     for cp in self.critical_points:
+#         if cp.n_passed > 1:
+#             bs1 = cp.bs1_vp
+#             bs2 = cp.bs2_vp
+#             th = np.arctan2(bs2[1] - bs1[1], bs2[0] - bs1[0])
+#             th1 = th + np.pi / 2
+#             th2 = th - np.pi / 2
+#             # find th that is closer to the center of the cell
+#             th_cp_c = np.arctan2(cxy[1] - cp.vp.v[1], cxy[0] - cp.vp.v[0])
+#             # calculate correct angle diff
+#             th_diff1 = np.abs(th1 - th_cp_c)
+#             th_diff2 = np.abs(th2 - th_cp_c)
+
+#     # remove poly points that are closer than the minimum clearance to the selected critical points (cps)
+#     min_d = self.robot_r_px * 0.6
+#     cell_points = self.poly.exterior.coords
+#     new_points = []
+#     for p in cell_points:
+#         p_valid = True
+#         for bp in bsps:
+#             d = np.linalg.norm(np.array(p) - np.array(bp))
+#             if d < min_d:
+#                 p_valid = False
+#                 break
+#         if p_valid:
+#             new_points.append(p)
+#     #
+#     if len(new_points) > 3:
+#         self.poly = Polygon(new_points)
+#         self.create_cell_points()
+
+
+#
+
+# def add_mid_points(self) -> None:
+#     """ if distance betwen two poly points is greater than the robot radius, add mid points """
+#     dis_thresh = self.robot_r_px * 0.5
+#     cell_points = self.poly.exterior.coords
+#     new_points = []
+#     for i, p1 in enumerate(cell_points):
+#         p2 = cell_points[(i + 1) % len(cell_points)]
+#         new_points.append(p1)
+#         d = np.linalg.norm(np.array(p1) - np.array(p2))
+#         if d > dis_thresh:
+#             mid_p = ((p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2)
+#             new_points.append(mid_p)
+#     #
+#     if len(new_points) > 3:
+#         self.poly = Polygon(new_points)
+#         self.create_cell_points()
