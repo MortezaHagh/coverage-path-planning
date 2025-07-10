@@ -1,21 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from shapely.geometry import Point
 from shapely import Polygon
+from shapely.geometry import Point
 from shapely.affinity import scale
-from shapely import maximum_inscribed_circle, minimum_bounding_circle
+from shapely import maximum_inscribed_circle  # , minimum_bounding_circle
 from scripts.base.logger import MyLogger
 from scripts.planning.base_cell import BaseCell
-from scripts.base.configs import PlanningConfigs
 from scripts.planning.contour.common import CriticalPoint
+from scripts.base.configs import PlanningConfigs, DistrictConfgs
 
 
 class Cell (BaseCell):
     basic: bool                             # whether the cell is basic or not
     critical_points: list[CriticalPoint]    # critical points of the cell
     min_clearance: float                    # minimum clearance of the cell
+    rectangle: Polygon                      # rectangle polygon of the cell
     rect_circ_like: bool                    # whether the cell is rectangle-like or not
     rect_insc_like: bool                    # whether the cell is inscribed rectangle-like or not
+    rect_like: bool                         # whether the cell is rectangle-like or inscribed rectangle-like
 
     def __init__(self, ind: int, poly: Polygon, resolution: float = None) -> None:
         super().__init__(ind, poly)
@@ -32,8 +34,10 @@ class Cell (BaseCell):
         self.critical_points = []
         self.min_clearance = 0.0
         #
+        self.rectangle = None
         self.rect_circ_like = False
         self.rect_insc_like = False
+        self.rect_like = False
 
     def set_critical_points(self, critical_points: list[CriticalPoint]) -> None:
         """ set list of critical points in the cell and calculate minimum clearance """
@@ -60,20 +64,12 @@ class Cell (BaseCell):
         self.modify_cell()
 
         # # evaluate the cell for rectangle-like and inscribed rectangle-like properties
-        # self.eval_cell()
+        if DistrictConfgs.use_insc_ret:
+            self.eval_cell()
 
     def modify_cell(self) -> None:
         """ Modify the cell by removing points that are too close to critical points """
 
-        # # list of basis points from critical points with more than one pass (adjacent to other cells)
-        # bsps = []  # basis points
-        # cp: CriticalPoint
-        # for cp in self.critical_points:
-        #     if cp.n_passed > 1:
-        #         bsps.append(cp.bs1_vp)
-        # bsps.append(cp.bs2_vp)
-
-        # remove poly points that are closer than the minimum clearance to the selected critical points (cps)
         min_d = self.robot_r_px * 0.6
         cell_points = self.poly.exterior.coords
         new_points = []
@@ -115,19 +111,24 @@ class Cell (BaseCell):
         # circle_circ_poly = minimum_bounding_circle(self.poly)
         # circle_circ_area = circle_circ_poly.area
 
-        # # eval regularities
+        # # eval rectangle-like
         self.eval_rectangle_like_circumscribed(rect_circ_area)
         inscribed_rect_poly = self.create_inscribed_rectangle(rect_circ_poly, circle_insc_center, circle_insc_radius)
-        expanded_inscribed_rectangle = self.expand_inscribed_rectangle(inscribed_rect_poly, circle_insc_center)
+        self.rectangle = self.expand_inscribed_rectangle(inscribed_rect_poly, circle_insc_center)
+        self.rect_like = self.rect_insc_like
 
-        # print(f"cell/rect_circ area: {self.rect_circ_like}")
-        # print(" --------------------- ")
+        # #
+        # rect_area = self.rectangle.area
+        # rect_area_ratio = rect_area/self.area
+        # print(f"rect_area_ratio: {rect_area_ratio:.2f}")
+        # print(f"rect_like: {self.rect_like}")
+        # # print(" --------------------- ")
 
         # #
         # self.plot_cell_evaluation(
         #     rect_circ_poly=rect_circ_poly,
         #     inscribed_rect_poly=inscribed_rect_poly,
-        #     expand_inscribed_rectangle=expanded_inscribed_rectangle,
+        #     expand_inscribed_rectangle=self.rectangle,
         #     circle_insc_center=circle_insc_center,
         #     circle_insc_radius=circle_insc_radius,
         #     # circle_circ_poly=circle_circ_poly,
@@ -161,7 +162,7 @@ class Cell (BaseCell):
 
     def expand_inscribed_rectangle(self, inscribed_rect_poly: Polygon, circle_insc_center) -> Polygon:
         """ Expand the inscribed rectangle in 3 different ways and return the best one """
-        k1 = 0.8
+        k1 = 0.74
 
         # first expansion
         expanded_rect_poly_1 = self.expand_inscribed_rectangle_1(inscribed_rect_poly, circle_insc_center)
@@ -476,10 +477,13 @@ class Cell (BaseCell):
         )
         # check if the new points are inside the polygon
         success = False
-        is_p1_in = self.poly.contains(Point(new_p1))
-        is_p2_in = self.poly.contains(Point(new_p2))
-        if is_p1_in and is_p2_in:
-            success = True
+        if self.poly.contains(Point(new_p1)):
+            if self.poly.contains(Point(new_p2)):
+                # point bertween p1 and p2
+                mid_p = ((new_p1[0] + new_p2[0]) / 2,
+                         (new_p1[1] + new_p2[1]) / 2)
+                if self.poly.contains(Point(mid_p)):
+                    success = True
         return success, new_p1, new_p2
 
     def plot_cell_evaluation(self, circle_insc_center=None,

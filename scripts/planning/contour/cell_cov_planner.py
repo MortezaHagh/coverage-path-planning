@@ -4,21 +4,21 @@ import numpy as np
 # from shapely.affinity import scale
 from shapely.geometry import MultiPolygon, Polygon
 from scripts.base.logger import MyLogger
-from scripts.planning.base_cell import BaseCell
-from scripts.base.configs import PlanningConfigs
+from scripts.planning.contour.cell import Cell
 from scripts.base.my_utils import MyPoint, MyPath
 from scripts.district.zone_map_data import ZoneMapData
+from scripts.base.configs import PlanningConfigs, DistrictConfgs
 
 
 class CellCoveragePathPlanner:
-    cell: BaseCell
+    cell: Cell
     zmd: ZoneMapData
     pcfgs: PlanningConfigs
     resolution: float
     path_m: MyPath
     path_px: MyPath
 
-    def __init__(self, cell: BaseCell, zmd: ZoneMapData,  zone_ind: int = 0):
+    def __init__(self, cell: Cell, zmd: ZoneMapData,  zone_ind: int = 0):
         self.ns = "CellCoverageP-Z" + str(zone_ind)
         self.lg = MyLogger(self.ns)
 
@@ -43,7 +43,7 @@ class CellCoveragePathPlanner:
             self.lg.warn(f"cell {self.cell.id} does not require planning.")
             return
         # self.calculate_path_by_poly_buffer()
-        self.calculate_path_by_distance_transform()
+        self.calculate_path_combinaiton()
         self.create_path_m()
 
     def calculate_path_by_poly_buffer(self) -> None:
@@ -79,38 +79,122 @@ class CellCoveragePathPlanner:
         points = [MyPoint(int(p[0]), int(p[1])) for p in points]
         self.path_px = MyPath(points)
 
-    def calculate_path_by_distance_transform(self) -> None:
-        """ Calculate the coverage path by distance transform of the cell polygon """
+    def calculate_path_combinaiton(self) -> None:
+        """ Calculate the coverage path by distance transform and inscribed rectangle if available """
 
         robot_r_px = int(self.pcfgs.cleaning_r_ov / self.resolution)
-        robot_d_px = int(robot_r_px * 2)
         points = []
 
-        #
-        poly = self.cell.poly
-        scaled_poly = poly.buffer(-1, join_style=2, resolution=8)  # initial scale
+        # initial scale
+        scaled_poly = self.cell.poly.buffer(-1, join_style=2, resolution=8)
         if scaled_poly.is_empty or scaled_poly is None:
-            return
+            raise ValueError(f"Cell {self.cell.id} has an empty scaled_poly.")
         if isinstance(scaled_poly, MultiPolygon):
             scaled_poly = scaled_poly.geoms[0]
         points.extend(list(scaled_poly.exterior.coords))
 
+        # shift in the rectangle coordinates
         s_x = self.zmd.rectangle.x_min
         s_y = self.zmd.rectangle.y_min
         s_xy = np.array([s_x, s_y], dtype=np.int32)
 
         # create a cell map
-        z_map = self.zmd.map_ws.copy()
+        z_map = self.zmd.map_ws  # .copy()
         c_map = np.zeros_like(z_map, dtype=np.uint8)
         cv.fillPoly(c_map, [np.array(self.cell.points)-s_xy], color=255)
         mask = c_map == 255
         c_map[mask] = z_map[mask]
 
-        # todo could crop the c_map to the cell polygon map
+        # complete the path
+        if DistrictConfgs.use_insc_ret and self.cell.rect_like:
+            points = []
+            path_px = self.complete_path_by_rectangle(points, robot_r_px)
+        else:
+            path_px = self.complete_path_by_distance_transform(points, c_map, s_xy, robot_r_px)
+        self.path_px = path_px
 
-        # cv.imshow("c_map", c_map)
-        # cv.waitKey()
-        # cv.destroyAllWindows()
+    def complete_path_by_rectangle(self, points: list, robot_r_px: int) -> MyPath:
+        """ Complete the path using the inscribed rectangle of the cell """
+
+        rect = self.cell.rectangle
+        robot_d_px = int(robot_r_px * 2)
+
+        # main rectangle
+        scaled_rect = rect.buffer(-4, join_style=2, resolution=8)
+        if scaled_rect.is_empty or scaled_rect is None:
+            self.lg.error(f"Cell {self.cell.id} main_rectangle has issues.")
+            return MyPath([])
+        new_points = scaled_rect.exterior.coords
+        points.extend(list(new_points))
+
+        # n scales
+        # find length of the smaller edge of the rectangle
+        coords = np.array(scaled_rect.exterior.coords)
+        edges = np.diff(coords, axis=0)
+        edge_lengths = np.linalg.norm(edges, axis=1)
+        min_edge = min(edge_lengths)
+
+        # find number of scales
+        # case1
+        n1 = ((min_edge / robot_d_px) - 1.0) / 2
+        dd = n1 - n1 // 1
+        if dd > 0.1:
+            n1 = np.ceil(n1)
+        else:
+            n1 = int(n1)
+        new_d_1 = min_edge / (2*n1 + 1.0)
+        # case2
+        n2 = (min_edge / (2*robot_d_px)) - 1.0
+        dd = n2 - n2 // 1
+        if dd > 0.1:
+            n2 = np.ceil(n2)
+        else:
+            n2 = int(n2)
+        new_d_2 = min_edge / (2*n2 + 2.0)
+
+        # choose the smaller number of scales
+        case = 0
+        if new_d_1 > new_d_2:
+            case = 1
+            n = n1
+            new_d = new_d_1
+        else:
+            case = 2
+            n = n2
+            new_d = new_d_2
+
+        # scaling
+        for _ in range(int(n)):
+            scaled_rect = scaled_rect.buffer(-new_d, join_style=2, resolution=8)
+            if scaled_rect.is_empty or scaled_rect is None:
+                break
+            new_points = scaled_rect.exterior.coords
+            new_points = self.rearrange_points(points[-1], new_points)
+            points.extend(list(new_points))
+
+        # line like at the center of the rectangle
+        if case == 2:
+            last_scale_c = min_edge/2 - 1
+            scaled_rect = rect.buffer(-last_scale_c, join_style=2, resolution=8)
+            if not (scaled_rect.is_empty or scaled_rect is None):
+                new_points = scaled_rect.exterior.coords
+                new_points = self.rearrange_points(points[-1], new_points)
+                # remove next big edge
+                edges = np.diff(new_points, axis=0)
+                edge_lengths = np.linalg.norm(edges, axis=1)
+                idx = 2
+                if edge_lengths[1] > edge_lengths[0]:
+                    idx = 3
+                points.extend(list(new_points)[:idx])
+
+        # final path
+        points = [MyPoint(int(p[0]), int(p[1])) for p in points]
+        return MyPath(points)
+
+    def complete_path_by_distance_transform(self, points: list, c_map: np.ndarray, s_xy: np.ndarray, robot_r_px: int) -> MyPath:
+        robot_d_px = int(robot_r_px * 2)
+
+        # todo could crop the c_map to the cell polygon map
 
         # distance transform
         dist_transform = cv.distanceTransform(c_map, cv.DIST_L2, 5)
@@ -119,9 +203,14 @@ class CellCoveragePathPlanner:
         curr_dist = 0
         max_dist = dist_transform.max()
 
-        # calculate the number of lines
+        # calculate the number of lines ****
         n = (max_dist / robot_d_px) - 0.5
-        n = np.ceil(n)
+        dd = n - n//1
+        if dd > 0.1:
+            n = np.ceil(n)
+        else:
+            n = int(n)
+            n = int(n)
         new_d = max_dist / (n+0.5)
 
         # find polygon for each distance
@@ -160,7 +249,7 @@ class CellCoveragePathPlanner:
 
         # create a path from the scaled polygon
         points = [MyPoint(int(p[0]), int(p[1])) for p in points]
-        self.path_px = MyPath(points)
+        return MyPath(points)
 
     def find_poly_by_dist(self, c_map, dist_transform: np.ndarray, dist: int, tolerance: int = 1) -> list[Polygon]:
         """ Find polygons in the distance transform map that are close to the target distance """
@@ -179,15 +268,6 @@ class CellCoveragePathPlanner:
         if not contours:
             self.lg.error(f"No contours found for cell {self.cell.id}.")
             return
-
-        # # for cnt in contours:
-        # for i, cnt in enumerate(contours):
-        #     cv.drawContours(c_map, [cnt], -1, 100, 1)
-        # c_map[mask] = 100
-        # cv.imshow("c_map", c_map)
-        # cv.waitKey()
-        # cv.destroyAllWindows()
-
         #
         polys = []
         for cnt in contours:
@@ -221,6 +301,8 @@ class CellCoveragePathPlanner:
         """ Rearrange points starting from idx """
         if idx < 0 or idx >= len(points):
             self.lg.error(f"Index {idx} is out of bounds for points list.")
+            return points
+        if idx == 0:
             return points
         return np.concatenate((points[idx:], points[:idx]), axis=0)
 

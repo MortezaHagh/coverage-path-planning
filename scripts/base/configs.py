@@ -35,10 +35,16 @@ class DistrictConfgs:
     covpp_method = "m3_contour"           # m1_simple, m2_boust, m3_contour
     cell_sequence_method = "s3_milp"    # s1_simple, s2_dfs, s3_milp
 
+    # complete method
+    method = covpp_method
     if covpp_method in ["m2_boust", "m3_contour"]:
         method = covpp_method + "_" + cell_sequence_method
-    else:
-        method = covpp_method
+
+    # contour method
+    use_insc_ret = True  # True False
+    if covpp_method == "m3_contour":
+        if use_insc_ret:
+            method = covpp_method + "_rect_" + cell_sequence_method
 
 
 @dataclasses.dataclass
