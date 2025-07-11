@@ -62,6 +62,7 @@ class DecompositionInterface:
 
         # create cells
         self.create_cells()
+        self.set_cell_adjacents()
         self.process_cells()
         self.n_mcells = len(self.mcells)
 
@@ -260,18 +261,16 @@ class DecompositionInterface:
             cell = Cell(ind=i, ring=ring, resolution=self.zmd.reslolution)
             self.mcells.append(cell)
 
-        # # set adjacents
-        # # method 1: using touches
-        # self.lg.info("Setting cell adjacents")
-        # for i, cell in enumerate(self.mcells):
-        #     # find adjacent cells
-        #     adj_cells_idxs = []
-        #     for j, other_cell in enumerate(self.mcells):
-        #         if i == j:
-        #             continue
-        #         if cell.poly.touches(other_cell.poly):
-        #             adj_cells_idxs.append(j)
-        #     cell.add_adjacent_id(adj_cells_idxs)
+    def set_cell_adjacents(self) -> None:
+        """Set adjacent cells for each cell based on touching polygons."""
+        # method 1: using touches
+        self.lg.info("Setting cell adjacents")
+        for i, cell in enumerate(self.mcells):
+            for j, other_cell in enumerate(self.mcells):
+                if i == j:
+                    continue
+                if cell.poly.touches(other_cell.poly):
+                    cell.add_adjacent_id(j)
 
     def process_cells(self) -> None:
         """processing cells"""
