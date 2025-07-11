@@ -17,7 +17,7 @@ class CoveragePP(CoveragePPBase):
 
     def __init__(self, zone_map_data: ZoneMapData):
         super().__init__(zone_map_data)
-        self.ns = "BoustCoveragePP" + "-Z" + str(self.zmd.ind)
+        self.ns = "ContourCoveragePP" + "-Z" + str(self.zmd.ind)
         self.lg.name = self.ns
         self.lg.info1("Step: coverage path planning")
 

@@ -119,6 +119,12 @@ class CellCoveragePathPlanner:
         rect = self.cell.rectangle
         robot_d_px = int(robot_r_px * 2)
 
+        # start rectangle from closest point to the start of the original polygon
+        poly_points = self.cell.poly.exterior.coords
+        rec_points = rect.exterior.coords
+        new_points = self.rearrange_points(poly_points[0], rec_points)
+        rect = Polygon(new_points)
+
         # main rectangle
         scaled_rect = rect.buffer(-4, join_style=2, resolution=8)
         if scaled_rect.is_empty or scaled_rect is None:
@@ -217,7 +223,7 @@ class CellCoveragePathPlanner:
         while curr_dist < (max_dist-new_d):
             curr_dist += new_d
 
-            polys = self.find_poly_by_dist(c_map, dist_transform, curr_dist)
+            polys = self.find_poly_by_dist(dist_transform=dist_transform, dist=curr_dist)
             if polys is None or len(polys) == 0:
                 break
 
@@ -234,7 +240,7 @@ class CellCoveragePathPlanner:
         # last try
         if (max_dist - curr_dist) > robot_r_px:
             r_area = robot_r_px * robot_r_px * np.pi / 2
-            polys = self.find_poly_by_dist(c_map, dist_transform, max_dist)
+            polys = self.find_poly_by_dist(dist_transform=dist_transform, dist=max_dist)
             if polys is not None and len(polys) > 0:
                 for poly in polys:
                     coords = poly.exterior.coords
@@ -251,7 +257,7 @@ class CellCoveragePathPlanner:
         points = [MyPoint(int(p[0]), int(p[1])) for p in points]
         return MyPath(points)
 
-    def find_poly_by_dist(self, c_map, dist_transform: np.ndarray, dist: int, tolerance: int = 1) -> list[Polygon]:
+    def find_poly_by_dist(self, dist_transform: np.ndarray, dist: int, tolerance: int = 1) -> list[Polygon]:
         """ Find polygons in the distance transform map that are close to the target distance """
 
         # Binary mask of pixels close to target distance

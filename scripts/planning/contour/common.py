@@ -1,4 +1,5 @@
 import numpy as np
+from shapely.geometry import Polygon
 
 
 class VPoint:
@@ -79,3 +80,21 @@ class CriticalPoint:
             self.bs2_idx = idx_1
             self.bs1_vp = self.vp.basis_points[1]
             self.bs2_vp = self.vp.basis_points[0]
+
+
+class Ring:
+    def __init__(self, points: list[np.ndarray], cp_icp_dxs: list[int], cp_ring_idxs: list[int]):
+        self.points: np.ndarray = np.array(points)      # vor.points in the ring
+        self.cp_icp_idxs: list[int] = cp_icp_dxs        # indices (in the cp list) of critical points in the ring
+        self.cp_ring_idxs: list[int] = cp_ring_idxs     # indices of critical points in the ring
+        self.cp_points: list[CriticalPoint] = []
+        self.poly: Polygon = Polygon(points)
+        self.n_p: int = len(self.points)          # number of critical points in the ring
+
+    def is_valid(self) -> bool:
+        """ Check if the ring is valid (not empty and has at least one critical point). """
+        return len(self.points) > 2 and len(self.cp_icp_idxs) > 0
+
+    def set_critical_points(self, cps: list[CriticalPoint]):
+        """ Set the critical points for the ring. """
+        self.cp_points = cps

@@ -19,7 +19,6 @@ class ConnectPaths:
     def __init__(self, zone_map_data: ZoneMapData):
         self.ns = "ConnectPaths"
         self.lg = MyLogger(self.ns)
-        self.lg.info1("Step: connect paths")
 
         #
         self.zmd = zone_map_data
@@ -28,11 +27,16 @@ class ConnectPaths:
         self.c_paths_px = []
 
     def find_all_connections(self, mcells: list[BaseCell]):
+        self.lg.info2("Step: find all onnections paths")
         fp = FindPathInMap(self.zmd)
         n = len(mcells)
-        all_connections = np.zeros((n, n), dtype=object)
+        # all_connections = np.zeros((n, n), dtype=object)
+        all_connections = np.full((n, n), None, dtype=object)
+
         for i in range(n):
             for j in range(i + 1, n):
+                # if j in mcells[i].adjacent_cell_idxs:
+                #     pass
                 if mcells[i].end_point is None or mcells[j].start_point is None:
                     all_connections[i, j] = None
                     all_connections[j, i] = None
@@ -42,6 +46,7 @@ class ConnectPaths:
         self.all_connection_paths = all_connections
 
     def find_all_distances(self):
+        self.lg.info2("Step: find all distances")
         n = self.all_connection_paths.shape[0]
         all_distances = np.zeros((n, n), dtype=float)
         for i in range(n):
@@ -60,6 +65,7 @@ class ConnectPaths:
         self.all_distances = all_distances
 
     def connect_paths(self, paths_px: list[MyPath], seq_idxs: list[int] = None) -> list[MyPath]:
+        self.lg.info2("Step: connectiung paths")
         c_paths = []
         if (not seq_idxs) or (self.all_connection_paths is None) or (self.all_connection_paths.shape[0] == 0):
             self.lg.warn("Calculating connections between paths, not using pre-calculated connections.")

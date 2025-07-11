@@ -7,7 +7,7 @@ from scripts.base.configs import DistrictConfgs
 from scripts.planning.contour.cell import Cell
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.planning.contour.common import CriticalPoint
+from scripts.planning.contour.common import CriticalPoint, Ring
 from scripts.planning.optimize_mcells_seq_1 import OptimCellsSeq
 from scripts.planning.contour.decomposition_voronoi import VoronoiSegmentation
 
@@ -39,11 +39,10 @@ class DecompositionInterface:
         self.critical_points: list[CriticalPoint] = []      # list of critical points found in the Voronoi decomposition
         self.cp_base1_idxs: list[int] = []                  # indices of the first basis points in self.vor.points
         self.cp_base2_idxs: list[int] = []                  # indices of the second basis points in self.vor.points
-        self.rings: list[np.ndarray] = []                   # segments created from critical points
+        self.rings: list[Ring] = []                         # segments created from critical points
 
         # ring and critical point mappings
         # self.critp_ring_dict: dict[int, set[int]] = {}    # critical point index to ring indices mapping
-        self.ring_critp_dict: dict[int, set[int]] = {}      # ring index to critical point indices mapping
 
         # run the decomposition
         self.run()
@@ -86,7 +85,8 @@ class DecompositionInterface:
         if len(self.critical_points) > 0:
             return True
         self.lg.warn("No critical points found in the Voronoi decomposition.")
-        self.rings.append(np.array(b_poly.exterior.coords))
+        ring = Ring(np.array(b_poly.exterior.coords), [], [])
+        self.rings.append(ring)
         return False
 
     def create_poly_points_start_ends(self, b_poly: Polygon, obs_polys: list[Polygon]) -> None:
@@ -141,28 +141,27 @@ class DecompositionInterface:
                     continue
 
                 # create segment for this critical point
-                ring, ring_cp_idxs_set = self.create_cp_segment(i, cp)
-                if ring is None:
-                    self.lg.warn(f"Critical point {i} with vp.idx {cp.vp.idx} segment creation failed, None ring.")
+                ring: Ring = self.create_cp_segment(i, cp)
+                if not ring.is_valid():
+                    self.lg.warn(f"Critical point {i} with vp.idx {cp.vp.idx} segment creation failed, ring not valid.")
                     continue
                 self.rings.append(ring)
 
                 # ring and critical point mappings
-                self.ring_critp_dict[n_ring] = ring_cp_idxs_set
                 # for cp_idx in ring_cp_idxs_set:
                 #     self.critp_ring_dict[cp_idx].add(n_ring)
 
                 n_ring += 1
         self.lg.info(f"Created {len(self.rings)} rings.")
 
-    def create_cp_segment(self, i_cp: int, cp: CriticalPoint) -> np.ndarray:
+    def create_cp_segment(self, i_cp: int, cp: CriticalPoint) -> Ring:
         """Create a segment (ring) for a critical point."""
 
         n_points = len(self.vor.points)
         if cp.n_passed > 2:
             raise ValueError("Critical point has been passed more than twice, this should not happen.")
 
-        #
+        # not including the cp itself, only base points
         # ring = [cp.vp.v]
         ring = []
         ring_cp_idxs = [i_cp]
@@ -219,9 +218,10 @@ class DecompositionInterface:
                 if new_cp_idx in ring_cp_idxs:
                     idx = ring_cp_idxs.index(new_cp_idx)
                     found_cp_idx = ring_cp_ring_idxs[idx]
-                    # cut the ring at the found critical point
-                    ring = ring[:found_cp_idx]
+                    # cut the ring at the found critical point's base point
+                    ring = ring[:found_cp_idx+1]
                     self.critical_points[idx_cp].skip = True
+                    ring_cp_ring_idxs = ring_cp_ring_idxs[:idx]
                     self.lg.warn(f"Critical point {idx_cp} already in the ring, skipping.")
                 else:
                     ring_cp_idxs.append(new_cp_idx)
@@ -241,9 +241,13 @@ class DecompositionInterface:
 
         # add the last point
         next_p = self.vor.points[next_idx]
-        ring.append(next_p)
+        ring.insert(0, next_p)  # insert at the beginning to close the ring
+        ring_cp_ring_idxs = [rcri+1 for rcri in ring_cp_ring_idxs]  # adjust indices
+        ring_cp_ring_idxs[0] = 0
+        # ring.append(next_p)
         # ring.append(cp.vp.v)
-        return np.array(ring), set(ring_cp_idxs)
+        # return np.array(ring), set(ring_cp_idxs)
+        return Ring(ring, ring_cp_idxs, ring_cp_ring_idxs)
 
     # Cell =====================================================================
 
@@ -251,16 +255,27 @@ class DecompositionInterface:
         """Create cells from the rings."""
         self.lg.info(f"Creating cells from {len(self.rings)} rings.")
         for i, ring in enumerate(self.rings):
-            if len(ring) < 3:
-                self.lg.warn(f"Ring {i} has less than 3 points, skipping.")
-                continue
-            cell = Cell(ind=i, poly=Polygon(ring), resolution=self.zmd.reslolution)
-            c_crit_points = [self.critical_points[j] for j in self.ring_critp_dict.get(i, set())]
-            cell.set_critical_points(c_crit_points)
+            c_crit_points = [self.critical_points[j] for j in ring.cp_icp_idxs]
+            ring.set_critical_points(c_crit_points)
+            cell = Cell(ind=i, ring=ring, resolution=self.zmd.reslolution)
             self.mcells.append(cell)
+
+        # # set adjacents
+        # # method 1: using touches
+        # self.lg.info("Setting cell adjacents")
+        # for i, cell in enumerate(self.mcells):
+        #     # find adjacent cells
+        #     adj_cells_idxs = []
+        #     for j, other_cell in enumerate(self.mcells):
+        #         if i == j:
+        #             continue
+        #         if cell.poly.touches(other_cell.poly):
+        #             adj_cells_idxs.append(j)
+        #     cell.add_adjacent_id(adj_cells_idxs)
 
     def process_cells(self) -> None:
         """processing cells"""
+        self.lg.info("Processing cells")
         for cell in self.mcells:
             cell.process_cell()
 
@@ -287,7 +302,7 @@ class DecompositionInterface:
         n_rings = len(self.rings)
         colors = plt.cm.viridis(np.linspace(0, 1, n_rings))
         for i, ring in enumerate(self.rings):
-            ax.plot(ring[:, 0], ring[:, 1], color=colors[i, :], linewidth=1, label='Critical Segment')
+            ax.plot(ring.points[:, 0], ring.points[:, 1], color=colors[i, :], linewidth=1, label='Critical Segment')
 
         for i, cp in enumerate(self.critical_points):
             ax.plot(cp.vp.v[0], cp.vp.v[1], 'o', color='red', markersize=5)
