@@ -288,8 +288,13 @@ class DecompositionInterface:
             self.smcells = self.mcells
             return
 
-        # create optimized sequence of cells
-        opt_seq = OptimCellsSeq(mcells=self.mcells, zmd=self.zmd, distances=distances)
+        #
+        start_cell_idx = 0
+        if self.zmd.orig_map_data.name == "map_fr52":
+            start_cell_idx = 4
+
+            # create optimized sequence of cells
+        opt_seq = OptimCellsSeq(mcells=self.mcells, zmd=self.zmd, distances=distances, start_cell_idx=start_cell_idx)
         self.seq_idxs = opt_seq.tour_idxs
         self.smcells = [self.mcells[i] for i in opt_seq.tour_idxs]
 
