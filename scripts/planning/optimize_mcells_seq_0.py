@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp
 from scripts.base.logger import MyLogger
 from scripts.base.configs import DistrictConfgs
+from scripts.planning.cells_graph_0 import CellsGraph
 from scripts.planning.boustrophedon.cell import Cell
-from scripts.planning.boustrophedon.cells_graph import CellsGraph
 
 
 class OptimCellsSeq:

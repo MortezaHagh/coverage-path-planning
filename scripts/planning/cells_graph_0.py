@@ -1,19 +1,19 @@
 import heapq
 import numpy as np
-from scripts.planning.boustrophedon.cell import Cell
+from scripts.planning.base_cell import BaseCell
 
 
 class CellsGraph:
-    def __init__(self, cells: list[Cell]):
+    def __init__(self, cells: list[BaseCell]):
         self.cells = cells
         self.n_cells = len(cells)
         self.dists_m = None
         self.adj_inds = None
 
         # Create adjacency distance matrix
-        self.create_distance_matrix()
+        self.create_distance_matrix_center_center()
 
-    def create_distance_matrix(self):
+    def create_distance_matrix_center_center(self):
         n = self.n_cells
         adj_inds = [[] for _ in range(n)]
         dists_m = np.ones((n, n), dtype=float)*np.inf

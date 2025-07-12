@@ -4,58 +4,6 @@ from ortools.linear_solver import pywraplp
 from scripts.base.logger import MyLogger
 from scripts.base.configs import DistrictConfgs
 from scripts.planning.base_cell import BaseCell
-from scripts.district.zone_map_data import ZoneMapData
-from scripts.planning.connect_paths import FindPathInMap
-
-
-class CellDistances:
-    """ Calculate distances between cells """
-    lg: MyLogger
-    zmd: ZoneMapData
-    distances: np.ndarray
-
-    def __init__(self, mcells: list, zmd: ZoneMapData):
-        self.ns = "CellDistances"
-        self.lg = MyLogger(self.ns)
-        self.lg.info1("Step: calculate cell distances")
-
-        #
-        self.zmd = zmd
-
-        # calculate distances
-        # self.distances = self.calculate_direct_distances(mcells)
-        self.distances = self.calculate_distances_on_map(mcells)
-
-    def calculate_direct_distances(self, mcells: list[BaseCell]) -> np.ndarray:
-        n = len(mcells)
-        dist_matrix = np.zeros((n, n), dtype=float)
-        # dist_matrix = np.full((n, n), np.inf, dtype=float)
-        for i in range(n):
-            for j in range(i + 1, n):
-                if mcells[i].end_point is None or mcells[j].start_point is None:
-                    # self.lg.warn(f"Cell {mcells[i].id} or {mcells[j].id} has no start or end point.")
-                    continue
-
-                dist_matrix[i, j] = np.linalg.norm(np.array(mcells[i].end_point.xy) - np.array(mcells[j].start_point.xy))
-                dist_matrix[j, i] = np.linalg.norm(np.array(mcells[j].end_point.xy) - np.array(mcells[i].start_point.xy))
-        return dist_matrix
-
-    def calculate_distances_on_map(self, mcells: list[BaseCell]) -> np.ndarray:
-        n = len(mcells)
-        dist_matrix = np.full((n, n), np.inf, dtype=float)
-
-        fp = FindPathInMap(self.zmd)
-
-        n = len(mcells)
-        dist_matrix = np.zeros((n, n), dtype=float)
-        for i in range(n):
-            for j in range(i + 1, n):
-                if mcells[i].end_point is None or mcells[j].start_point is None:
-                    # self.lg.warn(f"Cell {mcells[i].id} or {mcells[j].id} has no start or end point.")
-                    continue
-                dist_matrix[i, j] = fp.distance(mcells[i].end_point, mcells[j].start_point)
-                dist_matrix[j, i] = fp.distance(mcells[j].end_point, mcells[i].start_point)
-        return dist_matrix
 
 
 class OptimCellsSeq:
@@ -65,7 +13,7 @@ class OptimCellsSeq:
     tour_idxs: list[int]
     tour_ids: list[int]
 
-    def __init__(self, mcells: list[BaseCell], zmd: ZoneMapData, distances: np.ndarray = None, start_cell_idx: int = 0):
+    def __init__(self, mcells: list[BaseCell], distances: np.ndarray = None, start_cell_idx: int = 0):
         self.ns = "OptimCellsSeq"
         self.lg = MyLogger(self.ns)
         self.lg.info1("Step: creating optimized cell sequence")
@@ -87,9 +35,7 @@ class OptimCellsSeq:
         elif dcfgs.cell_sequence_method == "s3_milp":
             # cell graph
             if distances is None:
-                self.lg.error("Distances matrix is required for MILPSeq optimization.")
-                distances = CellDistances(mcells, zmd).distances
-                # return
+                raise ValueError("Distances matrix is required for MILPSeq optimization.")
             optimizer = MILPSeq(mcells, distances, start_cell_idx)
         else:
             self.lg.error(f"Invalid cell sequence method: {dcfgs.cell_sequence_method}")
@@ -218,7 +164,7 @@ class MILPSeq(BaseSeqOpt):
 
         #
         self.tour = None
-        self.distm = np.zeros((self.n_p_cells, self.n_p_cells), dtype=float)
+        self.distm = np.zeros((self.n_p_cells, self.n_p_cells), dtype=float)  # todo
 
         # create distance matrix
         for i, ci in enumerate(p_idxs):
@@ -278,8 +224,8 @@ class MILPSeq(BaseSeqOpt):
 
         # solution
         if status == pywraplp.Solver.OPTIMAL:
-            # print("Optimal solution found!")
-            # print(f"Total cost = {solver.Objective().Value()}\n")
+            # self.lg.info("Optimal solution found!")
+            # self.lg.info(f"Total cost = {solver.Objective().Value()}\n")
 
             # Extract the path (not a cycle)
             tour = [start_node]
@@ -292,7 +238,7 @@ class MILPSeq(BaseSeqOpt):
                         break
             self.tour = tour
         else:
-            print("[solve_tsp_milp]: No optimal solution found.")
+            self.lg.error("[solve_tsp_milp]: No optimal solution found.")
             return False
         #
         return True

@@ -3,6 +3,7 @@ import numpy as np
 from scripts.base.my_utils import get_n_colors_cv
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.connect_paths import ConnectPaths
+from scripts.planning.cells_graph_1 import CellsGraph
 from scripts.planning.base_coverage_pp import CoveragePPBase
 from scripts.planning.contour.cell_cov_planner import CellCoveragePathPlanner
 from scripts.planning.contour.decomposition_interface import DecompositionInterface
@@ -44,23 +45,32 @@ class CoveragePP(CoveragePPBase):
 
     def zone_covpp(self) -> None:
         self.lg.info2("start coverage path planning for cells")
-        for cell in self.dec_interface.mcells:
-            cell_covp_planner = CellCoveragePathPlanner(cell=cell, zmd=self.zmd, zone_ind=self.zmd.ind)
+        for mcell in self.dec_interface.mcells:
+            cell_covp_planner = CellCoveragePathPlanner(cell=mcell, zmd=self.zmd, zone_ind=self.zmd.ind)
             self.all_cell_covp_planners.append(cell_covp_planner)
             if cell_covp_planner.path_m:
-                cell.set_path_m(cell_covp_planner.path_m)
-                cell.set_path_px(cell_covp_planner.path_px)
+                mcell.set_path_m(cell_covp_planner.path_m)
+                mcell.set_path_px(cell_covp_planner.path_px)
             else:
-                cell.do_planning = False
-                self.lg.warn(f"Cell {cell.id} has no path after coverage planning.")
+                mcell.do_planning = False
+                self.lg.warn(f"Cell {mcell.id} has no path after coverage planning.")
 
     def create_sequence(self) -> None:
+        distances = None
         if self.dcfgs.cell_sequence_method == "s3_milp":
-            # calculate paths and distances between cells
+            self.connections.initialize(self.dec_interface.mcells)
+
+            # calculate all paths and calculate distances between cells
             self.connections.find_all_connections(self.dec_interface.mcells)
             self.connections.find_all_distances()
+            distances = self.connections.all_distances
+
+            # #
+            # cg = CellsGraph(self.dec_interface.mcells, self.connections)
+            # distances = cg.dists_m
+
         #
-        self.dec_interface.create_sequence(self.connections.all_distances)
+        self.dec_interface.create_sequence(distances=distances)
         self.paths_m = [cell.path_m for cell in self.dec_interface.smcells if cell.do_planning]
         self.paths_px = [cell.path_px for cell in self.dec_interface.smcells if cell.do_planning]
 

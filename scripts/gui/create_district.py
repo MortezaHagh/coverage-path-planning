@@ -67,7 +67,7 @@ class DistrictGen:
 
     # def get_district_vis(self) -> VisualRectangle:
     #     if self.__cfg.whole_map:
-    #         print(f"[{self.__ns}]: whole map is selected as district for CPP! There is no rec_ev_hl!")
+    #         self.lg.info(f"[{self.__ns}]: whole map is selected as district for CPP! There is no rec_ev_hl!")
     #         return None
     #     return self.__rec_ev_hl.get_main_obj()
 

@@ -65,7 +65,6 @@ class CellCoveragePathPlanner:
         #
         i = 1
         while not (scaled_poly.is_empty or scaled_poly is None):
-            print(i)
             #  if result is MultiPolygon
             if isinstance(scaled_poly, MultiPolygon):
                 scaled_poly = scaled_poly.geoms[0]  # take the first polygon

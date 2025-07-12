@@ -408,7 +408,7 @@ class Cell (BaseCell):
                 s_p1[1] + step * np.sin(th3)
             )
         if not self.poly.contains(Point(p3)):
-            self.lg.error("Cannot find a valid point p3 for the inscribed rectangle expansion.")
+            # self.lg.error("[expand_inscribed_rectangle_3] Cannot find a valid point p3.")
             return inscribed_rect_poly
             # raise ValueError("Cannot find a valid point p3 for the inscribed rectangle expansion.")
 

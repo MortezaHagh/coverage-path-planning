@@ -3,9 +3,9 @@ import sys
 # import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
-from scripts.base.configs import BConfigs
 from scripts.base.map_data import MapData
 from scripts.gui.visuals import Rectangle
+from scripts.base.configs import BConfigs, DistrictConfgs
 from scripts.base.inputs_processor import InputsProcessor
 from scripts.base.image_processor import MapImageProcessor
 # from scripts.gui.create_district import DistrictGen
@@ -54,6 +54,9 @@ def run_pipeline(map_name: str) -> None:
     #
     end_time = np.datetime64('now')
     lg.info(f"Total time: {end_time - start_time}")
+
+    #
+    lg.info1(f"Method: {DistrictConfgs().method}")
 
     # # display map_planning
     # map_planning = district_data.dmd.map_planning

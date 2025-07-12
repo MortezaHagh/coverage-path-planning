@@ -15,7 +15,7 @@ class DecompositionInterface:
     seq_idxs: list[int]
     n_mcells: int
 
-    def __init__(self, map_polygons: MapPolygons, zmd: ZoneMapData):
+    def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
         self.ns = "DecompositionInterface"
         self.zmd = zmd
 
@@ -47,6 +47,6 @@ class DecompositionInterface:
             return
 
         # create optimized sequence of cells
-        opt_seq = OptimCellsSeq(mcells=self.mcells, zmd=self.zmd, distances=distances)
+        opt_seq = OptimCellsSeq(mcells=self.mcells, distances=distances)
         self.seq_idxs = opt_seq.tour_idxs
         self.smcells = [self.mcells[i] for i in opt_seq.tour_idxs]

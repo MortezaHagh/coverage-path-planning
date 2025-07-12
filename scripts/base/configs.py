@@ -33,7 +33,7 @@ class DistrictConfgs:
 
     # coverage path planning configs
     covpp_method = "m3_contour"           # m1_simple, m2_boust, m3_contour
-    cell_sequence_method = "s2_dfs"    # s1_simple, s2_dfs, s3_milp
+    cell_sequence_method = "s3_milp"    # s1_simple, s2_dfs, s3_milp
 
     # complete method
     method = covpp_method

@@ -3,6 +3,7 @@ import numpy as np
 from scripts.base.my_utils import get_n_colors_cv
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.connect_paths import ConnectPaths
+from scripts.planning.cells_graph_1 import CellsGraph
 from scripts.planning.base_coverage_pp import CoveragePPBase
 from scripts.planning.boustrophedon.cell_cov_planner import CellCoveragePathPlanner
 from scripts.planning.boustrophedon.decomposition_interface import DecompositionInterface
@@ -25,7 +26,6 @@ class CoveragePP(CoveragePPBase):
         self.colors = []
 
         # main
-
         self.connections = ConnectPaths(self.zmd)   # connect paths interface
         self.dec_interface = None                   # boustrophedon decomposition interface
         self.all_cell_covp_planners: list[CellCoveragePathPlanner] = []
@@ -41,27 +41,44 @@ class CoveragePP(CoveragePPBase):
 
     def decompose_map(self) -> None:
         self.lg.info2("start boustrophedon decomposition")
-        self.dec_interface = DecompositionInterface(self.map_polygons, self.zmd)
+        self.dec_interface = DecompositionInterface(self.zmd, self.map_polygons)
 
     def zone_covpp(self) -> None:
         self.lg.info2("start coverage path planning for cells")
-        for mell in self.dec_interface.mcells:
-            cell_covp_planner = CellCoveragePathPlanner(cell=mell, zone_ind=self.zmd.ind, resolution=self.resolution)
+        for mcell in self.dec_interface.mcells:
+            cell_covp_planner = CellCoveragePathPlanner(cell=mcell, zone_ind=self.zmd.ind, resolution=self.resolution)
             self.all_cell_covp_planners.append(cell_covp_planner)
             if cell_covp_planner.path_m:
-                mell.set_path_m(cell_covp_planner.path_m)
-                mell.set_path_px(cell_covp_planner.path_px)
+                mcell.set_path_m(cell_covp_planner.path_m)
+                mcell.set_path_px(cell_covp_planner.path_px)
             else:
-                mell.do_planning = False
-                self.lg.warn(f"Cell {mell.id} has no path after coverage planning.")
+                mcell.do_planning = False
+                # self.lg.warn(f"Cell {mcell.id} has no path after coverage planning.")
+                # fix adjacents and parent cells
+                adjs = mcell.adjacent_ids[:]
+                for adj_id in adjs:
+                    adj_cell = self.dec_interface.mcells[adj_id]
+                    adj_cell.adjacent_ids.remove(mcell.id)
+                    adj_cell.adjacent_ids.extend(mcell.adjacent_ids)
+                    adj_cell.adjacent_ids = list(set(adj_cell.adjacent_ids))  # remove duplicates
+                mcell.adjacent_ids = []
 
     def create_sequence(self) -> None:
+        distances = None
         if self.dcfgs.cell_sequence_method == "s3_milp":
-            # calculate paths and distances between cells
+            self.connections.initialize(self.dec_interface.mcells)
+
+            # calculate all paths and calculate distances between cells
             self.connections.find_all_connections(self.dec_interface.mcells)
             self.connections.find_all_distances()
+            distances = self.connections.all_distances
+
+            # #
+            # cg = CellsGraph(self.dec_interface.mcells, self.connections)
+            # distances = cg.dists_m
+
         #
-        self.dec_interface.create_sequence(self.connections.all_distances)
+        self.dec_interface.create_sequence(distances=distances)
         self.paths_m = [cell.path_m for cell in self.dec_interface.smcells if cell.do_planning]
         self.paths_px = [cell.path_px for cell in self.dec_interface.smcells if cell.do_planning]
 
@@ -93,8 +110,7 @@ class CoveragePP(CoveragePPBase):
 
     def add_cell_paths_to_map_planning(self) -> None:
         map_planning = self.zmd.map_planning.copy()
-        for i, cell_covp_planner in enumerate(self.all_cell_covp_planners):
-            path_px = cell_covp_planner.path_px
+        for i, path_px in enumerate(self.paths_px):
             if path_px:
                 pp = np.array(path_px.xy, dtype=np.int32)  # Ensure pp is a numpy array of integers
                 map_planning = cv.polylines(map_planning, [pp], isClosed=False, color=self.colors[i], thickness=2)

@@ -375,13 +375,13 @@ class MHDecomposition:
                 if cell.n_adj == 0:
                     cell.found_connection = False
                     self.lg.error("[find_adjacents_cells]: No adjacents found:")
-                    # print(f"e: {cell.event.sd_ind}, -- cell: {cell.id}")
+                    # self.lg.error(f"e: {cell.event.sd_ind}, -- cell: {cell.id}")
 
             if e.has_parent:
                 if cell.n_parent == 0:
                     cell.found_connection = False
                     self.lg.error("[find_adjacents_cells]: No parents found:")
-                    # print(f"e: {cell.event.sd_ind}, -- cell: {cell.id}")
+                    # self.lg.error(f"e: {cell.event.sd_ind}, -- cell: {cell.id}")
 
 # cell groups and merged cells =========================================================================================
 
