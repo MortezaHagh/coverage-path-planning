@@ -35,7 +35,7 @@ class ConnectPaths:
         self.all_distances = np.zeros((n, n), dtype=float)
 
     def find_all_connections(self, mcells: list[BaseCell]):
-        self.lg.info2("Step: find all onnections paths")
+        self.lg.info2("Step: find all connections paths")
         n = len(mcells)
         all_connections = np.full((n, n), None, dtype=object)
 

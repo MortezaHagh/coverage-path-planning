@@ -5,23 +5,18 @@ from scripts.planning.boustrophedon.events import Event
 
 
 class Obstacle:
-    ns: str
-    ind: int
-    poly: Polygon
-    events: list[Event]
-    s_events: list[Event]
-    n_v: int
-
     def __init__(self, ind: int, poly: Polygon):
-        self.ns = "Obstacle"
-        self.ind = ind
-        self.poly = poly
-        self.events = []
-        self.s_events = []
-        self.n_v = len(self.poly.exterior.coords)-1
+        self.ns: str = "Obstacle"
         #
-        self.create_events()
-        self.eval_events_line()
+        self.ind: int = ind
+        self.poly: Polygon = poly   # shapely polygon
+        self.events: list[Event] = []
+        self.s_events: list[Event] = []
+        self.n_v: int = 0
+        #
+        vertices = self.poly.exterior.coords[:-1]
+        filtered_vertices = self.eval_vertices_line(vertices)
+        self.create_events(filtered_vertices)
         self.create_fake_events()
         self.create_sorted_events()
         self.eval_concave()
@@ -32,39 +27,35 @@ class Obstacle:
         self.process_fake_events()
         # self.print_events()
 
-    def create_events(self):
-        vertices = self.poly.exterior.coords[:-1]
-        self.events = [Event(self.ind, i, v) for i, v in enumerate(vertices)]
-
-    def eval_events_line(self):
-        rem = []
-        for i, e in enumerate(self.events[0:self.n_v-2]):
-            if i in rem:
-                continue
-            i1 = i+1
-            i2 = i+2
-            dx1 = e.xy[0] - self.events[i1].xy[0]
-            dx2 = e.xy[0] - self.events[i2].xy[0]
-            if dx1 == 0 and dx2 == 0:
-                rem.append(i1)
-                while dx2 == 0 and i2 < self.n_v-1:
-                    rem.append(i2)
-                    i2 += 1
-                    dx2 = self.events[i2].xy[0] - e.xy[0]
-                rem.pop()
-
-        # update events
-        ie = 0
-        events = []
-        for i, e in enumerate(self.events):
-            if i not in rem:
-                e.ind = ie
-                events.append(e)
-                ie += 1
-        self.events = events
+    def create_events(self, filtered_vertices: list[tuple[float, float]]):
+        self.events = [Event(self.ind, i, v) for i, v in enumerate(filtered_vertices)]
         self.n_v = len(self.events)
-        # update poly
         self.poly = Polygon([Point(e.xy[0], e.xy[1]) for e in self.events])
+
+    def eval_vertices_line(self, vertices: list[tuple[float, float]]) -> list[tuple[float, float]]:
+        """Remove vertices that are on the same vertical line between two other vertices, then create events."""
+        n_v = len(vertices)
+        rem = set()
+        i = 0
+        while i < n_v - 2:
+            x0 = vertices[i][0]
+            x1 = vertices[i + 1][0]
+            x2 = vertices[i + 2][0]
+            if x0 == x1 == x2:
+                rem.add(i + 1)
+                j = i + 2
+                while j < n_v - 1 and vertices[j][0] == x0:
+                    rem.add(j)
+                    j += 1
+                # Remove last added (to match original logic)
+                rem.discard(j - 1)
+                i = j - 1
+            else:
+                i += 1
+
+        # Filter vertices
+        filtered_vertices = [v for idx, v in enumerate(vertices) if idx not in rem]
+        return filtered_vertices
 
     def create_fake_events(self):
         new_events = []
@@ -80,7 +71,7 @@ class Obstacle:
                 xy = (e.xy[0], (e.xy[1] + e2.xy[1]) / 2)
                 # create fake event
                 fake_event = Event(self.ind, j, xy)
-                fake_event.etype = 'updown'
+                fake_event.etype1_updown = 'updown'
                 fake_event.fake = True
                 if j == 0:
                     new_events.insert(0, fake_event)
@@ -97,7 +88,7 @@ class Obstacle:
     def create_sorted_events(self):
         self.s_events = sorted(self.events, key=lambda e: (e.xy[0], e.xy[1]))
         for i, e in enumerate(self.s_events):
-            e.set_s_ind(i)
+            e.set_sorted_ind(i)
             prev_ind = (self.s_events[i].ind - 1) % (self.n_v)
             next_ind = (self.s_events[i].ind + 1) % (self.n_v)
             e.set_prev_e(self.events[prev_ind])
@@ -126,67 +117,67 @@ class Obstacle:
             step = 0.2
             if e.fake:
                 if self.poly.contains(Point(x+step, y)):
-                    e.etype_2 = 'in'
+                    e.etype2_inout = 'in'
                 elif self.poly.contains(Point(x-step, y)):
-                    e.etype_2 = 'out'
+                    e.etype2_inout = 'out'
                 else:
                     raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [fake]")
                 continue
 
             # detect event types: up, down, updown, in, out
             if x < prev_e.xy[0] and x < next_e.xy[0]:
-                e.etype = 'updown'
-                e.etype_2 = 'in'
+                e.etype1_updown = 'updown'
+                e.etype2_inout = 'in'
             elif x > prev_e.xy[0] and x > next_e.xy[0]:
-                e.etype = 'updown'
-                e.etype_2 = 'out'
+                e.etype1_updown = 'updown'
+                e.etype2_inout = 'out'
             elif prev_e.xy[0] < x < next_e.xy[0]:
-                e.etype = 'down'
+                e.etype1_updown = 'down'
             elif next_e.xy[0] < x < prev_e.xy[0]:
-                e.etype = 'up'
+                e.etype1_updown = 'up'
             elif x == prev_e.xy[0] or x == next_e.xy[0]:
                 c_up = self.poly.contains(Point(x, y + step)) or self.poly.touches(Point(x, y + step))
                 c_down = self.poly.contains(Point(x, y - step)) or self.poly.touches(Point(x, y - step))
                 if c_up and c_down:
-                    e.etype = 'updown'
+                    e.etype1_updown = 'updown'
                     if self.poly.contains(Point(x+step, y)):
-                        e.etype_2 = 'out'
+                        e.etype2_inout = 'out'
                     elif self.poly.contains(Point(x-step, y)):
-                        e.etype_2 = 'in'
+                        e.etype2_inout = 'in'
                     else:
                         raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [in-out-2]")
                 elif c_up:
-                    e.etype = 'up'
+                    e.etype1_updown = 'up'
                 elif c_down:
-                    e.etype = 'down'
+                    e.etype1_updown = 'down'
                 else:
                     raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [up-down]")
             else:
                 raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [in-out]")
 
             # set endpoints
-            if e.etype == 'updown':
+            if e.etype1_updown == 'updown':
                 e.set_endpoint_down_edge(prev_e.xy)
                 e.set_endpoint_up_edge(next_e.xy)
-            elif e.etype == 'up':
+            elif e.etype1_updown == 'up':
                 e.set_endpoint_up_edge(next_e.xy)
-            elif e.etype == 'down':
+            elif e.etype1_updown == 'down':
                 e.set_endpoint_down_edge(prev_e.xy)
             else:
-                raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [e.etype]")
+                raise ValueError(f"[{self.ns}][process_events_bounding] Invalid event type [e.etype1_updown]")
 
             # detect skipped sweep events
-            if e.etype_2 == 'in':
+            if e.etype2_inout == 'in':
                 if e.convex:
-                    e.etype_3 = "ivex"
+                    e.etype3_io_conc = "ivex"
                     e.skip_sweep = True
                     #
                     if next_e.xy[0] < prev_e.xy[0]:
                         next_e.has_parent = False
                     else:
                         prev_e.has_parent = False
-            elif e.etype_2 == 'out' and e.convex:
-                e.etype_3 = "ovex"
+            elif e.etype2_inout == 'out' and e.convex:
+                e.etype3_io_conc = "ovex"
                 if not e.vertical:
                     e.direct_trap = True
                     e.has_adj = False
@@ -203,9 +194,9 @@ class Obstacle:
             step = 1.0
             if e.fake:
                 if self.poly.contains(Point(x+step, y)):
-                    e.etype_2 = 'in'
+                    e.etype2_inout = 'in'
                 elif self.poly.contains(Point(x-step, y)):
-                    e.etype_2 = 'out'
+                    e.etype2_inout = 'out'
                 else:
                     raise ValueError(f"[{self.ns}][process_events] Invalid event type [fake]")
                 continue
@@ -218,68 +209,68 @@ class Obstacle:
             mid_y = y + step * math.sin(theta)
             mid_p = Point(mid_x, mid_y)
             if (x < prev_e.xy[0] and x < next_e.xy[0]):
-                e.etype = 'updown'
+                e.etype1_updown = 'updown'
                 if self.poly.contains(mid_p):
-                    e.etype_2 = 'in'
+                    e.etype2_inout = 'in'
                 else:
-                    e.etype_2 = 'out'
+                    e.etype2_inout = 'out'
             elif (x > prev_e.xy[0] and x > next_e.xy[0]):
-                e.etype = 'updown'
+                e.etype1_updown = 'updown'
                 if self.poly.contains(mid_p):
-                    e.etype_2 = 'out'
+                    e.etype2_inout = 'out'
                 else:
-                    e.etype_2 = 'in'
+                    e.etype2_inout = 'in'
             elif prev_e.xy[0] < x < next_e.xy[0]:
-                e.etype = 'down'
+                e.etype1_updown = 'down'
             elif next_e.xy[0] < x < prev_e.xy[0]:
-                e.etype = 'up'
+                e.etype1_updown = 'up'
             elif x == prev_e.xy[0] or x == next_e.xy[0]:
                 c_up = self.poly.contains(Point(x, y + step)) or self.poly.touches(Point(x, y + step))
                 c_down = self.poly.contains(Point(x, y - step)) or self.poly.touches(Point(x, y - step))
                 if c_up and c_down:
-                    e.etype = 'updown'
+                    e.etype1_updown = 'updown'
                     if self.poly.contains(Point(x+step, y)):
-                        e.etype_2 = 'in'
+                        e.etype2_inout = 'in'
                     elif self.poly.contains(Point(x-step, y)):
-                        e.etype_2 = 'out'
+                        e.etype2_inout = 'out'
                     else:
                         raise ValueError(f"[{self.ns}][process_events] Invalid event type [in-out-2]")
                 elif c_up:
-                    e.etype = 'down'
+                    e.etype1_updown = 'down'
                 elif c_down:
-                    e.etype = 'up'
+                    e.etype1_updown = 'up'
                 else:
                     raise ValueError(f"[{self.ns}][process_events] Invalid event type [up-down]")
             else:
                 raise ValueError(f"[{self.ns}][process_events] Invalid event type [in-out]")
 
             #
-            if e.etype == 'updown' and e.etype_2 is None:
+            if e.etype1_updown == 'updown' and e.etype2_inout is None:
                 raise ValueError(f"[{self.ns}][process_events] Invalid event type [updown]")
 
             # set endpoints
-            if e.etype == 'updown':
+            if e.etype1_updown == 'updown':
                 e.set_endpoint_down_edge(prev_e.xy)
                 e.set_endpoint_up_edge(next_e.xy)
-            elif e.etype == 'up':
+            elif e.etype1_updown == 'up':
                 e.set_endpoint_up_edge(next_e.xy)
-            elif e.etype == 'down':
+            elif e.etype1_updown == 'down':
                 e.set_endpoint_down_edge(prev_e.xy)
             else:
-                raise ValueError(f"[{self.ns}][process_events] Invalid event type [e.etype]")
+                raise ValueError(f"[{self.ns}][process_events] Invalid event type [e.etype1_updown]")
 
             # detect skipped sweep events
-            if e.etype_2 == 'out':
+            if e.etype2_inout == 'out':
                 if e.concave:
-                    e.etype_3 = "ocave"
+                    e.etype3_io_conc = "ocave"
                     e.skip_sweep = True
                     #
                     if next_e.xy[0] < prev_e.xy[0]:
                         next_e.has_parent = False
                     else:
                         prev_e.has_parent = False
-            elif e.etype_2 == 'in' and e.concave:
-                e.etype_3 = "icave"
+            elif e.etype2_inout == 'in' and e.concave:
+                e.etype3_io_conc = "icave"
                 if not e.vertical:
                     e.direct_trap = True
                     e.has_adj = False
@@ -295,9 +286,9 @@ class Obstacle:
 
             #
             case_in = False
-            if e.etype_2 == 'in':
+            if e.etype2_inout == 'in':
                 case_in = True
-            elif e.etype_2 == 'out':
+            elif e.etype2_inout == 'out':
                 case_in = False
             else:
                 raise ValueError(f"[{self.ns}][process_fake_events] Invalid event type [fake]")
@@ -318,22 +309,22 @@ class Obstacle:
         up_e = e.prev_e if e.prev_e.xy[1] > e.xy[1] else e.next_e
         down_e = e.next_e if e.prev_e.xy[1] > e.xy[1] else e.prev_e
         #
-        if up_e.etype == 'down' and down_e.etype == 'updown':
+        if up_e.etype1_updown == 'down' and down_e.etype1_updown == 'updown':
             up_e.skip_sweep = True
             down_e.skip_sweep = False
-            down_e.etype = 'down'
+            down_e.etype1_updown = 'down'
             up_e.skip_hit = True
-        elif down_e.etype == 'up' and up_e.etype == 'updown':
+        elif down_e.etype1_updown == 'up' and up_e.etype1_updown == 'updown':
             down_e.skip_sweep = True
             up_e.skip_sweep = False
-            up_e.etype = 'up'
+            up_e.etype1_updown = 'up'
             down_e.skip_hit = True
-        elif up_e.etype == 'updown' and down_e.etype == 'updown':
+        elif up_e.etype1_updown == 'updown' and down_e.etype1_updown == 'updown':
             down_e.skip_sweep = False
-            down_e.etype = 'down'
+            down_e.etype1_updown = 'down'
             up_e.skip_sweep = False
-            up_e.etype = 'up'
-        elif up_e.etype == 'down' and down_e.etype == 'up':
+            up_e.etype1_updown = 'up'
+        elif up_e.etype1_updown == 'down' and down_e.etype1_updown == 'up':
             down_e.skip_sweep = True
             up_e.skip_sweep = True
             down_e.skip_hit = True
@@ -354,22 +345,22 @@ class Obstacle:
         up_e = e.prev_e if e.prev_e.xy[1] > e.xy[1] else e.next_e
         down_e = e.next_e if e.prev_e.xy[1] > e.xy[1] else e.prev_e
         #
-        if up_e.etype == 'down' and down_e.etype == 'updown':
+        if up_e.etype1_updown == 'down' and down_e.etype1_updown == 'updown':
             up_e.skip_sweep = False
             down_e.skip_sweep = True
             down_e.skip_hit = True
-        elif down_e.etype == 'up' and up_e.etype == 'updown':
+        elif down_e.etype1_updown == 'up' and up_e.etype1_updown == 'updown':
             down_e.skip_sweep = False
             up_e.skip_sweep = True
             up_e.skip_hit = True
-        elif up_e.etype == 'updown' and down_e.etype == 'updown':
+        elif up_e.etype1_updown == 'updown' and down_e.etype1_updown == 'updown':
             e.skip_sweep = False
-            e.etype_2 = 'in'
+            e.etype2_inout = 'in'
             down_e.skip_sweep = True
             up_e.skip_sweep = True
             down_e.skip_hit = True
             up_e.skip_hit = True
-        elif up_e.etype == 'down' and down_e.etype == 'up':
+        elif up_e.etype1_updown == 'down' and down_e.etype1_updown == 'up':
             up_e.skip_sweep = True
             down_e.skip_sweep = False
             #
@@ -381,20 +372,20 @@ class Obstacle:
         up_e = e.prev_e if e.prev_e.xy[1] > e.xy[1] else e.next_e
         down_e = e.next_e if e.prev_e.xy[1] > e.xy[1] else e.prev_e
         #
-        if up_e.etype == 'updown' and down_e.etype == 'down':
+        if up_e.etype1_updown == 'updown' and down_e.etype1_updown == 'down':
             down_e.skip_sweep = True
             up_e.skip_sweep = False
-            up_e.etype = 'down'
-        elif up_e.etype == 'up' and down_e.etype == 'updown':
+            up_e.etype1_updown = 'down'
+        elif up_e.etype1_updown == 'up' and down_e.etype1_updown == 'updown':
             down_e.skip_sweep = False
             up_e.skip_sweep = True
-            down_e.etype = 'up'
-        elif up_e.etype == 'updown' and down_e.etype == 'updown':
+            down_e.etype1_updown = 'up'
+        elif up_e.etype1_updown == 'updown' and down_e.etype1_updown == 'updown':
             up_e.skip_sweep = True
             down_e.skip_sweep = False
-            down_e.etype = 'up'
-            up_e.etype = 'down'
-        elif up_e.etype == 'up' and down_e.etype == 'down':
+            down_e.etype1_updown = 'up'
+            up_e.etype1_updown = 'down'
+        elif up_e.etype1_updown == 'up' and down_e.etype1_updown == 'down':
             up_e.skip_sweep = True
             down_e.skip_sweep = True
             e.skip_sweep = False
@@ -405,31 +396,31 @@ class Obstacle:
         up_e = e.prev_e if e.prev_e.xy[1] > e.xy[1] else e.next_e
         down_e = e.next_e if e.prev_e.xy[1] > e.xy[1] else e.prev_e
         #
-        if up_e.etype == 'up' and down_e.etype == 'updown':
+        if up_e.etype1_updown == 'up' and down_e.etype1_updown == 'updown':
             up_e.skip_sweep = False
             down_e.skip_sweep = True
-            down_e.etype = 'up'
-        elif down_e.etype == 'down' and up_e.etype == 'updown':
+            down_e.etype1_updown = 'up'
+        elif down_e.etype1_updown == 'down' and up_e.etype1_updown == 'updown':
             down_e.skip_sweep = False
             up_e.skip_sweep = True
-            up_e.etype = 'down'
-        elif up_e.etype == 'up' and down_e.etype == 'down':
+            up_e.etype1_updown = 'down'
+        elif up_e.etype1_updown == 'up' and down_e.etype1_updown == 'down':
             up_e.skip_sweep = False
             down_e.skip_sweep = False
-        elif up_e.etype == 'updown' and down_e.etype == 'updown':
+        elif up_e.etype1_updown == 'updown' and down_e.etype1_updown == 'updown':
             up_e.skip_sweep = True
             down_e.skip_sweep = True
-            up_e.etype = 'up'
-            down_e.etype = 'down'
+            up_e.etype1_updown = 'up'
+            down_e.etype1_updown = 'down'
         else:
             raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
-    def inverse_event_types(self):
-        for e in self.events:
-            e.prev_e, e.next_e = e.next_e, e.prev_e
-            # swpap endpoints
-            e.end_up_ed_xy, e.end_down_ed_xy = e.end_down_ed_xy, e.end_up_ed_xy
+    # def inverse_event_types(self):
+    #     for e in self.events:
+    #         e.prev_e, e.next_e = e.next_e, e.prev_e
+    #         # swap endpoints
+    #         e.end_up_ed_xy, e.end_down_ed_xy = e.end_down_ed_xy, e.end_up_ed_xy
 
     def print_events(self):
         for e in self.events:
-            print(f"[self.ns]: Event {e.ind}: {e.xy} {e.etype}")
+            print(f"[self.ns]: Event {e.ind}: {e.xy} {e.etype1_updown}")

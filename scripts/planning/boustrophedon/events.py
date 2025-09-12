@@ -3,24 +3,29 @@ import math
 
 
 class Event:
-    def __init__(self, obst_ind, ind, v):
+    """
+    event for decomposition.
+    """
+
+    def __init__(self, obst_ind: int, ind: int, v: tuple[float, float]):
         self.ns = "Event"
-        self.xy = v
-        self.x_max = None
-        self.y_max_lim = math.inf
-        # self.y_min_lim = -math.inf
         #
-        self.name = 'event'
-        self.etype: str = None      # up, down, updown
-        self.etype_2: str = None    # out, in
-        self.etype_3: str = None    # ovex, ivex, ocave, icave
+        self.xy: tuple[float, float] = v
+        self.x_max: float = None
+        # self.y_max_lim: float = math.inf
+        # self.y_min_lim: float = -math.inf
         #
-        self.obst_ind: int = obst_ind   # index in the obstacle to which this event belongs
-        self.ind: int = ind             # index in the obstacle (ccw)
-        self.s_ind: int = None          # sorted index in the obstacle events
-        self.sd_ind: int = None         # sorted index in the decomposition (all) events
-        self.next_e: 'Event' = None     # next event in the obstacle
-        self.prev_e: 'Event' = None     # previous event in the obstacle
+        self.name: str = 'event'            # event name ( will be updated later based on type and index)
+        self.etype1_updown: str = None      # up, down, updown
+        self.etype2_inout: str = None       # out, in
+        self.etype3_io_conc: str = None     # ovex, ivex, ocave, icave
+        #
+        self.obst_ind: int = obst_ind       # index in the obstacle to which this event belongs
+        self.ind: int = ind                 # index in the obstacle (ccw)
+        self.obs_s_ind: int = None          # sorted index in the obstacle events
+        self.dec_s_ind: int = None          # sorted index in the decomposition (all) events
+        self.next_e: 'Event' = None         # next event in the obstacle
+        self.prev_e: 'Event' = None         # previous event in the obstacle
         #
         self.hit_up_y: float = None
         self.hit_down_y: float = None
@@ -32,36 +37,36 @@ class Event:
         self.end_down_ed_xy: tuple[float, float] = None     # updated by hit up event
 
         # ci: cell index, cil: cell index list
-        self.base_ci_up = None        # cell index which created from this event by hit up
-        self.base_ci_down = None      # cell index which created from this event by hit down
+        self.base_ci_up: int = None        # cell index which created from this event by hit up
+        self.base_ci_down: int = None      # cell index which created from this event by hit down
         self.up_cil_d = dict()        # cell index list dictionary - created by other hit down event which hitted to this event
         self.up_cil_k = []            # keys list of up_cil_d
         self.down_cil_d = dict()      # cell index list dictionary - created by other hit up event which hitted to this event
         self.down_cil_k = []          # keys list of down_cil_d
         #
-        self.has_adj = True         # if this event should has adjacent cells
-        self.has_parent = True      # if this event should has parent cells
+        self.has_adj: bool = True         # if this event should has adjacent cells
+        self.has_parent: bool = True      # if this event should has parent cells
         #
         self.fake: bool = False
         self.vertical: bool = False
         #
         #
-        self.skip_sweep = False
-        self.skip_hit = False
-        self.direct_trap = False
+        self.skip_sweep: bool = False
+        self.skip_hit: bool = False
+        self.direct_trap: bool = False
         #
-        self.done = False
-        self.can_down = True
-        # self.can_up = True
+        self.done: bool = False
+        self.can_down: bool = True
+        # self.can_up: bool = True
         #
-        self.concave = False
-        self.convex = True
+        self.concave: bool = False
+        self.convex: bool = True
 
-    def set_s_ind(self, ind: int):
-        self.s_ind = ind
+    def set_sorted_ind(self, ind: int):
+        self.obs_s_ind = ind
 
-    def set_sd_ind(self, ind: int):
-        self.sd_ind = ind
+    def set_decomp_sorted_ind(self, ind: int):
+        self.dec_s_ind = ind
 
     def set_prev_e(self, e: 'Event'):
         self.prev_e = e
@@ -94,15 +99,15 @@ class Event:
     # ==========================================================================
 
     def update_name(self):
-        name = f"{self.sd_ind}"
+        name = f"{self.dec_s_ind}"
         if self.direct_trap:
             name += "-direct"
-        elif self.etype_3:
-            name += f"-{self.etype_3}"
-        elif self.etype_2:
-            name += f"-{self.etype_2}"
-        elif self.etype:
-            name += f"-{self.etype}"
+        elif self.etype3_io_conc:
+            name += f"-{self.etype3_io_conc}"
+        elif self.etype2_inout:
+            name += f"-{self.etype2_inout}"
+        elif self.etype1_updown:
+            name += f"-{self.etype1_updown}"
         if self.fake:
             name += "-fake"
         if self.skip_sweep:

@@ -96,7 +96,7 @@ class MHDecomposition:
         self.n_events = len(all_events)
         self.events = sorted(all_events, key=lambda e: (e.xy))
         for i, e in enumerate(self.events):
-            e.set_sd_ind(i)
+            e.set_decomp_sorted_ind(i)
             e.update_name()
 
     def add_cell(self, poly: Polygon, event: Event):
@@ -147,9 +147,9 @@ class MHDecomposition:
             success_up, y_up = False, None
             success_down, y_down = False, None
 
-            if base_e.etype in ('up', 'updown'):
+            if base_e.etype1_updown in ('up', 'updown'):
                 success_up, y_up = self.eval_event_up(base_e, e, hit_up_y)
-            if base_e.can_down and base_e.etype in ('down', 'updown'):
+            if base_e.can_down and base_e.etype1_updown in ('down', 'updown'):
                 success_down, y_down = self.eval_event_down(base_e, e, hit_down_y)
 
             # Update hit variables if successful
@@ -162,7 +162,7 @@ class MHDecomposition:
 
     def eval_event_up(self, base_e: Event, e: Event, y_hit: float) -> bool:
         # based even type is 'up'
-        if e.etype == 'up':
+        if e.etype1_updown == 'up':
             return False, None
 
         # check not to hit from outside of polygon
@@ -172,8 +172,8 @@ class MHDecomposition:
         # reach to higher updown event
         new_y_hit = e.xy[1]
         if e.xy[0] == base_e.xy[0] and new_y_hit < y_hit:
-            if e.etype == 'updown':
-                if e.etype_2 == 'out':
+            if e.etype1_updown == 'updown':
+                if e.etype2_inout == 'out':
                     return True, new_y_hit
                 # in
                 return False, None
@@ -184,7 +184,7 @@ class MHDecomposition:
 
         # check coordinates
         # if e1 is the base event itself
-        if e1.sd_ind == base_e.sd_ind:
+        if e1.dec_s_ind == base_e.dec_s_ind:
             return False, None
         # if x base_e is left to e1
         if e1.xy[0] >= base_e.xy[0]:
@@ -203,7 +203,7 @@ class MHDecomposition:
 
     def eval_event_down(self, base_e: Event, e: Event, y_hit: float) -> bool:
         # based even type is 'down'
-        if e.etype == 'down':
+        if e.etype1_updown == 'down':
             return False, None
 
         # type is 'up'
@@ -212,7 +212,7 @@ class MHDecomposition:
 
         # check coordinates
         # if e2 is the base event itself
-        if e2.sd_ind == base_e.sd_ind:
+        if e2.dec_s_ind == base_e.dec_s_ind:
             return False, None
         # if x base_e is left to e2
         if e2.xy[0] >= base_e.xy[0]:
@@ -232,7 +232,7 @@ class MHDecomposition:
     def eval_done_status(self, base_e: Event, hit_up_event: Event, hit_down_event: Event):
         # eval events on the same x coordinate between base_e and hit_up_event
         if hit_up_event:
-            up_ind = base_e.sd_ind+1
+            up_ind = base_e.dec_s_ind+1
             up_e = self.events[up_ind]
             while up_e.xy[0] == base_e.xy[0] and up_e.xy[1] < base_e.hit_up_y:
                 up_e.done = True
@@ -242,13 +242,13 @@ class MHDecomposition:
         # update done status of the hit events
         if hit_up_event:
             if hit_up_event.xy[0] == base_e.xy[0]:
-                if hit_up_event.etype == 'down':
+                if hit_up_event.etype1_updown == 'down':
                     hit_up_event.done = True
-                elif hit_up_event.etype == 'updown':
+                elif hit_up_event.etype1_updown == 'updown':
                     hit_up_event.can_down = False
         if hit_down_event:
             if hit_down_event.xy[0] == base_e.xy[0]:
-                if hit_down_event.etype == 'up':
+                if hit_down_event.etype1_updown == 'up':
                     hit_down_event.done = True
 
     def create_trapezoid(self, base_e: Event, hit_up_event: Event, hit_down_event: Event):
@@ -269,8 +269,8 @@ class MHDecomposition:
         hit_down_y = base_e.hit_down_y
 
         # updown
-        if base_e.etype == 'updown':
-            if base_e.etype_2 == 'out':
+        if base_e.etype1_updown == 'updown':
+            if base_e.etype2_inout == 'out':
                 if hit_up_event:
                     trap_up = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.end_down_ed_xy, base_e.end_up_ed_xy]
                 if hit_down_event:
@@ -286,24 +286,24 @@ class MHDecomposition:
                 self.lg.warn("[create_trapezoid]: updown: hit_up_event and hit_down_event are both None")
 
         # up
-        elif base_e.etype == 'up' and hit_up_event:
+        elif base_e.etype1_updown == 'up' and hit_up_event:
             trap_up = [base_e.xy, (base_e.xy[0], hit_up_y), hit_up_event.end_down_ed_xy, base_e.end_up_ed_xy]
         # down
-        elif base_e.etype == 'down' and hit_down_event:
+        elif base_e.etype1_updown == 'down' and hit_down_event:
             trap_down = [base_e.xy, base_e.end_down_ed_xy, hit_down_event.end_up_ed_xy, (base_e.xy[0], hit_down_y)]
 
         # add cell number - update endpoints
         dn = 0
         if hit_up_event:
             dn = 1
-            if base_e.etype_2 == 'in':
+            if base_e.etype2_inout == 'in':
                 dn = 0
             base_e.set_base_ci_up(self.n_cells)
-            hit_up_event.add_down_ci_d(base_e.sd_ind, self.n_cells)
+            hit_up_event.add_down_ci_d(base_e.dec_s_ind, self.n_cells)
             hit_up_event.set_endpoint_down_edge((base_e.xy[0], hit_up_y))
         if hit_down_event:
             base_e.set_base_ci_down(self.n_cells+dn)
-            hit_down_event.add_up_ci_d(base_e.sd_ind, self.n_cells+dn)
+            hit_down_event.add_up_ci_d(base_e.dec_s_ind, self.n_cells+dn)
             hit_down_event.set_endpoint_up_edge((base_e.xy[0], hit_down_y))
 
         # create cell
@@ -326,7 +326,7 @@ class MHDecomposition:
                 hit_up_event = e.hit_up_event
                 ci_curr = e.base_ci_up
                 current_cell = self.cells[ci_curr]
-                ind = hit_up_event.down_cil_k.index(e.sd_ind)
+                ind = hit_up_event.down_cil_k.index(e.dec_s_ind)
                 if len(hit_up_event.down_cil_k) > ind+1:
                     # next cell created on hit_up_event
                     val = e.hit_up_event.down_cil_k[ind+1]
@@ -344,7 +344,7 @@ class MHDecomposition:
             if e.hit_down_event:
                 ci_curr = e.base_ci_down
                 current_cell = self.cells[ci_curr]
-                ind = e.hit_down_event.up_cil_k.index(e.sd_ind)
+                ind = e.hit_down_event.up_cil_k.index(e.dec_s_ind)
                 if len(e.hit_down_event.up_cil_k) > ind+1:
                     val = e.hit_down_event.up_cil_k[ind+1]
                     down_adj_ci = e.hit_down_event.up_cil_d[val]
@@ -375,13 +375,13 @@ class MHDecomposition:
                 if cell.n_adj == 0:
                     cell.found_connection = False
                     self.lg.error("[find_adjacents_cells]: No adjacents found:")
-                    # self.lg.error(f"e: {cell.event.sd_ind}, -- cell: {cell.id}")
+                    # self.lg.error(f"e: {cell.event.dec_s_ind}, -- cell: {cell.id}")
 
             if e.has_parent:
                 if cell.n_parent == 0:
                     cell.found_connection = False
                     self.lg.error("[find_adjacents_cells]: No parents found:")
-                    # self.lg.error(f"e: {cell.event.sd_ind}, -- cell: {cell.id}")
+                    # self.lg.error(f"e: {cell.event.dec_s_ind}, -- cell: {cell.id}")
 
 # cell groups and merged cells =========================================================================================
 
