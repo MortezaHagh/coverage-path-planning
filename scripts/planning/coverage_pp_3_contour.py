@@ -30,7 +30,7 @@ class CoveragePP(CoveragePPBase):
         self.dec_interface = None                   # voronoi decomposition interface
         self.all_cell_covp_planners: list[CellCoveragePathPlanner] = []
 
-        # run decomposition and coverage planning
+        # [base method] run decomposition and coverage planning
         self.plan()
 
     def coverage_planning(self) -> None:
@@ -109,6 +109,7 @@ class CoveragePP(CoveragePPBase):
             if path_px:
                 pp = np.array(path_px.xy, dtype=np.int32)  # Ensure pp is a numpy array of integers
                 map_planning = cv.polylines(map_planning, [pp], isClosed=False, color=self.colors[i], thickness=2)
+                # plot cleaning
                 overlay = map_planning.copy()
                 cv.polylines(overlay, [pp], isClosed=False, color=self.colors[i], thickness=robot_d_px)
                 alpha = 0.2  # Adjust transparency (0.0 transparent, 1.0 opaque)

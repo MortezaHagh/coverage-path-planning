@@ -7,7 +7,7 @@ from scripts.gui.visuals import Rectangle
 from scripts.base.configs import SpaceConfigs
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.spa.spa_utils import find_circumscribed_rectangle  # , find_inscribed_rotated_rectangle
-from scripts.spa.inscribed_rectangle_histogram import find_inscribed_rotated_rectangle
+# from scripts.spa.inscribed_rectangle_histogram import find_inscribed_rotated_rectangle
 FREE_COST = 255
 OCCUPIED_COST = 0
 
@@ -21,81 +21,51 @@ class SpaceAnalyzer:
     f: filtered (island detection)
     bb: bounding box
     """
-    scfg: SpaceConfigs
-    space_type: str
-    #
-    orig_map_data: MapData
-    orig_rectangle: Rectangle
-    rectangle: Rectangle
-    rect_data: dict                     # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-    vertices: list[tuple[int, int]]     # vertices  [(x, y), ...]
-    #
-    hw_bd: dict                         # for map not rectangle {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
-    hw_bd_local: dict                   # {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
-    final_rect_data: dict               # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-    final_vertices = list[tuple[int, int]]         # vertices: [(x, y), ...]
-    fs_selected_point: tuple[float, float]
-    #
-    __zone_map_data: ZoneMapData
-    #
-    cropped_mask: np.ndarray                # mask for cropped map
-    binary_map_0: np.ndarray                # original base binary map
-    map_c_orig: np.ndarray
-    map_1_dilated_cleaning: np.ndarray      # dilate map based on final uncleaned distance (effective r and other distances)
-    map_2_dilated_ws: np.ndarray
-    map_3_c_dilated_cleaning: np.ndarray
-    map_4_c_dilated_ws: np.ndarray
-    map_6_ws_sf_f: np.ndarray
-    map_7_c_ws_sf_f: np.ndarray
-    map_8_ws_sf_f_orig: np.ndarray
-    map_9_ws_sf_f_cleaning: np.ndarray
-    map_10_c_ws_sf_f_orig: np.ndarray
-    map_11_c_ws_sf_f_cleaning: np.ndarray
 
     def __init__(self, map_data: MapData, rectangle: Rectangle):
-        self.ns = "SpaceAnalyzer"
+        self.ns: str = "SpaceAnalyzer"
         self.lg = MyLogger(self.ns)
         self.lg.info1("Step: Analyzing space for creating free space [local map]")
 
         # configs
-        self.scfg = SpaceConfigs()
-        self.space_type = "District"  # District, Zone
-        self.simple = True
-        self.plot_main = True
+        self.scfg: SpaceConfigs = SpaceConfigs()
+        self.space_type: str = "District"  # District, Zone
+        self.simple: bool = True
+        self.plot_main: bool = True
 
         # inputs
-        self.orig_map_data = map_data
-        self.orig_rectangle = rectangle
-        self.rectangle = rectangle
-        self.rect_data = rectangle.data
-        self.vertices = np.array(rectangle.vertices_t, dtype=np.int32)  # district vertices
-        self.binary_map_0 = map_data.up_bin_map     # binary map
+        self.orig_map_data: MapData = map_data
+        self.orig_rectangle: Rectangle = rectangle
+        self.rectangle: Rectangle = rectangle
+        self.rect_data: dict = rectangle.data
+        self.vertices: np.ndarray = np.array(rectangle.vertices_t, dtype=np.int32)  # district vertices
+        self.binary_map_0: np.ndarray = map_data.up_bin_map     # binary map
 
         # attributes
         self.hw_bd: dict[str:int] = None       # cropped hw limits
         self.hw_bd_local: dict[str:int] = None  # local hw limits
-        self.final_rect_data = None
-        self.final_vertices = None
-        self.is_fs_point_selected = False
-        self.fs_selected_point = None
+        self.final_rect_data: dict = None
+        self.final_vertices: list[tuple[int, int]] = None
+        self.is_fs_point_selected: bool = False
+        self.fs_selected_point: tuple[float, float] = None
 
         #
-        self.__zone_map_data = None
+        self.__zone_map_data: ZoneMapData = None
 
         # maps
-        self.cropped_mask = None
-        self.map_c_orig = None
-        self.map_1_dilated_cleaning = None
-        self.map_2_dilated_ws = None
-        self.map_3_c_dilated_cleaning = None
-        self.map_4_c_dilated_ws = None
-        self.map_8_ws_sf_f_orig = None
-        self.map_9_ws_sf_f_cleaning = None
-        self.map_6_ws_sf_f = None
-        self.map_7_c_ws_sf_f = None
-        self.map_10_c_ws_sf_f_orig = None
-        self.map_11_c_ws_sf_f_cleaning = None
-        self.map_viz = None
+        self.cropped_mask: np.ndarray = None
+        self.map_c_orig: np.ndarray = None
+        self.map_1_dilated_cleaning: np.ndarray = None
+        self.map_2_dilated_ws: np.ndarray = None
+        self.map_3_c_dilated_cleaning: np.ndarray = None
+        self.map_4_c_dilated_ws: np.ndarray = None
+        self.map_8_ws_sf_f_orig: np.ndarray = None
+        self.map_9_ws_sf_f_cleaning: np.ndarray = None
+        self.map_6_ws_sf_f: np.ndarray = None
+        self.map_7_c_ws_sf_f: np.ndarray = None
+        self.map_10_c_ws_sf_f_orig: np.ndarray = None
+        self.map_11_c_ws_sf_f_cleaning: np.ndarray = None
+        self.map_viz: np.ndarray = None
 
         # process
         self.get_vertices_data()
@@ -200,9 +170,12 @@ class SpaceAnalyzer:
         self.__zone_map_data = zone_map_data
 
     def get_final_freespace_rect(self, map_i: np.ndarray) -> dict:
-        """get free selected rectangle
+        """get free selected rectangle (global)
         Returns:
             dict: {"vertices": vertices, "rect_data": data}
+
+            vertices: [(x, y), ...]
+            data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
         """
         # dilate
         do_dialate = False
@@ -234,14 +207,21 @@ class SpaceAnalyzer:
         return rect
 
     def find_bounding_rect(self, map_i: np.ndarray) -> dict:
+        """ find bounding rectangle of the free space
+        Returns:
+            sol: {"vertices": vertices, "rect_data": data}
+
+            vertices: [(x, y), ...]
+            data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        """
         if self.space_type == "District":
             sol = find_circumscribed_rectangle(map_i)
         else:
             sol = find_circumscribed_rectangle(map_i)
             # sol = find_inscribed_rotated_rectangle(map_i)
+            # sol: {"vertices": vertices, "rect_data": data}
             # vertices: [(x, y), ...]
             # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-            # sol: {"vertices": vertices, "rect_data": data}
         return sol
 
     # ==========================================================================
@@ -364,6 +344,9 @@ class SpaceAnalyzer:
     # ==========================================================================
 
     def get_vertices_data(self) -> dict:
+        """ get vertices data, hw_bd, hw_bd_local 
+            fields: "h_min", "w_min", "h_max", "w_max"
+        """
         wh_max = np.max(self.vertices, axis=0)
         wh_min = np.min(self.vertices, axis=0)
         w_max, h_max = wh_max.tolist()
@@ -375,11 +358,13 @@ class SpaceAnalyzer:
         self.hw_bd_local = {"h_min": 0, "w_min": 0, "h_max": h_max-h_min, "w_max": w_max-w_min}
 
     def crop_and_frame(self, map_i: np.ndarray) -> np.ndarray:
+        """ crop the map based on the district rectangle (hw_bd) and add frame (rectangle) to the map """
         map_cropped = self.crop_map(map_i)
         map_framed = self.make_frame(map_cropped, local_frame=True, value=OCCUPIED_COST)
         return map_framed
 
     def crop_map(self, map_i: np.ndarray) -> np.ndarray:
+        """ crop the map based on the district rectangle (hw_bd) """
         # self.lg.info("cropping map based on the district rectangle.")
 
         # cropped map and vertices
@@ -398,8 +383,8 @@ class SpaceAnalyzer:
         _, map_cropped = cv.threshold(map_cropped, 1, 255, cv.THRESH_BINARY)
         return map_cropped
 
-    def make_frame(self, map_i: np.ndarray, local_frame: bool = True, value: int = 0):
-        """ make frame of the map as value (default = 0) """
+    def make_frame(self, map_i: np.ndarray, local_frame: bool = True, value: int = 0) -> np.ndarray:
+        """ add frame (rectangle) to the map as value (default = 0) """
         if local_frame:
             hw_bd = self.hw_bd_local
         else:
@@ -412,6 +397,7 @@ class SpaceAnalyzer:
         return map_i
 
     def add_rectangle_bd(self, map_i: np.ndarray, hw_bd: dict, color=None, thickness: int = 6) -> np.ndarray:
+        """ add rectangle based on hw_bd to the map """
         if not color:
             color = [0, 0, 250]
         map_with_rect = cv.rectangle(map_i.copy(),
@@ -421,6 +407,9 @@ class SpaceAnalyzer:
         return map_with_rect
 
     def apply_hw_limits(self, hw_limits) -> dict:
+        """ apply hw limits based on the original map size
+            dict fields: "h_min", "w_min", "h_max", "w_max"
+        """
         updated_hw = copy.copy(hw_limits)
         w_min = max(0, updated_hw["w_min"])
         h_min = max(0, updated_hw["h_min"])
@@ -476,7 +465,9 @@ class SpaceAnalyzer:
         map_with_rect = cv.polylines(map_i, [vertices], isClosed=True, color=color, thickness=thickness)
         return map_with_rect
 
-    def final_space_data(self) -> None:
+    def final_space_data(self) -> np.ndarray:
+        """ final map visualization """
+
         # #
         # occ_cropped_inds = self.map_c_orig == OCCUPIED_COST
 

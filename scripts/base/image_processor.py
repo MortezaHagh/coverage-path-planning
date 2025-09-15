@@ -8,35 +8,30 @@ from scripts.base.map_data import MapData
 
 
 class MapImageProcessor:
-    """ process map pgm file """
-    ns: str
-    __bcfg: BConfigs
-    __orig_map: np.ndarray
-    #
-    __map_data = MapData
+    """ process map pgm file and create MapData """
 
     def __init__(self, map_arr: np.ndarray, bconfigs: BConfigs):
 
         # init
-        self.ns = "MapImageProcessor"
+        self.ns: str = "MapImageProcessor"
         self.lg = MyLogger(self.ns)
         self.lg.info1("Step: processing map image")
 
         # read configs and eval original map arr
-        self.__bcfg = bconfigs
-        self.__orig_map = map_arr
+        self.__bcfg: BConfigs = bconfigs
+        self.__orig_map: np.ndarray = map_arr
         self.check_map(map_arr)
 
-        # map data
-        self.__map_data = MapData()
+        # set map data
+        self.__map_data: MapData = MapData()
         self.set_map_data()
 
-        # initial processes on map image - load data
+        # initial processes on map image - set binary map
         processed_map = self.process_map()
         self.__map_data.set_bin_map(processed_map)
 
         # add other data to map_data
-        self.complete_data()
+        self.complete_map_data()
 
         # # visualize
         # self.visualize_map(self.processed_map)
@@ -60,6 +55,7 @@ class MapImageProcessor:
         self.__map_data.set_orig_map(map_arr)
 
     def process_map(self) -> np.ndarray:
+        """ create denoised binary map """
         self.lg.info2("processing of the map image")
         binary_map = self.convert_to_binary()
         denoised_map = self.remove_noise(binary_map)
@@ -78,7 +74,8 @@ class MapImageProcessor:
         denoised_map = cv.morphologyEx(binary_map, cv.MORPH_OPEN, kernel)
         return denoised_map
 
-    def complete_data(self):
+    def complete_map_data(self):
+        """ set resolution [and updated resolution] in map data """
         self.__map_data.set_resolution(self.__bcfg.resolution)
 
     def visualize_map(self, pgm_data_in: np.ndarray, disp_name: str = "Map") -> None:

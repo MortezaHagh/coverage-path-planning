@@ -3,6 +3,13 @@ import numpy as np
 
 
 def find_circumscribed_rectangle(map_i: np.ndarray) -> dict:
+    """ 
+    Find the minimum area rectangle that circumscribes all free cells in the map 
+    Returns:
+        dict: {"vertices": [(x, y), ...], "rect_data": {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}}
+
+    """
+
     # Find contours of the free cells
     contours, _ = cv.findContours(map_i, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 

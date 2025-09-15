@@ -5,19 +5,16 @@ from scripts.gui.visuals import Rectangle
 
 
 class DistrictGen:
-    __ns: str
-    __md: MapData
-    __cfg: DistrictConfgs
 
     def __init__(self, map_data: MapData):
         #
-        self.__ns = "DistrictEvent"
+        self.__ns: str = "DistrictEvent"
         self.lg = MyLogger(self.__ns)
         self.lg.info1("Step: creating district for CovPP")
 
         #
-        self.__md = map_data
-        self.__cfg = DistrictConfgs()
+        self.__md: MapData = map_data
+        self.__cfg: DistrictConfgs = DistrictConfgs()
 
         #
         if self.__cfg.whole_map:

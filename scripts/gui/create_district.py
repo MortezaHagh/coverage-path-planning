@@ -9,23 +9,17 @@ from scripts.gui.visuals import Rectangle
 
 
 class DistrictGen:
-    __ns: str
-    __wind_name: str
-    __md: MapData
-    __cfg: DistrictConfgs
-    #
-    __rec_ev_hl: RecEventHandler
 
     def __init__(self, map_data: MapData):
         #
-        self.__ns = "DistrictEvent"
+        self.__ns: str = "DistrictEvent"
         self.lg = MyLogger(self.__ns)
-        self.__wind_name = "Select District"
+        self.__wind_name: str = "Select District"
         self.lg.info1("Step: creating district for CovPP")
 
         #
-        self.__md = map_data
-        self.__cfg = DistrictConfgs()
+        self.__md: MapData = map_data
+        self.__cfg: DistrictConfgs = DistrictConfgs()
 
         #
         if self.__cfg.whole_map:
@@ -38,7 +32,7 @@ class DistrictGen:
 
         # init rectangle event handler
         rec_ev_hl = RecEventHandler(map_data.up_rgb_map)
-        self.__rec_ev_hl = rec_ev_hl
+        self.__rec_ev_hl: RecEventHandler = rec_ev_hl
 
         #  set mouse callback
         cv.setMouseCallback(self.__wind_name, rec_ev_hl.mouse_handle)

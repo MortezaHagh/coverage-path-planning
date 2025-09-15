@@ -4,6 +4,8 @@ from matplotlib import pyplot as plt
 
 
 class MyPoint:
+    """ simple point class x, y"""
+
     def __init__(self, x=None, y=None):
         self.x = x
         self.y = y
@@ -14,14 +16,12 @@ class MyPoint:
 
 
 class MyPath:
-    points: list[MyPoint]
-    xy: list[tuple]
-    n: int
+    """ simple path class - list of points (MyPoint) """
 
     def __init__(self, points: list[MyPoint] = None):
-        self.points = points
-        self.xy = []
-        self.n = 0
+        self.points: list[MyPoint] = points
+        self.xy: np.ndarray = []
+        self.n: int = 0
         self.set_xys()
 
     def set_points(self, points: list[MyPoint]) -> None:

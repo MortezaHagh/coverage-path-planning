@@ -4,24 +4,24 @@ from colorama import Fore, Style
 
 class MyLogger:
     def __init__(self, name="mh"):
-        self.name = name
+        self.name: str = name
 
-    def info1(self, message):
+    def info1(self, message: str) -> None:
         print(f"{Fore.CYAN}[{self.name}]: {message}{Style.RESET_ALL}")
 
-    def info2(self, message):
+    def info2(self, message: str) -> None:
         print(f"{Fore.GREEN}[{self.name}]: {message}{Style.RESET_ALL}")
 
-    def info(self, message):
+    def info(self, message: str) -> None:
         print(f"{Fore.WHITE}[{self.name}]: {message}{Style.RESET_ALL}")
 
-    def debug(self, message):
+    def debug(self, message: str) -> None:
         print(f"{Fore.BLUE}[{self.name}]: {message}{Style.RESET_ALL}")
 
-    def warn(self, message):
+    def warn(self, message: str) -> None:
         print(f"{Fore.YELLOW}[{self.name}]: {message}{Style.RESET_ALL}")
 
-    def error(self, message):
+    def error(self, message: str) -> None:
         print(f"{Fore.RED}[{self.name}]: {message}{Style.RESET_ALL}")
 
 # class ColorFormatter(logging.Formatter):

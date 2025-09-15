@@ -7,65 +7,38 @@ from scripts.base.configs import BConfigs
 
 class MapData:
     """ original and updated map data """
-    bcfg: BConfigs  # base configs
-    name: str  # map name
-    orig_h: int  # original height
-    orig_w: int  # original width
-    orig_c_w: int  # original center width
-    orig_c_h: int  # original center height
-    updated_h: int  # updated height
-    updated_w: int  # updated width
-    updated_wh: tuple[int, int]  # updated width and height tuple
-    up_c_w: int  # updated center width
-    up_c_h: int  # updated center height
-    origin_m: tuple[int, int]  # origin in meters
-    #
-    wind_hw: tuple[int, int]  # window height and width
-    wind_h: int  # window height
-    wind_w: int  # window width
-    wind_center: tuple[int, int]  # window center (height, width)
-    zoom: float  # zoom factor
-    #
-    orig_map: np.ndarray  # original grayscale map
-    orig_bin_map: np.ndarray  # original binary map
-    up_map: np.ndarray  # updated grayscale map
-    up_rgb_map: np.ndarray  # updated rgb map
-    up_bin_map: np.ndarray  # updated binary map
-    #
-    resolution: float  # original resolution
-    up_resolution: float  # updated resolution
 
     def __init__(self):
-        self.ns = "MapData"
+        self.ns: str = "MapData"
         self.lg = MyLogger(self.ns)
         #
-        self.bcfg = None
-        self.name = None
-        self.orig_h = None
-        self.orig_w = None
-        self.orig_c_w = None
-        self.orig_c_h = None
-        self.updated_h = None
-        self.updated_w = None
-        self.updated_wh = None
-        self.up_c_w = None
-        self.up_c_h = None
-        self.origin_m = None
+        self.bcfg: BConfigs = None                      # base configs
+        self.name: str = None                           # map name
+        self.orig_h: int = None                         # original height
+        self.orig_w: int = None                         # original width
+        self.orig_c_w: int = None                       # original center width
+        self.orig_c_h: int = None                       # original center height
+        self.updated_h: int = None                      # updated height
+        self.updated_w: int = None                      # updated width
+        self.updated_wh: tuple[int, int] = None         # updated width and height tuple
+        self.up_c_w: int = None                         # updated center width
+        self.up_c_h: int = None                         # updated center height
+        self.origin_m: tuple[int, int] = None           # origin in meters
         #
-        self.wind_hw = (1080, 1920)
-        self.wind_h = None
-        self.wind_w = None
-        self.wind_center = None
-        self.zoom = None
+        self.wind_hw: tuple[int, int] = (1080, 1920)    # window height and width
+        self.wind_h: int = None                         # window height
+        self.wind_w: int = None                         # window width
+        self.wind_center: tuple[int, int] = None        # window center (height, width)
+        self.zoom: float = None                         # zoom factor
         #
-        self.orig_map = None
-        self.orig_bin_map = None
-        self.up_map = None
-        self.up_rgb_map = None
-        self.up_bin_map = None
+        self.orig_map: np.ndarray = None                # original grayscale map
+        self.orig_bin_map: np.ndarray = None            # original binary map
+        self.up_map: np.ndarray = None                  # updated grayscale map
+        self.up_rgb_map: np.ndarray = None              # updated rgb map
+        self.up_bin_map: np.ndarray = None              # updated binary map
         #
-        self.resolution = None
-        self.up_resolution = None
+        self.resolution: float = None                   # original resolution
+        self.up_resolution: float = None                # updated resolution
 
     def set_basic_configs(self, bcfg: BConfigs, name: str = None):
         if name:
@@ -73,6 +46,7 @@ class MapData:
         self.bcfg = bcfg
 
     def set_origin_m(self, origin_m: tuple[float, float]):
+        """ set origin in meters """
         self.origin_m = origin_m
 
     def set_resolution(self, res):

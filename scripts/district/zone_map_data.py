@@ -93,7 +93,8 @@ class ZoneMapData:
         dcfg = DistrictConfgs()
         self.result_file = self.zone_path + f"/{dcfg.method}/result.json"
         self.result_path = os.path.join(self.zone_path, dcfg.method)
-        os.makedirs(self.result_path, exist_ok=True)
+        if self.name != 'District':
+            os.makedirs(self.result_path, exist_ok=True)
         #
         self.maps_path = os.path.join(self.zone_path, "maps")
         os.makedirs(self.maps_path, exist_ok=True)
@@ -138,6 +139,9 @@ class ZoneMapData:
         self.final_rectangle = Rectangle(self.final_rect_data)
 
     def save_data(self) -> None:
+        """ save zone map data to files
+            maps, local_map.json
+        """
 
         #
         cv.imwrite(self.maps_path + "/" + "local_map_1_orig.png", self.map_orig)

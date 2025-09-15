@@ -6,6 +6,7 @@ from scripts.base.logger import MyLogger
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.configs import DistrictConfgs, PlanningConfigs
 
+# select coverage path planning method based on configs
 DCFG = DistrictConfgs()
 if DCFG.covpp_method == "m1_simple":
     from scripts.planning.coverage_pp_1_simple import CoveragePP
@@ -19,7 +20,17 @@ else:
 
 
 class ZoneStats:
-    """Zone statistics class to store zone statistics"""
+    """Zone statistics class to store zone statistics
+    Attributes:
+        cleaning_area_px (int): area to be cleaned in pixels
+        cleaning_area_m (float): area to be cleaned in square meters
+        cleaned_area_px (int): cleaned area in pixels
+        cleaned_area_m (float): cleaned area in square meters
+        uncleaned_area_m (float): uncleaned area in square meters
+        overlaped_area_m (float): overlapped area in square meters
+        coverage_p (float): coverage percentage
+        overlap_p (float): overlap percentage
+    """
 
     def __init__(self):
         self.cleaning_area_px = None
@@ -51,29 +62,32 @@ class ZoneStats:
 
 
 class ZoneData:
-    ind: int
-    zmd: ZoneMapData
-    dcfg: DistrictConfgs
-    pcfgs: PlanningConfigs
-    cov_planner: CoveragePP
-    st: ZoneStats
+    """ Zone Data class to store zone map data and run coverage planning 
+
+    Attributes:
+        ind (int): zone index
+        zmd (ZoneMapData): zone map data
+        cov_planner (CoveragePP): coverage path planner
+        complete_path (np.ndarray): complete path (todo)
+        st (ZoneStats): zone statistics
+    """
 
     def __init__(self, ind: int = None):
-        self.ns = "ZoneData"
+        self.ns: str = "ZoneData"
         self.lg = MyLogger(self.ns)
-        self.ind = ind
-        self.zmd = None
+        self.ind: int = ind
+        self.zmd: ZoneMapData = None
 
         # configs
-        self.dcfg = DistrictConfgs()
-        self.pcfgs = PlanningConfigs()
+        self.dcfg: DistrictConfgs = DistrictConfgs()
+        self.pcfgs: PlanningConfigs = PlanningConfigs()
 
         # coverage path planner
-        self.cov_planner = None
-        self.complete_path = None  # todo
+        self.cov_planner: CoveragePP = None
+        self.complete_path: np.ndarray = None  # todo
 
         # statistics
-        self.st = ZoneStats()
+        self.st: ZoneStats = ZoneStats()
 
     def set_map_data(self, zmd: ZoneMapData):
         self.zmd = zmd
@@ -85,13 +99,15 @@ class ZoneData:
         # self.save_map_planning()
 
     def coverage_planning(self):
+        """ run coverage path planning for the zone and then post planning """
         self.cov_planner = CoveragePP(self.zmd)
         self.post_planning()
         # self.save_map_planning()
 
-    # ==================================================================================================================
-
     def post_planning(self):
+        """ post planning after coverage path planning. 
+        calculating stats and updating map_planning and map_clean_data
+        """
         self.calculate_cleaning_area()
         self.add_cleaned_area_to_map()
         self.calculate_cleaned_area()
@@ -99,6 +115,8 @@ class ZoneData:
         self.save_map_cleaning_data()
         self.save_result()
         self.st.print_stats()
+
+    # ==================================================================================================================
 
     def calculate_cleaning_area(self):
         self.st.cleaning_area_px = np.sum(self.zmd.map_cleaning == 255)
@@ -117,6 +135,10 @@ class ZoneData:
         self.st.coverage_p = round(self.st.cleaned_area_m / self.st.cleaning_area_m * 100, 2)
 
     def add_cleaned_area_to_map(self):
+        """ add cleaned area to map_clean_data and update map_planning with cleaning paths """
+
+        # map_cleaning: from zone map data (without any paths)
+        # used for creating map_clean_data
         map_cleaning = self.zmd.map_cleaning.copy()
         f_path = self.cov_planner.f_path_px
         cleaning_r_px = int(self.pcfgs.cleaning_r / self.zmd.reslolution)
@@ -140,7 +162,7 @@ class ZoneData:
             cleaned_acc = cv.add(cleaned_acc, segment_mask)
         max_overlap = np.max(cleaned_acc)
 
-        # map_clean_data: show uncleaner area and overlaps
+        # map_clean_data: show uncleaned area and overlaps
         d_c = int(np.floor(250/max_overlap))
         map_clean_data = map_cleaning.copy()
         map_clean_data = cv.cvtColor(map_clean_data, cv.COLOR_GRAY2BGR)
@@ -158,7 +180,7 @@ class ZoneData:
             map_clean_data = cv.circle(map_clean_data, pz, cleaning_r_px, (0, d_c, 0), -1)
         self.zmd.map_clean_data = map_clean_data
 
-        # update map planning with cleaned paths
+        # update map planning with cleaning paths
         add_cleaned_area_to_map_planning = False
         if add_cleaned_area_to_map_planning:
             c = 40
@@ -182,6 +204,7 @@ class ZoneData:
     # ==================================================================================================================
 
     def create_map_planning(self):
+        """ create initial map_planning with zone boundary """
         map_planning = self.zmd.map_planning
         vertices = self.zmd.vertices
         map_planning = cv.polylines(map_planning, [vertices], isClosed=True, color=(100, 0, 150), thickness=2)
@@ -196,6 +219,7 @@ class ZoneData:
         # self.lg.info(f"{self.zmd.ind}][save]: map planning saved to: {m_name}")
 
     def save_map_cleaning_data(self):
+        """ save map showing cleaned area and uncleaned area """
         if not self.dcfg.save_map_planning:
             return
         m_name = "map_cleaned.png"
@@ -203,11 +227,12 @@ class ZoneData:
         cv.imwrite(map_hl_path, self.zmd.map_clean_data)
         # self.lg.info(f"{self.zmd.ind}][save]: map cleaning saved to: {m_name}")
 
-    def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
-        res = self.zmd.reslolution
-        return (int(p[0] / res), int(p[1] / res))
+    # def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
+    #     res = self.zmd.reslolution
+    #     return (int(p[0] / res), int(p[1] / res))
 
     def save_result(self):
+        """ save zone statistics and planner statistics of the zone to json file """
         # save zone statistics to json file
         zone_stats = self.st.get_data_dict()
         planner_stats = self.cov_planner.st.get_data_dict()

@@ -84,17 +84,61 @@ class CoveragePPBase:
         self.post_planning()
         self.method_post_planning()
 
+    # Virtual methods ==================================================================================================
+
     def coverage_planning(self) -> None:
         """
         Virtual method to be implemented by subclasses.
         """
+        # self.decompose_map()
+        # self.zone_covpp()
+        # self.create_sequence()
+        # self.connect_paths()
         raise NotImplementedError("coverage_planning() must be implemented by subclasses.")
+
+    def decompose_map(self) -> None:
+        """
+        Virtual method to be implemented by subclasses.
+        """
+        raise NotImplementedError("decompose_map() must be implemented by subclasses.")
+
+    def zone_covpp(self) -> None:
+        """
+        Virtual method to be implemented by subclasses.
+        """
+        raise NotImplementedError("zone_covpp() must be implemented by subclasses.")
+
+    def create_sequence(self) -> None:
+        """
+        Virtual method to be implemented by subclasses.
+        """
+        raise NotImplementedError("create_sequence() must be implemented by subclasses.")
+
+    def connect_paths(self) -> None:
+        """
+        Virtual method to be implemented by subclasses.
+        """
+        raise NotImplementedError("connect_paths() must be implemented by subclasses.")
 
     def method_post_planning(self) -> None:
         """
         Virtual method to be implemented by subclasses.
         """
         raise NotImplementedError("method_post_planning() must be implemented by subclasses.")
+
+    def add_cells_to_map_planning(self) -> None:
+        """
+        Virtual method to be implemented by subclasses.
+        """
+        raise NotImplementedError("add_cells_to_map_planning() must be implemented by subclasses.")
+
+    def add_cell_paths_to_map_planning(self) -> None:
+        """
+        Virtual method to be implemented by subclasses.
+        """
+        raise NotImplementedError("add_cell_paths_to_map_planning() must be implemented by subclasses.")
+
+    # Post Planning ====================================================================================================
 
     def post_planning(self) -> None:
         if len(self.paths_px) == 0 or len(self.paths_m) == 0:
@@ -237,7 +281,7 @@ class CoveragePPBase:
         # create f_path_m
         self.f_path_m = self.path_px_to_m(self.f_path_px)
 
-    # ==================================================================================================================
+    # rotations and conversions ========================================================================================
 
     def path_m_to_px(self, path_m: MyPath) -> MyPath:
         return MyPath([self.point_m_to_px(p) for p in path_m.points])
@@ -269,7 +313,7 @@ class CoveragePPBase:
         y_r = p.x * np.sin(rotation) + p.y * np.cos(rotation)
         return MyPoint(x_r, y_r)
 
-    # ==================================================================================================================
+    # Plots ============================================================================================================
 
     def plot_paths_px(self) -> None:
         """ Plot the calculated coverage paths and connections between them."""
@@ -350,7 +394,8 @@ class CoveragePPBase:
         fig_path = os.path.join(self.zmd.result_path, "final_path.png")
         fig.savefig(fig_path, format="png", dpi=300)
         # plt.show()
-    # ==================================================================================================================
+
+    # Animate path =====================================================================================================
 
     def animate_robot_paths(self):
         # colors = get_n_colors_plt(n)

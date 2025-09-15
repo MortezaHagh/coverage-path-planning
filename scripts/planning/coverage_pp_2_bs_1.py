@@ -30,8 +30,7 @@ class CoveragePP(CoveragePPBase):
         self.dec_interface = None                   # boustrophedon decomposition interface
         self.all_cell_covp_planners: list[CellCoveragePathPlanner] = []
 
-        # base method
-        # run decomposition and coverage planning
+        # [base method] run decomposition and coverage planning
         self.plan()
 
     def coverage_planning(self) -> None:

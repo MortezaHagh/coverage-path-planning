@@ -11,27 +11,23 @@ from scripts.base.configs import BConfigs
 
 class InputsProcessor:
     """ Read input map image, data and configs """
-    ns: str
-    map_name: str
-    paths: dict = {}
-    #
-    __configs: BConfigs
-    __orig_map: np.ndarray
 
     def __init__(self, map_name="Map1"):
         # init
-        self.ns = "InputsProcessor"
+        self.ns: str = "InputsProcessor"
         self.lg = MyLogger(self.ns)
-        self.map_name = map_name
-        self.__configs = BConfigs()
-        self.__orig_map = None
+        #
+        self.map_name: str = map_name
+        self.__configs: BConfigs = BConfigs()
+        self.__orig_map: np.ndarray = None
+        self.paths: dict = {}
         self.paths["data"] = "./Data"
 
-        #
+        # logging
         self.lg.info1("Step: processing inputs")
         self.lg.info2(f"map name: {map_name}")
 
-        # define paths
+        # define paths (directories and files)
         self.set_paths()
 
         # check directory
@@ -39,7 +35,6 @@ class InputsProcessor:
 
         # read yaml file and write json file
         map_yaml_data = self.load_data(self.paths["yaml"])
-        self.write_json(self.paths["json"], map_yaml_data)
 
         # complete configs from yaml data
         self.set_configs(map_yaml_data)
@@ -58,9 +53,9 @@ class InputsProcessor:
         return copy.deepcopy(self.__orig_map)
 
     def set_paths(self) -> None:
-        map_dir = os.path.join(self.paths["data"],  self.map_name)
-        self.paths["map"] = os.path.join(map_dir,  self.__configs.base_folder)
-        self.paths["district"] = os.path.join(map_dir, self.__configs.district_folder)
+        map_folder_dir = os.path.join(self.paths["data"],  self.map_name)
+        self.paths["map"] = os.path.join(map_folder_dir,  self.__configs.base_folder)
+        self.paths["district"] = os.path.join(map_folder_dir, self.__configs.district_folder)
         self.paths["yaml"] = os.path.join(self.paths["map"], "merge.yaml")
         self.paths["json"] = os.path.join(self.paths["map"], "merge.json")
         self.paths["pgm"] = os.path.join(self.paths["map"], "merge.pgm")
@@ -84,7 +79,9 @@ class InputsProcessor:
 
     def load_data(self, file_path):
         with open(file_path, 'r') as file:
-            return yaml.safe_load(file)
+            map_yaml_data = yaml.safe_load(file)
+        self.write_json(self.paths["json"], map_yaml_data)
+        return map_yaml_data
 
     def write_json(self, file_path, data) -> None:
         with open(file_path, 'w') as file:

@@ -10,41 +10,35 @@ from scripts.base.configs import DistrictConfgs
 
 
 class DistrictData:
-    ns: str                # namespace
-    dcfgs: DistrictConfgs  # district configs
-    #
-    spa_obj: SpaceAnalyzer      # space_analyzer
-    dmd: ZoneMapData            # district_map_data
-    zone_datas: list[ZoneData]  # zones
 
     def __init__(self, spa: SpaceAnalyzer):
-        self.ns = "DistrictData"
+        self.ns: str = "DistrictData"
         self.lg = MyLogger(self.ns)
         self.lg.info1("Step: creating district data")
 
         # configs
-        self.dcfgs = DistrictConfgs()
+        self.dcfgs: DistrictConfgs = DistrictConfgs()
 
         # space_analyzer object
-        self.spa_obj = spa
+        self.spa_obj: SpaceAnalyzer = spa
 
         # main district map data
-        self.dmd = spa.zone_map_data
+        self.dmd: ZoneMapData = spa.zone_map_data
         self.dmd.set_name("District")
 
-        # # save district data # todos
+        # save district map data to files
         self.dmd.save_data()
 
         # attributes
         self.zone_datas: list[ZoneData] = []  # zones
 
-    def create_zones_hl(self):
+    def create_zones_hl(self) -> None:
         """create all zones in the district and create map_planning (high level)"""
         self.create_zones()
         self.update_map_planning()
         # self.save_map_planning()
 
-    def run_coverage_planning(self):
+    def run_coverage_planning(self) -> None:
         """run coverage planning for all zones"""
         for zd in self.zone_datas:
             self.lg.info(f" ************** Zone: {zd.ind} ************** ")
@@ -55,25 +49,27 @@ class DistrictData:
 
     # ==================================================================================================================
 
-    def create_zones(self):
-        self.lg.info1("Step: creating zone map data")
+    def create_zones(self) -> None:
+        """ create zones and zone map data based on the rectangle method """
+        self.lg.info1("Step: creating zones [ZoneData] and their map data")
 
         # create zones rectangles
         zone_rectangles: list[Rectangle] = self.create_one_zone_rectangle()
 
         # create zone map data and zones
         for i, zr in enumerate(zone_rectangles):
-            self.lg.info("creating map data for zone [{i}]")
+            self.lg.info(f"creating map data for zone [{i}]")
             z_spa: SpaceAnalyzer = deepcopy(self.spa_obj)
-            z_spa.update_by_rectangle(zr)
-            zmd = z_spa.zone_map_data  # zone_map_data
+            z_spa.update_by_rectangle(zr)   # space analyzer updated by zone rectangle
+            zmd = z_spa.zone_map_data       # zone_map_data
             zmd.set_ind(i)
             # create zone
             zd = ZoneData(i)
             zd.set_map_data(zmd)
             self.zone_datas.append(zd)
 
-    def update_map_planning(self):
+    def update_map_planning(self) -> None:
+        """ update district map_planning based on all zones map_planning """
         mapp = self.dmd.map_planning.copy()
         for zd in self.zone_datas:
             x1, y1 = zd.zmd.hw_bd_px["h_min"], zd.zmd.hw_bd_px["w_min"]
@@ -83,7 +79,7 @@ class DistrictData:
             mapp[x1:x2, y1:y2][inds] = zd.zmd.map_planning[x1:x2, y1:y2][inds]
         self.dmd.map_planning = mapp
 
-    def save_map_planning(self):
+    def save_map_planning(self) -> None:
         if not self.dcfgs.save_map_planning:
             return
         m_name = f"/map_planning_{self.dcfgs.method}.png"
@@ -132,6 +128,7 @@ class DistrictData:
         return [rect1, rect2]
 
     def create_one_zone_rectangle(self) -> Rectangle:
+        """ create one zone rectangle covering the whole district """
         data = self.dmd.final_rect_data
         h = data["h"]
         w = data["w"]

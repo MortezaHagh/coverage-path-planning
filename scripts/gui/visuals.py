@@ -10,38 +10,16 @@ class Rectangle:
     """ Rectangle class
         all data in pixels
     """
-    ns: str
-    point_radius: int
-    #
-    rid: int = 0
-    __data: dict
-    width: int
-    height: int
-    xc: float
-    yc: float
-    cp: tuple[float, float]
-    rot: float
-    #
-    xc_i: int
-    yc_i: int
-    cp_i: tuple[int, int]
-    #
-    bbox: box
-    vertices_t: tuple
-    vertices_a: np.ndarray
-    vertices_ccw: np.ndarray
-    #
-    x_min: int
-    y_min: int
+    rid: int = 0  # rectangle id
 
     def __init__(self, data: dict, rid: int = None):
         #
-        self.ns = "Rectangle"
-        self.point_radius = 40
+        self.ns: str = "Rectangle"
+        self.point_radius: int = 40
 
         #
-        self.x_min = 0
-        self.y_min = 0
+        self.x_min: int = 0
+        self.y_min: int = 0
 
         # rid
         if rid is None:
@@ -61,29 +39,30 @@ class Rectangle:
                 raise ValueError(f"[{self.ns}]:  input data is None")
 
         #
-        self.__data = data
-        self.width = w
-        self.height = h
-        self.xc = xc
-        self.yc = yc
-        self.cp = (xc, yc)
-        self.rot = mod_angle(rot)
+        self.__data: dict = data
+        self.width: int = w
+        self.height: int = h
+        self.xc: float = xc
+        self.yc: float = yc
+        self.cp: tuple[float, float] = (xc, yc)
+        self.rot: float = mod_angle(rot)
         # self.theta = np.atan2(w/h) + rot
         #
-        self.xc_i = np.abs(xc).astype(int)
-        self.yc_i = np.abs(yc).astype(int)
-        self.cp_i = (self.xc_i, self.yc_i)
+        self.xc_i: int = np.abs(xc).astype(int)
+        self.yc_i: int = np.abs(yc).astype(int)
+        self.cp_i: tuple[int, int] = (self.xc_i, self.yc_i)
 
         # create box
         bbox = box(xc - w / 2, yc - h / 2, xc + w / 2, yc + h / 2)
         bbox = rotate(bbox, np.rad2deg(self.rot), origin='center')
-        self.box = bbox
+        self.box: box = bbox
 
         # vertices
         vertices_l = list(bbox.exterior.coords)[:4]
         vertices_l = np.array(vertices_l, dtype=np.int32)
-        self.vertices_t = tuple(vertices_l.tolist())
-        self.vertices_a = vertices_l.reshape((-1, 1, 2))
+        self.vertices_t: tuple[int, int] = tuple(vertices_l.tolist())
+        self.vertices_a: np.ndarray = vertices_l.reshape((-1, 1, 2))
+        self.vertices_ccw: np.ndarray = None
 
         # 4 points & rotation point
         self.tl: tuple[int, int] = None

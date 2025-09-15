@@ -5,29 +5,15 @@ from scripts.gui.visuals import VisualRectangle
 
 
 class RecEventHandler:
-    __ns: str
-    wind_name: str
-    #
-    __map_img: np.ndarray
-    canvas: np.ndarray
-    #
-    main_obj: VisualRectangle
-    objects: list[VisualRectangle]
-    #
-    selected_ind: int
-    highlighted_ind: int
-    #
-    __ctrl_down: bool
-    __button_down: bool
 
     def __init__(self, map_img: np.ndarray):
         #
-        self.ns = "RecEventHandler"
-        self.wind_name = "Select"
+        self.ns: str = "RecEventHandler"
+        self.wind_name: str = "Select"
 
         #
-        self.__map_img = map_img
-        self.canvas = np.zeros_like(map_img, dtype=np.uint8)
+        self.__map_img: np.ndarray = map_img
+        self.canvas: np.ndarray = np.zeros_like(map_img, dtype=np.uint8)
 
         # visualization objects
         self.main_obj: VisualRectangle = None
@@ -38,8 +24,8 @@ class RecEventHandler:
         self.highlighted_ind: int = None
 
         # keybord and mouse events
-        self.__ctrl_down = False
-        self.__button_down = False
+        self.__ctrl_down: bool = False
+        self.__button_down: bool = False
 
     def mouse_handle(self, event, x, y, flags, param):
         # mx, my = self.md.point_to_map(x, y)

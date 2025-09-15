@@ -11,7 +11,7 @@ class BConfigs:
     resolution = None
     free_thresh = None
     occupied_thresh = None
-    # directions
+    # directories and paths
     map_name = None
     map_path = None
     data_dir = None
@@ -22,6 +22,7 @@ class BConfigs:
 
 @dataclasses.dataclass
 class DistrictConfgs:
+    # Main configs
     whole_map = True  # False True
     ns = ""
     method = ""
