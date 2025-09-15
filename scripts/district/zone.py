@@ -96,11 +96,12 @@ class ZoneData:
     def initialize(self):
         self.zmd.save_data()
         self.create_map_planning()
+        self.cov_planner = CoveragePP(self.zmd)
         # self.save_map_planning()
 
     def coverage_planning(self):
         """ run coverage path planning for the zone and then post planning """
-        self.cov_planner = CoveragePP(self.zmd)
+        self.cov_planner.plan()
         self.post_planning()
         # self.save_map_planning()
 
@@ -120,7 +121,7 @@ class ZoneData:
 
     def calculate_cleaning_area(self):
         self.st.cleaning_area_px = np.sum(self.zmd.map_cleaning == 255)
-        self.st.cleaning_area_m = round(self.st.cleaning_area_px * (self.zmd.reslolution**2), 2)
+        self.st.cleaning_area_m = round(self.st.cleaning_area_px * (self.zmd.resolution**2), 2)
 
     def calculate_cleaned_area(self):
         paths_len = self.cov_planner.st.len_m
@@ -141,7 +142,7 @@ class ZoneData:
         # used for creating map_clean_data
         map_cleaning = self.zmd.map_cleaning.copy()
         f_path = self.cov_planner.f_path_px
-        cleaning_r_px = int(self.pcfgs.cleaning_r / self.zmd.reslolution)
+        cleaning_r_px = int(self.pcfgs.cleaning_r / self.zmd.resolution)
 
         if f_path is None:
             self.lg.error("fill path is None. Cannot add cleaned area to map.")
@@ -197,7 +198,7 @@ class ZoneData:
         # Only count cleaned area where there was free space (white in map_cleaned)
         # cleaned_area_px = np.sum((cleaned_acc > 0) & (map_cleaned == 255))
         cleaned_area_px = np.sum(cleaned_acc > 0)
-        cleaned_area_m = cleaned_area_px * (self.zmd.reslolution ** 2)
+        cleaned_area_m = cleaned_area_px * (self.zmd.resolution ** 2)
         self.st.cleaned_area_px = cleaned_area_px
         self.st.cleaned_area_m = round(cleaned_area_m, 2)
 
@@ -228,7 +229,7 @@ class ZoneData:
         # self.lg.info(f"{self.zmd.ind}][save]: map cleaning saved to: {m_name}")
 
     # def point_m_to_px(self, p: tuple[float, float]) -> tuple[int, int]:
-    #     res = self.zmd.reslolution
+    #     res = self.zmd.resolution
     #     return (int(p[0] / res), int(p[1] / res))
 
     def save_result(self):

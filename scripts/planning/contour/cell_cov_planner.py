@@ -28,7 +28,7 @@ class CellCoveragePathPlanner:
 
         # parameters and configurations
         self.pcfgs = PlanningConfigs()
-        self.resolution = zmd.reslolution
+        self.resolution = zmd.resolution
 
         #
         self.path_m = None

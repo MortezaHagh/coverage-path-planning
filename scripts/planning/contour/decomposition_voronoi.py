@@ -29,7 +29,7 @@ class VoronoiSegmentation:
         self.fixed_min_n_adj: int = 8               # fixed minimum number of adjacent Voronoi vertices
         self.fixed_max_n_adj: int = 15              # maximum number of adjacent Voronoi vertices
         self.d_clearance_thresh_p: float = 0.05     # percentage of the clearance difference in finding critical points
-        self.robot_r_px: int = self.pcfgs.spa.robot_radius / zmd.reslolution
+        self.robot_r_px: int = self.pcfgs.spa.robot_radius / zmd.resolution
         # computed
         self.mean_wh: float = None
         self.min_n_adjacents: int = None            # minimum number of adjacent Voronoi vertices

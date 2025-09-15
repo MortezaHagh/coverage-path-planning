@@ -1,4 +1,5 @@
 import os
+import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
@@ -7,8 +8,10 @@ from scripts.base.logger import MyLogger
 from scripts.base.my_utils import get_n_colors_plt
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
+from scripts.planning.connect_paths import ConnectPaths
 from scripts.planning.planning_plotter import PlannerPlotter
 from scripts.base.configs import SpaceConfigs, PlanningConfigs, DistrictConfgs
+from scripts.base.my_utils import get_n_colors_cv
 
 
 class PlannerStats:
@@ -26,75 +29,68 @@ class PlannerStats:
 
 
 class CoveragePPBase:
-    ns: str  # namespace for logging
-    zmd: ZoneMapData  # zone data
-    map_polygons: MapPolygons  # map polygons
-    f_path_px: MyPath
-    f_path_m: MyPath
-    paths_px: list[MyPath]
-    paths_m: list[MyPath]
-    c_paths_px: list[MyPath]
-    c_paths_m: list[MyPath]
-    n_paths: int = 0
-    st: PlannerStats
-    plotter: PlannerPlotter
+    """ Base class for coverage path planning."""
 
     def __init__(self, zone_map_data: ZoneMapData):
-        self.ns = "CoveragePPBase"
+        self.ns: str = "CoveragePPBase"
         self.lg = MyLogger(self.ns)
 
         # zone data
-        self.zmd = zone_map_data
-        self.map_polygons = MapPolygons(self.zmd)
+        self.zmd: ZoneMapData = zone_map_data
+        self.map_polygons: MapPolygons = MapPolygons(self.zmd)
 
-        # # path
+        # # paths
         # final complete connected path
-        self.f_path_px = None
-        self.f_path_m = None
+        self.f_path_px: MyPath = None
+        self.f_path_m: MyPath = None
         # coverage paths
-        self.paths_px = []
-        self.paths_m = []
+        self.paths_px: list[MyPath] = []
+        self.paths_m: list[MyPath] = []
         # connection paths between cells
-        self.c_paths_px = []
-        self.c_paths_m = []
+        self.c_paths_px: list[MyPath] = []
+        self.c_paths_m: list[MyPath] = []
 
         # statistics
-        self.st = PlannerStats()
+        self.st: PlannerStats = PlannerStats()
 
         # plotter
-        self.plotter = PlannerPlotter(zone_map_data.result_path)
+        self.plotter: PlannerPlotter = PlannerPlotter(zone_map_data.result_path)
 
         # parameters and configurations
-        self.scfgs = SpaceConfigs()
-        self.dcfgs = DistrictConfgs()
-        self.pcfgs = PlanningConfigs()
+        self.scfgs: SpaceConfigs = SpaceConfigs()
+        self.dcfgs: DistrictConfgs = DistrictConfgs()
+        self.pcfgs: PlanningConfigs = PlanningConfigs()
+
+        # configs
+        self.colors: list = []
 
         # params
-        self.cleaning_r = self.pcfgs.cleaning_r_ov
-        self.cleaning_width = 2*self.pcfgs.cleaning_r_ov
-        self.resolution = zone_map_data.reslolution
-        self.min_points_distance = self.pcfgs.min_wp_dist
+        self.cleaning_r: float = self.pcfgs.cleaning_r_ov
+        self.cleaning_width: float = 2*self.pcfgs.cleaning_r_ov
+        self.resolution: float = zone_map_data.resolution
+        self.min_points_distance: float = self.pcfgs.min_wp_dist
 
         # animation
         self.anim_line = None  # for animation
         self.anim = None  # for animation
+
+        # main
+        self.connections: ConnectPaths = ConnectPaths(self.zmd)     # connect paths interface
+        self.dec_interface = None               # decomposition interface (loaded in the main planner)
+        self.all_cell_covp_planners: list = []  # list of cell coverage planners for cells (loaded in the main planner)
 
     def plan(self) -> None:
         self.coverage_planning()
         self.post_planning()
         self.method_post_planning()
 
-    # Virtual methods ==================================================================================================
+    # Planning =========================================================================================================
 
     def coverage_planning(self) -> None:
-        """
-        Virtual method to be implemented by subclasses.
-        """
-        # self.decompose_map()
-        # self.zone_covpp()
-        # self.create_sequence()
-        # self.connect_paths()
-        raise NotImplementedError("coverage_planning() must be implemented by subclasses.")
+        self.decompose_map()
+        self.zone_covpp()
+        self.create_sequence()
+        self.connect_paths()
 
     def decompose_map(self) -> None:
         """
@@ -109,34 +105,28 @@ class CoveragePPBase:
         raise NotImplementedError("zone_covpp() must be implemented by subclasses.")
 
     def create_sequence(self) -> None:
-        """
-        Virtual method to be implemented by subclasses.
-        """
-        raise NotImplementedError("create_sequence() must be implemented by subclasses.")
+        distances = None
+        if self.dcfgs.cell_sequence_method == "s3_milp":
+            self.connections.initialize(self.dec_interface.mcells)
+
+            # calculate all paths and calculate distances between cells
+            self.connections.find_all_connections(self.dec_interface.mcells)
+            self.connections.find_all_distances()
+            distances = self.connections.all_distances
+
+            # #
+            # cg = CellsGraph(self.dec_interface.mcells, self.connections)
+            # distances = cg.dists_m
+
+        #
+        self.dec_interface.create_sequence(distances=distances)
+        self.paths_m = [cell.path_m for cell in self.dec_interface.smcells if cell.do_planning]
+        self.paths_px = [cell.path_px for cell in self.dec_interface.smcells if cell.do_planning]
 
     def connect_paths(self) -> None:
-        """
-        Virtual method to be implemented by subclasses.
-        """
-        raise NotImplementedError("connect_paths() must be implemented by subclasses.")
-
-    def method_post_planning(self) -> None:
-        """
-        Virtual method to be implemented by subclasses.
-        """
-        raise NotImplementedError("method_post_planning() must be implemented by subclasses.")
-
-    def add_cells_to_map_planning(self) -> None:
-        """
-        Virtual method to be implemented by subclasses.
-        """
-        raise NotImplementedError("add_cells_to_map_planning() must be implemented by subclasses.")
-
-    def add_cell_paths_to_map_planning(self) -> None:
-        """
-        Virtual method to be implemented by subclasses.
-        """
-        raise NotImplementedError("add_cell_paths_to_map_planning() must be implemented by subclasses.")
+        self.connections.connect_paths(self.paths_px, self.dec_interface.seq_idxs)
+        self.c_paths_px = self.connections.c_paths_px
+        self.c_paths_m = [self.path_px_to_m(path_px) for path_px in self.c_paths_px]
 
     # Post Planning ====================================================================================================
 
@@ -192,6 +182,33 @@ class CoveragePPBase:
             angle_diff = (angle_diff + np.pi) % (2 * np.pi) - np.pi
             yaw_changes += abs(angle_diff)
         self.st.yaw_changes = round(yaw_changes, 2)
+
+    # Post Planning =========================================================================================================
+
+    def method_post_planning(self) -> None:
+        if not self.dcfgs.save_map_planning:
+            return
+        self.plotter.run(self.dec_interface.mcells)
+        n = self.dec_interface.n_mcells
+        self.colors = get_n_colors_cv(n)
+        self.add_cells_to_map_planning()
+        self.add_cell_paths_to_map_planning()
+
+    def add_cells_to_map_planning(self) -> None:
+        for i, cell in enumerate(self.dec_interface.mcells):
+            pp = cell.points
+            pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
+            map_p = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(100, 100, 100), thickness=2)
+            map_p_fill = self.zmd.map_planning.copy()
+            cv.fillPoly(map_p_fill, [pp], color=self.colors[i])
+            alpha = 0.1
+            self.zmd.map_planning = cv.addWeighted(map_p_fill, alpha, map_p, 1 - alpha, 0)
+
+    def add_cell_paths_to_map_planning(self) -> None:
+        """
+        Virtual method to be implemented by subclasses.
+        """
+        raise NotImplementedError("add_cell_paths_to_map_planning() must be implemented by subclasses.")
 
     # filters ==========================================================================================================
 
@@ -299,7 +316,7 @@ class CoveragePPBase:
         rect_data = self.zmd.final_rect_data
         rot = rect_data["rot"]
         tl = self.zmd.final_rectangle.tl
-        resol = self.zmd.reslolution
+        resol = self.zmd.resolution
         x_0, y_0 = tl[0]*resol, tl[1]*resol  # first vertex (from which rot is calculated)
         # rotate
         new_paths = [[self.rotate_point(p, rot) for p in path_m.points] for path_m in self.paths_m]
@@ -411,7 +428,7 @@ class CoveragePPBase:
             ax.plot(x, y, color="black", linewidth=1)
 
         # # linewidth
-        # mx = self.zmd.orig_map_data.updated_w * self.zmd.reslolution  # original map size in m
+        # mx = self.zmd.orig_map_data.updated_w * self.zmd.resolution  # original map size in m
         # nx = int(fig.get_figwidth() * fig.dpi)
         # lw = 0.5 * self.cleaning_width * nx / mx
         # self.lg.info("lw:", lw)

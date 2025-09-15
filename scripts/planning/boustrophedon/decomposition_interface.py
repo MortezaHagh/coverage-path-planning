@@ -26,7 +26,7 @@ class DecompositionInterface:
         self.n_mcells = 0
 
         # cell decomposition
-        self.decomposed = CellDecomposition(zmd.reslolution, zmd.result_path)
+        self.decomposed = CellDecomposition(zmd.resolution, zmd.result_path)
         # set bounding polygon
         self.decomposed.set_bounding_polygon(map_polygons.b_poly)
         # set obstacle polygons

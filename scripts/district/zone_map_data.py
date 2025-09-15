@@ -26,7 +26,7 @@ class ZoneMapData:
     maps_path: str
     result_path: str
     result_file: str
-    reslolution: float           # resolution m/px
+    resolution: float           # resolution m/px
     orig_map_data: MapData
     orig_rectangle: Rectangle
     rectangle: Rectangle
@@ -52,7 +52,7 @@ class ZoneMapData:
         self.maps_path = None
         self.result_path = None
         self.result_file = None
-        self.reslolution = None
+        self.resolution = None
         self.orig_map_data = None
         self.orig_rectangle = None
         self.rectangle = None
@@ -75,7 +75,7 @@ class ZoneMapData:
 
     def set_orig_map_data(self, map_data: MapData):
         self.orig_map_data = map_data
-        self.reslolution = map_data.up_resolution
+        self.resolution = map_data.up_resolution
         self.set_result_path()
 
     def set_name(self, name: str):

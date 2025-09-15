@@ -258,7 +258,7 @@ class DecompositionInterface:
         for i, ring in enumerate(self.rings):
             c_crit_points = [self.critical_points[j] for j in ring.cp_icp_idxs]
             ring.set_critical_points(c_crit_points)
-            cell = Cell(ind=i, ring=ring, resolution=self.zmd.reslolution)
+            cell = Cell(ind=i, ring=ring, resolution=self.zmd.resolution)
             self.mcells.append(cell)
 
     def set_cell_adjacents(self) -> None:

@@ -36,7 +36,7 @@ class CoveragePP(CoveragePPBase):
 
         # zone rectangle
         rd = self.zmd.final_rect_data  # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-        resol = self.zmd.reslolution
+        resol = self.zmd.resolution
 
         # w, h in meters
         w_m = rd["w"] * resol
