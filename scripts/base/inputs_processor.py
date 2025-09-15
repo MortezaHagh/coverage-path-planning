@@ -1,4 +1,4 @@
-""" get data and setting from input files"""
+""" get data and setting from input files. """
 import os
 import json
 import copy
@@ -10,7 +10,7 @@ from scripts.base.configs import BConfigs
 
 
 class InputsProcessor:
-    """ Read input map image, data and configs """
+    """ Read input map image, data and configs. """
 
     def __init__(self, map_name="Map1"):
         # init
@@ -61,13 +61,13 @@ class InputsProcessor:
         self.paths["pgm"] = os.path.join(self.paths["map"], "merge.pgm")
 
     def check_directory(self) -> None:
-        """ check if directory and map files exist """
+        """ check if directory and map files exist. """
         if not os.path.isdir(self.paths["map"]):
             self.lg.error(f"Directory {self.paths['map']} does not exist")
             raise FileNotFoundError(f"Directory {self.paths['map']} does not exist")
 
     def set_configs(self, yaml_data: dict) -> None:
-        """ read map yaml file and update config object """
+        """ read map yaml file and update config object. """
         self.__configs.map_name = self.map_name
         self.__configs.data_dir = self.paths["data"]
         self.__configs.district_dir = self.paths["district"]

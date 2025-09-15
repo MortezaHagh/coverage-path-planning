@@ -6,7 +6,7 @@ from scripts.base.configs import BConfigs
 
 
 class MapData:
-    """ original and updated map data """
+    """ original and updated map data. """
 
     def __init__(self):
         self.ns: str = "MapData"
@@ -46,7 +46,7 @@ class MapData:
         self.bcfg = bcfg
 
     def set_origin_m(self, origin_m: tuple[float, float]):
-        """ set origin in meters """
+        """ set origin in meters. """
         self.origin_m = origin_m
 
     def set_resolution(self, res):
@@ -120,7 +120,7 @@ class MapData:
         return (mx, my)
 
     def convert_map_to_world(self, p_m: tuple[int, int]) -> tuple[float, float]:  # todo todel
-        """[x, y] [w, h] from map (pixels) to world (meters)"""
+        """[x, y] [w, h] from map (pixels) to world (meters)."""
         p_w_0 = p_m[0] * self.up_resolution + self.orig_w
         p_w_1 = p_m[1] * self.up_resolution + self.orig_h
         return (p_w_0, p_w_1)

@@ -4,7 +4,7 @@ import math
 
 class Event:
     """
-    event for decomposition.
+    event for decomposition. 
     """
 
     def __init__(self, obst_ind: int, ind: int, v: tuple[float, float]):

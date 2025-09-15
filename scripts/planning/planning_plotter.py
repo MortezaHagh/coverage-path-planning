@@ -4,6 +4,8 @@ from scripts.planning.boustrophedon.cell import Cell
 
 
 class PlannerPlotter:
+    """ Plotting and saving figures of the planning results. """
+
     def __init__(self, result_path: str):
         self.result_path = result_path
         self.dcfgs = DistrictConfgs()
@@ -12,9 +14,7 @@ class PlannerPlotter:
         self.fig_mcells_seq = None
 
     def run(self, mcells: list[Cell]):
-        fig_mcells, _ = self.visualize_mcells(mcells)
-        self.fig_mcells = fig_mcells
-        #
+        self.fig_mcells, _ = self.visualize_mcells(mcells)
         self.visualize_cells_sequence(mcells)
 
         # save figures

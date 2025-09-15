@@ -13,7 +13,7 @@ from scripts.planning.contour.decomposition_voronoi import VoronoiSegmentation
 
 
 class DecompositionInterface:
-    """Interface for voronoi decomposition methods."""
+    """Interface for voronoi decomposition methods. """
 
     def __init__(self, zmd: ZoneMapData, map_polygs: MapPolygons):
         self.ns = "DecompositionInterface"
@@ -48,7 +48,7 @@ class DecompositionInterface:
         self.run()
 
     def run(self) -> None:
-        """Run the decomposition process."""
+        """Run the decomposition process. """
 
         # voronoi processing
         vor_dec = VoronoiSegmentation(self.zmd, self.map_polygs)
@@ -70,7 +70,7 @@ class DecompositionInterface:
         self.plot_rings()
 
     def main_segmentation(self, b_poly: Polygon, obs_polys: list[Polygon]) -> None:
-        """Main segmentation process to create rings from critical points."""
+        """Main segmentation process to create rings from critical points. """
         # pre process
         self.create_poly_points_start_ends(b_poly, obs_polys)
         self.create_critical_idxs()
@@ -81,8 +81,8 @@ class DecompositionInterface:
     # Preprocess ===============================================================
 
     def check_critical_points(self, b_poly: Polygon) -> bool:
-        """Check if there are critical points in the Voronoi decomposition.
-            if not, add the boundary polygon as a ring."""
+        """Check if there are critical points in the Voronoi decomposition. 
+            if not, add the boundary polygon as a ring. """
         if len(self.critical_points) > 0:
             return True
         self.lg.warn("No critical points found in the Voronoi decomposition.")
@@ -91,7 +91,7 @@ class DecompositionInterface:
         return False
 
     def create_poly_points_start_ends(self, b_poly: Polygon, obs_polys: list[Polygon]) -> None:
-        """Create start and end indices for polygons in the Voronoi points."""
+        """Create start and end indices for polygons in the Voronoi points. """
         poly_start_idxs = [0]
         poly_end_idxs = [len(b_poly.exterior.coords)-1 - 1]
         for poly in obs_polys:
@@ -111,7 +111,7 @@ class DecompositionInterface:
         # self.critp_ring_dict = {i: set() for i in range(len(self.critical_points))}
 
     def process_loop_basis(self) -> None:
-        """ find critical points that if starintg from them in a poly, end to them without passing other cp"""
+        """ find critical points that if starintg from them in a poly, end to them without passing other cp. """
         for i in range(1, len(self.poly_start_idxs)):
             n_bs = 0
             start_idx = self.poly_start_idxs[i]
@@ -132,7 +132,7 @@ class DecompositionInterface:
     # rings ====================================================================
 
     def create_all_segments(self) -> None:
-        """Create segments (rings) for all critical points."""
+        """Create segments (rings) for all critical points. """
         n_ring = 0
         for _ in range(2):
             for i, cp in enumerate(self.critical_points):
@@ -156,7 +156,7 @@ class DecompositionInterface:
         self.lg.info(f"Created {len(self.rings)} rings.")
 
     def create_cp_segment(self, i_cp: int, cp: CriticalPoint) -> Ring:
-        """Create a segment (ring) for a critical point."""
+        """Create a segment (ring) for a critical point. """
 
         n_points = len(self.vor.points)
         if cp.n_passed > 2:
@@ -253,7 +253,7 @@ class DecompositionInterface:
     # Cell =====================================================================
 
     def create_cells(self):
-        """Create cells from the rings."""
+        """Create cells from the rings. """
         self.lg.info(f"Creating cells from {len(self.rings)} rings.")
         for i, ring in enumerate(self.rings):
             c_crit_points = [self.critical_points[j] for j in ring.cp_icp_idxs]
@@ -262,7 +262,7 @@ class DecompositionInterface:
             self.mcells.append(cell)
 
     def set_cell_adjacents(self) -> None:
-        """Set adjacent cells for each cell based on touching polygons."""
+        """Set adjacent cells for each cell based on touching polygons. """
         # method 1: using touches
         self.lg.info("Setting cell adjacents")
         for i, cell in enumerate(self.mcells):
@@ -273,7 +273,7 @@ class DecompositionInterface:
                     cell.add_adjacent_id(j)
 
     def process_cells(self) -> None:
-        """processing cells"""
+        """processing cells. """
         self.lg.info("Processing cells")
         for cell in self.mcells:
             cell.process_cell()

@@ -13,8 +13,8 @@ from scripts.planning.contour.common import VPoint, CriticalPoint
 
 
 class VoronoiSegmentation:
-    """ Voronoi decomposition of the zone map.
-        Finding critical points in Voronoi vertices.
+    """ Voronoi decomposition of the zone map. 
+        Finding critical points in Voronoi vertices. 
     """
 
     def __init__(self, zmd: ZoneMapData, map_polygs: MapPolygons):
@@ -52,7 +52,7 @@ class VoronoiSegmentation:
         self.critical_points: list[CriticalPoint] = []  # critical points
 
     def voronoi_decomposition(self) -> None:
-        """ Main method to perform Voronoi decomposition."""
+        """ Main method to perform Voronoi decomposition. """
         self.process_polygons()
         self.find_voronoi()
         self.find_free_vertices()
@@ -69,8 +69,8 @@ class VoronoiSegmentation:
         self.plot_voronoi()
 
     def process_polygons(self):
-        """ Process polygons to ensure they are suitable for Voronoi decomposition.
-            Adding points to polygons if needed."""
+        """ Process polygons to ensure they are suitable for Voronoi decomposition. 
+            Adding points to polygons if needed. """
 
         # process bounding polygon
         b_poly = self.process_polygon(self.b_poly)
@@ -87,7 +87,7 @@ class VoronoiSegmentation:
         self.obs_polys = obs_polys
 
     def find_voronoi(self):
-        """ Find Voronoi diagram based on the bounding polygon and obstacle polygons."""
+        """ Find Voronoi diagram based on the bounding polygon and obstacle polygons. """
         self.lg.info("Finding Voronoi diagram.")
         # all polygon points
         points = self.b_poly.exterior.coords[:-1]
@@ -99,9 +99,9 @@ class VoronoiSegmentation:
             raise ValueError("Getting Voronoi failed!")
 
     def find_free_vertices(self):
-        """ create all Voronoi vertices as VPoint objects (v_points).
-        evaluete if they are inside the bounding polygon and outside obstacles.
-        set features: [free], [in_bd_poly]"""
+        """ create all Voronoi vertices as VPoint objects (v_points). 
+        evaluete if they are inside the bounding polygon and outside obstacles. 
+        set features: [free], [in_bd_poly]. """
 
         # Voronoi vertices
         vertices = self.vor.vertices
@@ -129,8 +129,8 @@ class VoronoiSegmentation:
         self.vps_free = np.array(verts_out_obst)
 
     def find_ridge_vpoints(self):
-        """ Evaluate ridge vertices of Voronoi diagram.
-            set features: [n_feas_ridges], [ridge_vps], [has_inf_adj]."""
+        """ Evaluate ridge vertices of Voronoi diagram. 
+            set features: [n_feas_ridges], [ridge_vps], [has_inf_adj]. """
 
         # if both ridge vertices are free, then [ridge_vps] and [n_feas_ridges] for each ridge point are updated.
         # if one of the ridge vertices is -1, then it is an infinite vertex and [has_inf_adj] is set to True.
@@ -150,7 +150,7 @@ class VoronoiSegmentation:
                 self.v_points[idx].has_inf_adj = True
 
     def set_basis_points_a_feasibility(self):
-        """ set [feasible] and [basis_points] for points based on the number of feasible ridges.
+        """ set [feasible] and [basis_points] for points based on the number of feasible ridges. 
             basis_dists and clearance are also set. """
         vor = self.vor
         vps = self.v_points
@@ -165,18 +165,18 @@ class VoronoiSegmentation:
     # adjacents - critical poin ================================================
 
     def find_min_n_adjacents(self):
-        """ setting minimum number of adjacent Voronoi vertices. (for finding adjacents by distance)"""
+        """ setting minimum number of adjacent Voronoi vertices. (for finding adjacents by distance). """
         min_n = len(self.vps_free) // 10  # at least 10% of the Voronoi vertices
         self.min_n_adjacents = max(self.fixed_min_n_adj, min_n)
 
     def calculate_adj_dist_ub(self) -> float:
-        """ Calculate the upper bound for the distance between adjacent Voronoi vertices."""
+        """ Calculate the upper bound for the distance between adjacent Voronoi vertices. """
         dist_threshold = 2 * self.robot_r_px  # todo param
         self.lg.debug(f"Calculated distance threshold: {dist_threshold:.2f}")
         return dist_threshold
 
     def find_adjacents_by_distance(self, adj_dist_ub: float = 10.0):
-        """ Find adjacent Voronoi vertices based on a distance and [min_n_adjacents][min_n_adjacents] params."""
+        """ Find adjacent Voronoi vertices based on a distance and [min_n_adjacents][min_n_adjacents] params. """
 
         self.lg.info(f"Finding adjacent Voronoi vertices within distance {adj_dist_ub:.2f}.")
         vertex_adj_idxs = defaultdict(list)
@@ -244,7 +244,7 @@ class VoronoiSegmentation:
     # critical poin ============================================================
 
     def find_critical_points(self):
-        """ finding critical points from v points: voronoi vertices with minimum clearance to obstacles."""
+        """ finding critical points from v points: voronoi vertices with minimum clearance to obstacles. """
 
         self.lg.info2("Finding critical points in Voronoi vertices.")
         critical_idxs = []
@@ -302,7 +302,7 @@ class VoronoiSegmentation:
     # process_polygon ==========================================================
 
     def process_polygon(self, poly_t: Polygon, reverse: bool = False):
-        """ Process polygons and add points if needed."""
+        """ Process polygons and add points if needed. """
         poly = self.process_polygon_1(poly_t)
         poly = self.process_polygon_2(poly)
         if reverse:
@@ -310,8 +310,8 @@ class VoronoiSegmentation:
         return poly
 
     def process_polygon_1(self, poly: Polygon):
-        """ check distance between points of the polygon.
-            add points if the distance between them is greater than a threshold.
+        """ check distance between points of the polygon. 
+            add points if the distance between them is greater than a threshold. 
         """
 
         robot_r_px = self.robot_r_px
@@ -340,7 +340,7 @@ class VoronoiSegmentation:
             return poly
 
     def process_polygon_2(self, poly: Polygon):
-        """  if edge is larger than neighboring edges, add points between them """
+        """  if edge is larger than neighboring edges, add points between them. """
         points = np.array(poly.exterior.coords)
         points = np.insert(points, 0, points[-1], axis=0)  # add last point to the beginning
         points = np.append(points, [points[1]], axis=0)  # add second point to the end

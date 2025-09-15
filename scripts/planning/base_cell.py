@@ -3,7 +3,7 @@ from scripts.base.my_utils import MyPoint, MyPath
 
 
 class BaseCell:
-    """Base class for cells in the boustrophedon coverage path planning."""
+    """Base class for cells in the boustrophedon coverage path planning. """
 
     def __init__(self, ind: int, poly: Polygon):
         self.id: int = ind

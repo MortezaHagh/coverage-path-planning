@@ -86,7 +86,7 @@ def find_largest_inscribed_rectangle(mask):
 
 
 def find_largest_in_rectangle(map_i: np.ndarray) -> dict:
-    """ find largest rectangle in the biggest open space contour """
+    """ find largest rectangle in the biggest open space contour. """
     # Find contours
     contours, _ = cv.findContours(map_i, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 

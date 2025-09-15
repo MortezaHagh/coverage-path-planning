@@ -44,7 +44,7 @@ class Cell (BaseCell):
         self.find_min_clearance()
 
     def find_min_clearance(self) -> None:
-        """ Find the minimum clearance of the cell based on critical points """
+        """ Find the minimum clearance of the cell based on critical points. """
         if not self.ring.cp_points:
             self.basic = True
             self.lg.warn("No critical points set for the cell, marking as basic.")
@@ -56,7 +56,7 @@ class Cell (BaseCell):
     # modify cell ==============================================================
 
     def process_cell(self) -> None:
-        """ main function to process the cell """
+        """ main function to process the cell. """
 
         # modify the cell by removing points that are too close to critical points
         self.modify_cell()
@@ -66,7 +66,7 @@ class Cell (BaseCell):
             self.eval_cell()
 
     def modify_cell(self) -> None:
-        """ Modify the cell by removing points that are too close to critical points """
+        """ Modify the cell by removing points that are too close to critical points. """
 
         min_d = self.robot_r_px * 1.0
 
@@ -151,13 +151,13 @@ class Cell (BaseCell):
         # )
 
     def eval_rectangle_like_circumscribed(self, rect_circ_area) -> None:
-        """ Evaluate if the cell is rectangle-like based on the area ratio of the cell and the circumscribed rectangle """
+        """ Evaluate if the cell is rectangle-like based on the area ratio of the cell and the circumscribed rectangle. """
         k1 = 0.8
         cell_rect_circ_area_ratio = self.area/rect_circ_area
         self.rect_circ_like = cell_rect_circ_area_ratio >= k1
 
     def create_inscribed_rectangle(self, rect_circ_poly, circle_insc_center, circle_insc_radius) -> Polygon:
-        """ Create an inscribed rectangle inside the circumscribed rectangle of the cell basde on the inscribed circle """
+        """ Create an inscribed rectangle inside the circumscribed rectangle of the cell basde on the inscribed circle. """
 
         # calculate the angle of the rectangle
         rect_circ_coords = np.array(rect_circ_poly.exterior.coords)
@@ -214,7 +214,7 @@ class Cell (BaseCell):
         return best_poly
 
     def expand_inscribed_rectangle_1(self, inscribed_rect_poly: Polygon, circle_insc_center) -> Polygon:
-        """ expand in 4 directions """
+        """ expand in 4 directions. """
 
         # find step
         step = self.robot_r_px
@@ -368,7 +368,7 @@ class Cell (BaseCell):
         return expanded_rect_poly
 
     def expand_inscribed_rectangle_3(self, inscribed_rect_poly: Polygon) -> Polygon:
-        """ expand based on the biggest edge """
+        """ expand based on the biggest edge. """
 
         # step
         step = self.robot_r_px

@@ -33,13 +33,13 @@ class DistrictData:
         self.zone_datas: list[ZoneData] = []  # zones
 
     def create_zones_hl(self) -> None:
-        """create all zones in the district and create map_planning (high level)"""
+        """create all zones in the district and create map_planning (high level). """
         self.create_zones()
         self.update_map_planning()
         # self.save_map_planning()
 
     def run_coverage_planning(self) -> None:
-        """run coverage planning for all zones"""
+        """run coverage planning for all zones. """
         for zd in self.zone_datas:
             self.lg.info(f" ************** Planning on Zone: {zd.ind} ************** ")
             zd.coverage_planning()
@@ -50,7 +50,7 @@ class DistrictData:
     # ==================================================================================================================
 
     def create_zones(self) -> None:
-        """ create zones and zone map data based on the rectangle method """
+        """ create zones and zone map data based on the rectangle method. """
         self.lg.info1("Step: creating zones [ZoneData] and their map data")
 
         # create zones rectangles
@@ -69,7 +69,7 @@ class DistrictData:
             self.zone_datas.append(zd)
 
     def update_map_planning(self) -> None:
-        """ update district map_planning based on all zones map_planning """
+        """ update district map_planning based on all zones map_planning. """
         mapp = self.dmd.map_planning.copy()
         for zd in self.zone_datas:
             x1, y1 = zd.zmd.hw_bd_px["h_min"], zd.zmd.hw_bd_px["w_min"]
@@ -128,7 +128,7 @@ class DistrictData:
         return [rect1, rect2]
 
     def create_one_zone_rectangle(self) -> Rectangle:
-        """ create one zone rectangle covering the whole district """
+        """ create one zone rectangle covering the whole district. """
         data = self.dmd.final_rect_data
         h = data["h"]
         w = data["w"]

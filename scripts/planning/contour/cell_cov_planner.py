@@ -38,7 +38,7 @@ class CellCoveragePathPlanner:
         self.coverage_planning()
 
     def coverage_planning(self) -> None:
-        """ Main function to plan the coverage path for the cell """
+        """ Main function to plan the coverage path for the cell. """
         if not self.cell.do_planning:
             self.lg.warn(f"cell {self.cell.id} does not require planning.")
             return
@@ -47,7 +47,7 @@ class CellCoveragePathPlanner:
         self.create_path_m()
 
     def calculate_path_by_poly_buffer(self) -> None:
-        """ Calculate the coverage path by scaling the polygon of the cell """
+        """ Calculate the coverage path by scaling the polygon of the cell. """
         poly = self.cell.poly
         # scale the polygon to smaller size
 
@@ -79,7 +79,7 @@ class CellCoveragePathPlanner:
         self.path_px = MyPath(points)
 
     def calculate_path_combinaiton(self) -> None:
-        """ Calculate the coverage path by distance transform and inscribed rectangle if available """
+        """ Calculate the coverage path by distance transform and inscribed rectangle if available. """
 
         robot_r_px = int(self.pcfgs.cleaning_r_ov / self.resolution)
         points = []
@@ -113,7 +113,7 @@ class CellCoveragePathPlanner:
         self.path_px = path_px
 
     def complete_path_by_rectangle(self, points: list, robot_r_px: int) -> MyPath:
-        """ Complete the path using the inscribed rectangle of the cell """
+        """ Complete the path using the inscribed rectangle of the cell. """
 
         rect = self.cell.rectangle
         robot_d_px = int(robot_r_px * 2)
@@ -257,7 +257,7 @@ class CellCoveragePathPlanner:
         return MyPath(points)
 
     def find_poly_by_dist(self, dist_transform: np.ndarray, dist: int, tolerance: int = 1) -> list[Polygon]:
-        """ Find polygons in the distance transform map that are close to the target distance """
+        """ Find polygons in the distance transform map that are close to the target distance. """
 
         # Binary mask of pixels close to target distance
         mask = (dist_transform >= dist - tolerance) & (dist_transform <= dist + tolerance)
@@ -288,12 +288,12 @@ class CellCoveragePathPlanner:
     # ==========================================================================
 
     def rearrange_polys_by_area(self, polys: list[Polygon]) -> list[Polygon]:
-        """ Rearrange polygons by area in descending order """
+        """ Rearrange polygons by area in descending order. """
         polys.sort(key=lambda p: p.area, reverse=True)
         return polys
 
     def rearrange_points(self, point: np.ndarray, points: np.ndarray) -> np.ndarray:
-        """ Rearrange points starting from the closest point to the given point """
+        """ Rearrange points starting from the closest point to the given point. """
         # Find the index of the closest point to the given point
         idx = self.find_closest_point_idx(point, points)
         # Rearrange points starting from the closest point
@@ -303,7 +303,7 @@ class CellCoveragePathPlanner:
         return rearranged_points
 
     def rearrange_points_by_idx(self, idx: int, points: np.ndarray) -> np.ndarray:
-        """ Rearrange points starting from idx """
+        """ Rearrange points starting from idx. """
         if idx < 0 or idx >= len(points):
             self.lg.error(f"Index {idx} is out of bounds for points list.")
             return points
@@ -312,7 +312,7 @@ class CellCoveragePathPlanner:
         return np.concatenate((points[idx:], points[:idx]), axis=0)
 
     def find_closest_point_idx(self, p: np.ndarray, points: np.ndarray) -> int:
-        """ Find the index of the closest point to p in points """
+        """ Find the index of the closest point to p in points. """
         dists = [np.linalg.norm(np.array(p) - np.array(pt)) for pt in points]
         return np.argmin(dists)
 

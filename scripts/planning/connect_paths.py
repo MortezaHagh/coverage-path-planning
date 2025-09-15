@@ -10,24 +10,23 @@ OCCUPIED = 0
 
 
 class ConnectPaths:
-    """ Connect cell paths """
-    zmd: ZoneMapData
-    fp: 'FindPathInMap'
-    all_connection_paths: np.ndarray  # 2D array of paths between cells
-    all_distances: np.ndarray | None  # 2D array of distances between cells
-    c_paths_px: list[MyPath]
+    """ Connect cell paths. 
+    Find paths between end of one cell and start of the next cell in the map. 
+    Uses A* algorithm (skimage.graph.route_through_array) to find the shortest path in the occupancy grid. 
+    """
 
     def __init__(self, zone_map_data: ZoneMapData):
         self.ns = "ConnectPaths"
         self.lg = MyLogger(self.ns)
-        #
-        self.fp = FindPathInMap(zone_map_data)
+
+        # find path in map object
+        self.fp: 'FindPathInMap' = FindPathInMap(zone_map_data)
 
         #
-        self.zmd = zone_map_data
-        self.all_connection_paths = np.array([])
-        self.all_distances = None
-        self.c_paths_px = []
+        self.zmd: ZoneMapData = zone_map_data
+        self.all_connection_paths: np.ndarray = np.array([])    # 2D array of paths between cells
+        self.all_distances: np.ndarray | None = None            # 2D array of distances between cells
+        self.c_paths_px: list[MyPath] = []
 
     def initialize(self, mcells: list[BaseCell]):
         n = len(mcells)
@@ -116,18 +115,20 @@ class ConnectPaths:
 
 
 class FindPathInMap:
-    """ Find path between two points in map """
-    occ_map: np.ndarray
-    path_px: list[tuple[int, int]] | None
+    """ class for finding path between two points in map. """
 
     def __init__(self, zmd: ZoneMapData):
         self.ns = "FindPathInMap"
         self.lg = MyLogger(self.ns)
-        self.occ_map = zmd.map_ws
+        # map and start point
+        self.occ_map: np.ndarray = zmd.map_ws
         self.s_x = zmd.rectangle.x_min
         self.s_y = zmd.rectangle.y_min
 
     def distance(self, p1: MyPoint, p2: MyPoint) -> float:
+        """ Calculate distance between two points in the map. 
+            First find path, then calculate its length.
+        """
         path: MyPath = self.find_path(p1, p2)
         if path is None or len(path.points) == 0:
             return float('inf')
@@ -138,7 +139,7 @@ class FindPathInMap:
         return length
 
     def find_path(self, start: MyPoint, end: MyPoint) -> MyPath:
-        """ Find path in map from start to end """
+        """ Find path in map from start to end. """
 
         # get map
         occ_map = self.occ_map
@@ -171,7 +172,7 @@ class FindPathInMap:
         return path_px
 
     def find_closest_free_cell(self, point: tuple[int, int]) -> tuple[int, int]:
-        """ if point is in the free cell, return it, otherwise find the closest free cell """
+        """ if point is in the free cell, return it, otherwise find the closest free cell. """
         # get map
         occ_map = self.occ_map
 

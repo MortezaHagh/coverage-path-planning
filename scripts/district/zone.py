@@ -20,7 +20,7 @@ else:
 
 
 class ZoneStats:
-    """Zone statistics class to store zone statistics
+    """Zone statistics class to store zone statistics. 
     Attributes:
         cleaning_area_px (int): area to be cleaned in pixels
         cleaning_area_m (float): area to be cleaned in square meters
@@ -43,7 +43,7 @@ class ZoneStats:
         self.overlap_p = None
 
     def get_data_dict(self) -> dict:
-        """Get statistics data as a dictionary."""
+        """Get statistics data as a dictionary. """
         return {
             "cleaning_area_px": int(self.cleaning_area_px),
             "cleaning_area_m": float(self.cleaning_area_m),
@@ -62,7 +62,7 @@ class ZoneStats:
 
 
 class ZoneData:
-    """ Zone Data class to store zone map data and run coverage planning 
+    """ Zone Data class to store zone map data and run coverage planning.  
 
     Attributes:
         ind (int): zone index
@@ -100,14 +100,14 @@ class ZoneData:
         # self.save_map_planning()
 
     def coverage_planning(self):
-        """ run coverage path planning for the zone and then post planning """
+        """ run coverage path planning for the zone and then post planning. """
         self.cov_planner.plan()
         self.post_planning()
         # self.save_map_planning()
 
     def post_planning(self):
         """ post planning after coverage path planning. 
-        calculating stats and updating map_planning and map_clean_data
+        calculating stats and updating map_planning and map_clean_data. 
         """
         self.calculate_cleaning_area()
         self.add_cleaned_area_to_map()
@@ -136,7 +136,7 @@ class ZoneData:
         self.st.coverage_p = round(self.st.cleaned_area_m / self.st.cleaning_area_m * 100, 2)
 
     def add_cleaned_area_to_map(self):
-        """ add cleaned area to map_clean_data and update map_planning with cleaning paths """
+        """ add cleaned area to map_clean_data and update map_planning with cleaning paths. """
 
         # map_cleaning: from zone map data (without any paths)
         # used for creating map_clean_data
@@ -205,7 +205,7 @@ class ZoneData:
     # ==================================================================================================================
 
     def create_map_planning(self):
-        """ create initial map_planning with zone boundary """
+        """ create initial map_planning with zone boundary. """
         map_planning = self.zmd.map_planning
         vertices = self.zmd.vertices
         map_planning = cv.polylines(map_planning, [vertices], isClosed=True, color=(100, 0, 150), thickness=2)
@@ -220,7 +220,7 @@ class ZoneData:
         # self.lg.info(f"{self.zmd.ind}][save]: map planning saved to: {m_name}")
 
     def save_map_cleaning_data(self):
-        """ save map showing cleaned area and uncleaned area """
+        """ save map showing cleaned area and uncleaned area. """
         if not self.dcfg.save_map_planning:
             return
         m_name = "map_cleaned.png"
@@ -233,7 +233,7 @@ class ZoneData:
     #     return (int(p[0] / res), int(p[1] / res))
 
     def save_result(self):
-        """ save zone statistics and planner statistics of the zone to json file """
+        """ save zone statistics and planner statistics of the zone to json file. """
         # save zone statistics to json file
         zone_stats = self.st.get_data_dict()
         planner_stats = self.cov_planner.st.get_data_dict()

@@ -9,7 +9,7 @@ from scripts.planning.contour.decomposition_interface import DecompositionInterf
 
 
 class CoveragePP(CoveragePPBase):
-    """  contour based coverage path planning."""
+    """  contour based coverage path planning. """
 
     def __init__(self, zone_map_data: ZoneMapData):
         super().__init__(zone_map_data)

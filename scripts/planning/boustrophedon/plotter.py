@@ -4,8 +4,8 @@ from scripts.planning.boustrophedon.cell import Cell, CellGroup
 
 
 class BoustPlotter:
-    """Boustrophedon decomposition plotter.
-        plots: boust cells and mcells 
+    """Boustrophedon decomposition plotter. 
+        plots: boust cells and mcells. 
     """
 
     def __init__(self, dec_obj):

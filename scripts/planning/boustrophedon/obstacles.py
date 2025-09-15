@@ -33,7 +33,7 @@ class Obstacle:
         self.poly = Polygon([Point(e.xy[0], e.xy[1]) for e in self.events])
 
     def eval_vertices_line(self, vertices: list[tuple[float, float]]) -> list[tuple[float, float]]:
-        """Remove vertices that are on the same vertical line between two other vertices, then create events."""
+        """Remove vertices that are on the same vertical line between two other vertices, then create events. """
         n_v = len(vertices)
         rem = set()
         i = 0

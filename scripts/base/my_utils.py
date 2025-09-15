@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 
 
 class MyPoint:
-    """ simple point class x, y"""
+    """ simple point class x, y. """
 
     def __init__(self, x=None, y=None):
         self.x = x
@@ -16,7 +16,7 @@ class MyPoint:
 
 
 class MyPath:
-    """ simple path class - list of points (MyPoint) """
+    """ simple path class - list of points (MyPoint). """
 
     def __init__(self, points: list[MyPoint] = None):
         self.points: list[MyPoint] = points

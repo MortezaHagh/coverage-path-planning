@@ -1,4 +1,4 @@
-""" Main function to run the program """
+""" Main function to run the program. """
 import sys
 # import cv2 as cv
 import numpy as np

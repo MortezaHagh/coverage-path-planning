@@ -9,7 +9,7 @@ from scripts.planning.boustrophedon.decomposition_interface import Decomposition
 
 
 class CoveragePP(CoveragePPBase):
-    """  Boustrophedon coverage path planning."""
+    """  Boustrophedon coverage path planning. """
 
     def __init__(self, zone_map_data: ZoneMapData):
         super().__init__(zone_map_data)

@@ -17,57 +17,35 @@ def convert_to_native(data: dict) -> dict:
 
 
 class ZoneMapData:
-    """ZoneMapData class to store zone map data
-        values are in pixel by default
+    """ZoneMapData class to store zone map data. 
+        values are in pixel by default. 
     """
-    ind: int
-    name: str
-    zone_path: str
-    maps_path: str
-    result_path: str
-    result_file: str
-    resolution: float           # resolution m/px
-    orig_map_data: MapData
-    orig_rectangle: Rectangle
-    rectangle: Rectangle
-    final_rectangle: Rectangle
-    rect_data: dict                     # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-    vertices: list[tuple[int, int]]     # vertices: [(x, y), ...]
-    hw_bd_px: dict                      # for map not rectangle {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
-    final_vertices: np.ndarray          # vertices: [(x, y), ...]
-    _final_rect_data: dict              # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-    hw_px: tuple[int, int]
-    map_orig: np.ndarray
-    map_sf_orig: np.ndarray
-    map_cleaning: np.ndarray
-    map_ws: np.ndarray
-    #
-    map_planning: np.ndarray
-    map_clean_data: np.ndarray
 
     def __init__(self, ind: int = 0):
-        self.ind = ind
-        self.name = f"Zone_{self.ind}"
-        self.zone_path = None
-        self.maps_path = None
-        self.result_path = None
-        self.result_file = None
-        self.resolution = None
-        self.orig_map_data = None
-        self.orig_rectangle = None
-        self.rectangle = None
-        self.final_rectangle = None
-        self.rect_data = None
-        self.vertices = None
-        self.hw_bd_px = None
-        self.final_vertices = None
-        self._final_rect_data = None
-        self.hw_px = None
-        self.map_orig = None
-        self.map_sf_orig = None
-        self.map_cleaning = None
-        self.map_ws = None
-        self.map_planning = None
+        self.ind: int = ind
+        self.name: str = f"Zone_{self.ind}"
+        self.zone_path: str = None
+        self.maps_path: str = None
+        self.result_path: str = None
+        self.result_file: str = None
+        #
+        self.resolution: float = None
+        self.orig_map_data: MapData = None
+        self.orig_rectangle: Rectangle = None
+        self.rectangle: Rectangle = None
+        self.final_rectangle: Rectangle = None
+        self.rect_data: dict = None                 # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        self.vertices: list[tuple[int, int]] = None  # vertices: [(x, y), ...]
+        self.hw_bd_px: dict = None                  # for map not rectangle {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
+        self.final_vertices: np.ndarray = None      # vertices: [(x, y), ...]
+        self._final_rect_data: dict = None          # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        self.hw_px: tuple[int, int] = None
+        self.map_orig: np.ndarray = None
+        self.map_sf_orig: np.ndarray = None
+        self.map_cleaning: np.ndarray = None
+        #
+        self.map_ws: np.ndarray = None
+        self.map_planning: np.ndarray = None
 
     @property
     def final_rect_data(self) -> int:
@@ -139,8 +117,8 @@ class ZoneMapData:
         self.final_rectangle = Rectangle(self.final_rect_data)
 
     def save_data(self) -> None:
-        """ save zone map data to files
-            maps, local_map.json
+        """ save zone map data to files. 
+            maps, local_map.json. 
         """
 
         #

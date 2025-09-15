@@ -25,7 +25,7 @@ class VPoint:
         self.ridge_vps: list[VPoint] = []           # Free Voronoi vertex that is a ridge point for this Voronoi vertex
 
     def set_basis_points(self, basis_idxs: np.ndarray, points: np.ndarray):
-        """ Set the basis points (closest obstacle points) for the Voronoi point and calculate their distances."""
+        """ Set the basis points (closest obstacle points) for the Voronoi point and calculate their distances. """
         if basis_idxs is None or len(basis_idxs) < 2:
             raise ValueError("Basis indices must be provided and contain at least two indices.")
         self.basis_idxs = basis_idxs
@@ -40,8 +40,8 @@ class VPoint:
         self.clearance = round(np.sum(dists), 2)
 
     def set_adjacent_vp_idxs(self, adj_vp_idxs: np.ndarray):
-        """ Set the indices of adjacent Voronoi points. 
-            adjacents based on the distance and min-max number of adjacents"""
+        """ Set the indices of adjacent Voronoi points.  
+            adjacents based on the distance and min-max number of adjacents. """
         self.adjacent_vp_idxs = adj_vp_idxs
 
     def set_adjacents_vp_dists(self, dists: np.ndarray):

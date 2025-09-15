@@ -15,6 +15,8 @@ from scripts.base.my_utils import get_n_colors_cv
 
 
 class PlannerStats:
+    """ Statistics of the planner. """
+
     def __init__(self):
         self.n_paths = 0
         self.len_m = 0.0
@@ -29,7 +31,7 @@ class PlannerStats:
 
 
 class CoveragePPBase:
-    """ Base class for coverage path planning."""
+    """ Base class for coverage path planning. """
 
     def __init__(self, zone_map_data: ZoneMapData):
         self.ns: str = "CoveragePPBase"
@@ -76,8 +78,8 @@ class CoveragePPBase:
 
         # main
         self.connections: ConnectPaths = ConnectPaths(self.zmd)     # connect paths interface
-        self.dec_interface = None               # decomposition interface (loaded in the main planner)
-        self.all_cell_covp_planners: list = []  # list of cell coverage planners for cells (loaded in the main planner)
+        self.dec_interface = None                                   # decomposition interface (loaded in the main planner)
+        self.all_cell_covp_planners: list = []                      # list of cell coverage planners for cells (loaded in the main planner)
 
     def plan(self) -> None:
         self.coverage_planning()
@@ -94,13 +96,13 @@ class CoveragePPBase:
 
     def decompose_map(self) -> None:
         """
-        Virtual method to be implemented by subclasses.
+        Virtual method to be implemented by subclasses. 
         """
         raise NotImplementedError("decompose_map() must be implemented by subclasses.")
 
     def zone_covpp(self) -> None:
         """
-        Virtual method to be implemented by subclasses.
+        Virtual method to be implemented by subclasses. 
         """
         raise NotImplementedError("zone_covpp() must be implemented by subclasses.")
 
@@ -213,7 +215,7 @@ class CoveragePPBase:
     # filters ==========================================================================================================
 
     def apply_distance_filter_all_paths(self) -> None:
-        """ FIlter all paths based on the minimum distance between waypoints."""
+        """ FIlter all paths based on the minimum distance between waypoints. """
         min_wp_dist_px = self.min_points_distance / self.resolution  # convert to px
 
         # pixel paths
@@ -245,7 +247,7 @@ class CoveragePPBase:
         self.c_paths_m = new_c_paths_m
 
     def apply_distance_filter_path(self, path: MyPath, min_wp_dist_px: int) -> MyPath:
-        """ Filter the full path based on the minimum distance between waypoints."""
+        """ Filter the full path based on the minimum distance between waypoints. """
         new_points = []
         prev_point = path.point(0)
         new_points.append(prev_point)
@@ -333,7 +335,7 @@ class CoveragePPBase:
     # Plots ============================================================================================================
 
     def plot_paths_px(self) -> None:
-        """ Plot the calculated coverage paths and connections between them."""
+        """ Plot the calculated coverage paths and connections between them. """
         if not self.dcfgs.save_map_planning:
             return
         fig, ax = plt.subplots(1, 1)

@@ -8,7 +8,7 @@ from scripts.base.map_data import MapData
 
 
 class MapImageProcessor:
-    """ process map pgm file and create MapData """
+    """ process map pgm file and create MapData. """
 
     def __init__(self, map_arr: np.ndarray, bconfigs: BConfigs):
 
@@ -41,7 +41,7 @@ class MapImageProcessor:
         return copy.deepcopy(self.__map_data)
 
     def check_map(self, image):
-        """ check if map image is loaded """
+        """ check if map image is loaded. """
         if image is None:
             raise ValueError("Image not found or the format is not supported")
         if len(image.shape) > 2:
@@ -55,7 +55,7 @@ class MapImageProcessor:
         self.__map_data.set_orig_map(map_arr)
 
     def process_map(self) -> np.ndarray:
-        """ create denoised binary map """
+        """ create denoised binary map. """
         self.lg.info2("processing of the map image")
         binary_map = self.convert_to_binary()
         denoised_map = self.remove_noise(binary_map)
@@ -75,7 +75,7 @@ class MapImageProcessor:
         return denoised_map
 
     def complete_map_data(self):
-        """ set resolution [and updated resolution] in map data """
+        """ set resolution [and updated resolution] in map data. """
         self.__map_data.set_resolution(self.__bcfg.resolution)
 
     def visualize_map(self, pgm_data_in: np.ndarray, disp_name: str = "Map") -> None:

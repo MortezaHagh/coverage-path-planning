@@ -6,7 +6,7 @@ from scripts.planning.connect_paths import ConnectPaths
 
 
 class CellsGraph:
-    """Graph representation of cells with distances and adjacency information."""
+    """Graph representation of cells with distances and adjacency information. """
     n_cells: int
     cells: list[BaseCell]
     con_path: ConnectPaths
@@ -70,7 +70,7 @@ class CellsGraph:
         self.adj_inds = adj_inds
 
     def find_all_distances(self):
-        """Calculate all distances between cells using Dijkstra's algorithm."""
+        """Calculate all distances between cells using Dijkstra's algorithm. """
         for i in range(self.n_cells):
             for j in range(self.n_cells):
                 if i == j:

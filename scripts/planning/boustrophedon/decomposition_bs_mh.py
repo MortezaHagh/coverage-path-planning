@@ -446,7 +446,7 @@ class MHDecomposition:
     # ==================================================================================================================
 
     def eval_planning_area(self):
-        """check if area of the cell is enough for planning"""
+        """check if area of the cell is enough for planning. """
         for cell in self.mcells:
             cell.eveal_planning_area(self.resolution, self.bcfgs.cleaning_r)
 
