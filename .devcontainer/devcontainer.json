@@ -38,6 +38,7 @@
 			"ms-python.python",
 			"ms-python.autopep8",
 			"hediet.vscode-drawio",
+			"eamodio.gitlens",
 			"mhutchie.git-graph"
 		]
 	}
