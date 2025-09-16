@@ -1,3 +1,5 @@
+""" using CellsGraph to create optimized sequence of cells to be covered. """
+
 import numpy as np
 import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp

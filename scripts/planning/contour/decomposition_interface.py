@@ -278,24 +278,7 @@ class DecompositionInterface:
         for cell in self.mcells:
             cell.process_cell()
 
-    # Sequence =====================================================================
-
-    def create_sequence(self, distances: np.ndarray = None) -> None:
-        if len(self.mcells) == 0:
-            return
-        elif len(self.mcells) == 1:
-            self.smcells = self.mcells
-            return
-
-        #
-        start_cell_idx = 0
-        if self.zmd.orig_map_data.name == "map_fr52":
-            start_cell_idx = 4
-
-            # create optimized sequence of cells
-        opt_seq = OptimCellsSeq(mcells=self.mcells, distances=distances, start_cell_idx=start_cell_idx)
-        self.seq_idxs = opt_seq.tour_idxs
-        self.smcells = [self.mcells[i] for i in opt_seq.tour_idxs]
+    # Plotting =========================================================================================================
 
     def plot_rings(self) -> None:
         if not (self.dcfgs.plot_decomposition or self.dcfgs.save_decomposition_plot):
@@ -319,3 +302,22 @@ class DecompositionInterface:
         #
         if self.dcfgs.plot_decomposition:
             plt.show()
+
+    # Sequence =========================================================================================================
+
+    def create_sequence(self, distances: np.ndarray = None) -> None:
+        if len(self.mcells) == 0:
+            return
+        elif len(self.mcells) == 1:
+            self.smcells = self.mcells
+            return
+
+        #
+        start_cell_idx = 0
+        if self.zmd.orig_map_data.name == "map_fr52":
+            start_cell_idx = 4
+
+            # create optimized sequence of cells
+        opt_seq = OptimCellsSeq(mcells=self.mcells, distances=distances, start_cell_idx=start_cell_idx)
+        self.seq_idxs = opt_seq.tour_idxs
+        self.smcells = [self.mcells[i] for i in opt_seq.tour_idxs]

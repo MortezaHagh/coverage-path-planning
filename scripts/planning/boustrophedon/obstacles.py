@@ -5,6 +5,10 @@ from scripts.planning.boustrophedon.events import Event
 
 
 class Obstacle:
+    """ Obstacle for boustrophedon decomposition. 
+        Includes events and methods to process them. 
+    """
+
     def __init__(self, ind: int, poly: Polygon):
         self.ns: str = "Obstacle"
         #

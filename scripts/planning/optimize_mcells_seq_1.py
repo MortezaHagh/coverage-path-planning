@@ -7,26 +7,27 @@ from scripts.planning.base_cell import BaseCell
 
 
 class OptimCellsSeq:
-    ns: str
-    lg: MyLogger
-    mcells: list[BaseCell]
-    tour_idxs: list[int]
-    tour_ids: list[int]
+    """ Create optimized sequence of cells to be covered. 
+        Different methods can be used for optimization:
+        - s1_simple: simple sequence (as is)
+        - s2_dfs: depth first search
+        - s3_milp: mixed integer linear programming (MILP) using ortools
+    """
 
     def __init__(self, mcells: list[BaseCell], distances: np.ndarray = None, start_cell_idx: int = 0):
-        self.ns = "OptimCellsSeq"
+        self.ns: str = "OptimCellsSeq"
         self.lg = MyLogger(self.ns)
         self.lg.info1("Step: creating optimized cell sequence")
 
-        #
-        self.mcells = mcells
+        # initialize
+        self.mcells: list[BaseCell] = mcells
         dcfgs = DistrictConfgs()
 
-        #
-        self.tour_idxs: list = []
-        self.tour_ids: list = []
+        # sequence results initialization
+        self.tour_idxs: list[int] = []  # indices of cells in the optimized sequence
+        self.tour_ids: list[int] = []   # ids of cells in the optimized sequence
 
-        #
+        # create optimizer
         optimizer: BaseSeqOpt = None
         if dcfgs.cell_sequence_method == "s1_simple":
             optimizer = SimpleSeqOpt(mcells)

@@ -2,6 +2,7 @@ from scripts.planning.boustrophedon.cell import Cell
 
 
 def eval_cells_path_shift(cells: list[Cell]):
+    """ Evaluate if cells need to shift their paths to avoid gaps or overlaps between adjacent cells."""
     prob_lim = 0.8
     for cell in cells:
         # right side

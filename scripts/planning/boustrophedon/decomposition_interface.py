@@ -7,32 +7,29 @@ from scripts.planning.boustrophedon.decomposition_bs_mh import MHDecomposition a
 
 
 class DecompositionInterface:
-    ns: str
-    zmd: ZoneMapData
-    decomposed: CellDecomposition
-    mcells: list[Cell]
-    smcells: list[Cell]
-    seq_idxs: list[int]
-    n_mcells: int
+    """ Interface for cell decomposition and sequence creation. 
+        1- decompose map into cells
+        2- create optimum sequence of cells to be covered.
+    """
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
-        self.ns = "DecompositionInterface"
-        self.zmd = zmd
+        self.ns: str = "DecompositionInterface"
+        self.zmd: ZoneMapData = zmd
 
         #
-        self.mcells = []
-        self.smcells = []
-        self.seq_idxs = None
-        self.n_mcells = 0
+        self.mcells: list[Cell] = []
+        self.smcells: list[Cell] = []
+        self.seq_idxs: list[int] = None
+        self.n_mcells: int = 0
 
         # cell decomposition
-        self.decomposed = CellDecomposition(zmd.resolution, zmd.result_path)
+        self.decomposed: CellDecomposition = CellDecomposition(zmd.resolution, zmd.result_path)
         # set bounding polygon
         self.decomposed.set_bounding_polygon(map_polygons.b_poly)
         # set obstacle polygons
         self.decomposed.set_obstacle_polygons(map_polygons.obs_polys)
 
-        # initiate decomposition
+        # # # initiate decomposition
         self.decomposed.initiate()
 
         # resulting cells
@@ -40,6 +37,7 @@ class DecompositionInterface:
         self.n_mcells = self.decomposed.n_mcells
 
     def create_sequence(self, distances: np.ndarray = None):
+        """ Create optimum sequence of cells using distances calculated. """
         if len(self.mcells) == 0:
             return
         elif len(self.mcells) == 1:

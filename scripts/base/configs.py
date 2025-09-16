@@ -33,7 +33,7 @@ class DistrictConfgs:
     plot_decomposition = False
 
     # coverage path planning configs
-    covpp_method = "m2_boust"           # m1_simple, m2_base_boust, m2_boust, m3_contour
+    covpp_method = "m3_contour"           # m1_simple, m2_base_boust, m2_boust, m3_contour
     cell_sequence_method = "s3_milp"    # s1_simple, s2_dfs, s3_milp
 
     # complete method

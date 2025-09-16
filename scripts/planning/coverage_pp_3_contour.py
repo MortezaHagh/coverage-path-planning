@@ -26,6 +26,7 @@ class CoveragePP(CoveragePPBase):
         self.dec_interface = DecompositionInterface(self.zmd, self.map_polygons)
 
     def zone_covpp(self) -> None:
+        """ apply coverage path planning for all cells in the zone """
         self.lg.info2("start coverage path planning for cells")
         for mcell in self.dec_interface.mcells:
             cell_covp_planner = CellCoveragePathPlanner(cell=mcell, zmd=self.zmd, zone_ind=self.zmd.ind)

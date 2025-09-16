@@ -7,22 +7,17 @@ from scripts.planning.connect_paths import ConnectPaths
 
 class CellsGraph:
     """Graph representation of cells with distances and adjacency information. """
-    n_cells: int
-    cells: list[BaseCell]
-    con_path: ConnectPaths
-    dists_m: np.ndarray | None      # Distance matrix between cells
-    adj_inds: list[list[int]]       # Adjacency indices for each cell
 
     def __init__(self, cells: list[BaseCell], con_path: ConnectPaths):
         self.ns = "CellsGraph"
         self.lg = MyLogger(self.ns)
         #
-        self.cells = cells
-        self.n_cells = len(cells)
+        self.cells: list[BaseCell] = cells
+        self.n_cells: int = len(cells)
         self.con_path = con_path
         #
-        self.dists_m = np.full((self.n_cells, self.n_cells), np.inf, dtype=float)
-        self.adj_inds = None
+        self.dists_m: np.ndarray = np.full((self.n_cells, self.n_cells), np.inf, dtype=float)   # Distance matrix between cells
+        self.adj_inds: list[list[int]] | None = None                                            # Adjacency indices for each cell
 
         # Create adjacency distance matrix
         # self.create_distance_matrix_center_center()

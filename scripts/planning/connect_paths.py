@@ -143,7 +143,7 @@ class FindPathInMap:
         self.s_x = zmd.rectangle.x_min
         self.s_y = zmd.rectangle.y_min
 
-    def distance(self, p1: MyPoint, p2: MyPoint) -> float:
+    def distance_between_points(self, p1: MyPoint, p2: MyPoint) -> float:
         """ Calculate distance between two points in the map. 
             First find path, then calculate its length.
         """

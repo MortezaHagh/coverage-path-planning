@@ -89,8 +89,8 @@ class CoveragePPBase:
     # Planning =========================================================================================================
 
     def coverage_planning(self) -> None:
-        self.decompose_map()
-        self.zone_covpp()
+        self.decompose_map()    # method specific
+        self.zone_covpp()       # method specific
         self.create_sequence()
         self.connect_paths()
 
@@ -101,31 +101,39 @@ class CoveragePPBase:
         raise NotImplementedError("decompose_map() must be implemented by subclasses.")
 
     def zone_covpp(self) -> None:
-        """
+        """ apply coverage path planning for all cells in the zone. 
+
         Virtual method to be implemented by subclasses. 
         """
         raise NotImplementedError("zone_covpp() must be implemented by subclasses.")
 
     def create_sequence(self) -> None:
+        """ Create optimum sequence of cells to be covered. """
+
+        # Initialize distances between cells (paths start and end points)
         distances = None
         if self.dcfgs.cell_sequence_method == "s3_milp":
+            # Initialize connections object with cells
             self.connections.initialize(self.dec_interface.mcells)
 
-            # calculate all paths and calculate distances between cells
+            # calculate all paths and calculate distances between cells entries (based on cell paths)
             self.connections.find_all_connections(self.dec_interface.mcells)
             self.connections.find_all_distances()
             distances = self.connections.all_distances
 
-            # #
+            # # create cells graph and distances
             # cg = CellsGraph(self.dec_interface.mcells, self.connections)
             # distances = cg.dists_m
 
-        #
+        # create sequence
         self.dec_interface.create_sequence(distances=distances)
         self.paths_m = [cell.path_m for cell in self.dec_interface.smcells if cell.do_planning]
         self.paths_px = [cell.path_px for cell in self.dec_interface.smcells if cell.do_planning]
 
     def connect_paths(self) -> None:
+        """ Connect the paths based on the created sequence. 
+            connect end-start points of paths.
+        """
         self.connections.connect_paths(self.paths_px, self.dec_interface.seq_idxs)
         self.c_paths_px = self.connections.c_paths_px
         self.c_paths_m = [self.path_px_to_m(path_px) for path_px in self.c_paths_px]
@@ -138,7 +146,7 @@ class CoveragePPBase:
             return
 
         self.apply_distance_filter_all_paths()
-        self.create_ful_path()
+        self.create_full_path()
         self.calculate_path_statistics()
         #
         self.plot_paths_px()
@@ -146,7 +154,8 @@ class CoveragePPBase:
         if self.pcfgs.animation:
             self.animate_robot_paths()
 
-    def create_ful_path(self) -> None:
+    def create_full_path(self) -> None:
+        """ Create the full path by combining coverage paths and connection paths. """
         self.st.n_paths = len(self.paths_px)
         f_path_px = []
         for i in range(self.st.n_paths-1):
@@ -188,6 +197,7 @@ class CoveragePPBase:
     # Post Planning =========================================================================================================
 
     def method_post_planning(self) -> None:
+        """ update map_planning with paths and cells, save map_planning. """
         if not self.dcfgs.save_map_planning:
             return
         self.plotter.run(self.dec_interface.mcells)
@@ -215,7 +225,7 @@ class CoveragePPBase:
     # filters ==========================================================================================================
 
     def apply_distance_filter_all_paths(self) -> None:
-        """ FIlter all paths based on the minimum distance between waypoints. """
+        """ Filter all paths based on the minimum distance between waypoints. """
         min_wp_dist_px = self.min_points_distance / self.resolution  # convert to px
 
         # pixel paths
@@ -225,7 +235,7 @@ class CoveragePPBase:
             new_paths_px.append(new_path_px)
         self.paths_px = new_paths_px
 
-        # c paths pixel
+        # connection paths pixel
         new_c_paths_px = []
         for c_path_px in self.c_paths_px:
             new_c_path_px = self.apply_distance_filter_path(c_path_px, min_wp_dist_px)
@@ -239,7 +249,7 @@ class CoveragePPBase:
             new_paths_m.append(new_path_m)
         self.paths_m = new_paths_m
 
-        # c paths meter
+        # connection paths meter
         new_c_paths_m = []
         for c_path_m in self.c_paths_m:
             new_c_path_m = self.apply_distance_filter_path(c_path_m, min_wp_dist_px)
@@ -260,6 +270,10 @@ class CoveragePPBase:
         return MyPath(new_points)
 
     def process_full_path_distances(self) -> None:
+        """ Process the full path distances based on the minimum distance between waypoints.
+            If distance between points is less than min_points_distance, remove the point.
+            If distance between points is bigger than min_points_distance, add as many points as needed.
+        """
 
         if self.f_path_px is None:
             self.lg.error("Full path is empty or has less than 2 points. Cannot process distances.")
@@ -335,7 +349,7 @@ class CoveragePPBase:
     # Plots ============================================================================================================
 
     def plot_paths_px(self) -> None:
-        """ Plot the calculated coverage paths and connections between them. """
+        """ Plot the calculated coverage paths (different colors) and connections between them. """
         if not self.dcfgs.save_map_planning:
             return
         fig, ax = plt.subplots(1, 1)
@@ -404,6 +418,7 @@ class CoveragePPBase:
         # plt.show()
 
     def plot_final_path_m(self):
+        """ Plot the final complete path in meters. """
         fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
         ax.set_title("Final Path")

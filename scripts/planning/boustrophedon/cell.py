@@ -5,6 +5,7 @@ from scripts.planning.boustrophedon.events import Event
 
 
 class Cell (BaseCell):
+    """ Cell for boustrophedon decomposition. """
 
     def __init__(self, ind: int, poly: Polygon, event: Event):
         # initialize base class
@@ -107,6 +108,7 @@ class Cell (BaseCell):
 
 
 class CellGroup:
+    """ Group of adjacent cells for boustrophedon decomposition. """
     _counter = 0
 
     def __init__(self, first_cell: Cell, ncg: int = None):

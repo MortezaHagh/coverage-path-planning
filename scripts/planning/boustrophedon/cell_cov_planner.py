@@ -8,34 +8,29 @@ from scripts.base.my_utils import MyPoint, MyPath
 
 
 class CellCoveragePathPlanner:
-    cell: Cell
-    path_m: MyPath
-    path_px: MyPath
-    poly_m: Polygon
-    #
-    pcfgs: PlanningConfigs
-    resolution: float
+    """ Coverage path planning inside the given cell using boustrophedon method. """
 
     def __init__(self, cell: Cell, zone_ind: int = 0, resolution: float = 0.05):
         self.ns = "CellCoverageP-Z" + str(zone_ind)
         self.lg = MyLogger(self.ns)
-        self.cell = cell
-        self.path_m = None
-        self.path_px = None
         #
-        self.poly_m = None
-        self.xy_but = None
-        self.xy_top = None
+        self.cell: Cell = cell
+        self.path_m: MyPath = None
+        self.path_px: MyPath = None
+        #
+        self.poly_m: Polygon = None
+        self.xy_but: list[tuple[float, float]] = None
+        self.xy_top: list[tuple[float, float]] = None
 
         # parameters and configurations
         self.pcfgs = PlanningConfigs()
-        self.resolution = resolution
+        self.resolution: float = resolution
 
         #
         self.coverage_planning()
 
     def coverage_planning(self) -> None:
-        # if not self.eveal_cell():
+        # if not self.eval_cell():
         #     return
         if not self.cell.do_planning:
             self.lg.warn(f"cell {self.cell.id} does not require planning.")
@@ -48,7 +43,7 @@ class CellCoveragePathPlanner:
         self.calculate_path()
         self.create_path_px()
 
-    # def eveal_cell(self):
+    # def eval_cell(self):
     #     min_area = 0.5 * np.pi * self.pcfgs.cleaning_r**2
     #     if (self.cell.area*self.resolution**2) < min_area:
     #         self.lg.warn(f"cell area is too small: {self.cell.id}")
@@ -56,13 +51,14 @@ class CellCoveragePathPlanner:
     #     return True
 
     def create_cell_polygon_in_meter(self) -> None:
-        # create cell polygon in meter
+        """ create cell polygon in meter coordinates """
         points = self.cell.points
         points_m = [(p[0] * self.resolution, p[1] * self.resolution) for p in points]
         points_m_p = [Point(p) for p in points_m]
         self.poly_m = Polygon(points_m_p)
 
     def find_top_but_hit_points(self) -> bool:
+        """ find hitting points with the cell polygon from top and bottom """
         # # parameters and configurations
         cleaning_d = 2*self.pcfgs.cleaning_r_ov
         resolution = self.resolution
@@ -131,6 +127,8 @@ class CellCoveragePathPlanner:
         return True
 
     def get_intersection_points(self, y_check: float, top_point: Point, polygon: Polygon) -> tuple[Point, Point]:
+        """ get intersection points of a vertical line below the top_point with the polygon """
+
         vertical_line = LineString([top_point, (top_point.x, y_check + 1)])
 
         # Intersect that vertical line with the polygon

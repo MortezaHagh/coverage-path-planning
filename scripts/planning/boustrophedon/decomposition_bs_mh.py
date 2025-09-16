@@ -11,52 +11,32 @@ from scripts.planning.boustrophedon.post_process_mcells import eval_cells_path_s
 
 
 class MHDecomposition:
-    ns: str
-    resolution: float
-    result_path: str
-    bcfgs: PlanningConfigs
-    #
-    b_poly: Polygon
-    b_obstacle: Obstacle
-    polygons: list[Polygon]
-    #
-    obstacles: list[Obstacle]
-    events: list[Event]
-    cells: list[Cell]
-    trapezoids: list[Polygon]
-    n_events: int
-    n_cells: int
-    #
-    n_mcells: int
-    cells_groups: list[CellGroup]
-    mcells: list[Cell]
-    #
-    plotter: BoustPlotter
+    """ trapezoidal decomposition. """
 
     def __init__(self, resolution: float = 0.05, result_path: str = None):
-        self.ns = "MHDecomposition"
+        self.ns: str = "MHDecomposition"
         self.lg = MyLogger(self.ns)
         #
-        self.result_path = result_path
-        self.resolution = resolution
+        self.result_path: str = result_path
+        self.resolution: float = resolution
         self.bcfgs = PlanningConfigs()
         #
-        self.b_poly = None
-        self.b_obstacle = None
-        self.polygons = []
+        self.b_poly: Polygon = None
+        self.b_obstacle: Obstacle = None
+        self.polygons: list[Polygon] = []
         #
-        self.obstacles = []
-        self.events = []
-        self.cells = []
-        self.trapezoids = []
-        self.n_events = 0
-        self.n_cells = 0
+        self.obstacles: list[Obstacle] = []
+        self.events: list[Event] = []
+        self.cells: list[Cell] = []
+        self.trapezoids: list[Polygon] = []
+        self.n_events: int = 0
+        self.n_cells: int = 0
         #
-        self.n_mcells = 0
-        self.cells_groups = []
-        self.mcells = []
+        self.n_mcells: int = 0
+        self.cells_groups: list[CellGroup] = []
+        self.mcells: list[Cell] = []
         #
-        self.plotter = None
+        self.plotter: BoustPlotter = None
 
     def initiate(self):
         self.create_obstacles()
@@ -65,7 +45,7 @@ class MHDecomposition:
         #
         self.decompose_all()
         self.find_adjacents_cells()
-        self.compleate_adjacency()
+        self.complete_adjacency()
 
         # create merged cells & set_merged_cells_adjacents
         self.create_cell_groups()
@@ -354,7 +334,7 @@ class MHDecomposition:
                     current_cell.set_down_adj_ci(down_adj_ci)
                     self.cells[down_adj_ci].set_parent_down_ci(ci_curr)
 
-    def compleate_adjacency(self):
+    def complete_adjacency(self):
         for ic, cell in enumerate(self.cells):
             e = cell.event
             # adjacent cells

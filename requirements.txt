@@ -9,7 +9,8 @@ numpy
 matplotlib
 Shapely
 # 
+scipy # voronoi
 ortools
+pyastar2d
 scikit-image
-scipy
-pathfinding
+# pathfinding
