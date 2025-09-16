@@ -2,8 +2,8 @@
 colorama
 PyYAML
 pynput
-# opencv-python
-opencv-python-headless
+opencv-python
+# opencv-python-headless
 # 
 numpy
 matplotlib
@@ -12,3 +12,4 @@ Shapely
 ortools
 scikit-image
 scipy
+pathfinding

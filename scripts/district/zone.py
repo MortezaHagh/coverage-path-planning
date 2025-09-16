@@ -56,7 +56,7 @@ class ZoneStats:
         }
 
     def print_stats(self):
-        print("[Results]: *************************************** ")
+        print("[Results]: ******************************************************* ")
         print(f"[Results]: cleaning area: {self.cleaning_area_m:.2f} m^2")
         print(f"[Results]: cleaned area: {self.cleaned_area_m:.2f} m^2")
 
