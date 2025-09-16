@@ -1,3 +1,13 @@
+# Intro
+
+
+# Paper
+
+1. pipeline
+2. decomposition - Voronoi + rectangle evaluation 
+
+
+# todo
 - statistics and path analyzer class
 
 - add selectino of start and end points to the MILP
@@ -21,6 +31,7 @@
 
 # loggings
 
+```
 import logging
 
 - Configure logging
@@ -35,3 +46,4 @@ logging.info("Info message")
 logging.warning("Warning message")
 logging.error("Error message")
 logging.critical("Critical message")
+```

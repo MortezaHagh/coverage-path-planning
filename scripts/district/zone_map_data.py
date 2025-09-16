@@ -6,7 +6,7 @@ import numpy as np
 from scripts.gui.visuals import Rectangle
 from scripts.base.map_data import MapData
 from scripts.base.my_utils import visualize_map_s
-from scripts.base.configs import DistrictConfgs
+from scripts.base.configs import DistrictConfigs
 
 
 def convert_to_native(data: dict) -> dict:
@@ -68,7 +68,7 @@ class ZoneMapData:
     def set_result_path(self):
         self.zone_path = os.path.join(self.orig_map_data.bcfg.district_dir, self.name)
         os.makedirs(self.zone_path, exist_ok=True)
-        dcfg = DistrictConfgs()
+        dcfg = DistrictConfigs()
         self.result_file = self.zone_path + f"/{dcfg.method}/result.json"
         self.result_path = os.path.join(self.zone_path, dcfg.method)
         if self.name != 'District':

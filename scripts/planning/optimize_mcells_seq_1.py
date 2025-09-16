@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp
 from scripts.base.logger import MyLogger
-from scripts.base.configs import DistrictConfgs
+from scripts.base.configs import DistrictConfigs
 from scripts.planning.base_cell import BaseCell
 
 
@@ -21,7 +21,7 @@ class OptimCellsSeq:
 
         # initialize
         self.mcells: list[BaseCell] = mcells
-        dcfgs = DistrictConfgs()
+        dcfgs = DistrictConfigs()
 
         # sequence results initialization
         self.tour_idxs: list[int] = []  # indices of cells in the optimized sequence
@@ -77,24 +77,17 @@ class OptimCellsSeq:
 
 
 class BaseSeqOpt:
-    ns: str
-    lg: MyLogger
-    mcells: list[BaseCell]
-    c_id_idx_dict: dict[int, int]  # cell id to index mapping
-    success: bool
-    tour_idxs: list[int]
-    tour_ids: list[int]
-    start_idx: int  # default start index for the tour
+    """ Base class for sequence optimization of cells. """
 
     def __init__(self, mcells: list[BaseCell], start_idx: int = 0):
-        self.ns = "BaseSeqOpt"
+        self.ns: str = "BaseSeqOpt"
         self.lg = MyLogger(self.ns)
-        self.mcells = mcells
-        self.c_id_idx_dict = {c.id: i for i, c in enumerate(mcells)}
+        self.mcells: list[BaseCell] = mcells
+        self.c_id_idx_dict: dict[int, int] = {c.id: i for i, c in enumerate(mcells)}  # cell id to index mapping
+        self.start_idx: int = start_idx  # default start index for the tour
+        self.tour_idxs: list[int] = []
+        self.tour_ids: list[int] = []
         self.success = False
-        self.tour_idxs = []
-        self.tour_ids = []
-        self.start_idx = start_idx
 
     def create_tour(self):
         raise NotImplementedError("This method should be overridden in subclasses.")

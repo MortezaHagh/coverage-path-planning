@@ -10,7 +10,7 @@ from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.connect_paths import ConnectPaths
 from scripts.planning.planning_plotter import PlannerPlotter
-from scripts.base.configs import SpaceConfigs, PlanningConfigs, DistrictConfgs
+from scripts.base.configs import SpaceConfigs, PlanningConfigs, DistrictConfigs
 from scripts.base.my_utils import get_n_colors_cv
 
 
@@ -60,7 +60,7 @@ class CoveragePPBase:
 
         # parameters and configurations
         self.scfgs: SpaceConfigs = SpaceConfigs()
-        self.dcfgs: DistrictConfgs = DistrictConfgs()
+        self.dcfgs: DistrictConfigs = DistrictConfigs()
         self.pcfgs: PlanningConfigs = PlanningConfigs()
 
         # configs

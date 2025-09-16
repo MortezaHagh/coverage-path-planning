@@ -3,7 +3,7 @@ from shapely import Polygon
 from matplotlib import pyplot as plt
 from scipy.spatial import Voronoi  # pylint: disable=no-name-in-module
 from scripts.base.logger import MyLogger
-from scripts.base.configs import DistrictConfgs
+from scripts.base.configs import DistrictConfigs
 from scripts.planning.contour.cell import Cell
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
@@ -20,7 +20,7 @@ class DecompositionInterface:
         self.lg = MyLogger(self.ns)
 
         #
-        self.dcfgs: DistrictConfgs = DistrictConfgs()
+        self.dcfgs: DistrictConfigs = DistrictConfigs()
         self.zmd: ZoneMapData = zmd
         self.map_polygs: MapPolygons = map_polygs
 
@@ -48,7 +48,7 @@ class DecompositionInterface:
         self.run()
 
     def run(self) -> None:
-        """Run the decomposition process. """
+        """Run the voronoi-based decomposition process. """
 
         # voronoi processing
         vor_dec = VoronoiSegmentation(self.zmd, self.map_polygs)
@@ -56,7 +56,7 @@ class DecompositionInterface:
         self.vor = vor_dec.vor
         self.critical_points = vor_dec.critical_points
 
-        # segmentation (creating rings)
+        # # # # segmentation (creating rings)
         if self.check_critical_points(vor_dec.b_poly):
             self.main_segmentation(vor_dec.b_poly, vor_dec.obs_polys)
 
@@ -73,8 +73,8 @@ class DecompositionInterface:
         """Main segmentation process to create rings from critical points. """
         # pre process
         self.create_poly_points_start_ends(b_poly, obs_polys)
-        self.create_critical_idxs()
-        self.process_loop_basis()
+        self.create_cp_bases_idxs()
+        self.find_skip_cps()
         # rings
         self.create_all_segments()
 
@@ -91,12 +91,14 @@ class DecompositionInterface:
         return False
 
     def create_poly_points_start_ends(self, b_poly: Polygon, obs_polys: list[Polygon]) -> None:
-        """Create start and end indices for polygons in the Voronoi points. """
+        """Create start and end indices list for polygons in the Voronoi points. """
+        # first for the boundary polygon
         poly_start_idxs = [0]
         poly_end_idxs = [len(b_poly.exterior.coords)-1 - 1]
+        # then for the obstacle polygons
         for poly in obs_polys:
             n_p = len(poly.exterior.coords)
-            if n_p < 3:
+            if n_p < 3:  # todo: check if this is correct
                 self.lg.warn("Skipping polygon with less than 3 points.")
                 continue
             poly_start_idxs.append(poly_end_idxs[-1] + 1)
@@ -104,14 +106,15 @@ class DecompositionInterface:
         self.poly_start_idxs = poly_start_idxs
         self.poly_end_idxs = poly_end_idxs
 
-    def create_critical_idxs(self) -> None:
-        self.cp_base1_idxs = [c.bs1_idx for c in self.critical_points]
-        self.cp_base2_idxs = [c.bs2_idx for c in self.critical_points]
+    def create_cp_bases_idxs(self) -> None:
+        self.cp_base1_idxs = [c.bs1_idx for c in self.critical_points]  # first basis point indices
+        self.cp_base2_idxs = [c.bs2_idx for c in self.critical_points]  # second basis point indices
         # initialize critical point dictionary
         # self.critp_ring_dict = {i: set() for i in range(len(self.critical_points))}
 
-    def process_loop_basis(self) -> None:
-        """ find critical points that if starintg from them in a poly, end to them without passing other cp. """
+    def find_skip_cps(self) -> None:
+        """ find critical points that if starting from them in a poly, end to them with only passing one basis point.
+            mark these critical points to be skipped. """
         for i in range(1, len(self.poly_start_idxs)):
             n_bs = 0
             start_idx = self.poly_start_idxs[i]
@@ -191,7 +194,8 @@ class DecompositionInterface:
             next_p = self.vor.points[next_idx]
             ring.append(next_p)
 
-            # check if the next index is a critical point
+            # check if the next index is a critical point base point
+            # if yes, add critical point to the ring and set next_idx to the other base point
             new_cp = False
             idx_cp = None
             if next_idx in self.cp_base1_idxs:
@@ -256,8 +260,8 @@ class DecompositionInterface:
         """Create cells from the rings. """
         self.lg.info(f"Creating cells from {len(self.rings)} rings.")
         for i, ring in enumerate(self.rings):
-            c_crit_points = [self.critical_points[j] for j in ring.cp_icp_idxs]
-            ring.set_critical_points(c_crit_points)
+            cell_crit_points = [self.critical_points[j] for j in ring.cp_icp_idxs]
+            ring.set_critical_points(cell_crit_points)
             cell = Cell(ind=i, ring=ring, resolution=self.zmd.resolution)
             self.mcells.append(cell)
 

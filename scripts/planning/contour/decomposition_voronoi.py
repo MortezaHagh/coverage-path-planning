@@ -8,7 +8,7 @@ from scipy.spatial import Voronoi, voronoi_plot_2d  # pylint: disable=no-name-in
 from scripts.base.logger import MyLogger
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.map_polygons import MapPolygons
-from scripts.base.configs import PlanningConfigs, DistrictConfgs
+from scripts.base.configs import PlanningConfigs, DistrictConfigs
 from scripts.planning.contour.common import VPoint, CriticalPoint
 
 
@@ -24,14 +24,13 @@ class VoronoiSegmentation:
 
         # settings
         self.pcfgs: PlanningConfigs = PlanningConfigs()
-        self.dcfgs: DistrictConfgs = DistrictConfgs()
+        self.dcfgs: DistrictConfigs = DistrictConfigs()
         # self.adj_dist_lb: float = 50.0            # distance threshold for adjacent Voronoi vertices
         self.fixed_min_n_adj: int = 8               # fixed minimum number of adjacent Voronoi vertices
         self.fixed_max_n_adj: int = 15              # maximum number of adjacent Voronoi vertices
         self.d_clearance_thresh_p: float = 0.05     # percentage of the clearance difference in finding critical points
         self.robot_r_px: int = self.pcfgs.spa.robot_radius / zmd.resolution
-        # computed
-        self.mean_wh: float = None
+        # updated later
         self.min_n_adjacents: int = None            # minimum number of adjacent Voronoi vertices
 
         # logging
@@ -39,14 +38,12 @@ class VoronoiSegmentation:
 
         # basic data
         self.zmd: ZoneMapData = zmd
-        self.b_poly: Polygon = None         # bounding polygon
-        self.obs_polys: list[Polygon] = []  # obstacle polygons
-        self.b_poly = map_polygs.b_poly
-        self.obs_polys = map_polygs.obs_polys
+        self.b_poly: Polygon = map_polygs.b_poly                # bounding polygon
+        self.obs_polys: list[Polygon] = map_polygs.obs_polys    # obstacle polygons
 
         # data for Voronoi decomposition
-        self.vor: Voronoi = None
-        self.vps_free = None                            # vertices inside the bounding polygon
+        self.vor: Voronoi = None                        # Main Voronoi object
+        self.v_verts_free: np.ndarray = None            # vertices inside the bounding polygon
         self.v_points: list[VPoint] = []                # Voronoi vertices as VPoint objects
         self.critical_idxs: list[int] = []              # indices of critical Voronoi vertices
         self.critical_points: list[CriticalPoint] = []  # critical points
@@ -55,9 +52,9 @@ class VoronoiSegmentation:
         """ Main method to perform Voronoi decomposition. """
         self.process_polygons()
         self.find_voronoi()
-        self.find_free_vertices()
+        self.evaluate_vertices()
         self.find_ridge_vpoints()
-        self.set_basis_points_a_feasibility()
+        self.set_basis_points_and_feasibility()
         # adjacents
         self.find_min_n_adjacents()
         adj_dist_ub = self.calculate_adj_dist_ub()
@@ -98,10 +95,11 @@ class VoronoiSegmentation:
         if self.vor is None:
             raise ValueError("Getting Voronoi failed!")
 
-    def find_free_vertices(self):
-        """ create all Voronoi vertices as VPoint objects (v_points). 
-        evaluete if they are inside the bounding polygon and outside obstacles. 
-        set features: [free], [in_bd_poly]. """
+    def evaluate_vertices(self):
+        """ create all Voronoi vertices as VPoint objects (v_points).
+
+        - evaluate if they are inside the bounding polygon and outside obstacles.
+        - set features: [free], [in_bd_poly]. """
 
         # Voronoi vertices
         vertices = self.vor.vertices
@@ -126,7 +124,7 @@ class VoronoiSegmentation:
                         verts_out_obst.append(vp.v)
                     else:
                         vp.free = False
-        self.vps_free = np.array(verts_out_obst)
+        self.v_verts_free = np.array(verts_out_obst)
 
     def find_ridge_vpoints(self):
         """ Evaluate ridge vertices of Voronoi diagram. 
@@ -149,9 +147,12 @@ class VoronoiSegmentation:
                     idx = v_idxs[0]
                 self.v_points[idx].has_inf_adj = True
 
-    def set_basis_points_a_feasibility(self):
-        """ set [feasible] and [basis_points] for points based on the number of feasible ridges. 
-            basis_dists and clearance are also set. """
+    def set_basis_points_and_feasibility(self):
+        """ - set [feasible] and [basis_points] for points based on the number of feasible ridges. 
+            - set basis_dists and clearance. 
+
+            vor.points: original points used to create the Voronoi diagram.
+            """
         vor = self.vor
         vps = self.v_points
         for (point_indices, v_idxs) in zip(vor.ridge_points, vor.ridge_vertices):
@@ -166,7 +167,7 @@ class VoronoiSegmentation:
 
     def find_min_n_adjacents(self):
         """ setting minimum number of adjacent Voronoi vertices. (for finding adjacents by distance). """
-        min_n = len(self.vps_free) // 10  # at least 10% of the Voronoi vertices
+        min_n = len(self.v_verts_free) // 10  # at least 10% of the Voronoi vertices
         self.min_n_adjacents = max(self.fixed_min_n_adj, min_n)
 
     def calculate_adj_dist_ub(self) -> float:
@@ -176,7 +177,7 @@ class VoronoiSegmentation:
         return dist_threshold
 
     def find_adjacents_by_distance(self, adj_dist_ub: float = 10.0):
-        """ Find adjacent Voronoi vertices based on a distance and [min_n_adjacents][min_n_adjacents] params. """
+        """ Find adjacent Voronoi vertices based on a distance and [min_n_adjacents] params. """
 
         self.lg.info(f"Finding adjacent Voronoi vertices within distance {adj_dist_ub:.2f}.")
         vertex_adj_idxs = defaultdict(list)
@@ -207,41 +208,7 @@ class VoronoiSegmentation:
             self.v_points[v_idx].set_adjacent_vp_idxs(sorted_adj_idxs[:n_adj])
             self.v_points[v_idx].set_adjacents_vp_dists(sorted_dists[:n_adj])
 
-    # todo
-    def find_adjacents(self):
-        # not used now
-        vor = self.vor
-        vertex_to_adjacent = defaultdict(set)
-
-        # Step 1: For each ridge, associate the vertices with their adjacent vertices
-        for vertex_indices in vor.ridge_vertices:
-            if -1 in vertex_indices:
-                continue
-            for v_ind in vertex_indices:
-                # Associate this vertex with the other vertex in the ridge
-                if self.v_points[v_ind].free:
-                    other_vertex = [v for v in vertex_indices if v != v_ind][0]
-                    vertex_to_adjacent[v_ind].add(other_vertex)
-
-        # Step 2: For each vertex, convert the set of adjacent vertices to a list
-        dc_v_inds = []  # disconnected Voronoi vertices
-        for v_idx, adj_indices in vertex_to_adjacent.items():
-            n_in_poly_o1 = 0
-            adj_list = []
-            for i in list(adj_indices):
-                if self.v_points[i].in_bd_poly:
-                    n_in_poly_o1 += 1
-                if self.v_points[i].free:
-                    adj_list.append(i)
-            self.v_points[v_idx].set_adjacent_vp_idxs(adj_list)
-            #
-            n1 = len(adj_list)
-            if self.v_points[v_idx].free:
-                if n_in_poly_o1 != n1 and n1 == 1:
-                    dc_v_inds.append(v_idx)
-        return dc_v_inds
-
-    # critical poin ============================================================
+    # critical point ===========================================================
 
     def find_critical_points(self):
         """ finding critical points from v points: voronoi vertices with minimum clearance to obstacles. """
@@ -302,7 +269,12 @@ class VoronoiSegmentation:
     # process_polygon ==========================================================
 
     def process_polygon(self, poly_t: Polygon, reverse: bool = False):
-        """ Process polygons and add points if needed. """
+        """ Process polygons and add points if needed.
+
+        Methods:
+            1. check distance between points and add points if the distance between them is greater than a threshold. 
+            2. if edge is larger than neighboring edges, add points between them.
+        """
         poly = self.process_polygon_1(poly_t)
         poly = self.process_polygon_2(poly)
         if reverse:
@@ -372,6 +344,7 @@ class VoronoiSegmentation:
             self.lg.info("Skipping Voronoi plot.")
             return
 
+        # figure setup
         fig, ax = plt.subplots(figsize=(15, 10))
         ax.set_aspect('equal', adjustable='box')
         x_min = self.b_poly.bounds[0]

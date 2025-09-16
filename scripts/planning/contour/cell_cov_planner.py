@@ -7,32 +7,27 @@ from scripts.base.logger import MyLogger
 from scripts.planning.contour.cell import Cell
 from scripts.base.my_utils import MyPoint, MyPath
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.base.configs import PlanningConfigs, DistrictConfgs
+from scripts.base.configs import PlanningConfigs, DistrictConfigs
 
 
 class CellCoveragePathPlanner:
-    cell: Cell
-    zmd: ZoneMapData
-    pcfgs: PlanningConfigs
-    resolution: float
-    path_m: MyPath
-    path_px: MyPath
+    """ Class to plan coverage path for a given cell in a zone using contour-based methods. """
 
     def __init__(self, cell: Cell, zmd: ZoneMapData,  zone_ind: int = 0):
         self.ns = "CellCoverageP-Z" + str(zone_ind)
         self.lg = MyLogger(self.ns)
 
         #
-        self.cell = cell
-        self.zmd = zmd
+        self.cell: Cell = cell
+        self.zmd: ZoneMapData = zmd
 
         # parameters and configurations
-        self.pcfgs = PlanningConfigs()
-        self.resolution = zmd.resolution
+        self.pcfgs: PlanningConfigs = PlanningConfigs()
+        self.resolution: float = zmd.resolution
 
         #
-        self.path_m = None
-        self.path_px = None
+        self.path_m: MyPath = None
+        self.path_px: MyPath = None
 
         #
         self.coverage_planning()
@@ -105,7 +100,7 @@ class CellCoveragePathPlanner:
         c_map[mask] = z_map[mask]
 
         # complete the path
-        if DistrictConfgs.use_insc_ret and self.cell.rect_like:
+        if DistrictConfigs.use_insc_ret and self.cell.rect_like:
             points = []
             path_px = self.complete_path_by_rectangle(points, robot_r_px)
         else:
@@ -115,7 +110,7 @@ class CellCoveragePathPlanner:
     def complete_path_by_rectangle(self, points: list, robot_r_px: int) -> MyPath:
         """ Complete the path using the inscribed rectangle of the cell. """
 
-        rect = self.cell.rectangle
+        rect = self.cell.rectangle_poly
         robot_d_px = int(robot_r_px * 2)
 
         # start rectangle from closest point to the start of the original polygon

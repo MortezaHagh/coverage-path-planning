@@ -7,24 +7,24 @@ from shapely import maximum_inscribed_circle  # , minimum_bounding_circle
 from scripts.base.logger import MyLogger
 from scripts.planning.base_cell import BaseCell
 from scripts.planning.contour.common import CriticalPoint, Ring
-from scripts.base.configs import PlanningConfigs, DistrictConfgs
+from scripts.base.configs import PlanningConfigs, DistrictConfigs
 
 
 class Cell (BaseCell):
-    ring: Ring                              # ring of the cell
-    basic: bool                             # whether the cell is basic or not
-    min_clearance: float                    # minimum clearance of the cell
-    rectangle: Polygon                      # rectangle polygon of the cell
-    rect_circ_like: bool                    # whether the cell is rectangle-like or not
-    rect_insc_like: bool                    # whether the cell is inscribed rectangle-like or not
-    rect_like: bool                         # whether the cell is rectangle-like or inscribed rectangle-like
+    """ Cell for voronoi-based decomposition. 
+
+    Includes:
+        rings (closed loops) containing critical points.
+        Evaluation of rectangle-like and inscribed rectangle-like properties.
+    """
 
     def __init__(self, ind: int, ring: Ring, resolution: float = None) -> None:
         super().__init__(ind, ring.poly)
         self.ns = f"Cell-{self.id}"
         self.lg = MyLogger(self.ns)
 
-        self.ring = ring
+        # ring
+        self.ring: Ring = ring                  # rings (closed loops) containing critical points
 
         # settings
         if resolution is None:
@@ -32,13 +32,13 @@ class Cell (BaseCell):
         self.robot_r_px = int(PlanningConfigs.cleaning_r_ov / resolution)
 
         #
-        self.basic = False
-        self.min_clearance = 0.0
+        self.basic: bool = False                # if no critical points, then basic cell
+        self.min_clearance: float = 0.0         # minimum clearance of the cell based on critical points
         #
-        self.rectangle = None
-        self.rect_circ_like = False
-        self.rect_insc_like = False
-        self.rect_like = False
+        self.rectangle_poly: Polygon = None       # inscribed rectangle polygon (expanded)
+        self.rect_circ_like: bool = False         # whether the cell is rectangle-like based on circumscribed rectangle.
+        self.rect_insc_like: bool = False         # whether the cell is inscribed rectangle-like or not
+        self.rect_like: bool = False              # whether the cell is rectangle-like or inscribed rectangle-like
 
         # find the minimum clearance of the cell
         self.find_min_clearance()
@@ -49,7 +49,7 @@ class Cell (BaseCell):
             self.basic = True
             self.lg.warn("No critical points set for the cell, marking as basic.")
             return
-        cp: CriticalPoint
+        # cp: CriticalPoint
         clearances = [cp.vp.clearance for cp in self.ring.cp_points]
         self.min_clearance = min(clearances)
 
@@ -62,24 +62,24 @@ class Cell (BaseCell):
         self.modify_cell()
 
         # # evaluate the cell for rectangle-like and inscribed rectangle-like properties
-        if DistrictConfgs.use_insc_ret:
-            self.eval_cell()
+        if DistrictConfigs.use_insc_ret:
+            self.eval_cell_rectangles()
 
     def modify_cell(self) -> None:
         """ Modify the cell by removing points that are too close to critical points. """
 
+        # minimum distance to critical points
         min_d = self.robot_r_px * 1.0
 
         # method 2
         n = self.ring.n_p
         to_rm = []
-        for i in self.ring.cp_ring_idxs:
-            for c, ii in zip([-1, 1], [i, i+1]):
+        for i in self.ring.cp_ring_idxs:            # index of critical point in the ring
+            for c, ii in zip([-1, 1], [i, i+1]):    # check previous and next points
                 cp = self.ring.points[ii]
-                js = [(ii+c) % n, (ii+(2*c)) % n]
-                cjs = np.array([self.ring.points[j] for j in js])
-                # distance from cp1 to cpjs
-                ds = np.linalg.norm(cp - cjs, axis=1)
+                js = [(ii+c) % n, (ii+(2*c)) % n]                   # indices of the next (or previous) two points
+                cjs = np.array([self.ring.points[j] for j in js])   # coordinates of the next two points
+                ds = np.linalg.norm(cp - cjs, axis=1)               # distances to the next two points
                 if ds[0] < min_d:
                     to_rm.append(ii)
                     if ds[1] < min_d:
@@ -108,10 +108,13 @@ class Cell (BaseCell):
             self.poly = Polygon(new_points)
             self.create_cell_points()
 
-    # eval cell ================================================================
+    # eval cell rectangles =============================================================================================
 
-    def eval_cell(self):
+    def eval_cell_rectangles(self):
         """ Evaluate the cell for rectangle-like and inscribed rectangle-like properties """
+
+        # circ: circumscribed
+        # insc: inscribed
 
         # minimum_rotated_rectangle polygon
         rect_circ_poly = self.poly.minimum_rotated_rectangle
@@ -128,13 +131,13 @@ class Cell (BaseCell):
         # circle_circ_area = circle_circ_poly.area
 
         # # eval rectangle-like
-        self.eval_rectangle_like_circumscribed(rect_circ_area)
+        self.eval_rectangle_like_circumscribed(rect_circ_area)  # rect_circ_like
         inscribed_rect_poly = self.create_inscribed_rectangle(rect_circ_poly, circle_insc_center, circle_insc_radius)
-        self.rectangle = self.expand_inscribed_rectangle(inscribed_rect_poly, circle_insc_center)
+        self.rectangle_poly = self.expand_inscribed_rectangle(inscribed_rect_poly, circle_insc_center)
         self.rect_like = self.rect_insc_like
 
         # #
-        # rect_area = self.rectangle.area
+        # rect_area = self.rectangle_poly.area
         # rect_area_ratio = rect_area/self.area
         # print(f"rect_area_ratio: {rect_area_ratio:.2f}")
         # print(f"rect_like: {self.rect_like}")
@@ -144,7 +147,7 @@ class Cell (BaseCell):
         # self.plot_cell_evaluation(
         #     rect_circ_poly=rect_circ_poly,
         #     inscribed_rect_poly=inscribed_rect_poly,
-        #     expand_inscribed_rectangle=self.rectangle,
+        #     expand_inscribed_rectangle=self.rectangle_poly,
         #     circle_insc_center=circle_insc_center,
         #     circle_insc_radius=circle_insc_radius,
         #     # circle_circ_poly=circle_circ_poly,
@@ -212,6 +215,8 @@ class Cell (BaseCell):
         areas = [area_1, area_2, area_3]
         best_poly = max(zip(all_polys, areas), key=lambda x: x[1])[0]
         return best_poly
+
+    # rectangle expansion methods ======================================================================================
 
     def expand_inscribed_rectangle_1(self, inscribed_rect_poly: Polygon, circle_insc_center) -> Polygon:
         """ expand in 4 directions. """
@@ -482,7 +487,7 @@ class Cell (BaseCell):
         return expanded_rect_poly
 
     def expand_2_points_eval(self, p1, p2, th, step):
-        # shift p1 and p2 in the theta_midp_c direction
+        """ expand two points p1 and p2 in the direction of angle th by step and check if the new points are inside the polygon. """
         new_p1 = (
             p1[0] + step * np.cos(th),
             p1[1] + step * np.sin(th)
@@ -501,6 +506,8 @@ class Cell (BaseCell):
                 if self.poly.contains(Point(mid_p)):
                     success = True
         return success, new_p1, new_p2
+
+    # plotting =================================================================
 
     def plot_cell_evaluation(self, circle_insc_center=None,
                              circle_insc_radius=None, circle_circ_poly=None,

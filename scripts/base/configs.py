@@ -21,7 +21,7 @@ class BConfigs:
 
 
 @dataclasses.dataclass
-class DistrictConfgs:
+class DistrictConfigs:
     # Main configs
     whole_map = True  # False True
     ns = ""
@@ -33,19 +33,35 @@ class DistrictConfgs:
     plot_decomposition = False
 
     # coverage path planning configs
-    covpp_method = "m3_contour"           # m1_simple, m2_base_boust, m2_boust, m3_contour
+    covpp_method = "m2_boust"           # m1_simple, m2_base_boust, m2_boust, m3_contour
     cell_sequence_method = "s3_milp"    # s1_simple, s2_dfs, s3_milp
+
+    # contour method
+    use_insc_ret = True  # True False
 
     # complete method
     method = covpp_method
-    if covpp_method in ["m2_boust", "m3_contour"]:
+    if covpp_method not in ["m1_simple"]:
         method = covpp_method + "_" + cell_sequence_method
 
     # contour method
     use_insc_ret = True  # True False
     if covpp_method == "m3_contour":
         if use_insc_ret:
-            method = covpp_method + "_rect_" + cell_sequence_method
+            method = covpp_method + "_" + cell_sequence_method + "_rect"
+
+    @classmethod
+    def update(cls, covpp_method: str, use_insc_ret: bool):
+        cls.covpp_method = covpp_method
+        cls.use_insc_ret = use_insc_ret
+        # main method
+        cls.method = covpp_method
+        if covpp_method not in ["m1_simple"]:
+            cls.method = covpp_method + "_" + cls.cell_sequence_method
+        # contour method
+        if covpp_method == "m3_contour":
+            if use_insc_ret:
+                cls.method = covpp_method + "_" + cls.cell_sequence_method + "_rect"
 
 
 @dataclasses.dataclass

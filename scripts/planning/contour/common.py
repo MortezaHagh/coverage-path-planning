@@ -3,12 +3,12 @@ from shapely.geometry import Polygon
 
 
 class VPoint:
-    """ Voronoi point class representing a vertex in the Voronoi diagram. """
+    """ Voronoi point representing a vertex in the Voronoi diagram. """
 
     def __init__(self, v: np.ndarray, idx: int):
         self.idx: int = idx                         # index in the Voronoi vertice
         self.v: np.ndarray = v                      # coordinates of the Voronoi vertex
-        self.free: bool = False
+        self.free: bool = False                     # inside the bounding polygon and not in obstacles
         self.feasible: bool = False
         self.critical: bool = False                 # critical Voronoi vertex
         self.has_inf_adj: bool = False              # has adjacent Voronoi vertices with infinite distance
@@ -83,13 +83,15 @@ class CriticalPoint:
 
 
 class Ring:
+    """ Ring class representing a closed loop of Voronoi points containing critical points. """
+
     def __init__(self, points: list[np.ndarray], cp_icp_dxs: list[int], cp_ring_idxs: list[int]):
         self.points: np.ndarray = np.array(points)      # vor.points in the ring
         self.cp_icp_idxs: list[int] = cp_icp_dxs        # indices (in the cp list) of critical points in the ring
         self.cp_ring_idxs: list[int] = cp_ring_idxs     # indices of critical points in the ring
         self.cp_points: list[CriticalPoint] = []
         self.poly: Polygon = Polygon(points)
-        self.n_p: int = len(self.points)          # number of critical points in the ring
+        self.n_p: int = len(self.points)                # number of points in the ring
 
     def is_valid(self) -> bool:
         """ Check if the ring is valid (not empty and has at least one critical point). """

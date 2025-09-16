@@ -4,19 +4,19 @@ import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.base.configs import DistrictConfgs, PlanningConfigs
+from scripts.base.configs import DistrictConfigs, PlanningConfigs
 
-# select coverage path planning method based on configs
-DCFG = DistrictConfgs()
-if DCFG.covpp_method == "m1_simple":
-    from scripts.planning.coverage_pp_1_simple import CoveragePP
-elif DCFG.covpp_method == "m2_boust":
-    from scripts.planning.coverage_pp_2_bs_1 import CoveragePP
-elif DCFG.covpp_method == "m3_contour":
-    from scripts.planning.coverage_pp_3_contour import CoveragePP
-else:
-    raise ValueError(f"Unknown coverage path planning method: {DCFG.covpp_method}. "
-                     f"Available methods: m0_simple, m1_boust, m3_contour.")
+# # select coverage path planning method based on configs
+# DCFG = DistrictConfigs()
+# if DCFG.covpp_method == "m1_simple":
+#     from scripts.planning.coverage_pp_1_simple import CoveragePP
+# elif DCFG.covpp_method == "m2_boust":
+#     from scripts.planning.coverage_pp_2_bs_1 import CoveragePP
+# elif DCFG.covpp_method == "m3_contour":
+#     from scripts.planning.coverage_pp_3_contour import CoveragePP
+# else:
+#     raise ValueError(f"Unknown coverage path planning method: {DCFG.covpp_method}. "
+#                      f"Available methods: m0_simple, m1_boust, m3_contour.")
 
 
 class ZoneStats:
@@ -79,11 +79,11 @@ class ZoneData:
         self.zmd: ZoneMapData = None
 
         # configs
-        self.dcfg: DistrictConfgs = DistrictConfgs()
+        self.dcfg: DistrictConfigs = DistrictConfigs()
         self.pcfgs: PlanningConfigs = PlanningConfigs()
 
         # coverage path planner
-        self.cov_planner: CoveragePP = None
+        self.cov_planner = None  # CoveragePP
         self.complete_path: np.ndarray = None  # todo
 
         # statistics
@@ -96,6 +96,17 @@ class ZoneData:
     def initialize(self):
         self.zmd.save_data()
         self.create_map_planning()
+
+        # select coverage path planning method based on configs
+        if self.dcfg.covpp_method == "m1_simple":
+            from scripts.planning.coverage_pp_1_simple import CoveragePP
+        elif self.dcfg.covpp_method == "m2_boust":
+            from scripts.planning.coverage_pp_2_bs_1 import CoveragePP
+        elif self.dcfg.covpp_method == "m3_contour":
+            from scripts.planning.coverage_pp_3_contour import CoveragePP
+        else:
+            raise ValueError(f"Unknown coverage path planning method: {self.dcfg.covpp_method}. "
+                             f"Available methods: m0_simple, m1_boust, m3_contour.")
         self.cov_planner = CoveragePP(self.zmd)
         # self.save_map_planning()
 

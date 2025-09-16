@@ -6,7 +6,7 @@ from scripts.gui.visuals import Rectangle
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.zone import ZoneData
-from scripts.base.configs import DistrictConfgs
+from scripts.base.configs import DistrictConfigs
 
 
 class DistrictData:
@@ -17,7 +17,7 @@ class DistrictData:
         self.lg.info1("Step: creating district data")
 
         # configs
-        self.dcfgs: DistrictConfgs = DistrictConfgs()
+        self.dcfgs: DistrictConfigs = DistrictConfigs()
 
         # space_analyzer object
         self.spa_obj: SpaceAnalyzer = spa

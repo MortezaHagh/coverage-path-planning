@@ -3,7 +3,7 @@ import cv2 as cv
 from pynput.keyboard import Listener
 from scripts.base.logger import MyLogger
 from scripts.base.map_data import MapData
-from scripts.base.configs import DistrictConfgs
+from scripts.base.configs import DistrictConfigs
 from scripts.gui.rect_event_hl import RecEventHandler
 from scripts.gui.visuals import Rectangle
 
@@ -19,7 +19,7 @@ class DistrictGen:
 
         #
         self.__md: MapData = map_data
-        self.__cfg: DistrictConfgs = DistrictConfgs()
+        self.__cfg: DistrictConfigs = DistrictConfigs()
 
         #
         if self.__cfg.whole_map:
