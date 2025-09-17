@@ -261,7 +261,7 @@ class SpaceAnalyzer:
         # self.display_contour(contours)
 
         # find selected_contour
-        self.lg.info(f"number of contours (free islands): {len(contours)}")
+        self.lg.info3(f"number of contours (free islands): {len(contours)}")
         for contour in contours:
             if cv.pointPolygonTest(contour, self.fs_selected_point, True) >= 0:
                 selected_contour = contour
@@ -278,7 +278,7 @@ class SpaceAnalyzer:
         map_fs = cv.bitwise_and(c_map, selected_free_space)
 
         #
-        self.lg.info("free space is selected.")
+        self.lg.info3("free space is selected.")
         return map_fs
 
     def select_free_space(self, map_i: np.ndarray) -> None:

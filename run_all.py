@@ -10,7 +10,7 @@ map_names = [
 
 if __name__ == "__main__":
 
-    covpp_method = ["m2_boust", "m3_contour"]
+    covpp_method = ["boust", "contour"]
     dcfgs = DistrictConfigs()
 
     # run for all maps
@@ -19,16 +19,16 @@ if __name__ == "__main__":
         # run for all methods
         for cpp_method in covpp_method:
 
-            # update for m3_contour
+            # update for contour
             rects = [False]
-            if cpp_method == "m3_contour":
+            if cpp_method == "contour":
                 rects = [True, False]
 
             # run for all rects
             for rect in rects:
 
                 # update configs
-                dcfgs.update(covpp_method=cpp_method, use_insc_ret=rect)
+                dcfgs.update(segmentation_method='voronoi', covpp_method=cpp_method, use_insc_ret=rect, sequence_method='milp')
 
                 print(" ######################################################## \n")
                 print(f"Running pipeline for method {dcfgs.method} on map {map_name} ... ")

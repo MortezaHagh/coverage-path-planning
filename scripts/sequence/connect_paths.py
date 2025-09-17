@@ -12,7 +12,7 @@ import pyastar2d
 # from pathfinding.finder.a_star import AStarFinder
 #
 from scripts.base.logger import MyLogger
-from scripts.planning.base_cell import BaseCell
+from scripts.segmentation.cell_base import CellBase
 from scripts.base.my_utils import MyPath, MyPoint
 from scripts.district.zone_map_data import ZoneMapData
 
@@ -39,12 +39,12 @@ class ConnectPaths:
         self.all_distances: np.ndarray | None = None            # 2D array of distances between cells
         self.c_paths_px: list[MyPath] = []
 
-    def initialize(self, mcells: list[BaseCell]):
+    def initialize(self, mcells: list[CellBase]):
         n = len(mcells)
         self.all_connection_paths = np.full((n, n), None, dtype=object)
         self.all_distances = np.zeros((n, n), dtype=float)
 
-    def find_all_connections(self, mcells: list[BaseCell]):
+    def find_all_connections(self, mcells: list[CellBase]):
         self.lg.info2("Step: find all connections paths")
         n = len(mcells)
         all_connections = np.full((n, n), None, dtype=object)
@@ -62,7 +62,7 @@ class ConnectPaths:
         self.all_connection_paths = all_connections
 
     def find_all_distances(self):
-        self.lg.info2("Step: find all distances")
+        self.lg.info2("find all distances")
         n = self.all_connection_paths.shape[0]
         all_distances = np.zeros((n, n), dtype=float)
         for i in range(n):

@@ -59,17 +59,17 @@ class MapImageProcessor:
         self.lg.info2("processing of the map image")
         binary_map = self.convert_to_binary()
         denoised_map = self.remove_noise(binary_map)
-        self.lg.info("Binary-denoised image created.")
+        self.lg.info3("Binary-denoised image created.")
         return denoised_map
 
     def convert_to_binary(self):
-        self.lg.info("converting image to binary")
+        self.lg.info3("converting image to binary")
         # threshold = self.__bcfg.occupied_thresh
         _, binary_map = cv.threshold(self.__orig_map, 220, 255, cv.THRESH_BINARY)
         return binary_map
 
     def remove_noise(self, binary_map, kernel_size=(3, 3)) -> np.ndarray:
-        self.lg.info("removing noise")
+        self.lg.info3("removing noise")
         kernel = np.ones(kernel_size, np.uint8)
         denoised_map = cv.morphologyEx(binary_map, cv.MORPH_OPEN, kernel)
         return denoised_map

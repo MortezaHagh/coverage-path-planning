@@ -3,24 +3,24 @@ import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp
 from scripts.base.logger import MyLogger
 from scripts.base.configs import DistrictConfigs
-from scripts.planning.base_cell import BaseCell
+from scripts.segmentation.cell_base import CellBase
 
 
 class OptimCellsSeq:
     """ Create optimized sequence of cells to be covered. 
         Different methods can be used for optimization:
-        - s1_simple: simple sequence (as is)
-        - s2_dfs: depth first search
-        - s3_milp: mixed integer linear programming (MILP) using ortools
+        - simple: simple sequence (as is)
+        - dfs: depth first search
+        - milp: mixed integer linear programming (MILP) using ortools
     """
 
-    def __init__(self, mcells: list[BaseCell], distances: np.ndarray = None, start_cell_idx: int = 0):
+    def __init__(self, cells: list[CellBase], distances: np.ndarray = None, start_cell_idx: int = 0):
         self.ns: str = "OptimCellsSeq"
         self.lg = MyLogger(self.ns)
         self.lg.info1("Step: creating optimized cell sequence")
 
         # initialize
-        self.mcells: list[BaseCell] = mcells
+        self.cells: list[CellBase] = cells
         dcfgs = DistrictConfigs()
 
         # sequence results initialization
@@ -29,17 +29,17 @@ class OptimCellsSeq:
 
         # create optimizer
         optimizer: BaseSeqOpt = None
-        if dcfgs.cell_sequence_method == "s1_simple":
-            optimizer = SimpleSeqOpt(mcells)
-        elif dcfgs.cell_sequence_method == "s2_dfs":
-            optimizer = DepthFirstSearch(mcells, start_cell_idx)
-        elif dcfgs.cell_sequence_method == "s3_milp":
+        if dcfgs.sequence_method == "simple":
+            optimizer = SimpleSeqOpt(cells)
+        elif dcfgs.sequence_method == "dfs":
+            optimizer = DepthFirstSearch(cells, start_cell_idx)
+        elif dcfgs.sequence_method == "milp":
             # cell graph
             if distances is None:
                 raise ValueError("Distances matrix is required for MILPSeq optimization.")
-            optimizer = MILPSeq(mcells, distances, start_cell_idx)
+            optimizer = MILPSeq(cells, distances, start_cell_idx)
         else:
-            self.lg.error(f"Invalid cell sequence method: {dcfgs.cell_sequence_method}")
+            self.lg.error(f"Invalid cell sequence method: {dcfgs.sequence_method}")
             return
 
         # check if the optimizer was successful
@@ -56,7 +56,7 @@ class OptimCellsSeq:
     def set_cells_optim_ind(self):
         for i, idx in enumerate(self.tour_idxs[:-1]):
             next_idx = self.tour_idxs[i + 1]
-            self.mcells[idx].set_optim_id(idx, next_idx)
+            self.cells[idx].set_optim_id(idx, next_idx)
 
     def plot(self):
         _, ax = plt.subplots(1, 1)
@@ -79,11 +79,11 @@ class OptimCellsSeq:
 class BaseSeqOpt:
     """ Base class for sequence optimization of cells. """
 
-    def __init__(self, mcells: list[BaseCell], start_idx: int = 0):
+    def __init__(self, cells: list[CellBase], start_idx: int = 0):
         self.ns: str = "BaseSeqOpt"
         self.lg = MyLogger(self.ns)
-        self.mcells: list[BaseCell] = mcells
-        self.c_id_idx_dict: dict[int, int] = {c.id: i for i, c in enumerate(mcells)}  # cell id to index mapping
+        self.cells: list[CellBase] = cells
+        self.c_id_idx_dict: dict[int, int] = {c.id: i for i, c in enumerate(cells)}  # cell id to index mapping
         self.start_idx: int = start_idx  # default start index for the tour
         self.tour_idxs: list[int] = []
         self.tour_ids: list[int] = []
@@ -94,18 +94,18 @@ class BaseSeqOpt:
 
 
 class SimpleSeqOpt(BaseSeqOpt):
-    def __init__(self, mcells: list[BaseCell]):
-        super().__init__(mcells)
+    def __init__(self, cells: list[CellBase]):
+        super().__init__(cells)
         self.lg.info("using SimpleSeqOpt sequence optimization method.")
 
     def create_tour(self):
-        self.tour_idxs = list(range(len(self.mcells)))
-        self.tour_ids = [c.id for c in self.mcells]
+        self.tour_idxs = list(range(len(self.cells)))
+        self.tour_ids = [c.id for c in self.cells]
         self.success = True
 
 
 class DepthFirstSearch(BaseSeqOpt):
-    def __init__(self, cells: list[BaseCell], start_cell_idx: int = 0):
+    def __init__(self, cells: list[CellBase], start_cell_idx: int = 0):
         super().__init__(cells, start_cell_idx)
         self.lg.info("using DepthFirstSearch sequence optimization method.")
         #
@@ -129,7 +129,7 @@ class DepthFirstSearch(BaseSeqOpt):
         self.visited_ids_dict[c_id] = True
         self.tour_ids.append(c_id)
         idx = self.c_id_idx_dict[c_id]
-        neighbors = self.mcells[idx].adjacent_ids
+        neighbors = self.cells[idx].adjacent_ids
         neighbors = [n for n in neighbors if n in self.c_ids]
         new_level = 0
         for neigh_id in neighbors:
@@ -141,13 +141,13 @@ class DepthFirstSearch(BaseSeqOpt):
 
 
 class MILPSeq(BaseSeqOpt):
-    def __init__(self, mcells: list[BaseCell], distances: np.ndarray, start_cell_idx: int = 0):
-        super().__init__(mcells, start_cell_idx)
+    def __init__(self, cells: list[CellBase], distances: np.ndarray, start_cell_idx: int = 0):
+        super().__init__(cells, start_cell_idx)
         self.lg.info("using MILPSeq sequence optimization method.")
 
         # planning cells
-        p_cells = [c for c in mcells if c.do_planning]
-        p_idxs = [i for i, c in enumerate(mcells) if c.do_planning]
+        p_cells = [c for c in cells if c.do_planning]
+        p_idxs = [i for i, c in enumerate(cells) if c.do_planning]
         self.p_cells = p_cells
         self.n_p_cells = len(p_idxs)
 

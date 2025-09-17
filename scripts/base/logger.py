@@ -12,6 +12,10 @@ class MyLogger:
     def info2(self, message: str) -> None:
         print(f"{Fore.GREEN}[{self.name}]: {message}{Style.RESET_ALL}")
 
+    def info3(self, message: str) -> None:
+        pass
+        # print(f"{Fore.WHITE}[{self.name}]: {message}{Style.RESET_ALL}")
+
     def info(self, message: str) -> None:
         print(f"{Fore.WHITE}[{self.name}]: {message}{Style.RESET_ALL}")
 

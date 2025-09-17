@@ -3,20 +3,12 @@ import json
 import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
+from scripts.segmentation.cell_base import CellBase
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.configs import DistrictConfigs, PlanningConfigs
-
-# # select coverage path planning method based on configs
-# DCFG = DistrictConfigs()
-# if DCFG.covpp_method == "m1_simple":
-#     from scripts.planning.coverage_pp_1_simple import CoveragePP
-# elif DCFG.covpp_method == "m2_boust":
-#     from scripts.planning.coverage_pp_2_bs_1 import CoveragePP
-# elif DCFG.covpp_method == "m3_contour":
-#     from scripts.planning.coverage_pp_3_contour import CoveragePP
-# else:
-#     raise ValueError(f"Unknown coverage path planning method: {DCFG.covpp_method}. "
-#                      f"Available methods: m0_simple, m1_boust, m3_contour.")
+from scripts.segmentation.segmentation import SegmentationInterface
+from scripts.planning.coverage_path_planner import CoveragePathPlanner
+from scripts.sequence.sequence import Sequence
 
 
 class ZoneStats:
@@ -67,54 +59,70 @@ class ZoneData:
     Attributes:
         ind (int): zone index
         zmd (ZoneMapData): zone map data
-        cov_planner (CoveragePP): coverage path planner
+        segmentation_interface (SegmentationInterface): zone segmentation interface
+        cells (list[CellBase]): list of cells from segmentation
+        cov_path_planner (CoveragePathPlanner): coverage path planner
         complete_path (np.ndarray): complete path (todo)
         st (ZoneStats): zone statistics
     """
 
-    def __init__(self, ind: int = None):
-        self.ns: str = "ZoneData"
+    def __init__(self, ind: int, zmd: ZoneMapData):
+        self.ns: str = f"ZoneData-{ind}"
         self.lg = MyLogger(self.ns)
+
+        # attributes
         self.ind: int = ind
-        self.zmd: ZoneMapData = None
+        self.zmd: ZoneMapData = zmd
 
         # configs
         self.dcfg: DistrictConfigs = DistrictConfigs()
         self.pcfgs: PlanningConfigs = PlanningConfigs()
 
-        # coverage path planner
-        self.cov_planner = None  # CoveragePP
+        # # # segmentation
+        self.segmentation_interface: SegmentationInterface = SegmentationInterface(self.zmd)
+
+        # # # coverage path planner
+        self.cov_path_planner: CoveragePathPlanner = CoveragePathPlanner(self.zmd)
+
+        # sequence
+        self.sequence: Sequence = Sequence(self.zmd)
+
+        # resulting data
+        self.cells: list[CellBase] = []
         self.complete_path: np.ndarray = None  # todo
 
         # statistics
         self.st: ZoneStats = ZoneStats()
 
-    def set_map_data(self, zmd: ZoneMapData):
-        self.zmd = zmd
+        # initialize
         self.initialize()
 
     def initialize(self):
+        """ - initialize zone data and create map planning.
+            - create segmentor and coverage path planner.
+        """
         self.zmd.save_data()
         self.create_map_planning()
 
-        # select coverage path planning method based on configs
-        if self.dcfg.covpp_method == "m1_simple":
-            from scripts.planning.coverage_pp_1_simple import CoveragePP
-        elif self.dcfg.covpp_method == "m2_boust":
-            from scripts.planning.coverage_pp_2_bs_1 import CoveragePP
-        elif self.dcfg.covpp_method == "m3_contour":
-            from scripts.planning.coverage_pp_3_contour import CoveragePP
-        else:
-            raise ValueError(f"Unknown coverage path planning method: {self.dcfg.covpp_method}. "
-                             f"Available methods: m0_simple, m1_boust, m3_contour.")
-        self.cov_planner = CoveragePP(self.zmd)
-        # self.save_map_planning()
-
     def coverage_planning(self):
         """ run coverage path planning for the zone and then post planning. """
-        self.cov_planner.plan()
+
+        # ************
+        self.lg.info1(f"Step: running segmentation using method '{self.dcfg.segmentation_method}'")
+        self.segmentation_interface.run()
+        self.cells = self.segmentation_interface.cells
+
+        # ************
+        self.lg.info1(f"Step: running coverage path planning using method '{self.dcfg.covpp_method}'")
+        self.cov_path_planner.plan(cells=self.cells)
+
+        # ************
+        self.lg.info1(f"Step: creating sequence and full path using method '{self.dcfg.sequence_method}'")
+        self.sequence.run(cells=self.cells, map_polygons=self.segmentation_interface.map_polygons)
+
+        # ************
+        self.lg.info1(f"Step: zone post planning")
         self.post_planning()
-        # self.save_map_planning()
 
     def post_planning(self):
         """ post planning after coverage path planning. 
@@ -135,7 +143,7 @@ class ZoneData:
         self.st.cleaning_area_m = round(self.st.cleaning_area_px * (self.zmd.resolution**2), 2)
 
     def calculate_cleaned_area(self):
-        paths_len = self.cov_planner.st.len_m
+        paths_len = self.sequence.st.len_m
         cleaning_r = self.pcfgs.cleaning_r
         area = paths_len * (2 * cleaning_r)
         # overlaped_area_m
@@ -152,7 +160,7 @@ class ZoneData:
         # map_cleaning: from zone map data (without any paths)
         # used for creating map_clean_data
         map_cleaning = self.zmd.map_cleaning.copy()
-        f_path = self.cov_planner.f_path_px
+        f_path = self.sequence.f_path_px
         cleaning_r_px = int(self.pcfgs.cleaning_r / self.zmd.resolution)
 
         if f_path is None:
@@ -247,7 +255,7 @@ class ZoneData:
         """ save zone statistics and planner statistics of the zone to json file. """
         # save zone statistics to json file
         zone_stats = self.st.get_data_dict()
-        planner_stats = self.cov_planner.st.get_data_dict()
+        planner_stats = self.sequence.st.get_data_dict()
         result = {
             "map": self.zmd.orig_map_data.name,
             "zone_ind": self.zmd.ind,

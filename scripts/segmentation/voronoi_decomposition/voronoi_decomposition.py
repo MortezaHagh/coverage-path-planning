@@ -9,10 +9,10 @@ from scripts.base.logger import MyLogger
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.map_polygons import MapPolygons
 from scripts.base.configs import PlanningConfigs, DistrictConfigs
-from scripts.planning.contour.common import VPoint, CriticalPoint
+from scripts.segmentation.voronoi_decomposition.common import VPoint, CriticalPoint
 
 
-class VoronoiSegmentation:
+class VoronoiDecomposition:
     """ Voronoi decomposition of the zone map. 
         Finding critical points in Voronoi vertices. 
     """
@@ -34,7 +34,7 @@ class VoronoiSegmentation:
         self.min_n_adjacents: int = None            # minimum number of adjacent Voronoi vertices
 
         # logging
-        self.lg.debug(f"Robot radius in pixels: {self.robot_r_px:.2f}")
+        self.lg.info3(f"Robot radius in pixels: {self.robot_r_px:.2f}")
 
         # basic data
         self.zmd: ZoneMapData = zmd
@@ -173,13 +173,13 @@ class VoronoiSegmentation:
     def calculate_adj_dist_ub(self) -> float:
         """ Calculate the upper bound for the distance between adjacent Voronoi vertices. """
         dist_threshold = 2 * self.robot_r_px  # todo param
-        self.lg.debug(f"Calculated distance threshold: {dist_threshold:.2f}")
+        self.lg.info3(f"Calculated distance threshold: {dist_threshold:.2f}")
         return dist_threshold
 
     def find_adjacents_by_distance(self, adj_dist_ub: float = 10.0):
         """ Find adjacent Voronoi vertices based on a distance and [min_n_adjacents] params. """
 
-        self.lg.info(f"Finding adjacent Voronoi vertices within distance {adj_dist_ub:.2f}.")
+        self.lg.info3(f"Finding adjacent Voronoi vertices within distance {adj_dist_ub:.2f}.")
         vertex_adj_idxs = defaultdict(list)
         vertex_adj_dists = defaultdict(list)
 
@@ -213,7 +213,7 @@ class VoronoiSegmentation:
     def find_critical_points(self):
         """ finding critical points from v points: voronoi vertices with minimum clearance to obstacles. """
 
-        self.lg.info2("Finding critical points in Voronoi vertices.")
+        self.lg.info3("Finding critical points in Voronoi vertices.")
         critical_idxs = []
 
         # for each vp, compare its clearance with the clearances of its valid adjacent vertices.

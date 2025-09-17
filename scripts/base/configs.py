@@ -32,36 +32,32 @@ class DistrictConfigs:
     save_decomposition_plot = True
     plot_decomposition = False
 
-    # coverage path planning configs
-    covpp_method = "m2_boust"           # m1_simple, m2_base_boust, m2_boust, m3_contour
-    cell_sequence_method = "s3_milp"    # s1_simple, s2_dfs, s3_milp
-
-    # contour method
-    use_insc_ret = True  # True False
+    # Methods [segmentation, coverage path planning, sequence of cells]
+    segmentation_method = "voronoi"     # voronoi
+    covpp_method = "contour"              # m1_simple, boust, contour
+    sequence_method = "milp"            # simple, dfs, milp
 
     # complete method
-    method = covpp_method
-    if covpp_method not in ["m1_simple"]:
-        method = covpp_method + "_" + cell_sequence_method
+    method = segmentation_method + '_' + covpp_method + '_' + sequence_method
 
     # contour method
     use_insc_ret = True  # True False
-    if covpp_method == "m3_contour":
+    if covpp_method == "contour":
         if use_insc_ret:
-            method = covpp_method + "_" + cell_sequence_method + "_rect"
+            method = method + "_rect"
 
     @classmethod
-    def update(cls, covpp_method: str, use_insc_ret: bool):
+    def update(cls, segmentation_method: str = 'voronoi', covpp_method: str = 'boust', use_insc_ret: bool = False, sequence_method: str = 'milp'):
+        """ Update configs. """
+        cls.segmentation_method = segmentation_method
         cls.covpp_method = covpp_method
         cls.use_insc_ret = use_insc_ret
         # main method
-        cls.method = covpp_method
-        if covpp_method not in ["m1_simple"]:
-            cls.method = covpp_method + "_" + cls.cell_sequence_method
+        cls.method = cls.segmentation_method + '_' + cls.covpp_method + '_' + cls.sequence_method
         # contour method
-        if covpp_method == "m3_contour":
+        if covpp_method == "contour":
             if use_insc_ret:
-                cls.method = covpp_method + "_" + cls.cell_sequence_method + "_rect"
+                cls.method = cls.method + "_rect"
 
 
 @dataclasses.dataclass

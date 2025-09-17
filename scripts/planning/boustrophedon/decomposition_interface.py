@@ -2,7 +2,7 @@ import numpy as np
 from scripts.planning.boustrophedon.cell import Cell
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.planning.optimize_mcells_seq_1 import OptimCellsSeq
+from scripts.sequence.optimize_mcells_seq_1 import OptimCellsSeq
 from scripts.planning.boustrophedon.decomposition_bs_mh import MHDecomposition as CellDecomposition
 
 

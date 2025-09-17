@@ -4,9 +4,9 @@ import numpy as np
 # from shapely.affinity import scale
 from shapely.geometry import MultiPolygon, Polygon
 from scripts.base.logger import MyLogger
-from scripts.planning.contour.cell import Cell
 from scripts.base.my_utils import MyPoint, MyPath
 from scripts.district.zone_map_data import ZoneMapData
+from scripts.segmentation.voronoi_decomposition.cell import Cell
 from scripts.base.configs import PlanningConfigs, DistrictConfigs
 
 

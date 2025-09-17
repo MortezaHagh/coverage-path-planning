@@ -4,19 +4,19 @@ from matplotlib import pyplot as plt
 from scipy.spatial import Voronoi  # pylint: disable=no-name-in-module
 from scripts.base.logger import MyLogger
 from scripts.base.configs import DistrictConfigs
-from scripts.planning.contour.cell import Cell
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.planning.contour.common import CriticalPoint, Ring
-from scripts.planning.optimize_mcells_seq_1 import OptimCellsSeq
-from scripts.planning.contour.decomposition_voronoi import VoronoiSegmentation
+from scripts.segmentation.segmentation import SegmentationBase
+from scripts.segmentation.voronoi_decomposition.common import CriticalPoint, Ring
+from scripts.segmentation.voronoi_decomposition.cell import Cell
+from scripts.segmentation.voronoi_decomposition.voronoi_decomposition import VoronoiDecomposition
 
 
-class DecompositionInterface:
+class Segmentation(SegmentationBase):
     """Interface for voronoi decomposition methods. """
 
     def __init__(self, zmd: ZoneMapData, map_polygs: MapPolygons):
-        self.ns = "DecompositionInterface"
+        self.ns = "SegmentationVoronoi"
         self.lg = MyLogger(self.ns)
 
         #
@@ -27,11 +27,11 @@ class DecompositionInterface:
         # voronoi decomposition object
         self.vor: Voronoi = None
 
-        # mcells and sequence
-        self.mcells: list[Cell] = []
-        self.smcells: list[Cell]
+        # cells and sequence
+        self.cells: list[Cell] = []
+        self.s_cells: list[Cell]
         self.seq_idxs: list[int] = []
-        self.n_mcells: int = 0
+        self.n_cells: int = 0
 
         #
         self.poly_start_idxs: list[int] = []                # start indices of the polygons in self.vor.points
@@ -41,17 +41,11 @@ class DecompositionInterface:
         self.cp_base2_idxs: list[int] = []                  # indices of the second basis points in self.vor.points
         self.rings: list[Ring] = []                         # segments created from critical points
 
-        # ring and critical point mappings
-        # self.critp_ring_dict: dict[int, set[int]] = {}    # critical point index to ring indices mapping
-
-        # run the decomposition
-        self.run()
-
     def run(self) -> None:
         """Run the voronoi-based decomposition process. """
 
         # voronoi processing
-        vor_dec = VoronoiSegmentation(self.zmd, self.map_polygs)
+        vor_dec = VoronoiDecomposition(self.zmd, self.map_polygs)
         vor_dec.voronoi_decomposition()
         self.vor = vor_dec.vor
         self.critical_points = vor_dec.critical_points
@@ -64,7 +58,7 @@ class DecompositionInterface:
         self.create_cells()
         self.set_cell_adjacents()
         self.process_cells()
-        self.n_mcells = len(self.mcells)
+        self.n_cells = len(self.cells)
 
         # plotting
         self.plot_rings()
@@ -136,6 +130,8 @@ class DecompositionInterface:
 
     def create_all_segments(self) -> None:
         """Create segments (rings) for all critical points. """
+
+        self.lg.info2(f"Creating rings.")
         n_ring = 0
         for _ in range(2):
             for i, cp in enumerate(self.critical_points):
@@ -263,14 +259,14 @@ class DecompositionInterface:
             cell_crit_points = [self.critical_points[j] for j in ring.cp_icp_idxs]
             ring.set_critical_points(cell_crit_points)
             cell = Cell(ind=i, ring=ring, resolution=self.zmd.resolution)
-            self.mcells.append(cell)
+            self.cells.append(cell)
 
     def set_cell_adjacents(self) -> None:
         """Set adjacent cells for each cell based on touching polygons. """
         # method 1: using touches
         self.lg.info("Setting cell adjacents")
-        for i, cell in enumerate(self.mcells):
-            for j, other_cell in enumerate(self.mcells):
+        for i, cell in enumerate(self.cells):
+            for j, other_cell in enumerate(self.cells):
                 if i == j:
                     continue
                 if cell.poly.touches(other_cell.poly):
@@ -279,7 +275,7 @@ class DecompositionInterface:
     def process_cells(self) -> None:
         """processing cells. """
         self.lg.info("Processing cells")
-        for cell in self.mcells:
+        for cell in self.cells:
             cell.process_cell()
 
     # Plotting =========================================================================================================
@@ -306,22 +302,3 @@ class DecompositionInterface:
         #
         if self.dcfgs.plot_decomposition:
             plt.show()
-
-    # Sequence =========================================================================================================
-
-    def create_sequence(self, distances: np.ndarray = None) -> None:
-        if len(self.mcells) == 0:
-            return
-        elif len(self.mcells) == 1:
-            self.smcells = self.mcells
-            return
-
-        #
-        start_cell_idx = 0
-        if self.zmd.orig_map_data.name == "map_fr52":
-            start_cell_idx = 4
-
-            # create optimized sequence of cells
-        opt_seq = OptimCellsSeq(mcells=self.mcells, distances=distances, start_cell_idx=start_cell_idx)
-        self.seq_idxs = opt_seq.tour_idxs
-        self.smcells = [self.mcells[i] for i in opt_seq.tour_idxs]

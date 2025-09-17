@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp
 from scripts.base.logger import MyLogger
 from scripts.base.configs import DistrictConfigs
-from scripts.planning.cells_graph_0 import CellsGraph
+from scripts.sequence.cells_graph_0 import CellsGraph
 from scripts.planning.boustrophedon.cell import Cell
 
 
@@ -29,14 +29,14 @@ class OptimCellsSeq:
 
         #
         optimizer = None
-        if dcfgs.cell_sequence_method == "s1_simple":
+        if dcfgs.sequence_method == "simple":
             optimizer = SimpleSeqOpt(pmcells)
-        elif dcfgs.cell_sequence_method == "s2_dfs":
+        elif dcfgs.sequence_method == "dfs":
             optimizer = DepthFirstSearch(pmcells)
-        elif dcfgs.cell_sequence_method == "s3_milp":
+        elif dcfgs.sequence_method == "milp":
             optimizer = MILPSeq(self.cells_graph, mcells)
         else:
-            self.lg.error(f"Invalid cell sequence method: {dcfgs.cell_sequence_method}")
+            self.lg.error(f"Invalid cell sequence method: {dcfgs.sequence_method}")
             return
 
         #

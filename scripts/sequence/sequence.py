@@ -3,18 +3,20 @@ import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
-from scripts.base.my_utils import MyPoint, MyPath
 from scripts.base.logger import MyLogger
+from scripts.base.my_utils import MyPoint, MyPath
 from scripts.base.my_utils import get_n_colors_plt
+from scripts.base.my_utils import get_n_colors_cv
+from scripts.segmentation.cell_base import CellBase
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.planning.connect_paths import ConnectPaths
+from scripts.sequence.connect_paths import ConnectPaths
 from scripts.planning.planning_plotter import PlannerPlotter
-from scripts.base.configs import SpaceConfigs, PlanningConfigs, DistrictConfigs
-from scripts.base.my_utils import get_n_colors_cv
+from scripts.sequence.optimize_mcells_seq_1 import OptimCellsSeq
+from scripts.base.configs import DistrictConfigs, PlanningConfigs
 
 
-class PlannerStats:
+class PathStats:
     """ Statistics of the planner. """
 
     def __init__(self):
@@ -30,16 +32,31 @@ class PlannerStats:
         }
 
 
-class CoveragePPBase:
-    """ Base class for coverage path planning. """
+class Sequence:
+    def __init__(self, zmd: ZoneMapData) -> None:
+        """ Create sequence of cells to be covered. 
+            Also connect paths between cells and create full paths. 
+        """
 
-    def __init__(self, zone_map_data: ZoneMapData):
-        self.ns: str = "CoveragePPBase"
-        self.lg = MyLogger(self.ns)
+        self.ns: str = "Sequence"
 
-        # zone data
-        self.zmd: ZoneMapData = zone_map_data
-        self.map_polygons: MapPolygons = MapPolygons(self.zmd)
+        # attributes
+        self.zmd: ZoneMapData = zmd
+        self.map_polygons: MapPolygons = None
+        #
+        self.cells: list[CellBase] = []
+        self.n_cells: int = 0
+
+        # configurations
+        self.pcfgs: PlanningConfigs = PlanningConfigs()
+        self.dcfgs: DistrictConfigs = DistrictConfigs()
+
+        # params
+        self.min_points_distance: float = self.pcfgs.min_wp_dist
+        self.resolution: float = zmd.resolution
+
+        # connect paths interface
+        self.connections: ConnectPaths = ConnectPaths(self.zmd)
 
         # # paths
         # final complete connected path
@@ -53,92 +70,80 @@ class CoveragePPBase:
         self.c_paths_m: list[MyPath] = []
 
         # statistics
-        self.st: PlannerStats = PlannerStats()
+        self.st: PathStats = PathStats()
 
         # plotter
-        self.plotter: PlannerPlotter = PlannerPlotter(zone_map_data.result_path)
-
-        # parameters and configurations
-        self.scfgs: SpaceConfigs = SpaceConfigs()
-        self.dcfgs: DistrictConfigs = DistrictConfigs()
-        self.pcfgs: PlanningConfigs = PlanningConfigs()
-
-        # configs
-        self.colors: list = []
-
-        # params
-        self.cleaning_r: float = self.pcfgs.cleaning_r_ov
-        self.cleaning_width: float = 2*self.pcfgs.cleaning_r_ov
-        self.resolution: float = zone_map_data.resolution
-        self.min_points_distance: float = self.pcfgs.min_wp_dist
+        self.plotter: PlannerPlotter = PlannerPlotter(zmd.result_path)
 
         # animation
         self.anim_line = None  # for animation
         self.anim = None  # for animation
 
-        # main
-        self.connections: ConnectPaths = ConnectPaths(self.zmd)     # connect paths interface
-        self.dec_interface = None                                   # decomposition interface (loaded in the main planner)
-        self.all_cell_covp_planners: list = []                      # list of cell coverage planners for cells (loaded in the main planner)
+        # results
+        self.s_cells: list[CellBase] = []
+        self.seq_idxs: list[int] = []
 
-    def plan(self) -> None:
-        self.coverage_planning()
-        self.post_planning()
-        self.method_post_planning()
+    def run(self, cells: list[CellBase], map_polygons: MapPolygons) -> None:
+        """ Run sequence creation and path connection. """
+        self.cells = cells
+        self.n_cells = len(cells)
+        self.map_polygons = map_polygons
 
-    # Planning =========================================================================================================
-
-    def coverage_planning(self) -> None:
-        self.decompose_map()    # method specific
-        self.zone_covpp()       # method specific
+        # **********************
         self.create_sequence()
         self.connect_paths()
-
-    def decompose_map(self) -> None:
-        """
-        Virtual method to be implemented by subclasses. 
-        """
-        raise NotImplementedError("decompose_map() must be implemented by subclasses.")
-
-    def zone_covpp(self) -> None:
-        """ apply coverage path planning for all cells in the zone. 
-
-        Virtual method to be implemented by subclasses. 
-        """
-        raise NotImplementedError("zone_covpp() must be implemented by subclasses.")
+        self.post_planning()
+        self.method_post_planning()
 
     def create_sequence(self) -> None:
         """ Create optimum sequence of cells to be covered. """
 
         # Initialize distances between cells (paths start and end points)
-        distances = None
-        if self.dcfgs.cell_sequence_method == "s3_milp":
+        if self.dcfgs.sequence_method == "milp":
             # Initialize connections object with cells
-            self.connections.initialize(self.dec_interface.mcells)
+            self.connections.initialize(self.cells)
 
             # calculate all paths and calculate distances between cells entries (based on cell paths)
-            self.connections.find_all_connections(self.dec_interface.mcells)
+            self.connections.find_all_connections(self.cells)
             self.connections.find_all_distances()
             distances = self.connections.all_distances
 
             # # create cells graph and distances
-            # cg = CellsGraph(self.dec_interface.mcells, self.connections)
+            # cg = CellsGraph(self.cells, self.connections)
             # distances = cg.dists_m
 
         # create sequence
-        self.dec_interface.create_sequence(distances=distances)
-        self.paths_m = [cell.path_m for cell in self.dec_interface.smcells if cell.do_planning]
-        self.paths_px = [cell.path_px for cell in self.dec_interface.smcells if cell.do_planning]
+        self.optimize(distances=distances)
+        self.paths_m = [cell.path_m for cell in self.s_cells if cell.do_planning]
+        self.paths_px = [cell.path_px for cell in self.s_cells if cell.do_planning]
+
+    def optimize(self, distances: np.ndarray = None) -> None:
+        if len(self.cells) == 0:
+            return
+        elif len(self.cells) == 1:
+            self.s_cells = self.cells
+            return
+
+        #
+        start_cell_idx = 0
+        if self.zmd.orig_map_data.name == "map_fr52":
+            start_cell_idx = 4
+
+            # create optimized sequence of cells
+        opt_seq = OptimCellsSeq(cells=self.cells, distances=distances, start_cell_idx=start_cell_idx)
+        self.seq_idxs = opt_seq.tour_idxs
+        self.s_cells = [self.cells[i] for i in opt_seq.tour_idxs]
 
     def connect_paths(self) -> None:
         """ Connect the paths based on the created sequence. 
             connect end-start points of paths.
         """
-        self.connections.connect_paths(self.paths_px, self.dec_interface.seq_idxs)
+        self.connections.connect_paths(self.paths_px, self.seq_idxs)
         self.c_paths_px = self.connections.c_paths_px
         self.c_paths_m = [self.path_px_to_m(path_px) for path_px in self.c_paths_px]
 
-    # Post Planning ====================================================================================================
+
+# Post Planning ====================================================================================================
 
     def post_planning(self) -> None:
         if len(self.paths_px) == 0 or len(self.paths_m) == 0:
@@ -200,14 +205,14 @@ class CoveragePPBase:
         """ update map_planning with paths and cells, save map_planning. """
         if not self.dcfgs.save_map_planning:
             return
-        self.plotter.run(self.dec_interface.mcells)
-        n = self.dec_interface.n_mcells
+        self.plotter.run(self.cells)
+        n = self.n_cells
         self.colors = get_n_colors_cv(n)
         self.add_cells_to_map_planning()
         self.add_cell_paths_to_map_planning()
 
     def add_cells_to_map_planning(self) -> None:
-        for i, cell in enumerate(self.dec_interface.mcells):
+        for i, cell in enumerate(self.cells):
             pp = cell.points
             pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
             map_p = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(100, 100, 100), thickness=2)
@@ -217,10 +222,23 @@ class CoveragePPBase:
             self.zmd.map_planning = cv.addWeighted(map_p_fill, alpha, map_p, 1 - alpha, 0)
 
     def add_cell_paths_to_map_planning(self) -> None:
-        """
-        Virtual method to be implemented by subclasses.
-        """
-        raise NotImplementedError("add_cell_paths_to_map_planning() must be implemented by subclasses.")
+        map_planning = self.zmd.map_planning.copy()
+        robot_r_px = int(self.pcfgs.cleaning_r_ov / self.resolution)
+        robot_d_px = robot_r_px * 2
+        p_r = 5  # int(robot_r_px/10)
+        for i, path_px in enumerate(self.paths_px):
+            if path_px:
+                pp = np.array(path_px.xy, dtype=np.int32)  # Ensure pp is a numpy array of integers
+                map_planning = cv.polylines(map_planning, [pp], isClosed=False, color=self.colors[i], thickness=2)
+                # plot cleaning
+                overlay = map_planning.copy()
+                cv.polylines(overlay, [pp], isClosed=False, color=self.colors[i], thickness=robot_d_px)
+                alpha = 0.2  # Adjust transparency (0.0 transparent, 1.0 opaque)
+                map_planning = cv.addWeighted(overlay, alpha, map_planning, 1 - alpha, 0)
+                # add points
+                for point in pp:
+                    cv.circle(map_planning, tuple(point), p_r, self.colors[i], -1)
+        self.zmd.map_planning = map_planning
 
     # filters ==========================================================================================================
 

@@ -40,10 +40,13 @@ class DistrictData:
 
     def run_coverage_planning(self) -> None:
         """run coverage planning for all zones. """
+
         for zd in self.zone_datas:
-            self.lg.info(f" ************** Planning on Zone: {zd.ind} ************** ")
+            self.lg.info1(f" ***************** Planning on Zone: {zd.ind} ***************** ")
             zd.coverage_planning()
-        self.lg.info(" ******************************************************* ")
+
+        #
+        self.lg.info1(" *************************************************************** ")
         self.update_map_planning()
         self.save_map_planning()
 
@@ -58,14 +61,13 @@ class DistrictData:
 
         # create zone map data and zones
         for i, zr in enumerate(zone_rectangles):
-            self.lg.info(f"creating map data for zone [{i}]")
+            self.lg.info(f"creating map data and creating zone [{i}]")
             z_spa: SpaceAnalyzer = deepcopy(self.spa_obj)
             z_spa.update_by_rectangle(zr)   # space analyzer updated by zone rectangle
             zmd = z_spa.zone_map_data       # zone_map_data
             zmd.set_ind(i)
             # create zone
-            zd = ZoneData(i)
-            zd.set_map_data(zmd)
+            zd = ZoneData(i, zmd)
             self.zone_datas.append(zd)
 
     def update_map_planning(self) -> None:

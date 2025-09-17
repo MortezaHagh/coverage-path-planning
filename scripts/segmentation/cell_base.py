@@ -2,7 +2,7 @@ from shapely.geometry import Polygon
 from scripts.base.my_utils import MyPoint, MyPath
 
 
-class BaseCell:
+class CellBase:
     """Base class for cells in the boustrophedon coverage path planning. """
 
     def __init__(self, ind: int, poly: Polygon):

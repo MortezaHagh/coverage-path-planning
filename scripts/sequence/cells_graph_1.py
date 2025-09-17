@@ -1,18 +1,18 @@
 import heapq
 import numpy as np
 from scripts.base.logger import MyLogger
-from scripts.planning.base_cell import BaseCell
-from scripts.planning.connect_paths import ConnectPaths
+from scripts.segmentation.cell_base import CellBase
+from scripts.sequence.connect_paths import ConnectPaths
 
 
 class CellsGraph:
     """Graph representation of cells with distances and adjacency information. """
 
-    def __init__(self, cells: list[BaseCell], con_path: ConnectPaths):
+    def __init__(self, cells: list[CellBase], con_path: ConnectPaths):
         self.ns = "CellsGraph"
         self.lg = MyLogger(self.ns)
         #
-        self.cells: list[BaseCell] = cells
+        self.cells: list[CellBase] = cells
         self.n_cells: int = len(cells)
         self.con_path = con_path
         #

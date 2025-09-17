@@ -5,12 +5,12 @@ from shapely.geometry import Point
 from shapely.affinity import scale
 from shapely import maximum_inscribed_circle  # , minimum_bounding_circle
 from scripts.base.logger import MyLogger
-from scripts.planning.base_cell import BaseCell
-from scripts.planning.contour.common import CriticalPoint, Ring
+from scripts.segmentation.cell_base import CellBase
+from scripts.segmentation.voronoi_decomposition.common import CriticalPoint, Ring
 from scripts.base.configs import PlanningConfigs, DistrictConfigs
 
 
-class Cell (BaseCell):
+class Cell (CellBase):
     """ Cell for voronoi-based decomposition. 
 
     Includes:

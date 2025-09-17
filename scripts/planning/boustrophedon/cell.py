@@ -1,10 +1,10 @@
 from shapely import Polygon
 from shapely.ops import unary_union
-from scripts.planning.base_cell import BaseCell
+from scripts.segmentation.cell_base import CellBase
 from scripts.planning.boustrophedon.events import Event
 
 
-class Cell (BaseCell):
+class Cell (CellBase):
     """ Cell for boustrophedon decomposition. """
 
     def __init__(self, ind: int, poly: Polygon, event: Event):
