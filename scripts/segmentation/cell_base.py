@@ -33,8 +33,11 @@ class CellBase:
         self.end_point: MyPoint = None
 
         # paths
-        self.path_m: MyPath = None  # path in meters
-        self.path_px: MyPath = None  # path in pixels
+        self.path_m: MyPath = None      # path in meters
+        self.path_px: MyPath = None     # path in pixels
+
+        # features
+        self.rect_like: bool = False    # is the cell rectangle-like
 
         # calculate cell specs
         self.cell_specs()

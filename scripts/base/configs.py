@@ -33,8 +33,8 @@ class DistrictConfigs:
     plot_decomposition = False
 
     # Methods [segmentation, coverage path planning, sequence of cells]
-    segmentation_method = "voronoi"     # voronoi
-    covpp_method = "contour"              # m1_simple, boust, contour
+    segmentation_method = "simple"     # simple, voronoi
+    covpp_method = "contour"            # simple, boust, contour
     sequence_method = "milp"            # simple, dfs, milp
 
     # complete method

@@ -15,17 +15,25 @@ class SegmentationBase:
         # zone map data
         self.zmd: ZoneMapData = zmd
 
+        # configs
+        self.dcfgs: DistrictConfigs = DistrictConfigs()
+
         # map polygons
         self.map_polygons: MapPolygons = map_polygons
 
+        # cells
+        self.cells: list[CellBase] = []
+        self.n_cells: int = 0
+
     def run(self):
-        """ Run segmentation.
+        """ Run segmentation. 
+            to be implemented in child classes. 
         """
-        pass
+        raise NotImplementedError
 
 
 class SegmentationInterface:
-    """ Base class for Segmentation Interface.  
+    """ Segmentation Interface.  
     """
 
     def __init__(self, zmd: ZoneMapData):
@@ -54,7 +62,10 @@ class SegmentationInterface:
         segmentation_method = dcfgs.segmentation_method
 
         # create segmentor
-        if segmentation_method == "voronoi":
+        if segmentation_method == "simple":
+            from scripts.segmentation.segmentation_simple import Segmentation
+            self.segmentor = Segmentation(self.zmd, self.map_polygons)
+        elif segmentation_method == "voronoi":
             from scripts.segmentation.voronoi_decomposition.segmentation_voronoi import Segmentation
             self.segmentor = Segmentation(self.zmd, self.map_polygons)
         else:

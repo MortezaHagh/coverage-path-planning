@@ -1,9 +1,8 @@
 import numpy as np
 from shapely import Polygon
 from matplotlib import pyplot as plt
-from scipy.spatial import Voronoi  # pylint: disable=no-name-in-module
+from scipy.spatial import Voronoi
 from scripts.base.logger import MyLogger
-from scripts.base.configs import DistrictConfigs
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.segmentation.segmentation import SegmentationBase
@@ -13,25 +12,15 @@ from scripts.segmentation.voronoi_decomposition.voronoi_decomposition import Vor
 
 
 class Segmentation(SegmentationBase):
-    """Interface for voronoi decomposition methods. """
+    """ voronoi decomposition method. """
 
-    def __init__(self, zmd: ZoneMapData, map_polygs: MapPolygons):
+    def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
+        super().__init__(zmd, map_polygons)
         self.ns = "SegmentationVoronoi"
         self.lg = MyLogger(self.ns)
 
-        #
-        self.dcfgs: DistrictConfigs = DistrictConfigs()
-        self.zmd: ZoneMapData = zmd
-        self.map_polygs: MapPolygons = map_polygs
-
         # voronoi decomposition object
         self.vor: Voronoi = None
-
-        # cells and sequence
-        self.cells: list[Cell] = []
-        self.s_cells: list[Cell]
-        self.seq_idxs: list[int] = []
-        self.n_cells: int = 0
 
         #
         self.poly_start_idxs: list[int] = []                # start indices of the polygons in self.vor.points
@@ -45,7 +34,7 @@ class Segmentation(SegmentationBase):
         """Run the voronoi-based decomposition process. """
 
         # voronoi processing
-        vor_dec = VoronoiDecomposition(self.zmd, self.map_polygs)
+        vor_dec = VoronoiDecomposition(self.zmd, self.map_polygons)
         vor_dec.voronoi_decomposition()
         self.vor = vor_dec.vor
         self.critical_points = vor_dec.critical_points
