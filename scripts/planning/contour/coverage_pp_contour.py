@@ -23,7 +23,6 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.coverage_planning()
 
     def coverage_planning(self) -> None:
-        """ Main function to plan the coverage path for the cell. """
         if not self.cell.do_planning:
             self.lg.warn(f"cell {self.cell.id} does not require planning.")
             return
@@ -90,7 +89,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         c_map[mask] = z_map[mask]
 
         # complete the path
-        if DistrictConfigs.use_insc_ret and self.cell.rect_like:
+        if self.dcfgs.use_insc_ret and self.cell.rect_like:
             points = []
             path_px = self.complete_path_by_rectangle(points, robot_r_px)
         else:
@@ -300,12 +299,3 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         """ Find the index of the closest point to p in points. """
         dists = [np.linalg.norm(np.array(p) - np.array(pt)) for pt in points]
         return np.argmin(dists)
-
-    # ==========================================================================
-
-    def create_path_m(self) -> None:
-        if self.path_px:
-            self.path_m = MyPath([self.point_px_to_m(p) for p in self.path_px.points])
-
-    def point_px_to_m(self, p: MyPoint) -> MyPoint:
-        return MyPoint(p.x * self.resolution, p.y * self.resolution)

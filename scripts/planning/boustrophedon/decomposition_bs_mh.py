@@ -10,11 +10,11 @@ from scripts.planning.boustrophedon.plotter import BoustPlotter
 from scripts.planning.boustrophedon.post_process_mcells import eval_cells_path_shift
 
 
-class MHDecomposition:
+class CellDecomposition:
     """ trapezoidal decomposition. """
 
     def __init__(self, resolution: float = 0.05, result_path: str = None):
-        self.ns: str = "MHDecomposition"
+        self.ns: str = "CellDecompositionMH"
         self.lg = MyLogger(self.ns)
         #
         self.result_path: str = result_path

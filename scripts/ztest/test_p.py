@@ -1,18 +1,13 @@
 class AA:
     def __init__(self, a: int = 0):
-        self.__a = a
-        self.__b = 1
-
-    def get_a(self):
-        return self.__a
-
-    def get_b(self):
-        return self.__b
+        self.a = 1
 
 
-a = AA(5)
-print(a.get_a())
-print(a.get_b())
+all_aas = [AA(i) for i in range(5)]
 
-a.__a = 10  # This will not change the value of __a, as it's private
-print(a.get_a())  # Still prints 5, because __a is private and cannot
+for a in all_aas:
+    a.a = 2
+
+
+for a in all_aas:
+    print(a.a)

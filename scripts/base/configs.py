@@ -34,15 +34,15 @@ class DistrictConfigs:
 
     # Methods [segmentation, coverage path planning, sequence of cells]
     segmentation_method = "voronoi"     # simple, voronoi
-    covpp_method = "contour"            # simple, boust, contour
+    covpp_method = "boust"            # simple, boust, contour
     sequence_method = "milp"            # simple, dfs, milp
 
     # complete method
     method = segmentation_method + '_' + covpp_method + '_' + sequence_method
 
-    # contour method
-    use_insc_ret = True  # True False
-    if covpp_method == "contour":
+    # voronoi method
+    use_insc_ret = False  # True False
+    if segmentation_method == "voronoi":
         if use_insc_ret:
             method = method + "_rect"
 
@@ -51,11 +51,14 @@ class DistrictConfigs:
         """ Update configs. """
         cls.segmentation_method = segmentation_method
         cls.covpp_method = covpp_method
+        cls.sequence_method = sequence_method
         cls.use_insc_ret = use_insc_ret
+
         # main method
         cls.method = cls.segmentation_method + '_' + cls.covpp_method + '_' + cls.sequence_method
-        # contour method
-        if covpp_method == "contour":
+
+        # voronoi method
+        if segmentation_method == "voronoi":
             if use_insc_ret:
                 cls.method = cls.method + "_rect"
 

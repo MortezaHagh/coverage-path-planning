@@ -1,27 +1,48 @@
 
 
 from scripts.base.logger import MyLogger
-from scripts.base.configs import PlanningConfigs
+from scripts.base.my_utils import MyPoint, MyPath
 from scripts.segmentation.cell_base import CellBase
 from scripts.district.zone_map_data import ZoneMapData
+from scripts.base.configs import PlanningConfigs, DistrictConfigs
 
 
 class CoveragePathPlannerBase:
     """ Base class for cell coverage path planner. """
 
     def __init__(self, cell: CellBase, zmd: ZoneMapData):
-        self.ns = "CellCoveragePlannerBase-Z" + str(zmd.ind)
+        self.ns = "CoveragePlannerBase-Z" + str(zmd.ind)
         self.lg = MyLogger(self.ns)
 
+        # zone map data
+        self.zmd: ZoneMapData = zmd
+
         # configurations
+        self.dcfgs = DistrictConfigs()
         self.pcfgs = PlanningConfigs()
         self.resolution: float = zmd.resolution
 
         # cell
         self.cell: CellBase = cell
-        self.zmd: ZoneMapData = zmd
-        self.zone_ind: int = zmd.ind
 
-        # path
+        # resulted paths
         self.path_m: list[tuple[float, float]] = []   # path in meters
         self.path_px: list[tuple[int, int]] = []      # path in pixels
+
+    def coverage_planning(self) -> None:
+        """ Main function to plan the coverage path for the cell. 
+            To be implemented in child classes.
+        """
+        raise NotImplementedError("This method should be implemented in child classes.")
+
+    # ==========================================================================
+
+    def create_path_m(self) -> None:
+        if self.path_px:
+            self.path_m = MyPath([self.point_px_to_m(p) for p in self.path_px.points])
+
+    def path_px_to_m(self, path_px: MyPath) -> MyPath:
+        return MyPath([self.point_px_to_m(p) for p in path_px.points])
+
+    def point_px_to_m(self, p: MyPoint) -> MyPoint:
+        return MyPoint(p.x * self.resolution, p.y * self.resolution)

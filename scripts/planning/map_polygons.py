@@ -8,11 +8,17 @@ from scripts.district.zone_map_data import ZoneMapData
 class MapPolygons:
     """ Create bounding and obstacle polygons from map image. """
 
-    def __init__(self, zmd: ZoneMapData):
+    def __init__(self, zmd: ZoneMapData, map_ws: np.ndarray = None):
         self.ns = "MapPolygons"
         self.lg = MyLogger(self.ns)
         self.b_poly: Polygon = None  # bounding polygon
         self.obs_polys: list[Polygon] = []  # obstacle polygons
+
+        # map workspace
+        if map_ws is not None:
+            self.map_ws = map_ws
+        else:
+            self.map_ws = zmd.map_ws
 
         # starting coordinates
         self.s_x: int = None
@@ -23,19 +29,19 @@ class MapPolygons:
         self.set_start_coord(zmd)
 
         # set bounding polygon
-        self.create_bounding(zmd)
+        self.create_bounding()
 
         # set obstacle polygons
-        self.create_obstacle_polygons(zmd)
+        self.create_obstacle_polygons()
 
     def set_start_coord(self, zmd: ZoneMapData):
         """ Set starting coordinates from map rectangle. """
         self.s_x = zmd.rectangle.x_min
         self.s_y = zmd.rectangle.y_min
 
-    def create_bounding(self, zmd: ZoneMapData):
+    def create_bounding(self):
         """ Create bounding polygon from map image. """
-        contours, _ = cv.findContours(zmd.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv.findContours(self.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         biggest_contour = max(contours, key=cv.contourArea)
 
         # check mid distance
@@ -43,14 +49,12 @@ class MapPolygons:
         filtered_c.reverse()  # reverse to have clockwise order
         self.b_poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
 
-    def create_obstacle_polygons(self, zmd: ZoneMapData):
+    def create_obstacle_polygons(self):
         """ Create obstacle polygons from map image. 
-
             Approach: find contours of obstacles in the map image and create polygons from them.
         """
         # get obstacle contours inside the biggest contour from map image
-        contours, hierarchy = cv.findContours(zmd.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
-        # get the biggest contour
+        contours, hierarchy = cv.findContours(self.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
 
         # get the obstacle contours
         obs_contours = []
@@ -60,7 +64,7 @@ class MapPolygons:
 
         # check if there are any obstacle contours
         if len(obs_contours) == 0:
-            self.lg.info(f"No obstacle contours found in zone {zmd.ind}")
+            # self.lg.info(f"No obstacle contours found in zone {zmd.ind}")
             return
 
         # obstacle polygons
@@ -69,7 +73,7 @@ class MapPolygons:
             filtered_c = self.filter_contour_points(c)
             # get the polygon
             if len(filtered_c) < 3:
-                self.lg.warning(f"Not enough points to create polygon for contour in zone {zmd.ind}")
+                self.lg.warning(f"Not enough points to create polygon for contour in zone zmd.ind ")
                 continue
             poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
             obs_polys.append(poly)

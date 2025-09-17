@@ -37,7 +37,8 @@ class CellBase:
         self.path_px: MyPath = None     # path in pixels
 
         # features
-        self.rect_like: bool = False    # is the cell rectangle-like
+        self.rectangle_poly: Polygon = None       # inscribed rectangle polygon (expanded)
+        self.rect_like: bool = False
 
         # calculate cell specs
         self.cell_specs()

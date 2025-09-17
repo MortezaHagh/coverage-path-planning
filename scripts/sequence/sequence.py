@@ -39,6 +39,7 @@ class Sequence:
         """
 
         self.ns: str = "Sequence"
+        self.lg = MyLogger(self.ns)
 
         # attributes
         self.zmd: ZoneMapData = zmd

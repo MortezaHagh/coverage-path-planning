@@ -7,7 +7,7 @@ from scripts.planning.coverage_pp_base import CoveragePathPlannerBase
 
 class CoveragePathPlanHandler:
     def __init__(self, zone_map_data: ZoneMapData):
-        self.ns: str = 'CoveragePathPlanner'
+        self.ns: str = 'CoveragePathPlanHandler'
         self.lg = MyLogger(self.ns)
 
         # zone map data
@@ -29,6 +29,7 @@ class CoveragePathPlanHandler:
 
     def all_cells_covpp(self) -> None:
         """ apply coverage path planning for all cells in the zone """
+
         self.lg.info2("start coverage path planning for cells")
 
         # coverage path planning method from configs
