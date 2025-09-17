@@ -4,31 +4,21 @@ import numpy as np
 # from shapely.affinity import scale
 from shapely.geometry import MultiPolygon, Polygon
 from scripts.base.logger import MyLogger
+from scripts.base.configs import DistrictConfigs
 from scripts.base.my_utils import MyPoint, MyPath
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.segmentation.voronoi_decomposition.cell import Cell
-from scripts.base.configs import PlanningConfigs, DistrictConfigs
+from scripts.planning.coverage_pp_base import CoveragePathPlannerBase
 
 
-class CellCoveragePathPlanner:
+class CoveragePathPlanner(CoveragePathPlannerBase):
     """ Class to plan coverage path for a given cell in a zone using contour-based methods. """
 
-    def __init__(self, cell: Cell, zmd: ZoneMapData,  zone_ind: int = 0):
-        self.ns = "CellCoverageP-Z" + str(zone_ind)
+    def __init__(self, cell: Cell, zmd: ZoneMapData):
+        super().__init__(cell, zmd)
+
+        self.ns = "CellCoveragePlannerContour-Z" + str(zmd.ind)
         self.lg = MyLogger(self.ns)
-
-        #
-        self.cell: Cell = cell
-        self.zmd: ZoneMapData = zmd
-
-        # parameters and configurations
-        self.pcfgs: PlanningConfigs = PlanningConfigs()
-        self.resolution: float = zmd.resolution
-
-        #
-        self.path_m: MyPath = None
-        self.path_px: MyPath = None
-
         #
         self.coverage_planning()
 

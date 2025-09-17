@@ -7,7 +7,7 @@ from scripts.segmentation.cell_base import CellBase
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.configs import DistrictConfigs, PlanningConfigs
 from scripts.segmentation.segmentation import SegmentationInterface
-from scripts.planning.coverage_path_planner import CoveragePathPlanner
+from scripts.planning.coverage_path_plan_handler import CoveragePathPlanHandler
 from scripts.sequence.sequence import Sequence
 
 
@@ -82,7 +82,7 @@ class ZoneData:
         self.segmentation_interface: SegmentationInterface = SegmentationInterface(self.zmd)
 
         # # # coverage path planner
-        self.cov_path_planner: CoveragePathPlanner = CoveragePathPlanner(self.zmd)
+        self.cov_path_planner: CoveragePathPlanHandler = CoveragePathPlanHandler(self.zmd)
 
         # sequence
         self.sequence: Sequence = Sequence(self.zmd)
