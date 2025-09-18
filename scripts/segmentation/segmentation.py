@@ -90,8 +90,64 @@ class SegmentationInterface:
             to be implemented in child classes.
         """
         for cell in self.cells:
-            map_cell = self.create_cell_map(cell)
-            cell.free_angle = self.cell_main_direction(map_cell)
+            if cell.rect_like:
+                cell.free_angle = self.main_direction_by_cell_rectangle(cell)
+            else:
+                map_cell = self.create_cell_map(cell)
+                cell.free_angle = self.cell_main_direction(map_cell)
+
+    def main_direction_by_cell_rectangle(self, cell: CellBase) -> float:
+        """ Get main direction from cell rectangle orientation. """
+
+        # Extract coordinates (last point == first point, so we skip last)
+        rect = cell.rectangle_poly
+        coords = list(rect.exterior.coords)[:-1]
+
+        longest_length = 0
+        longest_angle = None
+
+        for i in range(len(coords)):
+            x1, y1 = coords[i]
+            x2, y2 = coords[(i+1) % len(coords)]
+
+            dx, dy = (x2 - x1, y2 - y1)
+            length = np.hypot(dx, dy)
+
+            if length > longest_length:
+                longest_length = length
+                # Angle in radians relative to +X axis
+                longest_angle = np.arctan2(dy, dx)
+        return (longest_angle + np.pi/2) % np.pi
+
+    def create_cell_map(self, cell: CellBase) -> np.ndarray:
+        """ Create binary map for the given cell. """
+
+        # get polygon bounding box
+        minx, miny, maxx, maxy = cell.poly.bounds
+        minx = minx - self.zmd.rectangle.x_min
+        miny = miny - self.zmd.rectangle.y_min
+
+        # crop map_ws to bounding box
+        map_ws = self.zmd.map_ws.copy()
+        map_ws = map_ws[int(miny):int(maxy), int(minx):int(maxx)]
+
+        # create empty map
+        map_cell = np.zeros_like(map_ws, dtype=np.uint8)
+
+        # get polygon points of the cell
+        points = cell.points
+        if self.dcfgs.use_insc_ret and cell.rect_like:
+            points = np.array(cell.rectangle_poly.exterior.coords, dtype=np.int32)
+
+        # fill cell polygon area with free space (255)
+        # poly_pts = points - self.zmd.rectangle.min_point
+        poly_pts = points - np.array([[minx, miny]], dtype=np.int32)
+        cv.fillPoly(map_cell, [poly_pts], 255)
+
+        # mask with free space in the original map
+        map_cell = cv.bitwise_and(map_cell, map_ws)
+
+        return map_cell
 
     def cell_main_direction(self, map_cell: np.ndarray) -> float:
         """ create MapPolygons object for the cell area in the map"""
@@ -141,33 +197,3 @@ class SegmentationInterface:
         # cv.destroyAllWindows()
 
         return free_angle
-
-    def create_cell_map(self, cell: CellBase) -> np.ndarray:
-        """ Create binary map for the given cell. """
-
-        # get polygon bounding box
-        minx, miny, maxx, maxy = cell.poly.bounds
-        minx = minx - self.zmd.rectangle.x_min
-        miny = miny - self.zmd.rectangle.y_min
-
-        # crop map_ws to bounding box
-        map_ws = self.zmd.map_ws.copy()
-        map_ws = map_ws[int(miny):int(maxy), int(minx):int(maxx)]
-
-        # create empty map
-        map_cell = np.zeros_like(map_ws, dtype=np.uint8)
-
-        # get polygon points of the cell
-        points = cell.points
-        if self.dcfgs.use_insc_ret and cell.rect_like:
-            points = np.array(cell.rectangle_poly.exterior.coords, dtype=np.int32)
-
-        # fill cell polygon area with free space (255)
-        # poly_pts = points - self.zmd.rectangle.min_point
-        poly_pts = points - np.array([[minx, miny]], dtype=np.int32)
-        cv.fillPoly(map_cell, [poly_pts], 255)
-
-        # mask with free space in the original map
-        map_cell = cv.bitwise_and(map_cell, map_ws)
-
-        return map_cell
