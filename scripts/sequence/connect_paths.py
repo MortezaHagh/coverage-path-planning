@@ -26,8 +26,8 @@ class ConnectPaths:
     Uses A* algorithm (skimage.graph.route_through_array) to find the shortest path in the occupancy grid. 
     """
 
-    def __init__(self, zone_map_data: ZoneMapData):
-        self.ns = "ConnectPaths"
+    def __init__(self, zone_map_data: ZoneMapData, ns: str = ""):
+        self.ns = f"ConnectPaths-Z{zone_map_data.ind}-{ns}"
         self.lg = MyLogger(self.ns)
 
         # find path in map object
@@ -86,7 +86,7 @@ class ConnectPaths:
         c_paths = []
         # if (not seq_idxs) or (self.all_connection_paths is None) or (self.all_connection_paths.shape[0] == 0):
         if not seq_idxs:
-            self.lg.warn("Calculating connections between paths, not using pre-calculated connections.")
+            # self.lg.info("Calculating connections between paths, not using pre-calculated connections.")
             for ip in range(len(paths_px) - 1):
                 p0 = paths_px[ip].points[-1]
                 p1 = paths_px[ip+1].points[0]
@@ -135,7 +135,7 @@ class FindPathInMap:
         # map - cost_map
         occ_map: np.ndarray = zmd.map_ws
         binary_map = (occ_map == FREE).astype(np.uint8)  # 1 = free, 0 = obstacle
-        self.cost_map = np.where(binary_map == 1, 1, 1000).astype(np.float32)   # method 1 # 1 = free, 1000 = obstacle
+        self.cost_map = np.where(binary_map == 1, 1, 10).astype(np.float32)   # method 1 # 1 = free, 1000 = obstacle
         # self.cost_map = np.where(binary_map == 1, 1, 0)                       # method 2 # 1 = free, 0 = obstacle
         # self.grid = Grid(matrix=self.cost_map)                                # method 3 # grid for pathfinding algorithm (function find_path_al_pathfinding)
 

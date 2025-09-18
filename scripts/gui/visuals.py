@@ -77,6 +77,10 @@ class Rectangle:
     def data(self) -> dict:
         return copy.copy(self.__data)
 
+    @property
+    def min_point(self) -> np.ndarray:
+        return np.array([self.x_min, self.y_min], dtype=np.int32)
+
     def update_data(self):
         #
         xc = self.xc

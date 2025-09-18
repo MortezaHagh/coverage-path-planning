@@ -17,7 +17,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
     def __init__(self, cell: Cell, zmd: ZoneMapData):
         super().__init__(cell, zmd)
 
-        self.ns = "CellCoveragePlannerContour-Z" + str(zmd.ind)
+        self.ns = f"CellCoveragePlannerContour-Z{zmd.ind}-C{cell.id}"
         self.lg = MyLogger(self.ns)
         #
         self.coverage_planning()

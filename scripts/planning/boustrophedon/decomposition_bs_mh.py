@@ -56,7 +56,7 @@ class CellDecomposition:
         eval_cells_path_shift(self.mcells)
 
         #
-        self.eval_planning_area()
+        self.eval_mcells()
         self.visualize()
 
     def set_bounding_polygon(self, poly: Polygon):
@@ -425,10 +425,10 @@ class CellDecomposition:
 
     # ==================================================================================================================
 
-    def eval_planning_area(self):
+    def eval_mcells(self):
         """check if area of the cell is enough for planning. """
         for cell in self.mcells:
-            cell.eveal_planning_area(self.resolution, self.bcfgs.cleaning_r)
+            cell.eval_planning_area(self.resolution, self.bcfgs.cleaning_r)
 
     def visualize(self):
         self.plotter = BoustPlotter(self)

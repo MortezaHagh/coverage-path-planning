@@ -1,3 +1,4 @@
+import numpy as np
 from shapely.geometry import Polygon
 from scripts.base.my_utils import MyPoint, MyPath
 
@@ -11,7 +12,8 @@ class CellBase:
         self.next_cell_seq: int = None
         #
         self.poly: Polygon = poly
-        self.points: list[tuple[int, int]] = []
+        # self.points: list[tuple[int, int]] = []
+        self.points: np.ndarray = np.array([], dtype=np.int32)
         #
         self.cxy: tuple[float, float] = None
         self.x_min: float = None
@@ -27,6 +29,9 @@ class CellBase:
         self.adjacent_ids: list[int] = []
         #
         self.do_planning: bool = True
+
+        # main direction angle of the cell (free space) - radians
+        self.free_angle: float = 0.0
 
         # start-end points
         self.start_point: MyPoint = None
@@ -72,7 +77,8 @@ class CellBase:
     def create_cell_points(self):
         # create cell points
         if self.poly:
-            self.points = [(int(p[0]), int(p[1])) for p in self.poly.exterior.coords]
+            points = [[int(p[0]), int(p[1])] for p in self.poly.exterior.coords]
+            self.points = np.array(points, dtype=np.int32)
         else:
             self.points = []
 

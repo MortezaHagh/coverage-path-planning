@@ -50,12 +50,12 @@ class Cell (CellBase):
         self.group_id = group_id
 
     def find_corner(self):
-        lps = [xy for xy in self.points if xy[0] == self.x_min]
+        lps = [xy for xy in self.points if xy[0] == int(self.x_min)]  # todo toeval
         lps = sorted(lps, key=lambda xy: xy[1])
         self.ld = lps[0]
         self.lu = lps[-1]
         #
-        rps = [xy for xy in self.points if xy[0] == self.x_max]
+        rps = [xy for xy in self.points if xy[0] == int(self.x_max)]  # todo toeval
         rps = sorted(rps, key=lambda xy: xy[1])
         self.rd = rps[0]
         self.ru = rps[-1]
@@ -94,7 +94,7 @@ class Cell (CellBase):
             self.n_parent += 1
             self.add_adjacent_id(ci)
 
-    def eveal_planning_area(self, resolution, cleaning_r):
+    def eval_planning_area(self, resolution, cleaning_r):
         min_area = 0.5 * 3.14 * cleaning_r**2
         if (self.area*resolution**2) < min_area:
             # print(f"[WARN] cell area is too small: {self.id}")

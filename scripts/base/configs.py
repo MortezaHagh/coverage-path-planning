@@ -41,7 +41,7 @@ class DistrictConfigs:
     method = segmentation_method + '_' + covpp_method + '_' + sequence_method
 
     # voronoi method
-    use_insc_ret = False  # True False
+    use_insc_ret = True  # True False
     if segmentation_method == "voronoi":
         if use_insc_ret:
             method = method + "_rect"
@@ -68,6 +68,9 @@ class SpaceConfigs:
     select_free_space = False  # select free space from image
     # robot configs
     robot_radius = 0.5  # 0.5
+    robot_radius_ws = 0.5  # 0.5
+    robot_radius_p = 0.5  # 0.5
+
     # robot_circumscribed_r = 0.5
     # robot_circumscribed_d = robot_circumscribed_r * 2
     # distance thresholds
@@ -75,13 +78,13 @@ class SpaceConfigs:
     os_safe_dist = 0.1  # 0.2 # safe distance of os path from obstacles
     ws_dist = max(wf_safe_dist, os_safe_dist)
     #
-    wf_r_dist = robot_radius + wf_safe_dist  # distance of the wf path from walls and obstacles
-    os_r_dist = robot_radius + os_safe_dist  # min distance of the os path from walls and obstacles
-    ws_r_dist = ws_dist + robot_radius
+    wf_r_dist = robot_radius_ws + wf_safe_dist  # distance of the wf path from walls and obstacles
+    os_r_dist = robot_radius_ws + os_safe_dist  # min distance of the os path from walls and obstacles
+    ws_r_dist = ws_dist + robot_radius_ws
     #
     cleaning_c = 1.0
-    cleaning_r = robot_radius * cleaning_c
-    uncleaned_dist = ws_dist + (robot_radius - cleaning_r)
+    cleaning_r = robot_radius_p * cleaning_c
+    uncleaned_dist = ws_dist + (robot_radius_p - cleaning_r)
     # other
     scaler_os_search = 2
 

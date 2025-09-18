@@ -347,23 +347,23 @@ class Sequence:
     def point_px_to_m(self, p: MyPoint) -> MyPoint:
         return MyPoint(p.x * self.resolution, p.y * self.resolution)
 
-    def rotate_waypoints(self) -> None:
-        rect_data = self.zmd.final_rect_data
-        rot = rect_data["rot"]
-        tl = self.zmd.final_rectangle.tl
-        resol = self.zmd.resolution
-        x_0, y_0 = tl[0]*resol, tl[1]*resol  # first vertex (from which rot is calculated)
-        # rotate
-        new_paths = [[self.rotate_point(p, rot) for p in path_m.points] for path_m in self.paths_m]
-        # translate
-        new_paths = [MyPath([MyPoint(p.x + x_0, p.y + y_0) for p in new_path]) for new_path in new_paths]
-        # update
-        self.paths_m = new_paths
+    # def rotate_waypoints(self) -> None:
+    #     rect_data = self.zmd.final_rect_data
+    #     rot = rect_data["rot"]
+    #     tl = self.zmd.final_rectangle.tl
+    #     resol = self.zmd.resolution
+    #     x_0, y_0 = tl[0]*resol, tl[1]*resol  # first vertex (from which rot is calculated)
+    #     # rotate
+    #     new_paths = [[self.rotate_point(p, rot) for p in path_m.points] for path_m in self.paths_m]
+    #     # translate
+    #     new_paths = [MyPath([MyPoint(p.x + x_0, p.y + y_0) for p in new_path]) for new_path in new_paths]
+    #     # update
+    #     self.paths_m = new_paths
 
-    def rotate_point(self, p: MyPoint, rotation) -> MyPoint:
-        x_r = p.x * np.cos(rotation) - p.y * np.sin(rotation)
-        y_r = p.x * np.sin(rotation) + p.y * np.cos(rotation)
-        return MyPoint(x_r, y_r)
+    # def rotate_point(self, p: MyPoint, rotation) -> MyPoint:
+    #     x_r = p.x * np.cos(rotation) - p.y * np.sin(rotation)
+    #     y_r = p.x * np.sin(rotation) + p.y * np.cos(rotation)
+    #     return MyPoint(x_r, y_r)
 
     # Plots ============================================================================================================
 

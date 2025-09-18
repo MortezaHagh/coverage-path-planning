@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+from shapely import affinity
 from shapely import Polygon, Point
 from scripts.base.logger import MyLogger
 from scripts.district.zone_map_data import ZoneMapData
@@ -8,7 +9,7 @@ from scripts.district.zone_map_data import ZoneMapData
 class MapPolygons:
     """ Create bounding and obstacle polygons from map image. """
 
-    def __init__(self, zmd: ZoneMapData, map_ws: np.ndarray = None):
+    def __init__(self, zmd: ZoneMapData, map_ws: np.ndarray = None, dec_mid_dist: int = 10):
         self.ns = "MapPolygons"
         self.lg = MyLogger(self.ns)
         self.b_poly: Polygon = None  # bounding polygon
@@ -25,7 +26,7 @@ class MapPolygons:
         self.s_y: int = None
 
         # settings
-        self.dec_mid_dist = 10
+        self.dec_mid_dist = dec_mid_dist
         self.set_start_coord(zmd)
 
         # set bounding polygon
@@ -93,3 +94,47 @@ class MapPolygons:
                     skip.add(j)
         filtered_c = [contour[i] for i in range(len(contour)) if i not in skip]
         return filtered_c
+
+    def rotate_all_polygons(self, angle: float, origin_t: np.ndarray = None) -> None:
+        """ Rotate all polygons (bounding and obstacles) by the given angle around their centroid. """
+        self.b_poly = self.rotate_polygon(self.b_poly, angle, origin_t)
+        rotated_obs_polys = []
+        for poly in self.obs_polys:
+            rotated_poly = self.rotate_polygon(poly, angle, origin_t)
+            rotated_obs_polys.append(rotated_poly)
+        self.obs_polys = rotated_obs_polys
+
+    def rotate_polygon(self, poly: Polygon, angle: float, origin_t: np.ndarray = None) -> Polygon:
+        """ Rotate the given polygon by the given angle around the given origin. """
+        # rotate bounding polygon
+        if origin_t is None:
+            origin = np.array(poly.centroid.coords)[0]
+        else:
+            origin = origin_t
+
+        # translate to origin
+        xy = np.array(poly.exterior.coords) - origin
+        # rotate
+        rx = (xy[:, 0] * np.cos(angle) - xy[:, 1] * np.sin(angle))
+        ry = (xy[:, 0] * np.sin(angle) + xy[:, 1] * np.cos(angle))
+        rxy = np.column_stack((rx, ry))
+        new_poly = Polygon(rxy)
+        return new_poly
+
+    # def rotate_all_polygons(self, angle: float, origin_t: tuple = (0, 0)) -> None:
+    #     """ Rotate all polygons (bounding and obstacles) by the given angle around their centroid. """
+
+    #     angle_deg = np.degrees(angle)
+    #     # origin = 'centroid'
+    #     origin = Point(origin_t)
+
+    #     # rotate bounding polygon
+    #     if self.b_poly is not None:
+    #         self.b_poly = affinity.rotate(self.b_poly, angle_deg, origin=origin)
+
+    #     # rotate obstacle polygons
+    #     rotated_obs_polys = []
+    #     for poly in self.obs_polys:
+    #         rotated_poly = affinity.rotate(poly, angle_deg, origin=origin)
+    #         rotated_obs_polys.append(rotated_poly)
+    #     self.obs_polys = rotated_obs_polys

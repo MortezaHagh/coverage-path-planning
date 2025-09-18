@@ -11,7 +11,7 @@ class CellCoveragePathPlanner:
     """ Coverage path planning inside the given cell using boustrophedon method. """
 
     def __init__(self, cell: Cell, zone_ind: int = 0, resolution: float = 0.05):
-        self.ns = "CellCoverageP-Z" + str(zone_ind)
+        self.ns = f"CellCoverageP-Z{zone_ind}-C{cell.id}"
         self.lg = MyLogger(self.ns)
         #
         self.cell: Cell = cell
@@ -30,13 +30,13 @@ class CellCoveragePathPlanner:
         self.coverage_planning()
 
     def coverage_planning(self) -> None:
-        # if not self.eval_cell():
-        #     return
         if not self.cell.do_planning:
-            self.lg.warn(f"cell {self.cell.id} does not require planning.")
+            # self.lg.warn(f"--- Boust cell {self.cell.id} does not require planning.")
             return
 
-        self.create_cell_polygon_in_meter()
+        if not self.create_cell_polygon_in_meter():
+            return
+
         succ = self.find_top_but_hit_points()
         if not succ:
             return
@@ -50,12 +50,25 @@ class CellCoveragePathPlanner:
     #         return False
     #     return True
 
-    def create_cell_polygon_in_meter(self) -> None:
+    def create_cell_polygon_in_meter(self) -> bool:
         """ create cell polygon in meter coordinates """
         points = self.cell.points
         points_m = [(p[0] * self.resolution, p[1] * self.resolution) for p in points]
         points_m_p = [Point(p) for p in points_m]
         self.poly_m = Polygon(points_m_p)
+
+        # check validity
+        if not self.poly_m.is_valid:
+            self.lg.warn(f"Cell polygon (in meter) {self.cell.id} is not valid.")
+            fixed_poly = self.poly_m.buffer(0)
+            if fixed_poly.is_valid and not fixed_poly.is_empty and fixed_poly.geom_type == 'Polygon':
+                self.poly_m = fixed_poly
+                self.lg.warn(f"Cell polygon (in meter) {self.cell.id} is fixed.")
+            else:
+                self.cell.do_planning = False
+                return False
+
+        return True
 
     def find_top_but_hit_points(self) -> bool:
         """ find hitting points with the cell polygon from top and bottom """
