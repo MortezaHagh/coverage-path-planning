@@ -11,8 +11,7 @@ class CellCoveragePathPlanner:
     """ Coverage path planning inside the given cell using boustrophedon method. """
 
     def __init__(self, cell: Cell, zone_ind: int = 0, resolution: float = 0.05):
-        self.ns = f"CellCoverageP-Z{zone_ind}-C{cell.id}"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger(f"CellCoverageP-Z{zone_ind}-C{cell.id}")
         #
         self.cell: Cell = cell
         self.path_m: MyPath = None

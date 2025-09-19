@@ -14,8 +14,7 @@ class InputsProcessor:
 
     def __init__(self, map_name="Map1"):
         # init
-        self.ns: str = "InputsProcessor"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("InputsProcessor")
         #
         self.map_name: str = map_name
         self.__configs: BConfigs = BConfigs()
@@ -88,11 +87,11 @@ class InputsProcessor:
             json.dump(data, file, indent=4)
 
     def visualize_map(self, pgm_data) -> None:
-        self.lg.info(f"[{self.ns}]: visualizing")
+        self.lg.info("visualizing")
 
         # check if map is loaded
         if pgm_data is None:
-            self.lg.error(f"[{self.ns}]: Failed to load PGM file.")
+            self.lg.error("Failed to load PGM file.")
             return
         #
         w_name = "PGM Image"

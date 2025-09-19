@@ -7,8 +7,7 @@ from scripts.planning.coverage_pp_base import CoveragePathPlannerBase
 
 class CoveragePathPlanHandler:
     def __init__(self, zone_map_data: ZoneMapData):
-        self.ns: str = 'CoveragePathPlanHandler'
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger('CoveragePathPlanHandler')
 
         # zone map data
         self.zmd: ZoneMapData = zone_map_data

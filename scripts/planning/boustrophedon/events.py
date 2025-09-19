@@ -8,8 +8,6 @@ class Event:
     """
 
     def __init__(self, obst_ind: int, ind: int, v: tuple[float, float]):
-        self.ns = "Event"
-        #
         self.xy: tuple[float, float] = v
         self.x_max: float = None
         # self.y_max_lim: float = math.inf

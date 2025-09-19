@@ -15,8 +15,7 @@ class OptimCellsSeq:
     """
 
     def __init__(self, cells: list[CellBase], distances: np.ndarray = None, start_cell_idx: int = 0):
-        self.ns: str = "OptimCellsSeq"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("OptimCellsSeq")
         self.lg.info1("Step: creating optimized cell sequence")
 
         # initialize
@@ -80,8 +79,7 @@ class BaseSeqOpt:
     """ Base class for sequence optimization of cells. """
 
     def __init__(self, cells: list[CellBase], start_idx: int = 0):
-        self.ns: str = "BaseSeqOpt"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("BaseSeqOpt")
         self.cells: list[CellBase] = cells
         self.c_id_idx_dict: dict[int, int] = {c.id: i for i, c in enumerate(cells)}  # cell id to index mapping
         self.start_idx: int = start_idx  # default start index for the tour

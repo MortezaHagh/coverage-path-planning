@@ -11,8 +11,7 @@ from scripts.planning.boustrophedon.cell import Cell
 
 class OptimCellsSeq:
     def __init__(self, mcells: list[Cell]):
-        self.ns = "OptimCellsSeq"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("OptimCellsSeq")
         dcfgs = DistrictConfigs()
         self.lg.info1("Step: creating optimized cell sequence")
 

@@ -19,8 +19,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
     def __init__(self, cell: Cell, zmd: ZoneMapData):
         super().__init__(cell, zmd)
 
-        self.ns = f"CoveragePlannerBoust-Z{zmd.ind}-C{cell.id}"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger(f"CoveragePlannerBoust-Z{zmd.ind}-C{cell.id}")
 
         # map polygons
         self.map_polygons: MapPolygons = None

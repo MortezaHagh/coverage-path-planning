@@ -18,8 +18,7 @@ class VoronoiDecomposition:
     """
 
     def __init__(self, zmd: ZoneMapData, map_polygs: MapPolygons):
-        self.ns: str = "VoronoiSegmentation"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("VoronoiSegmentation")
         self.lg.info1("Step: Voronoi decomposition.")
 
         # settings

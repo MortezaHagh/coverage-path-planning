@@ -5,42 +5,15 @@ from scripts.base.configs import DistrictConfigs
 from scripts.segmentation.cell_base import CellBase
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
+from scripts.segmentation.segmentation_base import SegmentationBase
 
 
-class SegmentationBase:
-    """ Base class for Segmentation.  
-    """
-
-    def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
-        self.ns: str = "SegmentationBase"
-
-        # zone map data
-        self.zmd: ZoneMapData = zmd
-
-        # configs
-        self.dcfgs: DistrictConfigs = DistrictConfigs()
-
-        # map polygons
-        self.map_polygons: MapPolygons = map_polygons
-
-        # cells
-        self.cells: list[CellBase] = []
-        self.n_cells: int = 0
-
-    def run(self):
-        """ Run segmentation. 
-            to be implemented in child classes. 
-        """
-        raise NotImplementedError
-
-
-class SegmentationInterface:
+class SegmentationHandler:
     """ Segmentation Interface.  
     """
 
     def __init__(self, zmd: ZoneMapData):
-        self.ns: str = "SegmentationInterface"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("SegmentationHandler")
 
         # configs
         self.dcfgs = DistrictConfigs()

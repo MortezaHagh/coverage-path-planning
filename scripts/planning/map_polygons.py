@@ -10,8 +10,7 @@ class MapPolygons:
     """ Create bounding and obstacle polygons from map image. """
 
     def __init__(self, zmd: ZoneMapData, map_ws: np.ndarray = None, dec_mid_dist: int = 10):
-        self.ns = "MapPolygons"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("MapPolygons")
         self.b_poly: Polygon = None  # bounding polygon
         self.obs_polys: list[Polygon] = []  # obstacle polygons
 

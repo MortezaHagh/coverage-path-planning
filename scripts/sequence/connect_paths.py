@@ -27,8 +27,7 @@ class ConnectPaths:
     """
 
     def __init__(self, zone_map_data: ZoneMapData, ns: str = ""):
-        self.ns = f"ConnectPaths-Z{zone_map_data.ind}-{ns}"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger(f"ConnectPaths-Z{zone_map_data.ind}-{ns}")
 
         # find path in map object
         self.fp: 'FindPathInMap' = FindPathInMap(zone_map_data)
@@ -129,8 +128,7 @@ class FindPathInMap:
     """ class for finding path between two points in map. """
 
     def __init__(self, zmd: ZoneMapData):
-        self.ns = "FindPathInMap"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("FindPathInMap")
 
         # map - cost_map
         occ_map: np.ndarray = zmd.map_ws

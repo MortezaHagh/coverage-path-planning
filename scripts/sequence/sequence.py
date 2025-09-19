@@ -38,8 +38,7 @@ class Sequence:
             Also connect paths between cells and create full paths. 
         """
 
-        self.ns: str = "Sequence"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("Sequence")
 
         # attributes
         self.zmd: ZoneMapData = zmd

@@ -12,8 +12,7 @@ from scripts.base.configs import DistrictConfigs
 class DistrictData:
 
     def __init__(self, spa: SpaceAnalyzer):
-        self.ns: str = "DistrictData"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("DistrictData")
         self.lg.info1("Step: creating district data")
 
         # configs

@@ -20,8 +20,7 @@ class Cell (CellBase):
 
     def __init__(self, ind: int, ring: Ring, resolution: float = None) -> None:
         super().__init__(ind, ring.poly)
-        self.ns = f"Cell-{self.id}"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger(f"Cell-{self.id}")
 
         # ring
         self.ring: Ring = ring                  # rings (closed loops) containing critical points

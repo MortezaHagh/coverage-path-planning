@@ -9,8 +9,7 @@ class CellsGraph:
     """Graph representation of cells with distances and adjacency information. """
 
     def __init__(self, cells: list[CellBase], con_path: ConnectPaths):
-        self.ns = "CellsGraph"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("CellsGraph")
         #
         self.cells: list[CellBase] = cells
         self.n_cells: int = len(cells)

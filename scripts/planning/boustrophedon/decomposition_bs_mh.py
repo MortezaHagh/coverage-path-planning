@@ -14,8 +14,7 @@ class CellDecomposition:
     """ trapezoidal decomposition. """
 
     def __init__(self, resolution: float = 0.05, result_path: str = None):
-        self.ns: str = "CellDecompositionMH"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("CellDecompositionMH")
         #
         self.result_path: str = result_path
         self.resolution: float = resolution

@@ -5,9 +5,9 @@ from scipy.spatial import Voronoi
 from scripts.base.logger import MyLogger
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.segmentation.segmentation import SegmentationBase
-from scripts.segmentation.voronoi_decomposition.common import CriticalPoint, Ring
 from scripts.segmentation.voronoi_decomposition.cell import Cell
+from scripts.segmentation.segmentation_base import SegmentationBase
+from scripts.segmentation.voronoi_decomposition.common import CriticalPoint, Ring
 from scripts.segmentation.voronoi_decomposition.voronoi_decomposition import VoronoiDecomposition
 
 
@@ -16,8 +16,7 @@ class Segmentation(SegmentationBase):
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
         super().__init__(zmd, map_polygons)
-        self.ns = "SegmentationVoronoi"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("SegmentationVoronoi")
 
         # voronoi decomposition object
         self.vor: Voronoi = None

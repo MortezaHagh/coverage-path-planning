@@ -24,7 +24,6 @@ class BConfigs:
 class DistrictConfigs:
     # Main configs
     whole_map = True  # False True
-    ns = ""
     method = ""
 
     # plots configs

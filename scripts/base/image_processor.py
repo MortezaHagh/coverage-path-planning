@@ -13,8 +13,7 @@ class MapImageProcessor:
     def __init__(self, map_arr: np.ndarray, bconfigs: BConfigs):
 
         # init
-        self.ns: str = "MapImageProcessor"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("MapImageProcessor")
         self.lg.info1("Step: processing map image")
 
         # read configs and eval original map arr

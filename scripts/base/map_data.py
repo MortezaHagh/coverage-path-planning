@@ -9,8 +9,7 @@ class MapData:
     """ original and updated map data. """
 
     def __init__(self):
-        self.ns: str = "MapData"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("MapData")
         #
         self.bcfg: BConfigs = None                      # base configs
         self.name: str = None                           # map name

@@ -23,8 +23,7 @@ class SpaceAnalyzer:
     """
 
     def __init__(self, map_data: MapData, rectangle: Rectangle):
-        self.ns: str = "SpaceAnalyzer"
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("SpaceAnalyzer")
         self.lg.info1("Step: Analyzing space for creating free space [local map]")
 
         # configs

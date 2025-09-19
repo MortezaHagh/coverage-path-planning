@@ -11,8 +11,7 @@ class CoveragePathPlannerBase:
     """ Base class for cell coverage path planner. """
 
     def __init__(self, cell: CellBase, zmd: ZoneMapData):
-        self.ns = "CoveragePlannerBase-Z" + str(zmd.ind)
-        self.lg = MyLogger(self.ns)
+        self.lg = MyLogger("CoveragePlannerBase-Z" + str(zmd.ind))
 
         # zone map data
         self.zmd: ZoneMapData = zmd
