@@ -48,7 +48,7 @@ class ZoneData:
         self.sequence: Sequence = Sequence(self.zmd)
 
         # # # evaluator
-        self.evaluator: ZoneEvaluationHandler = ZoneEvaluationHandler(self.sequence)
+        self.evaluator: ZoneEvaluationHandler = ZoneEvaluationHandler(self.zmd)
 
         # resulting data
         self.cells: list[CellBase] = []
@@ -85,10 +85,10 @@ class ZoneData:
         self.sequence.run(cells=self.cells, map_polygons=self.segmentation_handler.map_polygons)
 
         end_time = time.time()
-        duration = end_time - start_time
+        process_time = end_time - start_time
 
         # ************ evaluate statistics
-        self.evaluator.evaluate(duration=duration)
+        self.evaluator.evaluate(paths=self.sequence.paths, duration=process_time)
         self.stats = self.evaluator.stats
 
         # ************

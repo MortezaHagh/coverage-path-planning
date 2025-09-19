@@ -16,20 +16,15 @@ from scripts.sequence.optimize_mcells_seq_1 import OptimCellsSeq
 from scripts.base.configs import DistrictConfigs, PlanningConfigs
 
 
-class PathStats:
-    """ Statistics of the planner. """
-
+class SequencePaths:
     def __init__(self):
-        self.n_paths = 0
-        self.len_m = 0.0
-        self.yaw_changes = 0.0
-
-    def get_data_dict(self) -> dict:
-        return {
-            "n_paths": int(self.n_paths),
-            "len_m": float(self.len_m),
-            "yaw_changes": float(self.yaw_changes)
-        }
+        self.paths_px: list[MyPath] = []
+        self.paths_m: list[MyPath] = []
+        self.c_paths_px: list[MyPath] = []
+        self.c_paths_m: list[MyPath] = []
+        self.f_path_px: MyPath = None
+        self.f_path_m: MyPath = None
+        self.n_paths: int = 0
 
 
 class Sequence:
@@ -69,9 +64,6 @@ class Sequence:
         self.c_paths_px: list[MyPath] = []
         self.c_paths_m: list[MyPath] = []
 
-        # statistics
-        self.st: PathStats = PathStats()
-
         # plotter
         self.plotter: PlannerPlotter = PlannerPlotter(zmd.result_path)
 
@@ -82,6 +74,7 @@ class Sequence:
         # results
         self.s_cells: list[CellBase] = []
         self.seq_idxs: list[int] = []
+        self.paths: SequencePaths = SequencePaths()
 
     def run(self, cells: list[CellBase], map_polygons: MapPolygons) -> None:
         """ Run sequence creation and path connection. """
@@ -93,7 +86,10 @@ class Sequence:
         self.create_sequence()
         self.connect_paths()
         self.post_planning()
-        self.method_post_planning()
+        self.set_sequence_paths()
+        self.plot_paths()
+        self.update_map_planning()
+        # **********************
 
     def create_sequence(self) -> None:
         """ Create optimum sequence of cells to be covered. """
@@ -142,7 +138,6 @@ class Sequence:
         self.c_paths_px = self.connections.c_paths_px
         self.c_paths_m = [self.path_px_to_m(path_px) for path_px in self.c_paths_px]
 
-
 # Post Planning ====================================================================================================
 
     def post_planning(self) -> None:
@@ -152,18 +147,12 @@ class Sequence:
 
         self.apply_distance_filter_all_paths()
         self.create_full_path()
-        self.calculate_path_statistics()
-        #
-        self.plot_paths_px()
-        self.plot_final_path_m()
-        if self.pcfgs.animation:
-            self.animate_robot_paths()
 
     def create_full_path(self) -> None:
         """ Create the full path by combining coverage paths and connection paths. """
-        self.st.n_paths = len(self.paths_px)
+        n_paths = len(self.paths_px)
         f_path_px = []
-        for i in range(self.st.n_paths-1):
+        for i in range(n_paths-1):
             f_path_px.extend(self.paths_px[i].points)
             f_path_px.extend(self.c_paths_px[i].points)
         f_path_px.extend(self.paths_px[-1].points)
@@ -171,37 +160,24 @@ class Sequence:
         self.f_path_px = MyPath(f_path_px)
         self.f_path_m = self.path_px_to_m(self.f_path_px)
 
-    def calculate_path_statistics(self) -> None:
-        # length
-        total_length = 0.0
-        for i, p1 in enumerate(self.f_path_m.points[:-1]):
-            p2 = self.f_path_m.point(i+1)
-            dist = np.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2)
-            total_length += dist
-        self.st.len_m = round(total_length, 2)
+    def plot_paths(self):
+        self.plot_paths_px()
+        self.plot_final_path_m()
+        if self.pcfgs.animation:
+            self.animate_robot_paths()
 
-        # yaw changes
-        angles = []
-        for i, p in enumerate(self.f_path_m.points[:-1]):
-            p2 = self.f_path_m.point(i + 1)
-            dx = p2.x - p.x
-            dy = p2.y - p.y
-            if dx == 0 and dy == 0:
-                continue
-            angle = np.arctan2(dy, dx)  # angle in radians
-            angles.append(angle)
+    def set_sequence_paths(self) -> None:
+        self.paths.paths_px = self.paths_px
+        self.paths.paths_m = self.paths_m
+        self.paths.c_paths_px = self.c_paths_px
+        self.paths.c_paths_m = self.c_paths_m
+        self.paths.f_path_px = self.f_path_px
+        self.paths.f_path_m = self.f_path_m
+        self.paths.n_paths = len(self.paths_px)
 
-        yaw_changes = 0.0
-        for i in range(1, len(angles)):
-            angle_diff = angles[i] - angles[i-1]
-            # Normalize the angle difference to the range [-pi, pi]
-            angle_diff = (angle_diff + np.pi) % (2 * np.pi) - np.pi
-            yaw_changes += abs(angle_diff)
-        self.st.yaw_changes = round(yaw_changes, 2)
+    # update map planning ==============================================================================================
 
-    # Post Planning =========================================================================================================
-
-    def method_post_planning(self) -> None:
+    def update_map_planning(self) -> None:
         """ update map_planning with paths and cells, save map_planning. """
         if not self.dcfgs.save_map_planning:
             return
@@ -261,18 +237,10 @@ class Sequence:
         self.c_paths_px = new_c_paths_px
 
         # meter paths
-        new_paths_m = []
-        for path_m in self.paths_m:
-            new_path_m = self.apply_distance_filter_path(path_m, min_wp_dist_px)
-            new_paths_m.append(new_path_m)
-        self.paths_m = new_paths_m
+        self.paths_m = [self.path_px_to_m(path_px) for path_px in self.paths_px]
 
         # connection paths meter
-        new_c_paths_m = []
-        for c_path_m in self.c_paths_m:
-            new_c_path_m = self.apply_distance_filter_path(c_path_m, min_wp_dist_px)
-            new_c_paths_m.append(new_c_path_m)
-        self.c_paths_m = new_c_paths_m
+        self.c_paths_m = [self.path_px_to_m(c_path_px) for c_path_px in self.c_paths_px]
 
     def apply_distance_filter_path(self, path: MyPath, min_wp_dist_px: int) -> MyPath:
         """ Filter the full path based on the minimum distance between waypoints. """
@@ -377,7 +345,7 @@ class Sequence:
         self.save_path_fig(fig)
 
     def plot_coverage_paths(self, ax):
-        n = self.st.n_paths
+        n = self.paths.n_paths
         colors = get_n_colors_plt(n)
         # fig, ax = plt.subplots(1, 1)
         x, y = self.map_polygons.b_poly.exterior.xy

@@ -1,33 +1,76 @@
 import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
-from scripts.sequence.sequence import Sequence
+from scripts.base.my_utils import MyPath
+from scripts.sequence.sequence import SequencePaths
+from scripts.district.zone_map_data import ZoneMapData
 from scripts.evaluation.zone_evaluation_base import ZoneStatsBase, ZoneEvaluationBase
 
 
 class ZoneEvaluationSimple(ZoneEvaluationBase):
-    """Zone evaluation Base class to evaluate zone statistics.
+    """Zone evaluation class to evaluate zone statistics.
     """
 
-    def __init__(self, sequence: Sequence):
-        super().__init__(sequence)
+    def __init__(self, zmd: ZoneMapData, paths: SequencePaths):
+        super().__init__(zmd, paths)
         self.lg = MyLogger("ZoneEvaluationSimple")
 
     def evaluate(self, duration: float = 0.0):
         self.stats = ZoneStatsBase()
-        self.stats.processing_time = float(duration, 3)
+        self.stats.processing_time = round(duration, 3)
+        #
+        self.calculate_path_statistics()
         #
         self.calculate_cleaning_area()
         self.add_cleaned_area_to_map()
         self.calculate_cleaned_area()
         self.save_result()
 
+    def calculate_path_statistics(self) -> None:
+        full_path: MyPath = self.paths.f_path_m
+
+        # full path length
+        dxy = np.diff(full_path.xy, axis=0)
+        segment_lengths = np.sqrt((dxy ** 2).sum(axis=1))
+        self.stats.full_length = round(float(np.sum(segment_lengths)), 2)
+
+        # coverage path length
+        coverage_length = 0.0
+        for path in self.paths.paths_m:
+            dxy = np.diff(path.xy, axis=0)
+            segment_lengths = np.sqrt((dxy ** 2).sum(axis=1))
+            coverage_length += np.sum(segment_lengths)
+        self.stats.coverage_length = round(float(coverage_length), 2)
+
+        # full yaw changes
+        dxy = np.diff(full_path.xy, axis=0)
+        dxy = dxy[~np.all(dxy == 0, axis=1)]
+        angles = np.arctan2(dxy[:, 1], dxy[:, 0])
+        angle_diffs = np.diff(angles)
+        angle_diffs = np.abs((angle_diffs + np.pi) % (2 * np.pi) - np.pi)
+        yaw_changes = np.sum(np.abs(angle_diffs))
+        self.stats.full_yaw_rad = round(float(yaw_changes), 2)
+
+        # coverage yaw changes
+        yaw_changes = 0.0
+        for path in self.paths.paths_m:
+            dxy = np.diff(path.xy, axis=0)
+            dxy = dxy[~np.all(dxy == 0, axis=1)]
+            if len(dxy) < 2:
+                continue
+            angles = np.arctan2(dxy[:, 1], dxy[:, 0])
+            angle_diffs = np.diff(angles)
+            angle_diffs = np.abs((angle_diffs + np.pi) % (2 * np.pi) - np.pi)
+            yaw_changes += np.sum(np.abs(angle_diffs))
+        yaw_changes = round(float(yaw_changes), 2)
+        self.stats.coverage_yaw_rad = yaw_changes
+
     def calculate_cleaning_area(self):
         self.stats.cleaning_area_px = np.sum(self.zmd.map_cleaning == 255)
         self.stats.cleaning_area_m = round(self.stats.cleaning_area_px * (self.zmd.resolution**2), 2)
 
     def calculate_cleaned_area(self):
-        paths_len = self.sequence.st.len_m
+        paths_len = self.stats.full_length
         cleaning_r = self.pcfgs.cleaning_r
         area = paths_len * (2 * cleaning_r)
         # overlaped_area_m
@@ -44,7 +87,7 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
         # map_cleaning: from zone map data (without any paths)
         # used for creating map_clean_data
         map_cleaning = self.zmd.map_cleaning.copy()
-        f_path = self.sequence.f_path_px
+        f_path = self.paths.f_path_px
         cleaning_r_px = int(self.pcfgs.cleaning_r / self.zmd.resolution)
 
         if f_path is None:
