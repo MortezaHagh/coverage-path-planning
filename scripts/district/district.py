@@ -3,10 +3,11 @@ import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
 from scripts.gui.visuals import Rectangle
-from scripts.district.zone_map_data import ZoneMapData
-from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.zone import ZoneData
 from scripts.base.configs import DistrictConfigs
+from scripts.spa.space_analyzer import SpaceAnalyzer
+from scripts.district.zone_map_data import ZoneMapData
+from scripts.evaluation.district_evaluation import DistrictEvaluationHandler, DistrictStatsBase
 
 
 class DistrictData:
@@ -31,6 +32,10 @@ class DistrictData:
         # attributes
         self.zone_datas: list[ZoneData] = []  # zones
 
+        # statistics
+        self.evaluator = DistrictEvaluationHandler(self.dmd.result_file)
+        self.stats = DistrictStatsBase()
+
     def create_zones_hl(self) -> None:
         """create all zones in the district and create map_planning (high level). """
         self.create_zones()
@@ -40,12 +45,17 @@ class DistrictData:
     def run_coverage_planning(self) -> None:
         """run coverage planning for all zones. """
 
+        zone_stats = []
         for zd in self.zone_datas:
             self.lg.info1(f" ***************** Planning on Zone: {zd.ind} ***************** ")
             zd.coverage_planning()
+            zone_stats.append(zd.stats)
+
+        # stats
+        self.evaluator.evaluate(zone_stats)
+        self.stats = self.evaluator.stats
 
         #
-        self.lg.info1(" *************************************************************** ")
         self.update_map_planning()
         self.save_map_planning()
 

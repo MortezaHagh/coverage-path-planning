@@ -1,4 +1,3 @@
-from scripts.base.logger import MyLogger
 from scripts.sequence.sequence import SequencePaths
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.evaluation.zone_evaluation_simple import ZoneEvaluationSimple
@@ -10,7 +9,6 @@ class ZoneEvaluationHandler:
     """
 
     def __init__(self, zmd: ZoneMapData):
-        self.lg = MyLogger("ZoneEvaluationHandler")
         self.zmd = zmd
         # statistics
         self.stats: ZoneStatsBase = None

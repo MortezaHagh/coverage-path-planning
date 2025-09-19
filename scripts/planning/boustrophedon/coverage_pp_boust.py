@@ -1,7 +1,6 @@
 """ boustrophedon coverage planning inside the given cell """
 import cv2 as cv
 import numpy as np
-from shapely import affinity  # , Point
 from scripts.base.logger import MyLogger
 from scripts.base.my_utils import MyPath, MyPoint
 from scripts.planning.boustrophedon.cell import Cell
@@ -11,6 +10,7 @@ from scripts.sequence.connect_paths import ConnectPaths
 from scripts.planning.coverage_pp_base import CoveragePathPlannerBase
 from scripts.planning.boustrophedon.cell_cov_planner import CellCoveragePathPlanner
 from scripts.planning.boustrophedon.decomposition_bs_mh import CellDecomposition
+# from shapely import affinity  # , Point
 
 
 class CoveragePathPlanner(CoveragePathPlannerBase):
@@ -100,16 +100,6 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.mcells = self.decomposer.mcells
         self.n_mcells = self.decomposer.n_mcells
 
-    # def rotate_back_cells(self) -> None:
-    #     """ Rotate back all the cells to original orientation. """
-    #     new_cells = []
-    #     for cell in self.mcells:
-    #         rot_poly = self.map_polygons.rotate_polygon(cell.poly, self.cell.free_angle, origin_t=np.array([0, 0]))
-    #         rot_poly = affinity.translate(rot_poly, xoff=self.origin[0], yoff=self.origin[1])
-    #         new_cell = Cell(ind=cell.id, poly=rot_poly, event=None)
-    #         new_cells.append(new_cell)
-    #     self.mcells = new_cells
-
     def all_cells_coverage_pp(self) -> None:
         """ Perform coverage path planning for all the boustrophedon cells. """
 
@@ -179,3 +169,13 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         #
         self.path_px = MyPath(f_path_px)
         self.path_m = self.path_px_to_m(self.path_px)
+
+    # def rotate_back_cells(self) -> None:
+    #     """ Rotate back all the cells to original orientation. """
+    #     new_cells = []
+    #     for cell in self.mcells:
+    #         rot_poly = self.map_polygons.rotate_polygon(cell.poly, self.cell.free_angle, origin_t=np.array([0, 0]))
+    #         rot_poly = affinity.translate(rot_poly, xoff=self.origin[0], yoff=self.origin[1])
+    #         new_cell = Cell(ind=cell.id, poly=rot_poly, event=None)
+    #         new_cells.append(new_cell)
+    #     self.mcells = new_cells

@@ -1,5 +1,4 @@
 import json
-from scripts.base.logger import MyLogger
 from scripts.sequence.sequence import SequencePaths
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.configs import DistrictConfigs, PlanningConfigs
@@ -8,8 +7,12 @@ from scripts.base.configs import DistrictConfigs, PlanningConfigs
 class ZoneStatsBase:
     """Zone statistics Base class to store zone statistics. 
     Attributes:
+        map_name (str): map name
+        method (str): planning method
+        ind (int): zone index
         full_length (float): full path length in meters (coverage and connecting)
         coverage_length (float): coverage path length in meters (todo)
+        processing_time (float): processing time in seconds
         full_yaw_rad (float): yaw changes in radians
         coverage_yaw_rad (float): yaw changes in radians (coverage path)
         cleaning_area_px (int): area to be cleaned in pixels
@@ -20,14 +23,19 @@ class ZoneStatsBase:
         overlaped_area_m (float): overlapped area in square meters
         coverage_p (float): coverage percentage
         overlap_p (float): overlap percentage
-        processing_time (float): processing time in seconds
     """
 
     def __init__(self):
+        self.map_name: str = None
+        self.method: str = None
+        self.ind: int = None  # zone index
+        self.processing_time = 0.0
+        #
         self.full_length = None
         self.coverage_length = None
         self.full_yaw_rad = None
         self.coverage_yaw_rad = None
+        #
         self.cleaning_area_px = None
         self.cleaning_area_m = None
         self.cleaned_area_px = 0
@@ -36,30 +44,27 @@ class ZoneStatsBase:
         self.overlaped_area_m = None
         self.coverage_p = None
         self.overlap_p = None
-        self.processing_time = 0.0
 
     def get_data_dict(self) -> dict:
         """Get statistics data as a dictionary. """
         return {
-            "full_length": float(self.full_length),
-            "coverage_length": float(self.coverage_length),
-            "full_yaw_rad": float(self.full_yaw_rad),
-            "coverage_yaw_rad": float(self.coverage_yaw_rad),
+            "map_name": self.map_name,
+            "method": self.method,
+            "zone_ind": self.ind,
+            "processing_time": round(float(self.processing_time), 2),
+            "full_length": round(float(self.full_length), 2),
+            "coverage_length": round(float(self.coverage_length), 2),
+            "full_yaw_rad": round(float(self.full_yaw_rad), 2),
+            "coverage_yaw_rad": round(float(self.coverage_yaw_rad), 2),
             "cleaning_area_px": int(self.cleaning_area_px),
-            "cleaning_area_m": float(self.cleaning_area_m),
+            "cleaning_area_m": round(float(self.cleaning_area_m), 2),
             "cleaned_area_px": int(self.cleaned_area_px),
-            "cleaned_area_m": float(self.cleaned_area_m),
-            "uncleaned_area_m": float(self.uncleaned_area_m),
-            "overlaped_area_m": float(self.overlaped_area_m),
-            "coverage_p": float(self.coverage_p),
-            "overlap_p": float(self.overlap_p),
-            "processing_time": float(self.processing_time)
+            "cleaned_area_m": round(float(self.cleaned_area_m), 2),
+            "uncleaned_area_m": round(float(self.uncleaned_area_m), 2),
+            "overlaped_area_m": round(float(self.overlaped_area_m), 2),
+            "coverage_p": round(float(self.coverage_p), 2),
+            "overlap_p": round(float(self.overlap_p), 2)
         }
-
-    def print_stats(self):
-        print("[Results]: ******************************************************* ")
-        print(f"[Results]: cleaning area: {self.cleaning_area_m:.2f} m^2")
-        print(f"[Results]: cleaned area: {self.cleaned_area_m:.2f} m^2")
 
 
 class ZoneEvaluationBase:
@@ -67,7 +72,6 @@ class ZoneEvaluationBase:
     """
 
     def __init__(self, zmd: ZoneMapData, paths: SequencePaths):
-        self.lg = MyLogger("ZoneEvaluationBase")
         self.zmd: ZoneMapData = zmd
         self.paths: SequencePaths = paths
         self.dcfgs = DistrictConfigs()
@@ -82,14 +86,6 @@ class ZoneEvaluationBase:
 
     def save_result(self):
         """ save zone statistics and planner statistics of the zone to json file. """
-        # save zone statistics to json file
         zone_stats = self.stats.get_data_dict()
-        result = {
-            "map": self.zmd.orig_map_data.name,
-            "zone_ind": self.zmd.ind,
-            "method": self.dcfgs.method,
-            "zone_stats": zone_stats,
-        }
-        # rewrite result file
         with open(self.zmd.result_file, 'wt') as f:
-            json.dump(result, f, indent=4)
+            json.dump(zone_stats, f, indent=4)

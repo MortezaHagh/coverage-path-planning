@@ -17,7 +17,10 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
 
     def evaluate(self, duration: float = 0.0):
         self.stats = ZoneStatsBase()
-        self.stats.processing_time = round(duration, 3)
+        self.stats.map_name = self.zmd.orig_map_data.name
+        self.stats.method = self.dcfgs.method
+        self.stats.ind = self.zmd.ind
+        self.stats.processing_time = duration
         #
         self.calculate_path_statistics()
         #
@@ -32,7 +35,7 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
         # full path length
         dxy = np.diff(full_path.xy, axis=0)
         segment_lengths = np.sqrt((dxy ** 2).sum(axis=1))
-        self.stats.full_length = round(float(np.sum(segment_lengths)), 2)
+        self.stats.full_length = float(np.sum(segment_lengths))
 
         # coverage path length
         coverage_length = 0.0
@@ -40,7 +43,7 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
             dxy = np.diff(path.xy, axis=0)
             segment_lengths = np.sqrt((dxy ** 2).sum(axis=1))
             coverage_length += np.sum(segment_lengths)
-        self.stats.coverage_length = round(float(coverage_length), 2)
+        self.stats.coverage_length = float(coverage_length)
 
         # full yaw changes
         dxy = np.diff(full_path.xy, axis=0)
@@ -49,7 +52,7 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
         angle_diffs = np.diff(angles)
         angle_diffs = np.abs((angle_diffs + np.pi) % (2 * np.pi) - np.pi)
         yaw_changes = np.sum(np.abs(angle_diffs))
-        self.stats.full_yaw_rad = round(float(yaw_changes), 2)
+        self.stats.full_yaw_rad = float(yaw_changes)
 
         # coverage yaw changes
         yaw_changes = 0.0
@@ -62,24 +65,24 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
             angle_diffs = np.diff(angles)
             angle_diffs = np.abs((angle_diffs + np.pi) % (2 * np.pi) - np.pi)
             yaw_changes += np.sum(np.abs(angle_diffs))
-        yaw_changes = round(float(yaw_changes), 2)
+        yaw_changes = float(yaw_changes)
         self.stats.coverage_yaw_rad = yaw_changes
 
     def calculate_cleaning_area(self):
         self.stats.cleaning_area_px = np.sum(self.zmd.map_cleaning == 255)
-        self.stats.cleaning_area_m = round(self.stats.cleaning_area_px * (self.zmd.resolution**2), 2)
+        self.stats.cleaning_area_m = self.stats.cleaning_area_px * (self.zmd.resolution**2)
 
     def calculate_cleaned_area(self):
         paths_len = self.stats.full_length
         cleaning_r = self.pcfgs.cleaning_r
         area = paths_len * (2 * cleaning_r)
         # overlaped_area_m
-        self.stats.overlaped_area_m = round(area - self.stats.cleaned_area_m, 2)
-        self.stats.overlap_p = round(self.stats.overlaped_area_m / self.stats.cleaning_area_m * 100, 2)
+        self.stats.overlaped_area_m = area - self.stats.cleaned_area_m
+        self.stats.overlap_p = self.stats.overlaped_area_m / self.stats.cleaning_area_m * 100
         # uncleaned_area_m
-        self.stats.uncleaned_area_m = round(self.stats.cleaning_area_m - self.stats.cleaned_area_m, 2)
+        self.stats.uncleaned_area_m = self.stats.cleaning_area_m - self.stats.cleaned_area_m
         # coverage percentage
-        self.stats.coverage_p = round(self.stats.cleaned_area_m / self.stats.cleaning_area_m * 100, 2)
+        self.stats.coverage_p = self.stats.cleaned_area_m / self.stats.cleaning_area_m * 100
 
     def add_cleaned_area_to_map(self):
         """ add cleaned area to map_clean_data and update map_planning with cleaning paths. """
@@ -146,4 +149,4 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
         cleaned_area_px = np.sum(cleaned_acc > 0)
         cleaned_area_m = cleaned_area_px * (self.zmd.resolution ** 2)
         self.stats.cleaned_area_px = cleaned_area_px
-        self.stats.cleaned_area_m = round(cleaned_area_m, 2)
+        self.stats.cleaned_area_m = cleaned_area_m

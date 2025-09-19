@@ -69,9 +69,11 @@ class ZoneMapData:
         self.zone_path = os.path.join(self.orig_map_data.bcfg.district_dir, self.name)
         os.makedirs(self.zone_path, exist_ok=True)
         dcfg = DistrictConfigs()
-        self.result_file = self.zone_path + f"/{dcfg.method}/result.json"
-        self.result_path = os.path.join(self.zone_path, dcfg.method)
-        if self.name != 'District':
+        if self.name == 'District':
+            self.result_file = self.zone_path + f"/result_{dcfg.method}.json"
+        else:
+            self.result_file = self.zone_path + f"/{dcfg.method}/result.json"
+            self.result_path = os.path.join(self.zone_path, dcfg.method)
             os.makedirs(self.result_path, exist_ok=True)
         #
         self.maps_path = os.path.join(self.zone_path, "maps")
