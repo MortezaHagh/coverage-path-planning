@@ -5,6 +5,13 @@ import dataclasses
 
 
 @dataclasses.dataclass
+class RobotConfigs:
+    radius = 0.5
+    v_lin_avg = 0.4
+    v_ang_avg = 0.6
+
+
+@dataclasses.dataclass
 class BConfigs:
     # map configs
     origin_m = None

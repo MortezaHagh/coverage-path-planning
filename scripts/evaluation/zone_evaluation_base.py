@@ -1,7 +1,7 @@
 import json
 from scripts.sequence.sequence import SequencePaths
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.base.configs import DistrictConfigs, PlanningConfigs
+from scripts.base.configs import DistrictConfigs, PlanningConfigs, RobotConfigs
 
 
 class ZoneStatsBase:
@@ -10,9 +10,11 @@ class ZoneStatsBase:
         map_name (str): map name
         method (str): planning method
         ind (int): zone index
+        full_trav_time (float): travel time in seconds
+        coverage_trav_time (float): travel time in seconds (coverage path)
+        processing_time (float): processing time in seconds
         full_length (float): full path length in meters (coverage and connecting)
         coverage_length (float): coverage path length in meters (todo)
-        processing_time (float): processing time in seconds
         full_yaw_rad (float): yaw changes in radians
         coverage_yaw_rad (float): yaw changes in radians (coverage path)
         cleaning_area_px (int): area to be cleaned in pixels
@@ -29,6 +31,8 @@ class ZoneStatsBase:
         self.map_name: str = None
         self.method: str = None
         self.ind: int = None  # zone index
+        self.full_trav_time: float = 0.0
+        self.coverage_trav_time: float = 0.0
         self.processing_time = 0.0
         #
         self.full_length = None
@@ -51,6 +55,8 @@ class ZoneStatsBase:
             "map_name": self.map_name,
             "method": self.method,
             "zone_ind": self.ind,
+            "full_trav_time": round(float(self.full_trav_time), 2),
+            "coverage_trav_time": round(float(self.coverage_trav_time), 2),
             "processing_time": round(float(self.processing_time), 2),
             "full_length": round(float(self.full_length), 2),
             "coverage_length": round(float(self.coverage_length), 2),
@@ -76,6 +82,7 @@ class ZoneEvaluationBase:
         self.paths: SequencePaths = paths
         self.dcfgs = DistrictConfigs()
         self.pcfgs = PlanningConfigs()
+        self.robot_cfgs = RobotConfigs()
         # statistics
         self.stats: ZoneStatsBase = None
 

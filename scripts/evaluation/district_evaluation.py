@@ -11,6 +11,8 @@ class DistrictStatsBase:
         self.map_name: str = None
         self.method: str = None
         self.n_zones: int = None
+        self.full_trav_time: float = None
+        self.coverage_trav_time: float = None
         self.processing_time: float = None
         #
         self.full_path_length: float = None
@@ -31,6 +33,8 @@ class DistrictStatsBase:
             "map_name": self.map_name,
             "method": self.method,
             "n_zones": int(self.n_zones),
+            "full_trav_time": round(float(self.full_trav_time), 2),
+            "coverage_trav_time": round(float(self.coverage_trav_time), 2),
             "processing_time": round(float(self.processing_time), 2),
             "full_path_length": round(float(self.full_path_length), 2),
             "coverage_path_length": round(float(self.coverage_path_length), 2),
@@ -62,6 +66,8 @@ class DistrictEvaluationHandler:
             raise ValueError("No zone statistics provided for district evaluation.")
 
         # aggregate statistics from all zones
+        self.stats.full_trav_time = sum(zs.full_trav_time for zs in zone_stats)
+        self.stats.coverage_trav_time = sum(zs.coverage_trav_time for zs in zone_stats)
         self.stats.processing_time = sum(zs.processing_time for zs in zone_stats)
         self.stats.full_path_length = sum(zs.full_length for zs in zone_stats)
         self.stats.coverage_path_length = sum(zs.coverage_length for zs in zone_stats)

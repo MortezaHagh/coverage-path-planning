@@ -23,6 +23,7 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
         self.stats.processing_time = duration
         #
         self.calculate_path_statistics()
+        self.calculate_travel_times()
         #
         self.calculate_cleaning_area()
         self.add_cleaned_area_to_map()
@@ -67,6 +68,15 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
             yaw_changes += np.sum(np.abs(angle_diffs))
         yaw_changes = float(yaw_changes)
         self.stats.coverage_yaw_rad = yaw_changes
+
+    def calculate_travel_times(self):
+        t_lin = self.stats.full_length / self.robot_cfgs.v_lin_avg
+        t_ang = self.stats.full_yaw_rad / self.robot_cfgs.v_ang_avg
+        self.stats.full_trav_time = t_lin + t_ang
+        #
+        t_lin = self.stats.coverage_length / self.robot_cfgs.v_lin_avg
+        t_ang = self.stats.coverage_yaw_rad / self.robot_cfgs.v_ang_avg
+        self.stats.coverage_trav_time = t_lin + t_ang
 
     def calculate_cleaning_area(self):
         self.stats.cleaning_area_px = np.sum(self.zmd.map_cleaning == 255)
