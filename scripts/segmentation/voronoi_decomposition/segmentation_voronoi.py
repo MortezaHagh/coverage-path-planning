@@ -63,7 +63,7 @@ class Segmentation(SegmentationBase):
     # Preprocess ===============================================================
 
     def check_critical_points(self, b_poly: Polygon) -> bool:
-        """Check if there are critical points in the Voronoi decomposition. 
+        """Check if there are critical points in the Voronoi decomposition.
             if not, add the boundary polygon as a ring. """
         if len(self.critical_points) > 0:
             return True
@@ -119,7 +119,7 @@ class Segmentation(SegmentationBase):
     def create_all_segments(self) -> None:
         """Create segments (rings) for all critical points. """
 
-        self.lg.info2(f"Creating rings.")
+        self.lg.info2("Creating rings.")
         n_ring = 0
         for _ in range(2):
             for i, cp in enumerate(self.critical_points):

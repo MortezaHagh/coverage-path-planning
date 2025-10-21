@@ -104,7 +104,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         """ Perform coverage path planning for all the boustrophedon cells. """
 
         if self.n_mcells == 0:
-            self.lg.error(f"No cells to plan coverage path.")
+            self.lg.error("No cells to plan coverage path.")
             raise ValueError("No cells to plan coverage path.")
 
         for i, cell in enumerate(self.mcells):
@@ -122,7 +122,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
                 # self.lg.warn(f" -- Bouts Cell {cell.id} has no path after coverage planning.")
 
     def create_connected_path_simple(self) -> None:
-        """ Create a connected path for all the boustrophedon cells. 
+        """ Create a connected path for all the boustrophedon cells.
             Simple approach: concatenate the paths of all cells in order.
         """
         full_path_px = []
@@ -148,7 +148,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
                 cell.set_path_m(self.path_px_to_m(rot_path))
 
     def create_connected_path(self) -> None:
-        """ Create a connected path for all the boustrophedon cells. 
+        """ Create a connected path for all the boustrophedon cells.
             Using ConnectPaths class to find optimal connections between cell paths.
         """
         paths_px = []

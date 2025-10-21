@@ -3,8 +3,8 @@ import numpy as np
 
 
 def find_circumscribed_rectangle(map_i: np.ndarray) -> dict:
-    """ 
-    Find the minimum area rectangle that circumscribes all free cells in the map. 
+    """
+    Find the minimum area rectangle that circumscribes all free cells in the map.
     Returns:
         dict: {"vertices": [(x, y), ...], "rect_data": {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}}
 

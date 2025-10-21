@@ -6,12 +6,12 @@ from shapely.affinity import scale
 from shapely import maximum_inscribed_circle  # , minimum_bounding_circle
 from scripts.base.logger import MyLogger
 from scripts.segmentation.cell_base import CellBase
-from scripts.segmentation.voronoi_decomposition.common import CriticalPoint, Ring
+from scripts.segmentation.voronoi_decomposition.common import Ring  # , CriticalPoint
 from scripts.base.configs import PlanningConfigs, DistrictConfigs
 
 
 class Cell (CellBase):
-    """ Cell for voronoi-based decomposition. 
+    """ Cell for voronoi-based decomposition.
 
     Includes:
         rings (closed loops) containing critical points.
@@ -278,7 +278,7 @@ class Cell (CellBase):
         return expanded_rect_poly
 
     def expand_inscribed_rectangle_2(self, inscribed_rect_poly: Polygon, circle_insc_center) -> Polygon:
-        """ first find the main direction of expansion buy expanding in each direction separately till collision, 
+        """ first find the main direction of expansion buy expanding in each direction separately till collision,
         then expand in that direction and then in the other 3 directions """
 
         # find step
@@ -392,11 +392,11 @@ class Cell (CellBase):
         th = np.arctan2(p2[1] - p1[1], p2[0] - p1[0])
 
         #  move p1 and p2 in the direction of the center of the edge
-        l = max_edge_idx / 4
-        s_p1 = (p1[0] + l * np.cos(th),
-                p1[1] + l * np.sin(th))
-        s_p2 = (p2[0] + l * np.cos(-th),
-                p2[1] + l * np.sin(-th))
+        l_edge = max_edge_idx / 4
+        s_p1 = (p1[0] + l_edge * np.cos(th),
+                p1[1] + l_edge * np.sin(th))
+        s_p2 = (p2[0] + l_edge * np.cos(-th),
+                p2[1] + l_edge * np.sin(-th))
 
         # create third and fourth points
         # p3 is the point from p2 perpendicular to edge p1-p2

@@ -14,12 +14,12 @@ OCCUPIED_COST = 0
 
 class SpaceAnalyzer:
     """
-    ws: work space (max(wf and os distances)). displays feasible position for the center of the robot. 
-    cleaning: displays final cleaned area. 
-    orig: original or eruded back after dilation 
-    sf: selected free space  
-    f: filtered (island detection) 
-    bb: bounding box 
+    ws: work space (max(wf and os distances)). displays feasible position for the center of the robot.
+    cleaning: displays final cleaned area.
+    orig: original or eruded back after dilation
+    sf: selected free space
+    f: filtered (island detection)
+    bb: bounding box
     """
 
     def __init__(self, map_data: MapData, rectangle: Rectangle):
@@ -169,7 +169,7 @@ class SpaceAnalyzer:
         self.__zone_map_data = zone_map_data
 
     def get_final_freespace_rect(self, map_i: np.ndarray) -> dict:
-        """get free selected rectangle (global) 
+        """get free selected rectangle (global)
         Returns:
             dict: {"vertices": vertices, "rect_data": data}
 
@@ -206,7 +206,7 @@ class SpaceAnalyzer:
         return rect
 
     def find_bounding_rect(self, map_i: np.ndarray) -> dict:
-        """ find bounding rectangle of the free space 
+        """ find bounding rectangle of the free space
         Returns:
             sol: {"vertices": vertices, "rect_data": data}
 
@@ -240,9 +240,9 @@ class SpaceAnalyzer:
         return map_fs_rif
 
     def seperate_selected_free_space(self, c_map: np.ndarray) -> np.ndarray:
-        """ selecting open space from candidates based on the clicked point. 
-        find all contours in the image and selects contour which contains selected point. 
-        each contour will be separate free space. 
+        """ selecting open space from candidates based on the clicked point.
+        find all contours in the image and selects contour which contains selected point.
+        each contour will be separate free space.
         Args:
             c_map (np.ndarray): cropped map.
         Returns:
@@ -343,7 +343,7 @@ class SpaceAnalyzer:
     # ==========================================================================
 
     def get_vertices_data(self) -> dict:
-        """ get vertices data, hw_bd, hw_bd_local 
+        """ get vertices data, hw_bd, hw_bd_local
             fields: "h_min", "w_min", "h_max", "w_max"
         """
         wh_max = np.max(self.vertices, axis=0)
@@ -406,7 +406,7 @@ class SpaceAnalyzer:
         return map_with_rect
 
     def apply_hw_limits(self, hw_limits) -> dict:
-        """ apply hw limits based on the original map size. 
+        """ apply hw limits based on the original map size.
             dict fields: "h_min", "w_min", "h_max", "w_max"
         """
         updated_hw = copy.copy(hw_limits)
@@ -440,7 +440,7 @@ class SpaceAnalyzer:
 
     def display_contour(self, c) -> None:
         """
-        Display all contours from findContours, each contour with a different color. 
+        Display all contours from findContours, each contour with a different color.
         """
         # Create an empty image to draw contours
         contour_img = np.zeros_like(self.map_c_orig)

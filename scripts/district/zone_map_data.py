@@ -17,8 +17,8 @@ def convert_to_native(data: dict) -> dict:
 
 
 class ZoneMapData:
-    """ZoneMapData class to store zone map data. 
-        values are in pixel by default. 
+    """ZoneMapData class to store zone map data.
+        values are in pixel by default.
     """
 
     def __init__(self, ind: int = 0):
@@ -45,6 +45,7 @@ class ZoneMapData:
         self.map_cleaning: np.ndarray = None
         #
         self.map_ws: np.ndarray = None
+        self.map_segmentation: np.ndarray = None
         self.map_planning: np.ndarray = None
 
     @property
@@ -119,8 +120,8 @@ class ZoneMapData:
         self.final_rectangle = Rectangle(self.final_rect_data)
 
     def save_data(self) -> None:
-        """ save zone map data to files. 
-            maps, local_map.json. 
+        """ save zone map data to files.
+            maps, local_map.json.
         """
 
         #

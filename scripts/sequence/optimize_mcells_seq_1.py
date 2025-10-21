@@ -7,7 +7,7 @@ from scripts.segmentation.cell_base import CellBase
 
 
 class OptimCellsSeq:
-    """ Create optimized sequence of cells to be covered. 
+    """ Create optimized sequence of cells to be covered.
         Different methods can be used for optimization:
         - simple: simple sequence (as is)
         - dfs: depth first search
@@ -206,7 +206,7 @@ class MILPSeq(BaseSeqOpt):
                 if i != j and i != start_node and j != start_node:
                     solver.Add(u[i] - u[j] + (n-1) * x[i, j] <= n-2)
 
-         # Objective: Minimize total distance
+        # Objective: Minimize total distance
         solver.Minimize(
             solver.Sum([self.distm[i, j] * x[i, j] for i in range(n) for j in range(n) if (i != j and j != start_node)])
         )

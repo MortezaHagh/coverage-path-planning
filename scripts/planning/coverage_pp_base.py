@@ -29,7 +29,7 @@ class CoveragePathPlannerBase:
         self.path_px: list[tuple[int, int]] = []      # path in pixels
 
     def coverage_planning(self) -> None:
-        """ Main function to plan the coverage path for the cell. 
+        """ Main function to plan the coverage path for the cell.
             To be implemented in child classes.
         """
         raise NotImplementedError("This method should be implemented in child classes.")

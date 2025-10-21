@@ -175,5 +175,5 @@ class RecEventHandler:
 
     def get_main_obj(self) -> VisualRectangle:
         if self.main_obj is None:
-            raise Exception(f"[{self.ns}]: main object is has not created!")
+            raise ValueError(f"[{self.ns}]: main object is has not created!")
         return self.main_obj

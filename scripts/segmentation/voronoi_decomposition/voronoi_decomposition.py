@@ -13,8 +13,8 @@ from scripts.segmentation.voronoi_decomposition.common import VPoint, CriticalPo
 
 
 class VoronoiDecomposition:
-    """ Voronoi decomposition of the zone map. 
-        Finding critical points in Voronoi vertices. 
+    """ Voronoi decomposition of the zone map.
+        Finding critical points in Voronoi vertices.
     """
 
     def __init__(self, zmd: ZoneMapData, map_polygs: MapPolygons):
@@ -65,7 +65,7 @@ class VoronoiDecomposition:
         self.plot_voronoi()
 
     def process_polygons(self):
-        """ Process polygons to ensure they are suitable for Voronoi decomposition. 
+        """ Process polygons to ensure they are suitable for Voronoi decomposition.
             Adding points to polygons if needed. """
 
         # process bounding polygon
@@ -126,7 +126,7 @@ class VoronoiDecomposition:
         self.v_verts_free = np.array(verts_out_obst)
 
     def find_ridge_vpoints(self):
-        """ Evaluate ridge vertices of Voronoi diagram. 
+        """ Evaluate ridge vertices of Voronoi diagram.
             set features: [n_feas_ridges], [ridge_vps], [has_inf_adj]. """
 
         # if both ridge vertices are free, then [ridge_vps] and [n_feas_ridges] for each ridge point are updated.
@@ -147,8 +147,8 @@ class VoronoiDecomposition:
                 self.v_points[idx].has_inf_adj = True
 
     def set_basis_points_and_feasibility(self):
-        """ - set [feasible] and [basis_points] for points based on the number of feasible ridges. 
-            - set basis_dists and clearance. 
+        """ - set [feasible] and [basis_points] for points based on the number of feasible ridges.
+            - set basis_dists and clearance.
 
             vor.points: original points used to create the Voronoi diagram.
             """
@@ -271,7 +271,7 @@ class VoronoiDecomposition:
         """ Process polygons and add points if needed.
 
         Methods:
-            1. check distance between points and add points if the distance between them is greater than a threshold. 
+            1. check distance between points and add points if the distance between them is greater than a threshold.
             2. if edge is larger than neighboring edges, add points between them.
         """
         poly = self.process_polygon_1(poly_t)
@@ -281,8 +281,8 @@ class VoronoiDecomposition:
         return poly
 
     def process_polygon_1(self, poly: Polygon):
-        """ check distance between points of the polygon. 
-            add points if the distance between them is greater than a threshold. 
+        """ check distance between points of the polygon.
+            add points if the distance between them is greater than a threshold.
         """
 
         robot_r_px = self.robot_r_px

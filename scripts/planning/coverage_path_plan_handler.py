@@ -35,6 +35,7 @@ class CoveragePathPlanHandler:
         dcfg = DistrictConfigs()
         covpp_method = dcfg.covpp_method
 
+        # todo
         # create coverage path planner
         if covpp_method == "boust":
             from scripts.planning.boustrophedon.coverage_pp_boust import CoveragePathPlanner

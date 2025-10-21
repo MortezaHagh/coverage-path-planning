@@ -1,7 +1,6 @@
-import os
+from pathlib import Path
 import json
 import pandas as pd
-from pathlib import Path
 
 
 def collect_results(parameter_path):
@@ -103,15 +102,15 @@ def main():
         print(table)
 
         # Generate filename based on parameter
-        dir = "/home/morteza/Documents/00-CPP/00-CPP/Data/All"
-        filename = dir + f'results_{selected_param}.csv'
+        dir_data = "/home/morteza/Documents/00-CPP/00-CPP/Data/All"
+        filename = dir_data + f'results_{selected_param}.csv'
 
         # Optional: Save to CSV
         table.to_csv(filename)
         print(f"\nTable saved to '{filename}'")
 
         # Display some statistics
-        print(f"\nSummary:")
+        print("\nSummary:")
         print(f"Parameter: {selected_param}")
         print(f"Methods found: {len(table.index)}")
         print(f"Maps found: {len(table.columns)}")

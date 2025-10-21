@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from shapely import affinity
+# from shapely import affinity
 from shapely import Polygon, Point
 from scripts.base.logger import MyLogger
 from scripts.district.zone_map_data import ZoneMapData
@@ -50,7 +50,7 @@ class MapPolygons:
         self.b_poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
 
     def create_obstacle_polygons(self):
-        """ Create obstacle polygons from map image. 
+        """ Create obstacle polygons from map image.
             Approach: find contours of obstacles in the map image and create polygons from them.
         """
         # get obstacle contours inside the biggest contour from map image
@@ -73,7 +73,7 @@ class MapPolygons:
             filtered_c = self.filter_contour_points(c)
             # get the polygon
             if len(filtered_c) < 3:
-                self.lg.warning(f"Not enough points to create polygon for contour in zone zmd.ind ")
+                self.lg.warning("Not enough points to create polygon for contour in zone")
                 continue
             poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
             obs_polys.append(poly)

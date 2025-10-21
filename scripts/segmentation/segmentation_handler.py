@@ -151,8 +151,8 @@ class SegmentationHandler:
         # free_angle = (dominant_angle + np.pi/2) % np.pi
         free_angle = (dominant_angle) % np.pi
 
-        # Convert grayscale map to BGR for drawing
-        vis = cv.cvtColor(map_cell, cv.COLOR_GRAY2BGR)
+        # # Convert grayscale map to BGR for drawing
+        # vis = cv.cvtColor(map_cell, cv.COLOR_GRAY2BGR)
 
         # # Draw arrow from center of map in free-space direction
         # h, w = map_cell.shape

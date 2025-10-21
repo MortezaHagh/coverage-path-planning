@@ -6,7 +6,7 @@ from scripts.district.zone_map_data import ZoneMapData
 
 
 class SegmentationBase:
-    """ Base class for Segmentation.  
+    """ Base class for Segmentation.
     """
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
@@ -26,7 +26,7 @@ class SegmentationBase:
         self.n_cells: int = 0
 
     def run(self):
-        """ Run segmentation. 
-            to be implemented in child classes. 
+        """ Run segmentation.
+            to be implemented in child classes.
         """
         raise NotImplementedError

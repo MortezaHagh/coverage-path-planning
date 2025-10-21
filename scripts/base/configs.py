@@ -53,7 +53,8 @@ class DistrictConfigs:
             method = method + "_rect"
 
     @classmethod
-    def update(cls, segmentation_method: str = 'voronoi', covpp_method: str = 'boust', use_insc_ret: bool = False, sequence_method: str = 'milp'):
+    def update(cls, segmentation_method: str = 'voronoi', covpp_method: str = 'boust',
+               use_insc_ret: bool = False, sequence_method: str = 'milp'):
         """ Update configs. """
         cls.segmentation_method = segmentation_method
         cls.covpp_method = covpp_method

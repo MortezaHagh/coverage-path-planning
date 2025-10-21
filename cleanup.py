@@ -9,7 +9,7 @@ def cleanup_district_folders(base_dir: str) -> None:
 
     :param base_dir: The base directory where the cleanup should be performed.
     """
-    for root, dirs, files in os.walk(base_dir):
+    for root, dirs, _ in os.walk(base_dir):
         for dir_name in dirs:
             if dir_name == "District":
                 dir_path = os.path.join(root, dir_name)

@@ -21,9 +21,9 @@ OCCUPIED = 0
 
 
 class ConnectPaths:
-    """ Connect cell paths. 
-    Find paths between end of one cell and start of the next cell in the map. 
-    Uses A* algorithm (skimage.graph.route_through_array) to find the shortest path in the occupancy grid. 
+    """ Connect cell paths.
+    Find paths between end of one cell and start of the next cell in the map.
+    Uses A* algorithm (skimage.graph.route_through_array) to find the shortest path in the occupancy grid.
     """
 
     def __init__(self, zone_map_data: ZoneMapData, ns: str = ""):
@@ -135,14 +135,14 @@ class FindPathInMap:
         binary_map = (occ_map == FREE).astype(np.uint8)  # 1 = free, 0 = obstacle
         self.cost_map = np.where(binary_map == 1, 1, 10).astype(np.float32)   # method 1 # 1 = free, 1000 = obstacle
         # self.cost_map = np.where(binary_map == 1, 1, 0)                       # method 2 # 1 = free, 0 = obstacle
-        # self.grid = Grid(matrix=self.cost_map)                                # method 3 # grid for pathfinding algorithm (function find_path_al_pathfinding)
+        # self.grid = Grid(matrix=self.cost_map)     # method 3 # grid for pathfinding algorithm (function find_path_al_pathfinding)
 
         # and start point
         self.s_x = zmd.rectangle.x_min
         self.s_y = zmd.rectangle.y_min
 
     def distance_between_points(self, p1: MyPoint, p2: MyPoint) -> float:
-        """ Calculate distance between two points in the map. 
+        """ Calculate distance between two points in the map.
             First find path, then calculate its length.
         """
 

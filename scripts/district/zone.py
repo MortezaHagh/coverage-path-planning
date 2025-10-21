@@ -14,7 +14,7 @@ from scripts.evaluation.zone_evaluation_base import ZoneStatsBase
 
 
 class ZoneData:
-    """ Zone Data class to store zone map data and run coverage planning.  
+    """ Zone Data class to store zone map data and run coverage planning.
 
     Attributes:
         ind (int): zone index
@@ -92,12 +92,12 @@ class ZoneData:
         self.stats = self.evaluator.stats
 
         # ************
-        self.lg.info1(f"Step: zone post planning")
+        self.lg.info1("Step: zone post planning")
         self.post_planning()
 
     def post_planning(self):
-        """ post planning after coverage path planning. 
-        calculating stats and updating map_planning and map_clean_data. 
+        """ post planning after coverage path planning.
+        calculating stats and updating map_planning and map_clean_data.
         """
         self.save_map_planning()
         self.save_map_cleaning_data()
@@ -110,13 +110,19 @@ class ZoneData:
         vertices = self.zmd.vertices
         map_planning = cv.polylines(map_planning, [vertices], isClosed=True, color=(100, 0, 150), thickness=2)
         self.zmd.map_planning = map_planning
+        self.zmd.map_segmentation = map_planning.copy()
 
     def save_map_planning(self):
         if not self.dcfg.save_map_planning:
             return
+        # save map planning
         m_name = "map_planning.png"
         map_hl_path = os.path.join(self.zmd.result_path, m_name)
         cv.imwrite(map_hl_path, self.zmd.map_planning)
+        # save map segmentation
+        m_name_s = "map_segmentation.png"
+        map_s_path = os.path.join(self.zmd.result_path, m_name_s)
+        cv.imwrite(map_s_path, self.zmd.map_segmentation)
 
     def save_map_cleaning_data(self):
         """ save map showing cleaned area and uncleaned area. """

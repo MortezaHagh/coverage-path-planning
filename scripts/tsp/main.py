@@ -5,7 +5,8 @@ if m == 0:
     from tsp_0 import solve_tsp
 elif m == 1:
     from tsp_1_1 import solve_tsp
-elif m == 2:
+# elif m == 2:
+else:
     from tsp_1_2 import solve_tsp
 
 

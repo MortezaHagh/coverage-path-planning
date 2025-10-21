@@ -29,8 +29,8 @@ class SequencePaths:
 
 class Sequence:
     def __init__(self, zmd: ZoneMapData) -> None:
-        """ Create sequence of cells to be covered. 
-            Also connect paths between cells and create full paths. 
+        """ Create sequence of cells to be covered.
+            Also connect paths between cells and create full paths.
         """
 
         self.lg = MyLogger("Sequence")
@@ -45,6 +45,7 @@ class Sequence:
         # configurations
         self.pcfgs: PlanningConfigs = PlanningConfigs()
         self.dcfgs: DistrictConfigs = DistrictConfigs()
+        self.colors: list[tuple] = []
 
         # params
         self.min_points_distance: float = self.pcfgs.min_wp_dist
@@ -95,6 +96,7 @@ class Sequence:
         """ Create optimum sequence of cells to be covered. """
 
         # Initialize distances between cells (paths start and end points)
+        distances = None
         if self.dcfgs.sequence_method == "milp":
             # Initialize connections object with cells
             self.connections.initialize(self.cells)
@@ -131,7 +133,7 @@ class Sequence:
         self.s_cells = [self.cells[i] for i in opt_seq.tour_idxs]
 
     def connect_paths(self) -> None:
-        """ Connect the paths based on the created sequence. 
+        """ Connect the paths based on the created sequence.
             connect end-start points of paths.
         """
         self.connections.connect_paths(self.paths_px, self.seq_idxs)
@@ -191,11 +193,18 @@ class Sequence:
         for i, cell in enumerate(self.cells):
             pp = cell.points
             pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
+            # add cells to map_planning
             map_p = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(100, 100, 100), thickness=2)
             map_p_fill = self.zmd.map_planning.copy()
             cv.fillPoly(map_p_fill, [pp], color=self.colors[i])
             alpha = 0.1
             self.zmd.map_planning = cv.addWeighted(map_p_fill, alpha, map_p, 1 - alpha, 0)
+            # add cells to map_segmentation
+            map_s = cv.polylines(self.zmd.map_segmentation, [pp], isClosed=True, color=(100, 100, 100), thickness=2)
+            map_s_fill = self.zmd.map_segmentation.copy()
+            cv.fillPoly(map_s_fill, [pp], color=self.colors[i])
+            alpha = 0.1
+            self.zmd.map_segmentation = cv.addWeighted(map_s_fill, alpha, map_s, 1 - alpha, 0)
 
     def add_cell_paths_to_map_planning(self) -> None:
         map_planning = self.zmd.map_planning.copy()

@@ -40,7 +40,7 @@ class VPoint:
         self.clearance = round(np.sum(dists), 2)
 
     def set_adjacent_vp_idxs(self, adj_vp_idxs: np.ndarray):
-        """ Set the indices of adjacent Voronoi points.  
+        """ Set the indices of adjacent Voronoi points.
             adjacents based on the distance and min-max number of adjacents. """
         self.adjacent_vp_idxs = adj_vp_idxs
 
