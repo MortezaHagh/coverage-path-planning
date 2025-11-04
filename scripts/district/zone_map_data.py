@@ -5,8 +5,8 @@ import cv2 as cv
 import numpy as np
 from scripts.gui.visuals import Rectangle
 from scripts.base.map_data import MapData
-from scripts.base.my_utils import visualize_map_s
 from scripts.base.configs import DistrictConfigs
+from scripts.base.my_utils import visualize_map_s
 
 
 def convert_to_native(data: dict) -> dict:

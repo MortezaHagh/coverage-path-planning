@@ -7,7 +7,7 @@ from scripts.base.logger import MyLogger
 from scripts.base.my_utils import MyPoint, MyPath
 from scripts.base.my_utils import get_n_colors_plt
 from scripts.base.my_utils import get_n_colors_cv
-from scripts.segmentation.cell_base import CellBase
+from scripts.segmentation.cell_processed import PCell
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.sequence.connect_paths import ConnectPaths
@@ -39,7 +39,7 @@ class Sequence:
         self.zmd: ZoneMapData = zmd
         self.map_polygons: MapPolygons = None
         #
-        self.cells: list[CellBase] = []
+        self.cells: list[PCell] = []
         self.n_cells: int = 0
 
         # configurations
@@ -73,11 +73,11 @@ class Sequence:
         self.anim = None  # for animation
 
         # results
-        self.s_cells: list[CellBase] = []
+        self.s_cells: list[PCell] = []
         self.seq_idxs: list[int] = []
         self.paths: SequencePaths = SequencePaths()
 
-    def run(self, cells: list[CellBase], map_polygons: MapPolygons) -> None:
+    def run(self, cells: list[PCell], map_polygons: MapPolygons) -> None:
         """ Run sequence creation and path connection. """
         self.cells = cells
         self.n_cells = len(cells)

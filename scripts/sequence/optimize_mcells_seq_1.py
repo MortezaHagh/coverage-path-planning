@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp
 from scripts.base.logger import MyLogger
 from scripts.base.configs import DistrictConfigs
-from scripts.segmentation.cell_base import CellBase
+from scripts.segmentation.cell_processed import PCell
 
 
 class OptimCellsSeq:
@@ -14,12 +14,12 @@ class OptimCellsSeq:
         - milp: mixed integer linear programming (MILP) using ortools
     """
 
-    def __init__(self, cells: list[CellBase], distances: np.ndarray = None, start_cell_idx: int = 0):
+    def __init__(self, cells: list[PCell], distances: np.ndarray = None, start_cell_idx: int = 0):
         self.lg = MyLogger("OptimCellsSeq")
         self.lg.info1("Step: creating optimized cell sequence")
 
         # initialize
-        self.cells: list[CellBase] = cells
+        self.cells: list[PCell] = cells
         dcfgs = DistrictConfigs()
 
         # sequence results initialization
@@ -78,9 +78,9 @@ class OptimCellsSeq:
 class BaseSeqOpt:
     """ Base class for sequence optimization of cells. """
 
-    def __init__(self, cells: list[CellBase], start_idx: int = 0):
+    def __init__(self, cells: list[PCell], start_idx: int = 0):
         self.lg = MyLogger("BaseSeqOpt")
-        self.cells: list[CellBase] = cells
+        self.cells: list[PCell] = cells
         self.c_id_idx_dict: dict[int, int] = {c.id: i for i, c in enumerate(cells)}  # cell id to index mapping
         self.start_idx: int = start_idx  # default start index for the tour
         self.tour_idxs: list[int] = []
@@ -92,7 +92,7 @@ class BaseSeqOpt:
 
 
 class SimpleSeqOpt(BaseSeqOpt):
-    def __init__(self, cells: list[CellBase]):
+    def __init__(self, cells: list[PCell]):
         super().__init__(cells)
         self.lg.info("using SimpleSeqOpt sequence optimization method.")
 
@@ -103,7 +103,7 @@ class SimpleSeqOpt(BaseSeqOpt):
 
 
 class DepthFirstSearch(BaseSeqOpt):
-    def __init__(self, cells: list[CellBase], start_cell_idx: int = 0):
+    def __init__(self, cells: list[PCell], start_cell_idx: int = 0):
         super().__init__(cells, start_cell_idx)
         self.lg.info("using DepthFirstSearch sequence optimization method.")
         #
@@ -139,7 +139,7 @@ class DepthFirstSearch(BaseSeqOpt):
 
 
 class MILPSeq(BaseSeqOpt):
-    def __init__(self, cells: list[CellBase], distances: np.ndarray, start_cell_idx: int = 0):
+    def __init__(self, cells: list[PCell], distances: np.ndarray, start_cell_idx: int = 0):
         super().__init__(cells, start_cell_idx)
         self.lg.info("using MILPSeq sequence optimization method.")
 

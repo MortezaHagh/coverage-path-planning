@@ -4,7 +4,7 @@ import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
 from scripts.sequence.sequence import Sequence
-from scripts.segmentation.cell_base import CellBase
+from scripts.segmentation.cell_processed import PCell
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.configs import DistrictConfigs, PlanningConfigs
 from scripts.segmentation.segmentation_handler import SegmentationHandler
@@ -20,7 +20,7 @@ class ZoneData:
         ind (int): zone index
         zmd (ZoneMapData): zone map data
         segmentation_handler (SegmentationHandler): zone segmentation handler
-        cells (list[CellBase]): list of cells from segmentation
+        cells (list[PCell]): list of cells from segmentation
         cov_path_planner (CoveragePathPlanner): coverage path planner handler
         evaluator (ZoneEvaluationHandler): zone evaluation handler
         complete_path (np.ndarray): complete path (todo)
@@ -51,7 +51,7 @@ class ZoneData:
         self.evaluator: ZoneEvaluationHandler = ZoneEvaluationHandler(self.zmd)
 
         # resulting data
-        self.cells: list[CellBase] = []
+        self.cells: list[PCell] = []
         self.complete_path: np.ndarray = None  # todo
 
         # statistics

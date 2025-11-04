@@ -16,6 +16,6 @@ class Segmentation(SegmentationBase):
         """ Run simple segmentation method. """
 
         # create one cell for the whole area
-        cell = CellBase(ind=0, poly=self.map_polygons.b_poly)
+        cell = CellBase(idx=0, poly=self.map_polygons.b_poly)
         self.cells.append(cell)
         self.n_cells = 1

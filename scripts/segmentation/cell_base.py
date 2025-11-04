@@ -4,18 +4,17 @@ from scripts.base.my_utils import MyPoint, MyPath
 
 
 class CellBase:
-    """Base class for cells in the boustrophedon coverage path planning. """
+    """Base cell class for segmentation and coverage path planning. """
 
-    def __init__(self, ind: int, poly: Polygon):
-        self.id: int = ind
-        self.opt_id: int = None
+    def __init__(self, idx: int, poly: Polygon):
+        self.id: int = idx
+        self.opt_id: int = None  # optimized id after sequencing
         self.next_cell_seq: int = None
         #
         self.poly: Polygon = poly
-        # self.points: list[tuple[int, int]] = []
         self.points: np.ndarray = np.array([], dtype=np.int32)
         #
-        self.cxy: tuple[float, float] = None
+        self.cxy: tuple[float, float] = None  # center x,y
         self.x_min: float = None
         self.x_max: float = None
         self.y_min: float = None
@@ -31,7 +30,7 @@ class CellBase:
         self.do_planning: bool = True
 
         # main direction angle of the cell (free space) - radians
-        self.free_angle: float = 0.0
+        self.major_direction: float = 0.0
 
         # start-end points
         self.start_point: MyPoint = None
@@ -41,12 +40,8 @@ class CellBase:
         self.path_m: MyPath = None      # path in meters
         self.path_px: MyPath = None     # path in pixels
 
-        # features
-        self.rectangle_poly: Polygon = None       # inscribed rectangle polygon (expanded)
-        self.rect_like: bool = False
-
         # calculate cell specs
-        self.cell_specs()
+        self.calculate_cell_specs()
 
         # create cell points
         self.create_cell_points()
@@ -58,7 +53,7 @@ class CellBase:
         else:
             self.next_cell_seq = None
 
-    def cell_specs(self):
+    def calculate_cell_specs(self):
         # center
         self.cxy = self.poly.centroid.coords[0]
         # bounds
@@ -75,7 +70,6 @@ class CellBase:
         self.area = self.poly.area
 
     def create_cell_points(self):
-        # create cell points
         if self.poly:
             points = [[int(p[0]), int(p[1])] for p in self.poly.exterior.coords]
             self.points = np.array(points, dtype=np.int32)

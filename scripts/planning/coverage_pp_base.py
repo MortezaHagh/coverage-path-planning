@@ -2,7 +2,7 @@
 import numpy as np
 from scripts.base.logger import MyLogger
 from scripts.base.my_utils import MyPoint, MyPath
-from scripts.segmentation.cell_base import CellBase
+from scripts.segmentation.cell_processed import PCell
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.configs import PlanningConfigs, DistrictConfigs
 
@@ -10,7 +10,7 @@ from scripts.base.configs import PlanningConfigs, DistrictConfigs
 class CoveragePathPlannerBase:
     """ Base class for cell coverage path planner. """
 
-    def __init__(self, cell: CellBase, zmd: ZoneMapData):
+    def __init__(self, cell: PCell, zmd: ZoneMapData):
         self.lg = MyLogger("CoveragePlannerBase-Z" + str(zmd.ind))
 
         # zone map data
@@ -22,7 +22,7 @@ class CoveragePathPlannerBase:
         self.resolution: float = zmd.resolution
 
         # cell
-        self.cell: CellBase = cell
+        self.cell: PCell = cell
 
         # resulted paths
         self.path_m: list[tuple[float, float]] = []   # path in meters

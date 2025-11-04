@@ -1,6 +1,6 @@
 from scripts.base.logger import MyLogger
 from scripts.base.configs import DistrictConfigs
-from scripts.segmentation.cell_base import CellBase
+from scripts.segmentation.cell_processed import PCell
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.coverage_pp_base import CoveragePathPlannerBase
 
@@ -13,12 +13,12 @@ class CoveragePathPlanHandler:
         self.zmd: ZoneMapData = zone_map_data
 
         # input cells from segmentation
-        self.cells: list[CellBase] = []
+        self.cells: list[PCell] = []
 
         # list of cell coverage planners for cells (loaded in the main planner)
         self.all_cell_covp_planners: list[CoveragePathPlannerBase] = []
 
-    def plan(self, cells: list[CellBase]):
+    def plan(self, cells: list[PCell]):
         """Run coverage path planning."""
 
         self.cells = cells
@@ -45,7 +45,7 @@ class CoveragePathPlanHandler:
             raise ValueError(f"Unknown coverage path planning method: {covpp_method}. ")
 
         #
-        cell: CellBase
+        cell: PCell
         for cell in self.cells:
             cell_covp_planner = CoveragePathPlanner(cell=cell, zmd=self.zmd)
             self.all_cell_covp_planners.append(cell_covp_planner)
@@ -60,8 +60,8 @@ class CoveragePathPlanHandler:
     #     """ apply coverage path planning for all cells in the zone """
     #     self.lg.info2("start coverage path planning for cells")
 
-    #     cell: CellBase
-    #     adj_cell: CellBase
+    #     cell: PCell
+    #     adj_cell: PCell
     #     for cell in self.cells:
     #         cell_covp_planner = CellCoveragePathPlanner(cell=cell, z)
     #         self.all_cell_covp_planners.append(cell_covp_planner)

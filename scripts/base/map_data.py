@@ -1,6 +1,6 @@
 """ MapData data classes """
-import numpy as np
 import cv2 as cv
+import numpy as np
 from scripts.base.logger import MyLogger
 from scripts.base.configs import BConfigs
 

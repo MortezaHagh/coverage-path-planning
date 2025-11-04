@@ -1,11 +1,12 @@
-import matplotlib.pyplot as plt
 import numpy as np
-m = 2
-if m == 0:
+import matplotlib.pyplot as plt
+
+M = 2
+if M == 0:
     from tsp_0 import solve_tsp
-elif m == 1:
+elif M == 1:
     from tsp_1_1 import solve_tsp
-# elif m == 2:
+# elif M == 2:
 else:
     from tsp_1_2 import solve_tsp
 

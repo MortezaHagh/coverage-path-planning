@@ -1,7 +1,7 @@
 import numpy as np
 from shapely import Polygon
 from matplotlib import pyplot as plt
-from scipy.spatial import Voronoi
+from scipy.spatial import Voronoi  # pylint: disable=no-name-in-module
 from scripts.base.logger import MyLogger
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
@@ -12,7 +12,7 @@ from scripts.segmentation.voronoi_decomposition.voronoi_decomposition import Vor
 
 
 class Segmentation(SegmentationBase):
-    """ voronoi decomposition method. """
+    """ Voronoi segmentation handler."""
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
         super().__init__(zmd, map_polygons)

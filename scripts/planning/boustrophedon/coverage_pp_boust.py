@@ -83,7 +83,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.origin = np.array(self.map_polygons.b_poly.centroid.coords)[0]
 
         # rotate all polygons to align with cell free angle
-        self.map_polygons.rotate_all_polygons(-self.cell.free_angle, self.origin)
+        self.map_polygons.rotate_all_polygons(-self.cell.major_direction, self.origin)
 
     def decompose(self) -> None:
         """ Decompose the cell area into boustrophedon cells. """
@@ -107,7 +107,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             self.lg.error("No cells to plan coverage path.")
             raise ValueError("No cells to plan coverage path.")
 
-        for i, cell in enumerate(self.mcells):
+        for cell in self.mcells:
 
             if not cell.poly.is_valid:
                 cell.do_planning = False
@@ -141,7 +141,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         for cell in self.mcells:
             if cell.path_px:
                 # rotate back to original orientation
-                rot_path = self.rotate_path(cell.path_px, self.cell.free_angle, np.array([0, 0]))
+                rot_path = self.rotate_path(cell.path_px, self.cell.major_direction, np.array([0, 0]))
                 # translate back to original position
                 rot_path = MyPath([MyPoint(int(p.x + self.origin[0]), int(p.y + self.origin[1])) for p in rot_path.points])
                 cell.set_path_px(rot_path)
@@ -174,7 +174,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
     #     """ Rotate back all the cells to original orientation. """
     #     new_cells = []
     #     for cell in self.mcells:
-    #         rot_poly = self.map_polygons.rotate_polygon(cell.poly, self.cell.free_angle, origin_t=np.array([0, 0]))
+    #         rot_poly = self.map_polygons.rotate_polygon(cell.poly, self.cell.major_direction, origin_t=np.array([0, 0]))
     #         rot_poly = affinity.translate(rot_poly, xoff=self.origin[0], yoff=self.origin[1])
     #         new_cell = Cell(ind=cell.id, poly=rot_poly, event=None)
     #         new_cells.append(new_cell)

@@ -1,10 +1,10 @@
 import heapq
 import numpy as np
-from scripts.segmentation.cell_base import CellBase
+from scripts.segmentation.cell_processed import PCell
 
 
 class CellsGraph:
-    def __init__(self, cells: list[CellBase]):
+    def __init__(self, cells: list[PCell]):
         self.cells = cells
         self.n_cells = len(cells)
         self.dists_m = None

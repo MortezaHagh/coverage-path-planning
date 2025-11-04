@@ -1,13 +1,14 @@
-# Intro
+# CovPP
 
+## Intro
 
-# Paper
+## Paper
 
 1. pipeline
-2. decomposition - Voronoi + rectangle evaluation 
+2. decomposition - Voronoi + rectangle evaluation
 
+## todo
 
-# todo
 - statistics and path analyzer class
 
 - add selectino of start and end points to the MILP
@@ -25,13 +26,11 @@
 - two classes, merged cells (for planning) and normal cells (with less functionalities and data)
 - better boustrophedon
 
+\*\* GA for selecting the critical points
 
-** GA for selecting the critical points
+## loggings
 
-
-# loggings
-
-```
+```python
 import logging
 
 - Configure logging
@@ -47,3 +46,5 @@ logging.warning("Warning message")
 logging.error("Error message")
 logging.critical("Critical message")
 ```
+
+## todo now

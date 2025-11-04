@@ -2,9 +2,9 @@
 import numpy as np
 from shapely.geometry import Polygon, Point, LineString
 from scripts.base.logger import MyLogger
-from scripts.planning.boustrophedon.cell import Cell
 from scripts.base.configs import PlanningConfigs
 from scripts.base.my_utils import MyPoint, MyPath
+from scripts.planning.boustrophedon.cell import Cell
 
 
 class CellCoveragePathPlanner:

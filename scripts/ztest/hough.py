@@ -22,10 +22,10 @@ if lines is not None:
 
 # Compute dominant wall orientation
 dominant_angle = np.median(angles)   # robust estimate
-free_angle = (dominant_angle + np.pi/2) % np.pi
+major_direction = (dominant_angle + np.pi/2) % np.pi
 
 print("Dominant wall angle (deg):", np.degrees(dominant_angle))
-print("Main free-space direction (deg):", np.degrees(free_angle))
+print("Main free-space direction (deg):", np.degrees(major_direction))
 
 # --- Visualization ---
 # Convert grayscale map to BGR for drawing
@@ -36,8 +36,8 @@ h, w = bw.shape
 center = (w//2, h//2)
 length = min(w, h) // 3  # arrow length
 
-dx = int(length * np.cos(free_angle))
-dy = int(length * np.sin(free_angle))
+dx = int(length * np.cos(major_direction))
+dy = int(length * np.sin(major_direction))
 
 cv2.arrowedLine(vis, center, (center[0] + dx, center[1] + dy), (0, 0, 255), 3, tipLength=0.2)
 

@@ -1,7 +1,7 @@
+from scripts.gui.visuals import Rectangle
 from scripts.base.logger import MyLogger
 from scripts.base.map_data import MapData
 from scripts.base.configs import DistrictConfigs
-from scripts.gui.visuals import Rectangle
 
 
 class DistrictGen:
