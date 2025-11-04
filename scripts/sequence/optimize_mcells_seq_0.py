@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp
 from scripts.base.logger import MyLogger
-from scripts.base.configs import DistrictConfigs
+from scripts.base.configs import PipeLineConfig
 from scripts.sequence.cells_graph_0 import CellsGraph
 from scripts.planning.boustrophedon.cell import Cell
 
@@ -12,7 +12,7 @@ from scripts.planning.boustrophedon.cell import Cell
 class OptimCellsSeq:
     def __init__(self, mcells: list[Cell]):
         self.lg = MyLogger("OptimCellsSeq")
-        dcfgs = DistrictConfigs()
+        dcfgs = PipeLineConfig()
         self.lg.info1("Step: creating optimized cell sequence")
 
         # cell graph

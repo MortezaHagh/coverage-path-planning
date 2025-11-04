@@ -2,7 +2,7 @@
 import math
 from shapely import Polygon
 from scripts.base.logger import MyLogger
-from scripts.base.configs import PlanningConfigs
+from scripts.base.configs import PlanningConfig
 from scripts.planning.boustrophedon.events import Event
 from scripts.planning.boustrophedon.obstacles import Obstacle
 from scripts.planning.boustrophedon.cell import Cell, CellGroup
@@ -18,7 +18,7 @@ class CellDecomposition:
         #
         self.result_path: str = result_path
         self.resolution: float = resolution
-        self.bcfgs = PlanningConfigs()
+        self.bcfgs = PlanningConfig()
         #
         self.b_poly: Polygon = None
         self.b_obstacle: Obstacle = None
@@ -270,6 +270,9 @@ class CellDecomposition:
         # down
         elif base_e.etype1_updown == 'down' and hit_down_event:
             trap_down = [base_e.xy, base_e.end_down_ed_xy, hit_down_event.end_up_ed_xy, (base_e.xy[0], hit_down_y)]
+        else:
+            self.lg.warn("[create_trapezoid]: Invalid trapezoid creation conditions.")
+            raise ValueError
 
         # add cell number - update endpoints
         dn = 0

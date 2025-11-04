@@ -6,7 +6,7 @@ import yaml
 import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
-from scripts.base.configs import BConfigs
+from scripts.base.configs import MapConfigs
 
 
 class InputsProcessor:
@@ -17,7 +17,7 @@ class InputsProcessor:
         self.lg = MyLogger("InputsProcessor")
         #
         self.map_name: str = map_name
-        self.__configs: BConfigs = BConfigs()
+        self.__configs: MapConfigs = MapConfigs()
         self.__orig_map: np.ndarray = None
         self.paths: dict = {}
         self.paths["data"] = "./Data"
@@ -44,7 +44,7 @@ class InputsProcessor:
         # self.visualize_map(map_arr)
 
     @property
-    def configs(self) -> BConfigs:
+    def configs(self) -> MapConfigs:
         return copy.deepcopy(self.__configs)
 
     @property

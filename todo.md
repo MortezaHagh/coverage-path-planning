@@ -35,4 +35,8 @@
 
 ## todo now
 
-Add
+- comments
+- sequence opt methods
+- new boustraphedon
+- new planning method
+- paper draft (pipeline, my boustraphedon)

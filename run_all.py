@@ -1,4 +1,4 @@
-from scripts.base.configs import DistrictConfigs
+from scripts.base.configs import PipeLineConfig
 
 
 map_names = [
@@ -13,7 +13,7 @@ map_names = [
 if __name__ == "__main__":
 
     covpp_method = ["boust", "contour"]
-    dcfgs = DistrictConfigs()
+    dcfgs = PipeLineConfig()
 
     # run for all maps
     for map_name in map_names:

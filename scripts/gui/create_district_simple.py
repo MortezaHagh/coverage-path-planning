@@ -1,7 +1,7 @@
 from scripts.gui.visuals import Rectangle
 from scripts.base.logger import MyLogger
 from scripts.base.map_data import MapData
-from scripts.base.configs import DistrictConfigs
+from scripts.base.configs import PipeLineConfig
 
 
 class DistrictGen:
@@ -14,7 +14,7 @@ class DistrictGen:
 
         #
         self.__md: MapData = map_data
-        self.__cfg: DistrictConfigs = DistrictConfigs()
+        self.__cfg: PipeLineConfig = PipeLineConfig()
 
         #
         if self.__cfg.whole_map:

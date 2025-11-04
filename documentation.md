@@ -106,10 +106,10 @@ Core utilities and data structures used throughout the pipeline.
 
 Configuration classes for different pipeline stages:
 
-- **BConfigs**: Base configuration (robot parameters, resolution)
-- **DistrictConfigs**: District settings (method selection, saving options)
-- **PlanningConfigs**: Path planning parameters
-- **SpaceConfigs**: Space analysis settings
+- **MapConfigs**: Base configuration (robot parameters, resolution)
+- **PipeLineConfig**: District settings (method selection, saving options)
+- **PlanningConfig**: Path planning parameters
+- **SpaceConfig**: Space analysis settings
 
 #### **MyUtils** (my_utils.py)
 
@@ -470,7 +470,7 @@ main.py
 
 ## Configuration Options
 
-### Method Selection (DistrictConfigs)
+### Method Selection (PipeLineConfig)
 
 - **Segmentation Methods**:
 
@@ -486,13 +486,13 @@ main.py
   - Various TSP solvers
   - Graph-based optimization
 
-### Robot Parameters (BConfigs)
+### Robot Parameters (MapConfigs)
 
 - `robot_radius`: Robot radius in meters
 - `tool_radius`: Coverage tool radius
 - `resolution`: Map resolution (m/pixel)
 
-### Planning Parameters (PlanningConfigs)
+### Planning Parameters (PlanningConfig)
 
 - `min_wp_dist`: Minimum waypoint distance
 - `path_simplification`: Path smoothing options
@@ -590,7 +590,7 @@ All method selection is controlled through configuration files:
 
 ```python
 # In configs.py
-class DistrictConfigs:
+class PipeLineConfig:
     segmentation_method: str = "voronoi"  # or "simple", "custom"
     covpp_method: str = "boust"           # or "contour", "custom"
     sequence_method: str = "tsp"          # or "greedy", "custom"

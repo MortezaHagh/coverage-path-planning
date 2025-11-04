@@ -8,7 +8,7 @@ from scipy.spatial import Voronoi, voronoi_plot_2d  # pylint: disable=no-name-in
 from scripts.base.logger import MyLogger
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.map_polygons import MapPolygons
-from scripts.base.configs import PlanningConfigs, DistrictConfigs
+from scripts.base.configs import PlanningConfig, PipeLineConfig
 from scripts.segmentation.voronoi_decomposition.common import VPoint, CriticalPoint
 
 
@@ -22,8 +22,8 @@ class VoronoiDecomposition:
         self.lg.info1("Step: Voronoi decomposition.")
 
         # settings
-        self.pcfgs: PlanningConfigs = PlanningConfigs()
-        self.dcfgs: DistrictConfigs = DistrictConfigs()
+        self.pcfgs: PlanningConfig = PlanningConfig()
+        self.dcfgs: PipeLineConfig = PipeLineConfig()
         # self.adj_dist_lb: float = 50.0            # distance threshold for adjacent Voronoi vertices
         self.fixed_min_n_adj: int = 8               # fixed minimum number of adjacent Voronoi vertices
         self.fixed_max_n_adj: int = 15              # maximum number of adjacent Voronoi vertices

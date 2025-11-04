@@ -5,14 +5,7 @@ import dataclasses
 
 
 @dataclasses.dataclass
-class RobotConfigs:
-    radius = 0.5
-    v_lin_avg = 0.4
-    v_ang_avg = 0.6
-
-
-@dataclasses.dataclass
-class BConfigs:
+class MapConfigs:
     # map configs
     origin_m = None
     resolution = None
@@ -28,7 +21,14 @@ class BConfigs:
 
 
 @dataclasses.dataclass
-class DistrictConfigs:
+class RobotConfig:
+    radius = 0.5
+    v_lin_avg = 0.4
+    v_ang_avg = 0.6
+
+
+@dataclasses.dataclass
+class PipeLineConfig:
     # Main configs
     whole_map = True  # False True
     method = ""
@@ -71,7 +71,7 @@ class DistrictConfigs:
 
 
 @dataclasses.dataclass
-class SpaceConfigs:
+class SpaceConfig:
     select_free_space = False  # select free space from image
     # robot configs
     robot_radius = 0.5  # 0.5
@@ -97,8 +97,8 @@ class SpaceConfigs:
 
 
 @dataclasses.dataclass
-class PlanningConfigs:
-    spa = SpaceConfigs()
+class PlanningConfig:
+    spa = SpaceConfig()
     animation = False  # True False
     cleaning_r = spa.cleaning_r
     min_path_overlap = 0.0
@@ -108,7 +108,7 @@ class PlanningConfigs:
 
 
 if __name__ == "__main__":
-    s_cfgs = SpaceConfigs()
+    s_cfgs = SpaceConfig()
     print("ws_r_dist", s_cfgs.ws_r_dist)
     print("cleaning_dist", s_cfgs.uncleaned_dist)
     print("cleaning_r", s_cfgs.cleaning_r)

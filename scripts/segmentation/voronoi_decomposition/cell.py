@@ -1,7 +1,7 @@
 import numpy as np
 from shapely import Polygon
 from scripts.base.logger import MyLogger
-from scripts.base.configs import PlanningConfigs
+from scripts.base.configs import PlanningConfig
 from scripts.segmentation.cell_base import CellBase
 from scripts.segmentation.voronoi_decomposition.common import Ring  # , CriticalPoint
 
@@ -23,7 +23,7 @@ class Cell (CellBase):
         # settings
         if resolution is None:
             raise ValueError("Resolution must be provided for the cell.")
-        self.robot_r_px = int(PlanningConfigs.cleaning_r_ov / resolution)
+        self.robot_r_px = int(PlanningConfig.cleaning_r_ov / resolution)
 
         #
         self.basic: bool = False                # if no critical points, then basic cell

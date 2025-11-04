@@ -4,7 +4,7 @@ import numpy as np
 from scripts.base.logger import MyLogger
 from scripts.base.map_data import MapData
 from scripts.gui.visuals import Rectangle
-from scripts.base.configs import SpaceConfigs
+from scripts.base.configs import SpaceConfig
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.spa.spa_utils import find_circumscribed_rectangle  # , find_inscribed_rotated_rectangle
 # from scripts.spa.inscribed_rectangle_histogram import find_inscribed_rotated_rectangle
@@ -27,7 +27,7 @@ class SpaceAnalyzer:
         self.lg.info1("Step: Analyzing space for creating free space [local map]")
 
         # configs
-        self.scfg: SpaceConfigs = SpaceConfigs()
+        self.scfg: SpaceConfig = SpaceConfig()
         self.space_type: str = "District"  # District, Zone
         self.simple: bool = True
         self.plot_main: bool = True

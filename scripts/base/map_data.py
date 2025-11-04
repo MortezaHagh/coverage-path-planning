@@ -2,7 +2,7 @@
 import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
-from scripts.base.configs import BConfigs
+from scripts.base.configs import MapConfigs
 
 
 class MapData:
@@ -11,7 +11,7 @@ class MapData:
     def __init__(self):
         self.lg = MyLogger("MapData")
         #
-        self.bcfg: BConfigs = None                      # base configs
+        self.bcfg: MapConfigs = None                      # base configs
         self.name: str = None                           # map name
         self.orig_h: int = None                         # original height
         self.orig_w: int = None                         # original width
@@ -39,7 +39,7 @@ class MapData:
         self.resolution: float = None                   # original resolution
         self.up_resolution: float = None                # updated resolution
 
-    def set_basic_configs(self, bcfg: BConfigs, name: str = None):
+    def set_basic_configs(self, bcfg: MapConfigs, name: str = None):
         if name:
             self.name = name
         self.bcfg = bcfg

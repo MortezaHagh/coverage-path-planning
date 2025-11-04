@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from scripts.base.configs import DistrictConfigs
+from scripts.base.configs import PipeLineConfig
 from scripts.planning.boustrophedon.cell import Cell, CellGroup
 
 
@@ -10,7 +10,7 @@ class BoustPlotter:
 
     def __init__(self, dec_obj):
         self.dec_obj = dec_obj
-        self.dcfgs = DistrictConfigs()
+        self.dcfgs = PipeLineConfig()
         self.result_path: str = dec_obj.result_path
         #
         self.viz_together = True

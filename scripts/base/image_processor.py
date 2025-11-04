@@ -3,21 +3,21 @@ import copy
 import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
-from scripts.base.configs import BConfigs
+from scripts.base.configs import MapConfigs
 from scripts.base.map_data import MapData
 
 
 class MapImageProcessor:
     """ process map pgm file and create MapData. """
 
-    def __init__(self, map_arr: np.ndarray, bconfigs: BConfigs):
+    def __init__(self, map_arr: np.ndarray, bconfigs: MapConfigs):
 
         # init
         self.lg = MyLogger("MapImageProcessor")
         self.lg.info1("Step: processing map image")
 
         # read configs and eval original map arr
-        self.__bcfg: BConfigs = bconfigs
+        self.__bcfg: MapConfigs = bconfigs
         self.__orig_map: np.ndarray = map_arr
         self.check_map(map_arr)
 

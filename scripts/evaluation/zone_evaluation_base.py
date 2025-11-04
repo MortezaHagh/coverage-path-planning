@@ -1,7 +1,7 @@
 import json
 from scripts.sequence.sequence import SequencePaths
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.base.configs import DistrictConfigs, PlanningConfigs, RobotConfigs
+from scripts.base.configs import PipeLineConfig, PlanningConfig, RobotConfig
 
 
 class ZoneStatsBase:
@@ -80,9 +80,9 @@ class ZoneEvaluationBase:
     def __init__(self, zmd: ZoneMapData, paths: SequencePaths):
         self.zmd: ZoneMapData = zmd
         self.paths: SequencePaths = paths
-        self.dcfgs = DistrictConfigs()
-        self.pcfgs = PlanningConfigs()
-        self.robot_cfgs = RobotConfigs()
+        self.dcfgs = PipeLineConfig()
+        self.pcfgs = PlanningConfig()
+        self.robot_cfgs = RobotConfig()
         # statistics
         self.stats: ZoneStatsBase = None
 

@@ -8,7 +8,7 @@ from shapely import maximum_inscribed_circle
 from scripts.base.logger import MyLogger
 from scripts.segmentation.cell_base import CellBase
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.base.configs import DistrictConfigs, PlanningConfigs
+from scripts.base.configs import PipeLineConfig, PlanningConfig
 # from shapely import maximum_inscribed_circle, minimum_bounding_circle
 
 
@@ -33,8 +33,8 @@ class PCell(CellBase):
         self.zmd: ZoneMapData = zmd
 
         # settings
-        self.robot_r_px = int(PlanningConfigs.cleaning_r_ov / zmd.resolution)
-        self.dcfgs = DistrictConfigs()
+        self.robot_r_px = int(PlanningConfig.cleaning_r_ov / zmd.resolution)
+        self.dcfgs = PipeLineConfig()
 
         # find rectangle-like properties
         if self.dcfgs.use_insc_ret:

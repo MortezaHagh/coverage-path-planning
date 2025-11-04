@@ -2,7 +2,7 @@
 import numpy as np
 from shapely.geometry import Polygon, Point, LineString
 from scripts.base.logger import MyLogger
-from scripts.base.configs import PlanningConfigs
+from scripts.base.configs import PlanningConfig
 from scripts.base.my_utils import MyPoint, MyPath
 from scripts.planning.boustrophedon.cell import Cell
 
@@ -22,7 +22,7 @@ class CellCoveragePathPlanner:
         self.xy_top: list[tuple[float, float]] = None
 
         # parameters and configurations
-        self.pcfgs = PlanningConfigs()
+        self.pcfgs = PlanningConfig()
         self.resolution: float = resolution
 
         #

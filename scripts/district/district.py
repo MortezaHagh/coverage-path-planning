@@ -4,7 +4,7 @@ import numpy as np
 from scripts.base.logger import MyLogger
 from scripts.gui.visuals import Rectangle
 from scripts.district.zone import ZoneData
-from scripts.base.configs import DistrictConfigs
+from scripts.base.configs import PipeLineConfig
 from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.evaluation.district_evaluation import DistrictEvaluationHandler, DistrictStatsBase
@@ -17,7 +17,7 @@ class DistrictData:
         self.lg.info1("Step: creating district data")
 
         # configs
-        self.dcfgs: DistrictConfigs = DistrictConfigs()
+        self.dcfgs: PipeLineConfig = PipeLineConfig()
 
         # space_analyzer object
         self.spa_obj: SpaceAnalyzer = spa

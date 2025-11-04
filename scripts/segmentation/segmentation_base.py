@@ -1,5 +1,5 @@
 from scripts.base.logger import MyLogger
-from scripts.base.configs import DistrictConfigs
+from scripts.base.configs import PipeLineConfig
 from scripts.segmentation.cell_base import CellBase
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
@@ -16,7 +16,7 @@ class SegmentationBase:
         self.zmd: ZoneMapData = zmd
 
         # configs
-        self.dcfgs: DistrictConfigs = DistrictConfigs()
+        self.dcfgs: PipeLineConfig = PipeLineConfig()
 
         # map polygons
         self.map_polygons: MapPolygons = map_polygons

@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from scripts.base.configs import DistrictConfigs
+from scripts.base.configs import PipeLineConfig
 from scripts.planning.boustrophedon.cell import Cell
 
 
@@ -8,7 +8,7 @@ class PlannerPlotter:
 
     def __init__(self, result_path: str):
         self.result_path = result_path
-        self.dcfgs = DistrictConfigs()
+        self.dcfgs = PipeLineConfig()
         #
         self.fig_mcells = None
         self.fig_mcells_seq = None

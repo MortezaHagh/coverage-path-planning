@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp
 from scripts.base.logger import MyLogger
-from scripts.base.configs import DistrictConfigs
+from scripts.base.configs import PipeLineConfig
 from scripts.segmentation.cell_processed import PCell
 
 
@@ -20,7 +20,7 @@ class OptimCellsSeq:
 
         # initialize
         self.cells: list[PCell] = cells
-        dcfgs = DistrictConfigs()
+        dcfgs = PipeLineConfig()
 
         # sequence results initialization
         self.tour_idxs: list[int] = []  # indices of cells in the optimized sequence

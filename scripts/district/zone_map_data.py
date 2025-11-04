@@ -5,7 +5,7 @@ import cv2 as cv
 import numpy as np
 from scripts.gui.visuals import Rectangle
 from scripts.base.map_data import MapData
-from scripts.base.configs import DistrictConfigs
+from scripts.base.configs import PipeLineConfig
 from scripts.base.my_utils import visualize_map_s
 
 
@@ -69,7 +69,7 @@ class ZoneMapData:
     def set_result_path(self):
         self.zone_path = os.path.join(self.orig_map_data.bcfg.district_dir, self.name)
         os.makedirs(self.zone_path, exist_ok=True)
-        dcfg = DistrictConfigs()
+        dcfg = PipeLineConfig()
         if self.name == 'District':
             self.result_file = self.zone_path + f"/result_{dcfg.method}.json"
         else:

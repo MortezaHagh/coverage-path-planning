@@ -1,5 +1,5 @@
 from scripts.base.logger import MyLogger
-from scripts.base.configs import DistrictConfigs
+from scripts.base.configs import PipeLineConfig
 from scripts.segmentation.cell_processed import PCell
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.coverage_pp_base import CoveragePathPlannerBase
@@ -32,7 +32,7 @@ class CoveragePathPlanHandler:
         self.lg.info2("start coverage path planning for cells")
 
         # coverage path planning method from configs
-        dcfg = DistrictConfigs()
+        dcfg = PipeLineConfig()
         covpp_method = dcfg.covpp_method
 
         # todo

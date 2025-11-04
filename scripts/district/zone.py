@@ -6,7 +6,7 @@ from scripts.base.logger import MyLogger
 from scripts.sequence.sequence import Sequence
 from scripts.segmentation.cell_processed import PCell
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.base.configs import DistrictConfigs, PlanningConfigs
+from scripts.base.configs import PipeLineConfig, PlanningConfig
 from scripts.segmentation.segmentation_handler import SegmentationHandler
 from scripts.planning.coverage_path_plan_handler import CoveragePathPlanHandler
 from scripts.evaluation.zone_evaluation_handler import ZoneEvaluationHandler
@@ -35,8 +35,8 @@ class ZoneData:
         self.zmd: ZoneMapData = zmd
 
         # # # configs
-        self.dcfg: DistrictConfigs = DistrictConfigs()
-        self.pcfgs: PlanningConfigs = PlanningConfigs()
+        self.dcfg: PipeLineConfig = PipeLineConfig()
+        self.pcfgs: PlanningConfig = PlanningConfig()
 
         # # # segmentation
         self.segmentation_handler: SegmentationHandler = SegmentationHandler(self.zmd)

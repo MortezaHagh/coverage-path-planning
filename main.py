@@ -1,11 +1,19 @@
-""" Main function to run the program. """
+""" Main function to run the coverage path planning pipeline.
+
+    Inputs:
+        map_name: str - Name of the map to be processed.
+    
+    Processes:
+        1. Process inputs (map.yaml and map.pgm) and configurations (base.configs.py).
+        2. Initial processing of the map image and creation of MapData object.
+"""
 import sys
 # import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
 from scripts.base.map_data import MapData
 from scripts.gui.visuals import Rectangle
-from scripts.base.configs import BConfigs, DistrictConfigs
+from scripts.base.configs import MapConfigs, PipeLineConfig
 from scripts.base.inputs_processor import InputsProcessor
 from scripts.base.image_processor import MapImageProcessor
 # from scripts.gui.create_district import DistrictGen
@@ -19,23 +27,23 @@ def run_pipeline(map_name: str) -> None:
     lg = MyLogger(ns)
     start_time = np.datetime64('now')
 
-    #  process inputs: configs and map
+    #  1. process inputs: configs and map (yaml and pgm)
     inp_processor = InputsProcessor(map_name)
     orig_map: np.ndarray = inp_processor.orig_map
-    b_configs: BConfigs = inp_processor.configs
+    b_configs: MapConfigs = inp_processor.configs
     print(" ============================================================================== ")
 
-    # Initial Process of the map image
+    # 2. Initial Process of the map image and create MapData object
     mp = MapImageProcessor(orig_map, b_configs)
     map_data: MapData = mp.mdata
     print(" ============================================================================== ")
 
-    # Select area in the map and create District rectangle
+    # 3. Select area of interest in the map and create District rectangle
     district_g = DistrictGen(map_data=map_data)
     district_rect: Rectangle = district_g.get_district_rect()
     print(" ============================================================================== ")
 
-    # Process Space - Initialize District Map Data
+    # 4. Process Space based on map and config (robot and workspace) - Initialize District MapData
     spa = SpaceAnalyzer(map_data=map_data, rectangle=district_rect)
     spa.create_local_map_ws_selection()
     print(" ============================================================================== ")
@@ -56,7 +64,7 @@ def run_pipeline(map_name: str) -> None:
     lg.info(f"Total time: {end_time - start_time}")
 
     #
-    lg.info1(f"Method: {DistrictConfigs().method}")
+    lg.info1(f"Method: {PipeLineConfig().method}")
 
     # # display map_planning
     # map_planning = district_data.dmd.map_planning

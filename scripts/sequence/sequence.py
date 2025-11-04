@@ -13,7 +13,7 @@ from scripts.district.zone_map_data import ZoneMapData
 from scripts.sequence.connect_paths import ConnectPaths
 from scripts.planning.planning_plotter import PlannerPlotter
 from scripts.sequence.optimize_mcells_seq_1 import OptimCellsSeq
-from scripts.base.configs import DistrictConfigs, PlanningConfigs
+from scripts.base.configs import PipeLineConfig, PlanningConfig
 
 
 class SequencePaths:
@@ -43,8 +43,8 @@ class Sequence:
         self.n_cells: int = 0
 
         # configurations
-        self.pcfgs: PlanningConfigs = PlanningConfigs()
-        self.dcfgs: DistrictConfigs = DistrictConfigs()
+        self.pcfgs: PlanningConfig = PlanningConfig()
+        self.dcfgs: PipeLineConfig = PipeLineConfig()
         self.colors: list[tuple] = []
 
         # params

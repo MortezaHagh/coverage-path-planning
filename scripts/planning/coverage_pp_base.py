@@ -4,7 +4,7 @@ from scripts.base.logger import MyLogger
 from scripts.base.my_utils import MyPoint, MyPath
 from scripts.segmentation.cell_processed import PCell
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.base.configs import PlanningConfigs, DistrictConfigs
+from scripts.base.configs import PlanningConfig, PipeLineConfig
 
 
 class CoveragePathPlannerBase:
@@ -17,8 +17,8 @@ class CoveragePathPlannerBase:
         self.zmd: ZoneMapData = zmd
 
         # configurations
-        self.dcfgs = DistrictConfigs()
-        self.pcfgs = PlanningConfigs()
+        self.dcfgs = PipeLineConfig()
+        self.pcfgs = PlanningConfig()
         self.resolution: float = zmd.resolution
 
         # cell
