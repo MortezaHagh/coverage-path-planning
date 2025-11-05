@@ -81,14 +81,14 @@ Core utilities and data structures used throughout the pipeline.
 - **Key Methods**:
   - `__init__(map_name)`: Load map and configs
   - `set_paths()`: Define file paths
-  - `load_data()`: Read YAML configuration
-  - `set_configs()`: Initialize configuration objects
+  - `load_yaml_file()`: Read YAML configuration
+  - `update_map_configs()`: Update MapConfig object
 
 #### **MapImageProcessor**
 
 - **Purpose**: Process raw map images
 - **Key Methods**:
-  - `__init__(map_arr, bconfigs)`: Initialize with map and configs
+  - `__init__(map_arr, map_config)`: Initialize with map array and MapConfig
   - `process_map()`: Apply morphological operations
   - `set_map_data()`: Create MapData object
   - `complete_map_data()`: Add metadata
@@ -106,10 +106,10 @@ Core utilities and data structures used throughout the pipeline.
 
 Configuration classes for different pipeline stages:
 
-- **MapConfig**: Base configuration (robot parameters, resolution)
-- **PipeLineConfig**: District settings (method selection, saving options)
-- **PlanningConfig**: Path planning parameters
-- **SpaceConfig**: Space analysis settings
+- **MapConfig**: Map-specific configuration (resolution, directories, paths)
+- **PipeLineConfig**: Main pipeline settings (method selection, plotting options)
+- **PlanningConfig**: Path planning parameters (robot dimensions, coverage settings)
+- **SpaceConfig**: Space analysis settings (morphological operations, filtering)
 
 #### **MyUtils** (my_utils.py)
 
@@ -134,14 +134,15 @@ Custom logging with colored output:
 
 Interactive tools for district selection and visualization.
 
-#### **DistrictGen**
+#### **DistrictGen** (create_district_simple.py)
 
 - **Purpose**: Create district rectangle
 - **Key Methods**:
   - `__init__(map_data)`: Initialize with map data
   - `get_district_rect()`: Generate Rectangle object for district
+- **Note**: An interactive version exists in create_district.py
 
-#### **Rectangle** (visuals.py)
+#### **Rectangle** (rectangle.py)
 
 - **Purpose**: Represent rectangular regions
 - **Attributes**:
@@ -163,6 +164,7 @@ Analyzes workspace and creates feasible position maps.
   - `__init__(map_data, rectangle)`: Initialize with map and district
   - `create_local_map_ws_selection()`: Generate local workspace map
   - `update_by_rectangle()`: Update for zone-specific analysis
+  - `create_zone_map_data()`: Create ZoneMapData object
 - **Key Attributes**:
   - `zone_map_data`: Processed zone/district data
   - `vertices`: Boundary vertices
@@ -195,12 +197,12 @@ Manages district and zone-level operations.
   - `zone_datas`: List of ZoneData objects
   - `stats`: District-level statistics
 
-#### **ZoneData**
+#### **ZoneData** (zone.py)
 
 - **Purpose**: Manage individual zone operations
 - **Key Methods**:
   - `__init__(ind, zmd)`: Initialize zone with index and map data
-  - `coverage_planning()`: Run full planning pipeline for zone
+  - `zone_planning_pipeline()`: Run full planning pipeline for zone
   - `post_planning()`: Update maps and statistics
 - **Key Attributes**:
   - `zmd`: Zone map data
@@ -368,12 +370,13 @@ Optimizes cell visit order and connects paths.
   - `connect(start, end)`: Create connection path
   - Uses pathfinding algorithms (A\*, Dijkstra)
 
-#### **OptimizeCellsSeq** (optimize_mcells_seq_1.py)
+#### **OptimizeCellsSeq** (optimize_cells_seq_1.py)
 
 - **Purpose**: Optimize cell visit sequence
 - **Methods**:
-  - Traveling Salesman Problem (TSP) solvers
-  - Graph-based optimization
+  - Simple sequential ordering
+  - Depth-first search (DFS)
+  - MILP-based optimization
 
 #### **SequencePaths** (sequence.py)
 
@@ -483,8 +486,9 @@ main.py
   - `contour`: Contour-following
 
 - **Sequence Optimization Methods**:
-  - Various TSP solvers
-  - Graph-based optimization
+  - `simple`: Sequential ordering
+  - `dfs`: Depth-first search
+  - `milp`: Mixed-integer linear programming
 
 ### Robot Parameters (MapConfig)
 
@@ -593,7 +597,7 @@ All method selection is controlled through configuration files:
 class PipeLineConfig:
     segmentation_method: str = "voronoi"  # or "simple", "custom"
     covpp_method: str = "boust"           # or "contour", "custom"
-    sequence_method: str = "tsp"          # or "greedy", "custom"
+    sequence_method: str = "simple"       # or "dfs", "milp", "custom"
 ```
 
 This allows:
@@ -745,7 +749,7 @@ class OptimizeCellsSeq:
 
 ```python
 # In scripts/sequence/sequence.py
-if self.dcfgs.sequence_method == "my_method":
+if self.plcfgs.sequence_method == "my_method":
     from scripts.sequence.optimize_my_method import OptimizeCellsSeq
     optimizer = OptimizeCellsSeq(self.cells, ...)
     self.seq_idxs = optimizer.optimize()
@@ -855,7 +859,7 @@ Each stage:
 - **OpenCV (cv2)**: Image processing
 - **Matplotlib**: Visualization
 - **Shapely**: Geometric operations
-- **OR-Tools**: Optimization (TSP)
+- **OR-Tools**: Optimization (MILP for sequencing)
 - **PyYAML**: Configuration loading
 - **Colorama**: Colored logging
 
