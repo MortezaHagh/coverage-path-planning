@@ -1,28 +1,27 @@
-""" Main function to run the coverage path planning pipeline.
 
-    Inputs:
-        map_name: str - Name of the map to be processed.
-    
-    Processes:
-        1. Process inputs (map.yaml and map.pgm) and configurations (base.configs.py).
-        2. Initial processing of the map image and creation of MapData object.
-"""
+""" Main module to run the coverage path planning pipeline. """
 import sys
 # import cv2 as cv
 import numpy as np
+from scripts.gui.rectangle import Rectangle
 from scripts.base.logger import MyLogger
 from scripts.base.map_data import MapData
-from scripts.gui.visuals import Rectangle
-from scripts.base.configs import MapConfigs, PipeLineConfig
+from scripts.base.configs import MapConfig, PipeLineConfig
 from scripts.base.inputs_processor import InputsProcessor
 from scripts.base.image_processor import MapImageProcessor
-# from scripts.gui.create_district import DistrictGen
-from scripts.gui.create_district_simple import DistrictGen
-from scripts.spa.space_analyzer import SpaceAnalyzer
 from scripts.district.district import DistrictData
+from scripts.district.create_district_simple import DistrictGen
+# from scripts.district.create_district import DistrictGen
+from scripts.spa.space_analyzer import SpaceAnalyzer
 
 
 def run_pipeline(map_name: str) -> None:
+    """
+    Main function to run the coverage path planning pipeline.
+    Inputs:
+        map_name: str - Name of the map to be processed.
+    """
+
     ns = "PipeLine"
     lg = MyLogger(ns)
     start_time = np.datetime64('now')
@@ -30,12 +29,12 @@ def run_pipeline(map_name: str) -> None:
     #  1. process inputs: configs and map (yaml and pgm)
     inp_processor = InputsProcessor(map_name)
     orig_map: np.ndarray = inp_processor.orig_map
-    b_configs: MapConfigs = inp_processor.configs
+    map_config: MapConfig = inp_processor.map_config
     print(" ============================================================================== ")
 
     # 2. Initial Process of the map image and create MapData object
-    mp = MapImageProcessor(orig_map, b_configs)
-    map_data: MapData = mp.mdata
+    mp = MapImageProcessor(map_arr=orig_map, map_config=map_config)
+    map_data: MapData = mp.map_data
     print(" ============================================================================== ")
 
     # 3. Select area of interest in the map and create District rectangle
@@ -43,27 +42,27 @@ def run_pipeline(map_name: str) -> None:
     district_rect: Rectangle = district_g.get_district_rect()
     print(" ============================================================================== ")
 
-    # 4. Process Space based on map and config (robot and workspace) - Initialize District MapData
+    # 4. Process Space based on map and configs (robot and workspace) - Initialize District MapData
     spa = SpaceAnalyzer(map_data=map_data, rectangle=district_rect)
     spa.create_local_map_ws_selection()
     print(" ============================================================================== ")
 
-    # Create District Data and district Zone Map Data
+    # 5. Create DistrictData and district ZoneMapData
     district_data = DistrictData(spa)
 
-    # create zones and map_planning for zones
+    # 6. create zones in the district
     district_data.create_zones_hl()
     print(" ============================================================================== ")
 
-    # planning sequentially for all zones
+    # 7. run main coverage path planning operations sequentially for all zones
     district_data.run_coverage_planning()
     print(" ============================================================================== ")
 
-    #
+    # Log execution time
     end_time = np.datetime64('now')
     lg.info(f"Total time: {end_time - start_time}")
 
-    #
+    # Log pipeline method
     lg.info1(f"Method: {PipeLineConfig().method}")
 
     # # display map_planning

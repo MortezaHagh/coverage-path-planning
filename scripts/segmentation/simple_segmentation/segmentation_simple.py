@@ -1,3 +1,4 @@
+""" Simple Segmentation Method."""
 from scripts.base.logger import MyLogger
 from scripts.segmentation.cell_base import CellBase
 from scripts.planning.map_polygons import MapPolygons
@@ -6,7 +7,10 @@ from scripts.segmentation.segmentation_base import SegmentationBase
 
 
 class Segmentation(SegmentationBase):
-    """Interface for Simple segmentation method. """
+    """
+    Interface for Simple segmentation method.
+    Creates one cell for the whole zone area.
+    """
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
         super().__init__(zmd, map_polygons)

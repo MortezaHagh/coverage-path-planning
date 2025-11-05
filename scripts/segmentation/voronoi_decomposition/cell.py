@@ -1,3 +1,4 @@
+""" Cell class for voronoi-based decomposition. """
 import numpy as np
 from shapely import Polygon
 from scripts.base.logger import MyLogger
@@ -9,25 +10,28 @@ from scripts.segmentation.voronoi_decomposition.common import Ring  # , Critical
 class Cell (CellBase):
     """ Cell for voronoi-based decomposition.
 
-    Includes:
-        rings (closed loops) containing critical points.
+    Processes:
+        Find the minimum clearance of the cell based on critical points.
+        Process the cell:
+        - Removing points that are too close to critical points.
+
+    Inputs:
+        Rings (closed loops) containing critical points.
     """
 
     def __init__(self, ind: int, ring: Ring, resolution: float = None) -> None:
         super().__init__(ind, ring.poly)
         self.lg = MyLogger(f"Cell-{self.id}")
 
-        # ring
+        # attributes
         self.ring: Ring = ring                  # rings (closed loops) containing critical points
+        self.basic: bool = False                # if no critical points, then basic cell
+        self.min_clearance: float = 0.0         # minimum clearance of the cell based on critical points
 
         # settings
         if resolution is None:
             raise ValueError("Resolution must be provided for the cell.")
         self.robot_r_px = int(PlanningConfig.cleaning_r_ov / resolution)
-
-        #
-        self.basic: bool = False                # if no critical points, then basic cell
-        self.min_clearance: float = 0.0         # minimum clearance of the cell based on critical points
 
         # find the minimum clearance of the cell
         self.find_min_clearance()
@@ -43,11 +47,9 @@ class Cell (CellBase):
         self.min_clearance = min(clearances)
 
     def process_cell(self) -> None:
-        """ main function to process the cell.
-        1- modify the cell by removing points that are too close to critical points.
+        """ Main function to process the cell.
+        1- Modify the cell by removing points that are too close to critical points.
         """
-
-        # modify the cell by removing points that are too close to critical points
         self.modify_cell()
 
     def modify_cell(self) -> None:

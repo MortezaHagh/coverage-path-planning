@@ -1,3 +1,4 @@
+""" Base class for Segmentation."""
 from scripts.base.logger import MyLogger
 from scripts.base.configs import PipeLineConfig
 from scripts.segmentation.cell_base import CellBase
@@ -15,11 +16,11 @@ class SegmentationBase:
         # zone map data
         self.zmd: ZoneMapData = zmd
 
-        # configs
-        self.dcfgs: PipeLineConfig = PipeLineConfig()
-
         # map polygons
         self.map_polygons: MapPolygons = map_polygons
+
+        # configs
+        self.dcfgs: PipeLineConfig = PipeLineConfig()
 
         # cells
         self.cells: list[CellBase] = []

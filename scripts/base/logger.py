@@ -1,8 +1,16 @@
+""" Custom Logger with Colored Output. """
 # import logging
 from colorama import Fore, Style
 
 
 class MyLogger:
+    """
+    Simple logger class with colored output.
+
+    Methods:
+        info1, info2, info3, info, debug, warn, error.
+    """
+
     def __init__(self, name="mh"):
         self.name: str = name
 

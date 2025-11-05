@@ -1,3 +1,4 @@
+""" Find the largest inscribed rectangle in a binary map using histogram method. """
 import cv2 as cv
 import numpy as np
 FREE_COST = 255

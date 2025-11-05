@@ -1,29 +1,27 @@
-from scripts.gui.visuals import Rectangle
+""" Create district for coverage path planning. Simple version: select whole map as district. """
+from scripts.gui.rectangle import Rectangle
 from scripts.base.logger import MyLogger
 from scripts.base.map_data import MapData
 from scripts.base.configs import PipeLineConfig
 
 
 class DistrictGen:
+    """ Create district for coverage path planning. Simple version: select whole map as district. """
 
     def __init__(self, map_data: MapData):
-        #
-        self.__ns: str = "DistrictEvent"
-        self.lg = MyLogger(self.__ns)
-        self.lg.info1("Step: creating district for CovPP")
+        self.lg = MyLogger("DistrictEvent")
+        self.lg.info1("Step: creating district for CovPP based on simple method (whole map)")
 
-        #
+        # attributes
         self.__md: MapData = map_data
         self.__cfg: PipeLineConfig = PipeLineConfig()
 
-        #
-        if self.__cfg.whole_map:
-            self.lg.info2("whole map is selected as district for CPP!")
-        else:
+        # Check if whole map is selected
+        if not self.__cfg.whole_map:
             raise ValueError("DistrictGen is not implemented for non-whole map configurations.")
 
     def get_district_rect(self) -> Rectangle:
-        # create district based on map data
+        """ Get district rectangle based on map data."""
         rot = 0
         xc = self.__md.up_c_w
         yc = self.__md.up_c_h

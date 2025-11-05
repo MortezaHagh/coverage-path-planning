@@ -1,3 +1,4 @@
+""" Processed Cell Class for Segmentation and Coverage Path Planning."""
 import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,28 +14,32 @@ from scripts.base.configs import PipeLineConfig, PlanningConfig
 
 
 class PCell(CellBase):
-    """Processed cell class for segmentation and coverage path planning.
-    add features for rectangle-like and inscribed rectangle-like evaluation.
+    """
+    Processed cell class for segmentation and coverage path planning.
+    Add features for rectangle-like and inscribed rectangle-like evaluation.
     """
 
     def __init__(self, cell: CellBase, zmd: ZoneMapData) -> None:
         super().__init__(cell.id, cell.poly)
         self.lg = MyLogger(f"PCell-{self.id}")
-        #
+
+        # zone map data
+        self.zmd: ZoneMapData = zmd
+
+        # rectangle-like properties
         self.rect_like: bool = False              # whether the cell is rectangle-like or inscribed rectangle-like
-        self.rect_circ_like: bool = False         # whether the cell is rectangle-like based on circumscribed rectangle.
+        self.rect_circum_like: bool = False         # whether the cell is rectangle-like based on circumscribed rectangle.
         self.rect_insc_like: bool = False         # whether the cell is inscribed rectangle-like or not
         self.rectangle_poly: Polygon = None       # inscribed rectangle polygon (expanded)
 
         # # major direction defined in base cell
         # self.major_direction: float = 0.0
 
-        #
-        self.zmd: ZoneMapData = zmd
-
         # settings
         self.robot_r_px = int(PlanningConfig.cleaning_r_ov / zmd.resolution)
         self.dcfgs = PipeLineConfig()
+        self.k_circum = 0.8
+        self.k_inscr = 0.74
 
         # find rectangle-like properties
         if self.dcfgs.use_insc_ret:
@@ -44,29 +49,35 @@ class PCell(CellBase):
         self.find_cell_main_direction()
 
     def eval_cell_rectangles(self) -> None:
-        """ Evaluate the cell for rectangle-like and inscribed rectangle-like properties """
+        """ Evaluate the cell for rectangle-like and inscribed rectangle-like properties.
+
+            Steps:
+            1. evaluate rectangle-like based on circumscribed rectangle (minimum_rotated_rectangle).
+            2. create base inscribed rectangle based on maximum inscribed circle.
+            3. evaluate inscribed rectangle by expanding it in three different ways.
+            4. set rectangle-like property based on inscribed rectangle evaluation.
+        """
 
         # circ: circumscribed
         # insc: inscribed
 
-        # minimum_rotated_rectangle polygon
-        rect_circ_poly = self.poly.minimum_rotated_rectangle
-        rect_circ_area = rect_circ_poly.area
+        # evaluate rectangle-like properties based on circumscribed rectangle (minimum_rotated_rectangle)
+        circum_rect_poly = self.poly.minimum_rotated_rectangle
+        circum_rect_area = circum_rect_poly.area
+        self.eval_by_circumscribed_rect(circum_rect_area)  # rect_circum_like
 
         # maximum_inscribed_circle
-        circle_insc_poly = maximum_inscribed_circle(self.poly)
-        circle_insc_center, circle_insc_boundary = circle_insc_poly.coords
-        circle_insc_radius = np.linalg.norm(np.array(circle_insc_center) - np.array(circle_insc_boundary))
-        # circle_insc_area = np.pi * circle_insc_radius ** 2
+        insc_circle_poly = maximum_inscribed_circle(self.poly)
+        insc_circle_center, circle_insc_boundary = insc_circle_poly.coords
+        insc_circle_radius = np.linalg.norm(np.array(insc_circle_center) - np.array(circle_insc_boundary))
 
         # # minimum circumscribed circle
-        # circle_circ_poly = minimum_bounding_circle(self.poly)
-        # circle_circ_area = circle_circ_poly.area
+        # circle_circum_poly = minimum_bounding_circle(self.poly)
+        # circle_circum_area = circle_circum_poly.area
 
-        # # eval rectangle-like
-        self.eval_rectangle_like_circumscribed(rect_circ_area)  # rect_circ_like
-        inscribed_rect_poly = self.create_inscribed_rectangle(rect_circ_poly, circle_insc_center, circle_insc_radius)
-        self.rectangle_poly = self.expand_inscribed_rectangle(inscribed_rect_poly, circle_insc_center)
+        # # eval rectangle-like based on inscribed rectangle
+        base_inscribed_rect_poly = self.create_base_inscribed_rectangle(circum_rect_poly, insc_circle_center, insc_circle_radius)
+        self.rectangle_poly = self.eval_by_expand_inscribed_rectangle(base_inscribed_rect_poly, insc_circle_center)
         self.rect_like = self.rect_insc_like
 
         # #
@@ -78,12 +89,12 @@ class PCell(CellBase):
 
         # #
         # self.plot_cell_evaluation(
-        #     rect_circ_poly=rect_circ_poly,
-        #     inscribed_rect_poly=inscribed_rect_poly,
+        #     circum_rect_poly=circum_rect_poly,
+        #     inscribed_rect_poly=base_inscribed_rect_poly,
         #     expand_inscribed_rectangle=self.rectangle_poly,
-        #     circle_insc_center=circle_insc_center,
-        #     circle_insc_radius=circle_insc_radius,
-        #     # circle_circ_poly=circle_circ_poly,
+        #     insc_circle_center=insc_circle_center,
+        #     insc_circle_radius=insc_circle_radius,
+        #     # circle_circum_poly=circle_circum_poly,
         # )
 
     def find_cell_main_direction(self) -> None:
@@ -152,7 +163,7 @@ class PCell(CellBase):
         return map_cell
 
     def cell_main_direction(self, map_cell: np.ndarray) -> float:
-        """ create MapPolygons object for the cell area in the map"""
+        """ Find main direction of the cell using Hough Transform. """
 
         # Edge detection
         edges = cv.Canny(map_cell, 50, 150, apertureSize=3)
@@ -205,60 +216,60 @@ class PCell(CellBase):
     # rectangle-like evaluation
     # ==================================================================================================================
 
-    def eval_rectangle_like_circumscribed(self, rect_circ_area) -> None:
+    def eval_by_circumscribed_rect(self, circum_rect_area) -> None:
         """ Evaluate if the cell is rectangle-like based on the area ratio of the cell and the circumscribed rectangle. """
-        k1 = 0.8
-        cell_rect_circ_area_ratio = self.area/rect_circ_area
-        self.rect_circ_like = cell_rect_circ_area_ratio >= k1
+        cell_rect_circum_area_ratio = self.area/circum_rect_area
+        self.rect_circum_like = cell_rect_circum_area_ratio >= self.k_circum
 
-    def create_inscribed_rectangle(self, rect_circ_poly, circle_insc_center, circle_insc_radius) -> Polygon:
-        """ Create an inscribed rectangle inside the circumscribed rectangle of the cell basde on the inscribed circle. """
+    def create_base_inscribed_rectangle(self, circum_rect_poly, insc_circle_center, insc_circle_radius) -> Polygon:
+        """ Create an inscribed rectangle inside the circumscribed rectangle of the cell based on the inscribed circle. """
 
         # calculate the angle of the rectangle
-        rect_circ_coords = np.array(rect_circ_poly.exterior.coords)
-        angle = np.arctan2(rect_circ_coords[1, 1] - rect_circ_coords[0, 1],
-                           rect_circ_coords[1, 0] - rect_circ_coords[0, 0])
+        rect_circum_coords = np.array(circum_rect_poly.exterior.coords)
+        angle = np.arctan2(rect_circum_coords[1, 1] - rect_circum_coords[0, 1],
+                           rect_circum_coords[1, 0] - rect_circum_coords[0, 0])
 
         # create initial rectangle inside the inscribed circle
         rect_coords = []
         theta = angle + np.pi / 4  # 45 degrees rotation for the rectangle
         for i in range(4):
             angle_offset = theta + i * np.pi / 2
-            x = circle_insc_center[0] + circle_insc_radius * np.cos(angle_offset)
-            y = circle_insc_center[1] + circle_insc_radius * np.sin(angle_offset)
+            x = insc_circle_center[0] + insc_circle_radius * np.cos(angle_offset)
+            y = insc_circle_center[1] + insc_circle_radius * np.sin(angle_offset)
             rect_coords.append((x, y))
         # create the rectangle polygon
         inscribed_rect_poly = Polygon(rect_coords)
         return inscribed_rect_poly
 
-    def expand_inscribed_rectangle(self, inscribed_rect_poly: Polygon, circle_insc_center) -> Polygon:
-        """ Expand the inscribed rectangle in 3 different ways and return the best one """
-        k1 = 0.74
+    def eval_by_expand_inscribed_rectangle(self, base_inscribed_rect_poly: Polygon, insc_circle_center) -> Polygon:
+        """
+        Evaluate the inscribed rectangle by comparing it three expanded inscribed rectangles.
+        """
 
         # first expansion
-        expanded_rect_poly_1 = self.expand_inscribed_rectangle_1(inscribed_rect_poly, circle_insc_center)
+        expanded_rect_poly_1 = self.expand_inscribed_rectangle_1(base_inscribed_rect_poly, insc_circle_center)
         area_1 = expanded_rect_poly_1.area
         rect_cell_a_r = area_1 / self.area
         # print(f"r1: {rect_cell_a_r:.2f}")
-        if rect_cell_a_r > k1:
+        if rect_cell_a_r > self.k_inscr:
             self.rect_insc_like = True
             return expanded_rect_poly_1
 
         # second expansion
-        expanded_rect_poly_2 = self.expand_inscribed_rectangle_2(inscribed_rect_poly, circle_insc_center)
+        expanded_rect_poly_2 = self.expand_inscribed_rectangle_2(base_inscribed_rect_poly, insc_circle_center)
         area_2 = expanded_rect_poly_2.area
         rect_cell_a_r = area_2 / self.area
         # print(f"r2: {rect_cell_a_r:.2f}")
-        if rect_cell_a_r > k1:
+        if rect_cell_a_r > self.k_inscr:
             self.rect_insc_like = True
             return expanded_rect_poly_2
 
         # third expansion
-        expanded_rect_poly_3 = self.expand_inscribed_rectangle_3(inscribed_rect_poly)
+        expanded_rect_poly_3 = self.expand_inscribed_rectangle_3(base_inscribed_rect_poly)
         area_3 = expanded_rect_poly_3.area
         rect_cell_a_r = area_3 / self.area
         # print(f"r3: {rect_cell_a_r:.2f}")
-        if rect_cell_a_r > k1:
+        if rect_cell_a_r > self.k_inscr:
             self.rect_insc_like = True
             return expanded_rect_poly_3
 
@@ -272,8 +283,10 @@ class PCell(CellBase):
     # rectangle expansion methods
     # ==================================================================================================================
 
-    def expand_inscribed_rectangle_1(self, inscribed_rect_poly: Polygon, circle_insc_center) -> Polygon:
-        """ expand in 4 directions. """
+    def expand_inscribed_rectangle_1(self, inscribed_rect_poly: Polygon, insc_circle_center) -> Polygon:
+        """ Expand the base inscribed rectangle.
+            Keep expanding in each direction till collision, then move to next direction.
+        """
 
         # find step
         step = self.robot_r_px
@@ -281,7 +294,7 @@ class PCell(CellBase):
 
         # scale inscribed_rect_poly
         sf = 0.8
-        inscribed_rect_poly = scale(inscribed_rect_poly, xfact=sf, yfact=sf, origin=circle_insc_center)
+        inscribed_rect_poly = scale(inscribed_rect_poly, xfact=sf, yfact=sf, origin=insc_circle_center)
 
         #
         coords = inscribed_rect_poly.exterior.coords[:-1]
@@ -297,8 +310,8 @@ class PCell(CellBase):
             p1 = coords[idx1]
             p2 = coords[idx2]
             midp = np.mean([p1, p2], axis=0)
-            th = np.arctan2(midp[1] - circle_insc_center[1], midp[0] - circle_insc_center[0])
-            thetas.append(th)
+            theta = np.arctan2(midp[1] - insc_circle_center[1], midp[0] - insc_circle_center[0])
+            thetas.append(theta)
 
         # expand in all directions
         for _ in range(2):
@@ -313,12 +326,12 @@ class PCell(CellBase):
             any_valid = True
             while any_valid:
                 any_valid = False
-                for i, (idx1, idx2, th) in enumerate(zip(idx1s, idx2s, thetas)):
+                for i, (idx1, idx2, theta) in enumerate(zip(idx1s, idx2s, thetas)):
                     step = steps[i]
                     p1 = new_coords[idx1]
                     p2 = new_coords[idx2]
                     midp = np.mean([p1, p2], axis=0)
-                    success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, th, step)
+                    success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, theta, step)
                     if success:
                         n_e[i] += 1
                         any_valid = True
@@ -332,22 +345,25 @@ class PCell(CellBase):
         expanded_rect_poly = Polygon(new_coords)
         return expanded_rect_poly
 
-    def expand_inscribed_rectangle_2(self, inscribed_rect_poly: Polygon, circle_insc_center) -> Polygon:
-        """ first find the main direction of expansion buy expanding in each direction separately till collision,
-        then expand in that direction and then in the other 3 directions """
+    def expand_inscribed_rectangle_2(self, inscribed_rect_poly: Polygon, insc_circle_center) -> Polygon:
+        """
+        Expand the base inscribed rectangle.
+        First find the main direction of expansion buy expanding in each direction separately till collision,
+        then expand in that direction and then in the other directions.
+        """
 
         # find step
         # smallest length of the rectangle side
-        rect_circ_coords = np.array(inscribed_rect_poly.exterior.coords)
-        rect_circ_side_lengths = np.linalg.norm(np.diff(rect_circ_coords, axis=0), axis=1)
-        min_rect_circ_side_length = np.min(rect_circ_side_lengths)
-        step = min_rect_circ_side_length / 10
+        rect_circum_coords = np.array(inscribed_rect_poly.exterior.coords)
+        rect_circum_side_lengths = np.linalg.norm(np.diff(rect_circum_coords, axis=0), axis=1)
+        min_rect_circum_side_length = np.min(rect_circum_side_lengths)
+        step = min_rect_circum_side_length / 10
         # step = self.robot_r_px
         min_step = step / 5
 
         # scale inscribed_rect_poly
         sf = 0.3
-        s_rect_poly = scale(inscribed_rect_poly, xfact=sf, yfact=sf, origin=circle_insc_center)
+        s_rect_poly = scale(inscribed_rect_poly, xfact=sf, yfact=sf, origin=insc_circle_center)
 
         #
         coords = s_rect_poly.exterior.coords[:-1]
@@ -363,20 +379,20 @@ class PCell(CellBase):
             p1 = coords[idx1]
             p2 = coords[idx2]
             midp = np.mean([p1, p2], axis=0)
-            th = np.arctan2(midp[1] - circle_insc_center[1], midp[0] - circle_insc_center[0])
-            thetas.append(th)
+            theta = np.arctan2(midp[1] - insc_circle_center[1], midp[0] - insc_circle_center[0])
+            thetas.append(theta)
 
         # find main direction of expansion
         # expand seperately in each direction till collision
         coords_cand = [coords.copy() for _ in range(4)]
-        for i, (idx1, idx2, th) in enumerate(zip(idx1s, idx2s, thetas)):
+        for i, (idx1, idx2, theta) in enumerate(zip(idx1s, idx2s, thetas)):
             is_valid = True
             while is_valid:
                 step = steps[i]
                 p1 = coords_cand[i][idx1]
                 p2 = coords_cand[i][idx2]
                 midp = np.mean([p1, p2], axis=0)
-                success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, th, step)
+                success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, theta, step)
                 if success:
                     n_e[i] += 1
                     coords_cand[i][idx1] = new_p1
@@ -391,7 +407,7 @@ class PCell(CellBase):
         # remove the max_step_idx item from idx1s, idx2s, thetas
         idx1s = [idx for i, idx in enumerate(idx1s) if i != max_step_idx]
         idx2s = [idx for i, idx in enumerate(idx2s) if i != max_step_idx]
-        thetas = [th for i, th in enumerate(thetas) if i != max_step_idx]
+        thetas = [theta for i, theta in enumerate(thetas) if i != max_step_idx]
         n_e = np.ones(3, dtype=int)        # reset
 
         # expand in the other 3 directions
@@ -407,12 +423,12 @@ class PCell(CellBase):
             any_valid = True
             while any_valid:
                 any_valid = False
-                for i, (idx1, idx2, th) in enumerate(zip(idx1s, idx2s, thetas)):
+                for i, (idx1, idx2, theta) in enumerate(zip(idx1s, idx2s, thetas)):
                     step = steps[i]
                     p1 = new_coords[idx1]
                     p2 = new_coords[idx2]
                     midp = np.mean([p1, p2], axis=0)
-                    success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, th, step)
+                    success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, theta, step)
                     if success:
                         n_e[i] += 1
                         any_valid = True
@@ -427,7 +443,10 @@ class PCell(CellBase):
         return expanded_rect_poly
 
     def expand_inscribed_rectangle_3(self, inscribed_rect_poly: Polygon) -> Polygon:
-        """ expand based on the biggest edge. """
+        """
+        Expand the base inscribed rectangle.
+        Expand based on the biggest edge of the base rectangle.
+        """
 
         # step
         step = self.robot_r_px
@@ -444,24 +463,24 @@ class PCell(CellBase):
         p2 = coords[(max_edge_idx + 1) % len(coords)]
 
         # calculate the angle of the edge p1->p2
-        th = np.arctan2(p2[1] - p1[1], p2[0] - p1[0])
+        theta = np.arctan2(p2[1] - p1[1], p2[0] - p1[0])
 
         #  move p1 and p2 in the direction of the center of the edge
         l_edge = max_edge_idx / 4
-        s_p1 = (p1[0] + l_edge * np.cos(th),
-                p1[1] + l_edge * np.sin(th))
-        s_p2 = (p2[0] + l_edge * np.cos(-th),
-                p2[1] + l_edge * np.sin(-th))
+        s_p1 = (p1[0] + l_edge * np.cos(theta),
+                p1[1] + l_edge * np.sin(theta))
+        s_p2 = (p2[0] + l_edge * np.cos(-theta),
+                p2[1] + l_edge * np.sin(-theta))
 
         # create third and fourth points
         # p3 is the point from p2 perpendicular to edge p1-p2
-        th3 = th + np.pi / 2,
+        th3 = theta + np.pi / 2,
         p3 = (
             s_p2[0] + step * np.cos(th3),
             s_p2[1] + step * np.sin(th3)
         )
         if not self.poly.contains(Point(p3)):
-            th3 = th - np.pi / 2
+            th3 = theta - np.pi / 2
             p3 = (
                 s_p1[0] + step * np.cos(th3),
                 s_p1[1] + step * np.sin(th3)
@@ -504,8 +523,8 @@ class PCell(CellBase):
             p1 = coords[idx1]
             p2 = coords[idx2]
             midp = np.mean([p1, p2], axis=0)
-            th = np.arctan2(midp[1] - center[1], midp[0] - center[0])
-            thetas.append(th)
+            theta = np.arctan2(midp[1] - center[1], midp[0] - center[0])
+            thetas.append(theta)
 
         # expand in all directions
         for _ in range(2):
@@ -521,12 +540,12 @@ class PCell(CellBase):
             any_valid = True
             while any_valid:
                 any_valid = False
-                for i, (idx1, idx2, th) in enumerate(zip(idx1s, idx2s, thetas)):
+                for i, (idx1, idx2, theta) in enumerate(zip(idx1s, idx2s, thetas)):
                     step = steps[i]
                     p1 = new_coords[idx1]
                     p2 = new_coords[idx2]
                     midp = np.mean([p1, p2], axis=0)
-                    success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, th, step)
+                    success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, theta, step)
                     if success:
                         n_e[i] += 1
                         any_valid = True
@@ -540,15 +559,15 @@ class PCell(CellBase):
         expanded_rect_poly = Polygon(new_coords)
         return expanded_rect_poly
 
-    def expand_2_points_eval(self, p1, p2, th, step):
-        """ expand two points p1 and p2 in the direction of angle th by step and check if the new points are inside the polygon. """
+    def expand_2_points_eval(self, p1, p2, theta, step):
+        """ expand two points p1 and p2 in the direction of angle theta by step and check if the new points are inside the polygon. """
         new_p1 = (
-            p1[0] + step * np.cos(th),
-            p1[1] + step * np.sin(th)
+            p1[0] + step * np.cos(theta),
+            p1[1] + step * np.sin(theta)
         )
         new_p2 = (
-            p2[0] + step * np.cos(th),
-            p2[1] + step * np.sin(th)
+            p2[0] + step * np.cos(theta),
+            p2[1] + step * np.sin(theta)
         )
         # check if the new points are inside the polygon
         success = False
@@ -565,9 +584,9 @@ class PCell(CellBase):
     # plotting
     # ==================================================================================================================
 
-    def plot_cell_evaluation(self, circle_insc_center=None,
-                             circle_insc_radius=None, circle_circ_poly=None,
-                             rect_circ_poly=None, inscribed_rect_poly=None,
+    def plot_cell_evaluation(self, insc_circle_center=None,
+                             insc_circle_radius=None, circle_circum_poly=None,
+                             circum_rect_poly=None, inscribed_rect_poly=None,
                              expand_inscribed_rectangle=None) -> None:
 
         # plotting
@@ -581,19 +600,19 @@ class PCell(CellBase):
         ax.plot(self.cxy[0], self.cxy[1], 'ro', label='Centroid')
 
         # plot mic
-        if circle_insc_center is not None:
-            ax.plot(circle_insc_center[0], circle_insc_center[1], 'go', label='MIC Center')
-            circle = plt.Circle(circle_insc_center, circle_insc_radius, color='green', fill=False, label='MIC Radius')
+        if insc_circle_center is not None:
+            ax.plot(insc_circle_center[0], insc_circle_center[1], 'go', label='MIC Center')
+            circle = plt.Circle(insc_circle_center, insc_circle_radius, color='green', fill=False, label='MIC Radius')
             ax.add_artist(circle)
 
-        # circle_circ_poly
-        if circle_circ_poly is not None:
-            mbc_x, mbc_y = circle_circ_poly.exterior.xy
+        # circle_circum_poly
+        if circle_circum_poly is not None:
+            mbc_x, mbc_y = circle_circum_poly.exterior.xy
             ax.plot(mbc_x, mbc_y, color='orange', label='Minimum Bounding Circle')
 
         # plot mrr
-        if rect_circ_poly is not None:
-            mrr_x, mrr_y = rect_circ_poly.exterior.xy
+        if circum_rect_poly is not None:
+            mrr_x, mrr_y = circum_rect_poly.exterior.xy
             ax.plot(mrr_x, mrr_y, color='purple', label='Minimum Rotated Rectangle')
 
         # inscribed_rect_poly

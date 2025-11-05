@@ -9,9 +9,9 @@ from scripts.sequence.cells_graph_0 import CellsGraph
 from scripts.planning.boustrophedon.cell import Cell
 
 
-class OptimCellsSeq:
+class OptimizeCellsSeq:
     def __init__(self, mcells: list[Cell]):
-        self.lg = MyLogger("OptimCellsSeq")
+        self.lg = MyLogger("OptimizeCellsSeq")
         dcfgs = PipeLineConfig()
         self.lg.info1("Step: creating optimized cell sequence")
 

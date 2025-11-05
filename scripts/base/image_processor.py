@@ -1,23 +1,32 @@
-""" processing map pgm file """
+""" Map image processing module for loaded map image file """
 import copy
 import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
-from scripts.base.configs import MapConfigs
+from scripts.base.configs import MapConfig
 from scripts.base.map_data import MapData
 
 
 class MapImageProcessor:
-    """ process map pgm file and create MapData. """
+    """
+    Process loaded map image arr (grayscale) and create MapData.
 
-    def __init__(self, map_arr: np.ndarray, bconfigs: MapConfigs):
+    Inputs:
+        map_arr: np.ndarray - loaded map image array (grayscale).
+        map_config: MapConfig - map configurations object.
 
-        # init
+    Attributes:
+        mdata: MapData - processed MapData object.
+    """
+
+    def __init__(self, map_arr: np.ndarray, map_config: MapConfig):
+
+        # logger
         self.lg = MyLogger("MapImageProcessor")
         self.lg.info1("Step: processing map image")
 
         # read configs and eval original map arr
-        self.__bcfg: MapConfigs = bconfigs
+        self.mcfg: MapConfig = map_config
         self.__orig_map: np.ndarray = map_arr
         self.check_map(map_arr)
 
@@ -36,46 +45,45 @@ class MapImageProcessor:
         # self.visualize_map(self.processed_map)
 
     @property
-    def mdata(self) -> MapData:
+    def map_data(self) -> MapData:
         return copy.deepcopy(self.__map_data)
 
-    def check_map(self, image):
+    def check_map(self, image: np.ndarray) -> None:
         """ check if map image is loaded. """
         if image is None:
             raise ValueError("Image not found or the format is not supported")
         if len(image.shape) > 2:
             raise ValueError("Image must be grayscale")
 
-    def set_map_data(self):
-        self.lg.info2("loading map image data")
+    def set_map_data(self) -> None:
+        """ set basic map data: name, origin, original map. """
         map_arr = self.__orig_map.copy()
-        self.__map_data.set_basic_configs(self.__bcfg, self.__bcfg.map_name)
-        self.__map_data.set_origin_m(self.__bcfg.origin_m)
+        self.__map_data.set_basic_configs(self.mcfg, self.mcfg.map_name)
+        self.__map_data.set_origin_m(self.mcfg.origin_m)
         self.__map_data.set_orig_map(map_arr)
 
     def process_map(self) -> np.ndarray:
         """ create denoised binary map. """
-        self.lg.info2("processing of the map image")
+        self.lg.info2("creating binary-denoised map")
         binary_map = self.convert_to_binary()
         denoised_map = self.remove_noise(binary_map)
-        self.lg.info3("Binary-denoised image created.")
         return denoised_map
 
-    def convert_to_binary(self):
-        self.lg.info3("converting image to binary")
-        # threshold = self.__bcfg.occupied_thresh
+    def convert_to_binary(self) -> np.ndarray:
+        """ convert grayscale map to binary map. """
+        # threshold = self.mcfg.occupied_thresh
         _, binary_map = cv.threshold(self.__orig_map, 220, 255, cv.THRESH_BINARY)
         return binary_map
 
-    def remove_noise(self, binary_map, kernel_size=(3, 3)) -> np.ndarray:
-        self.lg.info3("removing noise")
+    def remove_noise(self, binary_map: np.ndarray, kernel_size=(3, 3)) -> np.ndarray:
+        """ remove noise from binary map using morphological opening. """
         kernel = np.ones(kernel_size, np.uint8)
         denoised_map = cv.morphologyEx(binary_map, cv.MORPH_OPEN, kernel)
         return denoised_map
 
-    def complete_map_data(self):
+    def complete_map_data(self) -> None:
         """ set resolution [and updated resolution] in map data. """
-        self.__map_data.set_resolution(self.__bcfg.resolution)
+        self.__map_data.set_resolution(self.mcfg.resolution)
 
     def visualize_map(self, pgm_data_in: np.ndarray, disp_name: str = "Map") -> None:
         self.lg.info("display map image")

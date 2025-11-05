@@ -5,49 +5,47 @@ import dataclasses
 
 
 @dataclasses.dataclass
-class MapConfigs:
+class MapConfig:
+    """ Map configuration including base map specs and directories. """
     # map configs
-    origin_m = None
-    resolution = None
-    free_thresh = None
-    occupied_thresh = None
+    origin_m = None         # origin x, y in meters
+    resolution = None       # meters/pixel
+    free_thresh = None      # [not used] Maximum occupancy probability below which a cell is considered free
+    occupied_thresh = None  # [not used] Minimum occupancy probability above which a cell is considered occupied
     # directories and paths
-    map_name = None
-    map_path = None
-    data_dir = None
-    district_dir = None
+    data_dir = None         # base directory for maps ./Data/
+    map_name = None         # name of the main map folder
+    base_folder = "AMain"   # inside each map folder, contains main map files
     district_folder = "District"
-    base_folder = "AMain"
-
-
-@dataclasses.dataclass
-class RobotConfig:
-    radius = 0.5
-    v_lin_avg = 0.4
-    v_ang_avg = 0.6
+    map_dir = None          # path to main map folder: ./Data/<map_name>/AMain
+    district_dir = None     # path to district folder: ./Data/<map_name>/District
 
 
 @dataclasses.dataclass
 class PipeLineConfig:
+    """ Main pipeline configurations. Includes main module methods and plot options. """
+
     # Main configs
-    whole_map = True  # False True
-    method = ""
+    whole_map = True    # Select whole map as district (True) or select rectangle (False)
+    method = ""         # full method name (to be completed based on other configs)
 
     # plots configs
     save_map_planning = True
     save_decomposition_plot = True
     plot_decomposition = False
 
-    # Methods [segmentation, coverage path planning, sequence of cells]
+    # Methods names for main modules: segmentation, coverage path planning, sequence
     segmentation_method = "voronoi"     # simple, voronoi
-    covpp_method = "boust"            # simple, boust, contour
+    covpp_method = "boust"              # simple, boust, contour
     sequence_method = "milp"            # simple, dfs, milp
 
     # complete method
     method = segmentation_method + '_' + covpp_method + '_' + sequence_method
 
-    # voronoi method
-    use_insc_ret = True  # True False
+    # segmentation options
+    use_insc_ret = True  # find approx rectangles from initial segmentation cells
+
+    # voronoi specific options
     if segmentation_method == "voronoi":
         if use_insc_ret:
             method = method + "_rect"
@@ -71,44 +69,48 @@ class PipeLineConfig:
 
 
 @dataclasses.dataclass
-class SpaceConfig:
-    select_free_space = False  # select free space from image
-    # robot configs
-    robot_radius = 0.5  # 0.5
-    robot_radius_ws = 0.5  # 0.5
-    robot_radius_p = 0.5  # 0.5
+class RobotConfig:
+    radius = 0.5
+    v_lin_avg = 0.4  # average linear velocity in m/s
+    v_ang_avg = 0.6  # average angular velocity in rad/s
 
-    # robot_circumscribed_r = 0.5
-    # robot_circumscribed_d = robot_circumscribed_r * 2
-    # distance thresholds
-    wf_safe_dist = 0.0  # 0.1 # wf distance
-    os_safe_dist = 0.1  # 0.2 # safe distance of os path from obstacles
-    ws_dist = max(wf_safe_dist, os_safe_dist)
-    #
-    wf_r_dist = robot_radius_ws + wf_safe_dist  # distance of the wf path from walls and obstacles
-    os_r_dist = robot_radius_ws + os_safe_dist  # min distance of the os path from walls and obstacles
-    ws_r_dist = ws_dist + robot_radius_ws
-    #
-    cleaning_c = 1.0
-    cleaning_r = robot_radius_p * cleaning_c
-    uncleaned_dist = ws_dist + (robot_radius_p - cleaning_r)
+
+@dataclasses.dataclass
+class SpaceConfig:
+    """ Workspace and space analysis configurations. """
+    select_free_space = False  # manually select free space area from image, otherwise use select biggest free space automatically
+    # robot configs
+    robot_radius = 0.5      # 0.5
+    robot_radius_ws = 0.5   # 0.5
+
+    # safety distance (robot footprint from obstacles)
+    wf_safe_dist = 0.0  # 0.1                   # safety distance of robot during wall following from walls or obstacles
+    os_safe_dist = 0.1  # 0.2                   # safe distance of robot during open space from obstacles
+    ws_dist = max(wf_safe_dist, os_safe_dist)   # workspace safety distance: max required distance of robot from obstacles
+
+    # safety distances (robot center from obstacles)
+    wf_r_dist = robot_radius_ws + wf_safe_dist  # safety distance of robot wall following path from walls and obstacles
+    os_r_dist = robot_radius_ws + os_safe_dist  # safety distance of robot open space path from obstacles
+    ws_r_dist = ws_dist + robot_radius_ws       # workspace safety distance: max required distance of robot center from obstacles
+
+    # cleaning radius
+    cleaning_c = 1.0                            # effective cleaning coefficient
+    cleaning_r = robot_radius * cleaning_c      # effective cleaning radius
+
+    # remained uncleaned distance due to safety distance and effective cleaning radius
+    uncleaned_dist = ws_dist + (robot_radius - cleaning_r)
+
     # other
     scaler_os_search = 2
 
 
 @dataclasses.dataclass
 class PlanningConfig:
+    """ Coverage path planning configurations. """
     spa = SpaceConfig()
-    animation = False  # True False
-    cleaning_r = spa.cleaning_r
-    min_path_overlap = 0.0
-    margin = 0.05
-    cleaning_r_ov = cleaning_r - min_path_overlap/2
-    min_wp_dist = cleaning_r_ov/2
-
-
-if __name__ == "__main__":
-    s_cfgs = SpaceConfig()
-    print("ws_r_dist", s_cfgs.ws_r_dist)
-    print("cleaning_dist", s_cfgs.uncleaned_dist)
-    print("cleaning_r", s_cfgs.cleaning_r)
+    animation = False                                   # animate final coverage path in sequence planning
+    cleaning_r = spa.cleaning_r                         # effective cleaning radius
+    min_path_overlap = 0.0                              # minimum overlap required between adjacent cleaning paths
+    margin = 0.05                                       # margin from cell boundaries for coverage planning
+    cleaning_r_ov = cleaning_r - min_path_overlap/2     # effective cleaning radius considering path overlap
+    min_wp_dist = cleaning_r_ov/2                       # minimum distance between waypoints in coverage path

@@ -1,3 +1,4 @@
+""" Voronoi decomposition module."""
 from collections import defaultdict
 import numpy as np
 from matplotlib import pyplot as plt
@@ -13,8 +14,17 @@ from scripts.segmentation.voronoi_decomposition.common import VPoint, CriticalPo
 
 
 class VoronoiDecomposition:
-    """ Voronoi decomposition of the zone map.
-        Finding critical points in Voronoi vertices.
+    """
+    Voronoi decomposition of the zone map.
+
+    Steps:
+        1- Process polygons to ensure suitability for Voronoi decomposition. (adding points if needed)
+        2- Find Voronoi diagram based on the bounding polygon and obstacle polygons.
+        3- Evaluate Voronoi vertices and create VPoint objects with features.
+        4- Find ridge Voronoi points and set related features.
+        5- Set basis points and feasibility for Voronoi points.
+        6- Find adjacent Voronoi points based on distance and minimum number of adjacents.
+        7- Identify critical points from Voronoi vertices.
     """
 
     def __init__(self, zmd: ZoneMapData, map_polygs: MapPolygons):
@@ -22,13 +32,13 @@ class VoronoiDecomposition:
         self.lg.info1("Step: Voronoi decomposition.")
 
         # settings
-        self.pcfgs: PlanningConfig = PlanningConfig()
+        self.pcfg: PlanningConfig = PlanningConfig()
         self.dcfgs: PipeLineConfig = PipeLineConfig()
         # self.adj_dist_lb: float = 50.0            # distance threshold for adjacent Voronoi vertices
         self.fixed_min_n_adj: int = 8               # fixed minimum number of adjacent Voronoi vertices
         self.fixed_max_n_adj: int = 15              # maximum number of adjacent Voronoi vertices
         self.d_clearance_thresh_p: float = 0.05     # percentage of the clearance difference in finding critical points
-        self.robot_r_px: int = self.pcfgs.spa.robot_radius / zmd.resolution
+        self.robot_r_px: int = self.pcfg.spa.robot_radius / zmd.resolution
         # updated later
         self.min_n_adjacents: int = None            # minimum number of adjacent Voronoi vertices
 
@@ -36,7 +46,7 @@ class VoronoiDecomposition:
         self.lg.info3(f"Robot radius in pixels: {self.robot_r_px:.2f}")
 
         # basic data
-        self.result_path: str = zmd.result_path
+        self.result_dir: str = zmd.result_dir
         self.b_poly: Polygon = map_polygs.b_poly                # bounding polygon
         self.obs_polys: list[Polygon] = map_polygs.obs_polys    # obstacle polygons
 
@@ -65,8 +75,10 @@ class VoronoiDecomposition:
         self.plot_voronoi()
 
     def process_polygons(self):
-        """ Process polygons to ensure they are suitable for Voronoi decomposition.
-            Adding points to polygons if needed. """
+        """
+        Process polygons to ensure they are suitable for Voronoi decomposition.
+        Adding points to polygons if needed.
+        """
 
         # process bounding polygon
         b_poly = self.process_polygon(self.b_poly)
@@ -95,10 +107,12 @@ class VoronoiDecomposition:
             raise ValueError("Getting Voronoi failed!")
 
     def evaluate_vertices(self):
-        """ create all Voronoi vertices as VPoint objects (v_points).
+        """
+        Create all Voronoi vertices as VPoint objects (v_points).
 
         - evaluate if they are inside the bounding polygon and outside obstacles.
-        - set features: [free], [in_bd_poly]. """
+        - set features: [free], [in_bd_poly].
+        """
 
         # Voronoi vertices
         vertices = self.vor.vertices
@@ -126,8 +140,10 @@ class VoronoiDecomposition:
         self.v_verts_free = np.array(verts_out_obst)
 
     def find_ridge_vpoints(self):
-        """ Evaluate ridge vertices of Voronoi diagram.
-            set features: [n_feas_ridges], [ridge_vps], [has_inf_adj]. """
+        """
+        Evaluate ridge vertices of Voronoi diagram.
+        - set features: [n_feas_ridges], [ridge_vps], [has_inf_adj].
+        """
 
         # if both ridge vertices are free, then [ridge_vps] and [n_feas_ridges] for each ridge point are updated.
         # if one of the ridge vertices is -1, then it is an infinite vertex and [has_inf_adj] is set to True.
@@ -147,11 +163,11 @@ class VoronoiDecomposition:
                 self.v_points[idx].has_inf_adj = True
 
     def set_basis_points_and_feasibility(self):
-        """ - set [feasible] and [basis_points] for points based on the number of feasible ridges.
-            - set basis_dists and clearance.
-
-            vor.points: original points used to create the Voronoi diagram.
-            """
+        """
+        - Set [feasible] and [basis_points] for points based on the number of feasible ridges.
+        - Set basis_dists and clearance.
+        - vor.points: original points used to create the Voronoi diagram.
+        """
         vor = self.vor
         vps = self.v_points
         for (point_indices, v_idxs) in zip(vor.ridge_points, vor.ridge_vertices):
@@ -268,7 +284,8 @@ class VoronoiDecomposition:
     # process_polygon ==========================================================
 
     def process_polygon(self, poly_t: Polygon, reverse: bool = False):
-        """ Process polygons and add points if needed.
+        """
+        Process polygons and add points if needed.
 
         Methods:
             1. check distance between points and add points if the distance between them is greater than a threshold.
@@ -281,8 +298,9 @@ class VoronoiDecomposition:
         return poly
 
     def process_polygon_1(self, poly: Polygon):
-        """ check distance between points of the polygon.
-            add points if the distance between them is greater than a threshold.
+        """
+        Check distance between points of the polygon.
+        Add points if the distance between them is greater than a threshold.
         """
 
         robot_r_px = self.robot_r_px
@@ -311,7 +329,7 @@ class VoronoiDecomposition:
             return poly
 
     def process_polygon_2(self, poly: Polygon):
-        """  if edge is larger than neighboring edges, add points between them. """
+        """ Check if edge is larger than neighboring edges, add points between them. """
         points = np.array(poly.exterior.coords)
         points = np.insert(points, 0, points[-1], axis=0)  # add last point to the beginning
         points = np.append(points, [points[1]], axis=0)  # add second point to the end
@@ -411,7 +429,7 @@ class VoronoiDecomposition:
 
         #
         if self.dcfgs.save_decomposition_plot:
-            save_path = self.result_path + "/voronoi.png"
+            save_path = self.result_dir + "/voronoi.png"
             fig.savefig(save_path, dpi=300)
 
     # ==========================================================================

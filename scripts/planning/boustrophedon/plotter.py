@@ -1,17 +1,19 @@
+""" Boustrophedon decomposition plotter """
 import matplotlib.pyplot as plt
 from scripts.base.configs import PipeLineConfig
 from scripts.planning.boustrophedon.cell import Cell, CellGroup
 
 
 class BoustPlotter:
-    """Boustrophedon decomposition plotter.
-        plots: boust cells and mcells.
+    """
+    Boustrophedon decomposition plotter.
+    Plots: boust cells and mcells.
     """
 
     def __init__(self, dec_obj):
         self.dec_obj = dec_obj
         self.dcfgs = PipeLineConfig()
-        self.result_path: str = dec_obj.result_path
+        self.result_dir: str = dec_obj.result_dir
         #
         self.viz_together = True
         self.set_aspect = True
@@ -152,7 +154,7 @@ class BoustPlotter:
     def save_figs(self):
         ns = "/"
         dpi = 300
-        path = self.result_path
+        path = self.result_dir
         if self.viz_together:
             self.fig_all.savefig(path + f"{ns}boust_decomposition.png", format="png", dpi=dpi)
         else:

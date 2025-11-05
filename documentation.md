@@ -106,7 +106,7 @@ Core utilities and data structures used throughout the pipeline.
 
 Configuration classes for different pipeline stages:
 
-- **MapConfigs**: Base configuration (robot parameters, resolution)
+- **MapConfig**: Base configuration (robot parameters, resolution)
 - **PipeLineConfig**: District settings (method selection, saving options)
 - **PlanningConfig**: Path planning parameters
 - **SpaceConfig**: Space analysis settings
@@ -219,7 +219,7 @@ Manages district and zone-level operations.
   - `map_planning`: Planning visualization
   - `vertices`: Zone boundary vertices
   - `resolution`: Map resolution
-  - `result_path`: Output directory path
+  - `result_dir`: Output directory path
 
 ---
 
@@ -368,7 +368,7 @@ Optimizes cell visit order and connects paths.
   - `connect(start, end)`: Create connection path
   - Uses pathfinding algorithms (A\*, Dijkstra)
 
-#### **OptimCellsSeq** (optimize_mcells_seq_1.py)
+#### **OptimizeCellsSeq** (optimize_mcells_seq_1.py)
 
 - **Purpose**: Optimize cell visit sequence
 - **Methods**:
@@ -486,7 +486,7 @@ main.py
   - Various TSP solvers
   - Graph-based optimization
 
-### Robot Parameters (MapConfigs)
+### Robot Parameters (MapConfig)
 
 - `robot_radius`: Robot radius in meters
 - `tool_radius`: Coverage tool radius
@@ -730,7 +730,7 @@ covpp_method: "my_planner"
 
 ```python
 # In scripts/sequence/optimize_my_method.py
-class OptimCellsSeq:
+class OptimizeCellsSeq:
     def __init__(self, cells, ...):
         self.cells = cells
         # Your initialization
@@ -746,8 +746,8 @@ class OptimCellsSeq:
 ```python
 # In scripts/sequence/sequence.py
 if self.dcfgs.sequence_method == "my_method":
-    from scripts.sequence.optimize_my_method import OptimCellsSeq
-    optimizer = OptimCellsSeq(self.cells, ...)
+    from scripts.sequence.optimize_my_method import OptimizeCellsSeq
+    optimizer = OptimizeCellsSeq(self.cells, ...)
     self.seq_idxs = optimizer.optimize()
 ```
 

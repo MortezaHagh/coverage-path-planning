@@ -81,7 +81,7 @@ class ZoneEvaluationBase:
         self.zmd: ZoneMapData = zmd
         self.paths: SequencePaths = paths
         self.dcfgs = PipeLineConfig()
-        self.pcfgs = PlanningConfig()
+        self.pcfg = PlanningConfig()
         self.robot_cfgs = RobotConfig()
         # statistics
         self.stats: ZoneStatsBase = None

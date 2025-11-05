@@ -6,16 +6,18 @@ from scripts.base.configs import PipeLineConfig
 from scripts.segmentation.cell_processed import PCell
 
 
-class OptimCellsSeq:
-    """ Create optimized sequence of cells to be covered.
-        Different methods can be used for optimization:
-        - simple: simple sequence (as is)
-        - dfs: depth first search
-        - milp: mixed integer linear programming (MILP) using ortools
+class OptimizeCellsSeq:
+    """
+    Create optimized sequence of cells to be covered.
+
+    Methods available:
+    - simple: simple sequence (as is)
+    - dfs: depth first search
+    - milp: mixed integer linear programming (MILP) using ortools
     """
 
     def __init__(self, cells: list[PCell], distances: np.ndarray = None, start_cell_idx: int = 0):
-        self.lg = MyLogger("OptimCellsSeq")
+        self.lg = MyLogger("OptimizeCellsSeq")
         self.lg.info1("Step: creating optimized cell sequence")
 
         # initialize

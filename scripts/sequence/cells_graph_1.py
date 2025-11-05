@@ -1,3 +1,4 @@
+""" Module for creating a graph of cells with distances and adjacency information. """
 import heapq
 import numpy as np
 from scripts.base.logger import MyLogger

@@ -1,4 +1,4 @@
-""" Trapezoidal decomposition """
+""" New Trapezoidal decomposition """
 import math
 from shapely import Polygon
 from scripts.base.logger import MyLogger
@@ -11,12 +11,25 @@ from scripts.planning.boustrophedon.post_process_mcells import eval_cells_path_s
 
 
 class CellDecomposition:
-    """ trapezoidal decomposition. """
+    """
+    New trapezoidal decomposition.
 
-    def __init__(self, resolution: float = 0.05, result_path: str = None):
+    Steps:
+        1- Create obstacles and events
+        2- Decompose all cells
+        3- Find adjacent cells
+        4- Complete adjacency
+        5- Create cell groups and merged cells
+        6- Set merged cells adjacents
+        7- Evaluate merged cells for planning
+        8- Visualize results
+
+    """
+
+    def __init__(self, resolution: float = 0.05, result_dir: str = None):
         self.lg = MyLogger("CellDecompositionMH")
         #
-        self.result_path: str = result_path
+        self.result_dir: str = result_dir
         self.resolution: float = resolution
         self.bcfgs = PlanningConfig()
         #
@@ -87,6 +100,15 @@ class CellDecomposition:
     # decompose_all ====================================================================================================
 
     def decompose_all(self):
+        """
+        Decompose all the events to create trapezoidal cells.
+
+        Steps:
+            1- Iterate over all events (skip skip_sweep and done events).
+            2- For each event, find hits by sweeping line (up and down) (sweep_up_down).
+            3- Evaluate done status of hit events (eval_done_status).
+            4- Create trapezoids based on event type and hits (create_trapezoid).
+        """
         for i, base_e in enumerate(self.events[1:]):
             ind = i + 1
 
@@ -95,7 +117,7 @@ class CellDecomposition:
                 continue
 
             # find hits of the sweeping line at the base event
-            hit_up_y, hit_down_y, hit_up_event, hit_down_event = self.expand_hit(base_e, ind)
+            hit_up_y, hit_down_y, hit_up_event, hit_down_event = self.sweep_up_down(base_e, ind)
 
             # Update base event with hit results
             base_e.hit_up_y, base_e.hit_up_event = hit_up_y, hit_up_event
@@ -107,8 +129,17 @@ class CellDecomposition:
             # Create trapezoids based on event type
             self.create_trapezoid(base_e, hit_up_event, hit_down_event)
 
-    def expand_hit(self, base_e: Event, base_i: int):
-        # Initialize hit variables
+    def sweep_up_down(self, base_e: Event, base_i: int):
+        """
+        Sweep line from the base event to find hit events.
+
+        Method:
+         1- Iterate over events after the base event.
+         2- For each event, evaluate if it can be hit (eval_event_up and eval_event_down).
+         3- Update hit variables if successful.
+         4- Return hit results.
+        """
+
         hit_up_y, hit_down_y = math.inf, -math.inf
         hit_up_event, hit_down_event = None, None
 
@@ -118,7 +149,6 @@ class CellDecomposition:
 
         # Iterate over events
         for e in self.events[base_i+1:]:
-            #
             if e.skip_hit:
                 continue
 
@@ -140,7 +170,17 @@ class CellDecomposition:
         return hit_up_y, hit_down_y, hit_up_event, hit_down_event
 
     def eval_event_up(self, base_e: Event, e: Event, y_hit: float) -> bool:
-        # based even type is 'up'
+        """
+        Evaluate if event e can be hit when sweeping up from base_e.
+
+        Method:
+        1- Check if e is of type 'up'
+        2- Check if e is not hit from outside of polygon
+        3- Check for higher 'updown' events with same x coordinate
+        4- Evaluate if sweep line hits the edge formed by e and its previous event based on coordinates
+        5- Return success status and new hit y-coordinate if successful
+
+        """
         if e.etype1_updown == 'up':
             return False, None
 
@@ -181,7 +221,15 @@ class CellDecomposition:
         return False, None
 
     def eval_event_down(self, base_e: Event, e: Event, y_hit: float) -> bool:
-        # based even type is 'down'
+        """
+        Evaluate if event e can be hit when sweeping down from base_e.
+
+        Method:
+        1- Check if e is of type 'down'
+        2- Evaluate if sweep line hits the edge formed by e and its next event based on coordinates
+        3- Return success status and new hit y-coordinate if successful
+        """
+
         if e.etype1_updown == 'down':
             return False, None
 
@@ -209,6 +257,13 @@ class CellDecomposition:
         return False, None
 
     def eval_done_status(self, base_e: Event, hit_up_event: Event, hit_down_event: Event):
+        """
+        Evaluate done status of hit events.
+
+        Method:
+        1- Evaluate events on the same x coordinate between base_e and hit_up_event
+        2- Update done status of the hit events
+        """
         # eval events on the same x coordinate between base_e and hit_up_event
         if hit_up_event:
             up_ind = base_e.dec_s_ind+1
@@ -231,6 +286,18 @@ class CellDecomposition:
                     hit_down_event.done = True
 
     def create_trapezoid(self, base_e: Event, hit_up_event: Event, hit_down_event: Event):
+        """
+        Create trapezoids based on event type and hits.
+
+        Method:
+        1- Handle direct trap case.
+        2- Handle not hit events case.
+        3- Create trapezoids based on event type (updown, up, down).
+        4- Add cell number and update endpoints of hit events.
+        5- Create cell(s) and add to the list.
+
+        Trapezoid vertex are: base_e, base_e_hit (up or down), hit_event endpoint, base_e endpoint
+        """
         trap_up, trap_down = None, None
 
         # direct trap
@@ -299,6 +366,15 @@ class CellDecomposition:
     # find_adjacents_cells =============================================================================================
 
     def find_adjacents_cells(self):
+        """
+        Find adjacent cells based on hit events.
+
+        Method:
+        1- Iterate over all events.
+        2- Find adjacents based on hit_up_event and hit_down_event.
+        3- Update adjacent and parent cell indices for the involved cells.
+        """
+
         for e in self.events:
             up_adj_ci, down_adj_ci = None, None
             current_cell: Cell = None
@@ -337,6 +413,17 @@ class CellDecomposition:
                     self.cells[down_adj_ci].set_parent_down_ci(ci_curr)
 
     def complete_adjacency(self):
+        """
+        Complete adjacency by checking geometric conditions.
+
+        Method:
+        1- Iterate over all cells.
+        2- For each cell, check for potential adjacent cells on the right side.
+            - Compare x_max of the current cell with x_min of the next cell.
+            - Check y-overlap conditions.
+        3- If conditions are met, add adjacent and parent relationships.
+        """
+
         for ic, cell in enumerate(self.cells):
             e = cell.event
             # adjacent cells
@@ -368,6 +455,15 @@ class CellDecomposition:
 # cell groups and merged cells =========================================================================================
 
     def create_cell_groups(self):
+        """ Create cell groups and merged cells.
+        Procedure:
+            1- Iterate over all cells.
+            2- For each ungrouped cell, create a new group.
+            3- If the base cell has multiple adjacents, only add it to the group (no adjacents added).
+            4- If the base cell has a single adjacent, traverse through adjacents
+               and add them to the group until a cell with multiple adjacents or a grouped cell is reached.
+            5- After forming the group, update group properties (first and last cell) and store the merged cell.
+        """
         ncg = 0
         cells_groups: list[CellGroup] = []
         mcells: list[Cell] = []
@@ -416,6 +512,7 @@ class CellDecomposition:
         self.mcells = mcells
 
     def set_merged_cells_adjacents(self):
+        """ Set merged cells adjacents based on cell groups (first and last cell). """
         for cellg in self.cells_groups:
             parents_i = cellg.first_cell.mid_parentlist
             successors_i = cellg.last_cell.mid_adjlist

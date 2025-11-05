@@ -1,3 +1,4 @@
+""" Create bounding and obstacle polygons from map image. """
 import cv2 as cv
 import numpy as np
 # from shapely import affinity

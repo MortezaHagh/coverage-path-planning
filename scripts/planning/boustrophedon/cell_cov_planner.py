@@ -1,4 +1,4 @@
-""" boustrophedon coverage planning inside the given cell """
+""" boustrophedon coverage planning inside the given decomposed cell """
 import numpy as np
 from shapely.geometry import Polygon, Point, LineString
 from scripts.base.logger import MyLogger
@@ -8,7 +8,15 @@ from scripts.planning.boustrophedon.cell import Cell
 
 
 class CellCoveragePathPlanner:
-    """ Coverage path planning inside the given cell using boustrophedon method. """
+    """
+    Coverage path planning inside the given decomposed cell using boustrophedon method.
+
+    Method:
+    1. Create cell polygon in meter coordinates.
+    2. Find hitting points with the cell polygon from top and bottom.
+    3. Calculate coverage path by connecting the hitting points in boustrophedon manner.
+    4. Create path in pixel coordinates.
+    """
 
     def __init__(self, cell: Cell, zone_ind: int = 0, resolution: float = 0.05):
         self.lg = MyLogger(f"CellCoverageP-Z{zone_ind}-C{cell.id}")
@@ -22,7 +30,7 @@ class CellCoveragePathPlanner:
         self.xy_top: list[tuple[float, float]] = None
 
         # parameters and configurations
-        self.pcfgs = PlanningConfig()
+        self.pcfg = PlanningConfig()
         self.resolution: float = resolution
 
         #
@@ -43,7 +51,7 @@ class CellCoveragePathPlanner:
         self.create_path_px()
 
     # def eval_cell(self):
-    #     min_area = 0.5 * np.pi * self.pcfgs.cleaning_r**2
+    #     min_area = 0.5 * np.pi * self.pcfg.cleaning_r**2
     #     if (self.cell.area*self.resolution**2) < min_area:
     #         self.lg.warn(f"cell area is too small: {self.cell.id}")
     #         return False
@@ -72,7 +80,7 @@ class CellCoveragePathPlanner:
     def find_top_but_hit_points(self) -> bool:
         """ find hitting points with the cell polygon from top and bottom """
         # # parameters and configurations
-        cleaning_d = 2*self.pcfgs.cleaning_r_ov
+        cleaning_d = 2*self.pcfg.cleaning_r_ov
         resolution = self.resolution
         cell = self.cell
 

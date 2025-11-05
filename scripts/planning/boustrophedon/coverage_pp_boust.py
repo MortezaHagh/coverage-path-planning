@@ -14,7 +14,19 @@ from scripts.planning.boustrophedon.decomposition_bs_mh import CellDecomposition
 
 
 class CoveragePathPlanner(CoveragePathPlannerBase):
-    """ Coverage path planning inside the given cell using boustrophedon method. """
+    """
+    Coverage path planning inside the given cell using boustrophedon method.
+
+    Steps:
+    1. Create MapPolygons object for the cell area in the map.
+    2. Decompose the cell area into boustrophedon cells.
+    3. Perform coverage path planning for each boustrophedon cell.
+    4. Rotate back all the paths to original orientation.
+    5. Create a connected path for all the boustrophedon cells.
+
+    Result:
+        self.path_m and self.path_px are set for the cell.
+    """
 
     def __init__(self, cell: Cell, zmd: ZoneMapData):
         super().__init__(cell, zmd)
@@ -26,7 +38,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.origin: np.ndarray = np.array([0.0, 0.0], dtype=np.float32)
 
         # cell decomposition
-        self.decomposer: CellDecomposition = CellDecomposition(zmd.resolution, zmd.result_path)
+        self.decomposer: CellDecomposition = CellDecomposition(zmd.resolution, zmd.result_dir)
 
         # connect paths interface
         self.connections: ConnectPaths = ConnectPaths(zone_map_data=self.zmd, ns=f"C{cell.id}")
@@ -40,6 +52,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.coverage_planning()
 
     def coverage_planning(self) -> None:
+        """ Main function to plan the coverage path for the cell. """
         if not self.cell.do_planning:
             self.lg.warn(f"cell {self.cell.id} does not require planning.")
             return
@@ -54,7 +67,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         # ********************
 
     def create_polygons(self) -> None:
-        """ create MapPolygons object for the cell area in the map"""
+        """ Create MapPolygons object for the cell area in the map"""
 
         # get polygon points of the cell
         points = self.cell.points

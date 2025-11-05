@@ -1,13 +1,16 @@
+""" Rectangle Event Handler module."""
 from pynput.keyboard import Key
 import cv2 as cv
 import numpy as np
-from scripts.gui.visuals import VisualRectangle
+from scripts.gui.visual_rectangle import VisualRectangle
 
 
 class RecEventHandler:
+    """ Rectangle Event Handler class.
+        Handles mouse and keyboard events for rectangle manipulation.
+    """
 
     def __init__(self, map_img: np.ndarray):
-        #
         self.ns: str = "RecEventHandler"
         self.wind_name: str = "Select"
 
@@ -24,7 +27,7 @@ class RecEventHandler:
         self.highlighted_ind: int = None
 
         # keybord and mouse events
-        self.__ctrl_down: bool = False
+        # self.__ctrl_down: bool = False
         self.__button_down: bool = False
 
     def mouse_handle(self, event, x, y, flags, param):

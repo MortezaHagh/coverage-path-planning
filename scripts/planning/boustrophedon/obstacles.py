@@ -1,11 +1,11 @@
-""" obstacles for decomposition """
+""" obstacles class for decomposition """
 import math
 from shapely import Polygon, Point
 from scripts.planning.boustrophedon.events import Event
 
 
 class Obstacle:
-    """ Obstacle for boustrophedon decomposition.
+    """ Obstacle class for boustrophedon decomposition.
         Includes events and methods to process them.
     """
 

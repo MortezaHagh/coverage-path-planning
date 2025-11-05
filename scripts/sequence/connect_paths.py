@@ -1,3 +1,4 @@
+""" Module for connecting paths between cells in a zone map using A* pathfinding algorithm."""
 from collections import deque
 import numpy as np
 
@@ -83,7 +84,7 @@ class ConnectPaths:
     def connect_paths(self, paths_px: list[MyPath], seq_idxs: list[int] = None) -> list[MyPath]:
         self.lg.info2("Step: connecting paths")
         c_paths = []
-        # if (not seq_idxs) or (self.all_connection_paths is None) or (self.all_connection_paths.shape[0] == 0):
+        # check if seq_idxs is given
         if not seq_idxs:
             # self.lg.info("Calculating connections between paths, not using pre-calculated connections.")
             for ip in range(len(paths_px) - 1):
@@ -121,6 +122,8 @@ class ConnectPaths:
         self.all_distances[start_idx, end_idx] = length
         return length
 
+# ======================================================================================================================
+# Path finding in the map
 # ======================================================================================================================
 
 

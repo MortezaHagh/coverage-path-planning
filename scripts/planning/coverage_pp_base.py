@@ -1,4 +1,4 @@
-
+""" Base class for cell coverage path planner. """
 import numpy as np
 from scripts.base.logger import MyLogger
 from scripts.base.my_utils import MyPoint, MyPath
@@ -18,7 +18,7 @@ class CoveragePathPlannerBase:
 
         # configurations
         self.dcfgs = PipeLineConfig()
-        self.pcfgs = PlanningConfig()
+        self.pcfg = PlanningConfig()
         self.resolution: float = zmd.resolution
 
         # cell

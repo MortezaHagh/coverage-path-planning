@@ -84,7 +84,7 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
 
     def calculate_cleaned_area(self):
         paths_len = self.stats.full_length
-        cleaning_r = self.pcfgs.cleaning_r
+        cleaning_r = self.pcfg.cleaning_r
         area = paths_len * (2 * cleaning_r)
         # overlaped_area_m
         self.stats.overlaped_area_m = area - self.stats.cleaned_area_m
@@ -101,7 +101,7 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
         # used for creating map_clean_data
         map_cleaning = self.zmd.map_cleaning.copy()
         f_path = self.paths.f_path_px
-        cleaning_r_px = int(self.pcfgs.cleaning_r / self.zmd.resolution)
+        cleaning_r_px = int(self.pcfg.cleaning_r / self.zmd.resolution)
 
         if f_path is None:
             self.lg.error("fill path is None. Cannot add cleaned area to map.")

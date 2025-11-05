@@ -1,15 +1,17 @@
+""" ZoneMapData class to store zone map data."""
 import os
 import json
 import copy
 import cv2 as cv
 import numpy as np
-from scripts.gui.visuals import Rectangle
+from scripts.gui.rectangle import Rectangle
 from scripts.base.map_data import MapData
 from scripts.base.configs import PipeLineConfig
 from scripts.base.my_utils import visualize_map_s
 
 
 def convert_to_native(data: dict) -> dict:
+    """ Convert numpy types to native python types for json serialization. """
     return {k: int(v) if isinstance(v, (np.integer, int))
             else float(round(v, 2)) if isinstance(v, (np.floating, float))
             else v
@@ -17,45 +19,38 @@ def convert_to_native(data: dict) -> dict:
 
 
 class ZoneMapData:
-    """ZoneMapData class to store zone map data.
-        values are in pixel by default.
-    """
+    """ZoneMapData class to store zone map data. values are in pixel by default."""
 
     def __init__(self, ind: int = 0):
         self.ind: int = ind
         self.name: str = f"Zone_{self.ind}"
-        self.zone_path: str = None
-        self.maps_path: str = None
-        self.result_path: str = None
-        self.result_file: str = None
+        self.zone_dir: str = None           # path to zone directory ./Data/<map_name>/District/Zone_i
+        self.maps_dir: str = None           # path to zone maps directory ./Data/<map_name>/District/Zone_i/maps
+        self.result_dir: str = None         # path to zone result directory ./Data/<map_name>/District/Zone_i/<method>
+        self.result_file: str = None        # path to zone result file ./Data/<map_name>/District/Zone_i/<method>/result.json
         #
         self.resolution: float = None
         self.orig_map_data: MapData = None
         self.orig_rectangle: Rectangle = None
-        self.rectangle: Rectangle = None
-        self.final_rectangle: Rectangle = None
-        self.rect_data: dict = None                 # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-        self.vertices: list[tuple[int, int]] = None  # vertices: [(x, y), ...]
-        self.hw_bd_px: dict = None                  # for map not rectangle {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
-        self.final_vertices: np.ndarray = None      # vertices: [(x, y), ...]
-        self._final_rect_data: dict = None          # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-        self.hw_px: tuple[int, int] = None
-        self.map_orig: np.ndarray = None
-        self.map_sf_orig: np.ndarray = None
-        self.map_cleaning: np.ndarray = None
+        self.rectangle: Rectangle = None                # current main zone or district rectangle
+        self.final_rectangle: Rectangle = None          # final rectangle (free space bounding box)
+        self.rect_data: dict = None                     # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        self._final_rect_data: dict = None              # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        self.vertices: list[tuple[int, int]] = None     # vertices: [(x, y), ...]
+        self.final_vertices: np.ndarray = None          # vertices: [(x, y), ...]
+        self.hw_bd_px: dict = None                      # map hw bound, dict keys: h_min, w_min, h_max, w_max
+        # maps
+        self.map_orig: np.ndarray = None                # cropped original map based on rectangle
+        self.map_ws: np.ndarray = None                  # cropped work space selected free space filtered (map_7_c_ws_sf_f)
+        self.map_sf_orig: np.ndarray = None             # cropped work space selected free space filtered original
+        self.map_cleaning: np.ndarray = None            # c work space selected free space filtered cleaning (map_11_c_ws_sf_f_cleaning)
         #
-        self.map_ws: np.ndarray = None
-        self.map_segmentation: np.ndarray = None
-        self.map_planning: np.ndarray = None
+        self.map_planning: np.ndarray = None            # map visualization for planning (map_viz)
+        self.map_segmentation: np.ndarray = None        # map segmentation visualization
 
     @property
     def final_rect_data(self) -> int:
         return copy.copy(self._final_rect_data)
-
-    def set_orig_map_data(self, map_data: MapData):
-        self.orig_map_data = map_data
-        self.resolution = map_data.up_resolution
-        self.set_result_path()
 
     def set_name(self, name: str):
         self.name = name
@@ -67,18 +62,28 @@ class ZoneMapData:
         self.set_result_path()
 
     def set_result_path(self):
-        self.zone_path = os.path.join(self.orig_map_data.bcfg.district_dir, self.name)
-        os.makedirs(self.zone_path, exist_ok=True)
+        """ set zone result paths based on zone name and original map data. """
+        self.zone_dir = os.path.join(self.orig_map_data.mcfg.district_dir, self.name)
+        os.makedirs(self.zone_dir, exist_ok=True)
         dcfg = PipeLineConfig()
         if self.name == 'District':
-            self.result_file = self.zone_path + f"/result_{dcfg.method}.json"
+            self.result_file = self.zone_dir + f"/result_{dcfg.method}.json"
         else:
-            self.result_file = self.zone_path + f"/{dcfg.method}/result.json"
-            self.result_path = os.path.join(self.zone_path, dcfg.method)
-            os.makedirs(self.result_path, exist_ok=True)
+            self.result_file = self.zone_dir + f"/{dcfg.method}/result.json"
+            self.result_dir = os.path.join(self.zone_dir, dcfg.method)
+            os.makedirs(self.result_dir, exist_ok=True)
         #
-        self.maps_path = os.path.join(self.zone_path, "maps")
-        os.makedirs(self.maps_path, exist_ok=True)
+        self.maps_dir = os.path.join(self.zone_dir, "maps")
+        os.makedirs(self.maps_dir, exist_ok=True)
+
+    # --------------------------------------------------------------------------
+    # Setters (called from space analyzer)
+    # --------------------------------------------------------------------------
+
+    def set_orig_map_data(self, map_data: MapData):
+        self.orig_map_data = map_data
+        self.resolution = map_data.up_resolution
+        self.set_result_path()
 
     def set_orig_rectangle(self, rectangle: Rectangle):
         self.orig_rectangle = rectangle
@@ -92,6 +97,17 @@ class ZoneMapData:
         self.rect_data = rect_data_t
         self.vertices = vertices
 
+    def set_final_rect_data(self, rect_data_t: dict, vertices: list[tuple[int, int]]):
+        """
+        set final rectangle data and final vertices.
+        final rectangle is the free space bounding box.
+        """
+        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        # vertices: [(x, y), ...]
+        self._final_rect_data = rect_data_t
+        self.final_vertices = vertices
+        self.final_rectangle = Rectangle(self.final_rect_data)
+
     def set_map_orig(self, map_orig: np.ndarray):
         self.map_orig = map_orig
 
@@ -103,33 +119,30 @@ class ZoneMapData:
 
     def set_map_cleaning(self, map_cleaning: np.ndarray):
         self.map_cleaning = map_cleaning
-        self.hw_px = map_cleaning.shape
 
     def set_map_viz(self, map_viz: np.ndarray):
         self.map_planning = map_viz
 
     def set_hw_bd_px(self, hw_bd_px: dict):
-        # cropped hw limits
+        """ set map boundary in pixels.
+        dict with keys = {"h_min", "w_min", "h_max", "w_max"}
+        """
         self.hw_bd_px = hw_bd_px
 
-    def set_final_rect_data(self, rect_data_t: dict, vertices: list[tuple[int, int]]):
-        # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-        # vertices: [(x, y), ...]
-        self._final_rect_data = rect_data_t
-        self.final_vertices = vertices
-        self.final_rectangle = Rectangle(self.final_rect_data)
+    # --------------------------------------------------------------------------
+    # Save Data
+    # --------------------------------------------------------------------------
 
     def save_data(self) -> None:
-        """ save zone map data to files.
-            maps, local_map.json.
-        """
+        """ save zone map data to files. maps, local_map.json. """
 
-        #
-        cv.imwrite(self.maps_path + "/" + "local_map_1_orig.png", self.map_orig)
-        cv.imwrite(self.maps_path + "/" + "local_map_2_sf_orig.png", self.map_sf_orig)
-        cv.imwrite(self.maps_path + "/" + "local_map_3_cleaning.png", self.map_cleaning)
-        cv.imwrite(self.maps_path + "/" + "local_map_4_viz.png", self.map_planning)
-        #
+        # Save map images
+        cv.imwrite(self.maps_dir + "/" + "local_map_1_orig.png", self.map_orig)
+        cv.imwrite(self.maps_dir + "/" + "local_map_2_sf_orig.png", self.map_sf_orig)
+        cv.imwrite(self.maps_dir + "/" + "local_map_3_cleaning.png", self.map_cleaning)
+        cv.imwrite(self.maps_dir + "/" + "local_map_4_viz.png", self.map_planning)
+
+        # Save local_map.json
         zone_data_d = dict()
         zone_data_d["origin_m"] = self.orig_map_data.origin_m
         zone_data_d["up_resolution"] = self.orig_map_data.up_resolution
@@ -137,7 +150,7 @@ class ZoneMapData:
         zone_data_d["rect_data"] = convert_to_native(self.rect_data)
         zone_data_d["final_rect_data"] = convert_to_native(self.final_rect_data)
 
-        with open(self.maps_path + "/" + "local_map.json", "w") as f:
+        with open(self.maps_dir + "/" + "local_map.json", "w") as f:
             json_object = json.dumps(zone_data_d, indent=4)
             f.write(json_object)
 

@@ -1,1 +1,1 @@
-from .configs import MapConfigs
+from .configs import MapConfig

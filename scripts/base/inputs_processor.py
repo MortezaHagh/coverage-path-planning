@@ -1,4 +1,4 @@
-""" get data and setting from input files. """
+""" Input processor Module. Read input files (map.pgm and map.yaml). Complete the MapConfig object. """
 import os
 import json
 import copy
@@ -6,87 +6,99 @@ import yaml
 import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
-from scripts.base.configs import MapConfigs
+from scripts.base.configs import MapConfig
 
 
 class InputsProcessor:
-    """ Read input map image, data and configs. """
+    """
+    Read input files (map.pgm and map.yaml). Complete the MapConfig object.
 
-    def __init__(self, map_name="Map1"):
-        # init
-        self.lg = MyLogger("InputsProcessor")
-        #
-        self.map_name: str = map_name
-        self.__configs: MapConfigs = MapConfigs()
-        self.__orig_map: np.ndarray = None
-        self.paths: dict = {}
-        self.paths["data"] = "./Data"
+    Inputs:
+        map_name: str - Name of the map to be processed.
 
+    Attributes:
+        map_name: str - Name of the map to be processed.
+        map_config: MapConfig - Map Configurations object.
+        orig_map: np.ndarray - Original map gray scale image array.
+    """
+
+    def __init__(self, map_name: str = "Map1"):
         # logging
+        self.lg = MyLogger("InputsProcessor")
         self.lg.info1("Step: processing inputs")
         self.lg.info2(f"map name: {map_name}")
 
-        # define paths (directories and files)
+        # attributes
+        self.map_name: str = map_name
+        self.mcfg: MapConfig = MapConfig()
+        self.__orig_map: np.ndarray = None
+
+        # paths (directories and files)
+        self.paths: dict = {}
+        self.paths["data"] = "./Data"  # base data directory [hardcoded]
+
+        # create required directories
         self.set_paths()
 
-        # check directory
-        self.check_directory()
+        # check directories
+        self.check_directories()
 
-        # read yaml file and write json file
-        map_yaml_data = self.load_data(self.paths["yaml"])
+        # read yaml file, also write json file
+        map_yaml_data = self.load_yaml_file(self.paths["yaml"])
 
         # complete configs from yaml data
-        self.set_configs(map_yaml_data)
+        self.update_map_configs(map_yaml_data)
 
-        # read image file
-        map_arr = cv.imread(self.paths["pgm"], cv.IMREAD_GRAYSCALE)
-        self.__orig_map = map_arr
-        # self.visualize_map(map_arr)
+        # read map image file
+        self.__orig_map = cv.imread(self.paths["pgm"], cv.IMREAD_GRAYSCALE)
+        # self.visualize_map(self.__orig_map)
 
     @property
-    def configs(self) -> MapConfigs:
-        return copy.deepcopy(self.__configs)
+    def map_config(self) -> MapConfig:
+        return copy.deepcopy(self.mcfg)
 
     @property
     def orig_map(self) -> np.ndarray:
         return copy.deepcopy(self.__orig_map)
 
     def set_paths(self) -> None:
+        """ create required directories. """
         map_folder_dir = os.path.join(self.paths["data"],  self.map_name)
-        self.paths["map"] = os.path.join(map_folder_dir,  self.__configs.base_folder)
-        self.paths["district"] = os.path.join(map_folder_dir, self.__configs.district_folder)
+        self.paths["map"] = os.path.join(map_folder_dir,  self.mcfg.base_folder)
+        self.paths["district"] = os.path.join(map_folder_dir, self.mcfg.district_folder)
         self.paths["yaml"] = os.path.join(self.paths["map"], "merge.yaml")
         self.paths["json"] = os.path.join(self.paths["map"], "merge.json")
         self.paths["pgm"] = os.path.join(self.paths["map"], "merge.pgm")
 
-    def check_directory(self) -> None:
+    def check_directories(self) -> None:
         """ check if directory and map files exist. """
         if not os.path.isdir(self.paths["map"]):
             self.lg.error(f"Directory {self.paths['map']} does not exist")
             raise FileNotFoundError(f"Directory {self.paths['map']} does not exist")
 
-    def set_configs(self, yaml_data: dict) -> None:
-        """ read map yaml file and update config object. """
-        self.__configs.map_name = self.map_name
-        self.__configs.data_dir = self.paths["data"]
-        self.__configs.district_dir = self.paths["district"]
-        self.__configs.map_path = self.paths["map"]
-        self.__configs.origin_m = yaml_data["origin"]
-        self.__configs.resolution = yaml_data["resolution"]
-        self.__configs.free_thresh = yaml_data["free_thresh"]
-        self.__configs.occupied_thresh = yaml_data["occupied_thresh"]
-
-    def load_data(self, file_path):
+    def load_yaml_file(self, file_path: str) -> dict:
+        """ read map yaml file and return data as dictionary. Also write json file. """
         with open(file_path, 'r') as file:
             map_yaml_data = yaml.safe_load(file)
         self.write_json(self.paths["json"], map_yaml_data)
         return map_yaml_data
 
-    def write_json(self, file_path, data) -> None:
+    def update_map_configs(self, yaml_data: dict) -> None:
+        """ update map config object based on yaml data. """
+        self.mcfg.map_name = self.map_name
+        self.mcfg.data_dir = self.paths["data"]
+        self.mcfg.district_dir = self.paths["district"]
+        self.mcfg.map_dir = self.paths["map"]
+        self.mcfg.origin_m = yaml_data["origin"]
+        self.mcfg.resolution = yaml_data["resolution"]
+        self.mcfg.free_thresh = yaml_data["free_thresh"]
+        self.mcfg.occupied_thresh = yaml_data["occupied_thresh"]
+
+    def write_json(self, file_path: str, data: dict) -> None:
         with open(file_path, 'w') as file:
             json.dump(data, file, indent=4)
 
-    def visualize_map(self, pgm_data) -> None:
+    def visualize_map(self, pgm_data: np.ndarray) -> None:
         self.lg.info("visualizing")
 
         # check if map is loaded

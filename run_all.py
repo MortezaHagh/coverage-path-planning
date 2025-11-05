@@ -35,9 +35,8 @@ if __name__ == "__main__":
                     # update configs
                     dcfgs.update(segmentation_method=segm_method, covpp_method=cpp_method, use_insc_ret=rect, sequence_method='milp')
 
-                    print(" ######################################################## \n")
-                    print(f"Running pipeline for method {dcfgs.method} on map {map_name} ... ")
-                    print(" ######################################################## \n")
+                    print(f"\n Running pipeline for method [{dcfgs.method}] on map [{map_name}].")
+                    print(" --------------------------------------------------------------")
                     from main import run_pipeline
                     run_pipeline(map_name)
                     print(f"Finished processing {map_name}.\n")

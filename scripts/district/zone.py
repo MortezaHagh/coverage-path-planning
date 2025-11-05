@@ -1,3 +1,4 @@
+""" Zone Data class to store zone data and run coverage planning. """
 import os
 import time
 import cv2 as cv
@@ -22,6 +23,7 @@ class ZoneData:
         segmentation_handler (SegmentationHandler): zone segmentation handler
         cells (list[PCell]): list of cells from segmentation
         cov_path_planner (CoveragePathPlanner): coverage path planner handler
+        sequence (Sequence): sequence handler
         evaluator (ZoneEvaluationHandler): zone evaluation handler
         complete_path (np.ndarray): complete path (todo)
         stats (ZoneStatsBase): zone statistics
@@ -36,10 +38,11 @@ class ZoneData:
 
         # # # configs
         self.dcfg: PipeLineConfig = PipeLineConfig()
-        self.pcfgs: PlanningConfig = PlanningConfig()
+        self.pcfg: PlanningConfig = PlanningConfig()
 
         # # # segmentation
         self.segmentation_handler: SegmentationHandler = SegmentationHandler(self.zmd)
+        self.cells: list[PCell] = []
 
         # # # coverage path planner
         self.cov_path_planner: CoveragePathPlanHandler = CoveragePathPlanHandler(self.zmd)
@@ -51,7 +54,6 @@ class ZoneData:
         self.evaluator: ZoneEvaluationHandler = ZoneEvaluationHandler(self.zmd)
 
         # resulting data
-        self.cells: list[PCell] = []
         self.complete_path: np.ndarray = None  # todo
 
         # statistics
@@ -61,14 +63,20 @@ class ZoneData:
         self.initialize()
 
     def initialize(self):
-        """ - initialize zone data and create map planning.
-            - create segmentor and coverage path planner.
-        """
+        """ initialize zone data by saving zone map data and creating initial map_planning. """
         self.zmd.save_data()
         self.create_map_planning()
 
-    def coverage_planning(self):
-        """ run coverage path planning for the zone and then post planning. """
+    def zone_planning_pipeline(self):
+        """ run coverage path planning for the zone and then post planning.
+
+        Steps:
+            1. segmentation
+            2. coverage path planning
+            3. sequence creation
+            4. evaluate statistics
+            5. post planning
+        """
         start_time = time.time()
 
         # ************ segmentation
@@ -96,8 +104,10 @@ class ZoneData:
         self.post_planning()
 
     def post_planning(self):
-        """ post planning after coverage path planning.
-        calculating stats and updating map_planning and map_clean_data.
+        """ post planning operations:
+            1. update map_planning with coverage path and sequence.
+            2. save map_planning.
+            3. save map showing cleaned area and uncleaned area.
         """
         self.save_map_planning()
         self.save_map_cleaning_data()
@@ -113,15 +123,16 @@ class ZoneData:
         self.zmd.map_segmentation = map_planning.copy()
 
     def save_map_planning(self):
+        """ save zone map_planning and map_segmentation to files. """
         if not self.dcfg.save_map_planning:
             return
         # save map planning
         m_name = "map_planning.png"
-        map_hl_path = os.path.join(self.zmd.result_path, m_name)
+        map_hl_path = os.path.join(self.zmd.result_dir, m_name)
         cv.imwrite(map_hl_path, self.zmd.map_planning)
         # save map segmentation
         m_name_s = "map_segmentation.png"
-        map_s_path = os.path.join(self.zmd.result_path, m_name_s)
+        map_s_path = os.path.join(self.zmd.result_dir, m_name_s)
         cv.imwrite(map_s_path, self.zmd.map_segmentation)
 
     def save_map_cleaning_data(self):
@@ -129,5 +140,5 @@ class ZoneData:
         if not self.dcfg.save_map_planning:
             return
         m_name = "map_cleaned.png"
-        map_hl_path = os.path.join(self.zmd.result_path, m_name)
+        map_hl_path = os.path.join(self.zmd.result_dir, m_name)
         cv.imwrite(map_hl_path, self.zmd.map_clean_data)

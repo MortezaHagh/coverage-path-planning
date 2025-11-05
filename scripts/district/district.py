@@ -1,8 +1,9 @@
+""" District data class. Includes all zones data and district map data. """
 from copy import deepcopy
 import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
-from scripts.gui.visuals import Rectangle
+from scripts.gui.rectangle import Rectangle
 from scripts.district.zone import ZoneData
 from scripts.base.configs import PipeLineConfig
 from scripts.spa.space_analyzer import SpaceAnalyzer
@@ -11,13 +12,27 @@ from scripts.evaluation.district_evaluation import DistrictEvaluationHandler, Di
 
 
 class DistrictData:
+    """
+    District data class. Includes all zones data and district map data.
+
+    Methods:
+        create_zones_hl: create all zones in the district and create map_planning (high level).
+        run_coverage_planning: run coverage planning for all zones.
+
+    Attributes:
+        spa_obj: SpaceAnalyzer - space analyzer object.
+        dmd: ZoneMapData - main district map data.
+        zone_datas: list[ZoneData] - list of zones in the district.
+        evaluator: DistrictEvaluationHandler - evaluator for district statistics.
+        stats: DistrictStatsBase - statistics for the district.
+    """
 
     def __init__(self, spa: SpaceAnalyzer):
         self.lg = MyLogger("DistrictData")
         self.lg.info1("Step: creating district data")
 
         # configs
-        self.dcfgs: PipeLineConfig = PipeLineConfig()
+        self.dcfg: PipeLineConfig = PipeLineConfig()
 
         # space_analyzer object
         self.spa_obj: SpaceAnalyzer = spa
@@ -43,12 +58,12 @@ class DistrictData:
         # self.save_map_planning()
 
     def run_coverage_planning(self) -> None:
-        """run coverage planning for all zones. """
+        """run coverage planning for all zones. Then, evaluate district stats."""
 
         zone_stats = []
         for zd in self.zone_datas:
-            self.lg.info1(f" ***************** Planning on Zone: {zd.ind} ***************** ")
-            zd.coverage_planning()
+            self.lg.info1(f" === Planning on Zone: {zd.ind} ================== ")
+            zd.zone_planning_pipeline()
             zone_stats.append(zd.stats)
 
         # stats
@@ -59,21 +74,19 @@ class DistrictData:
         self.update_map_planning()
         self.save_map_planning()
 
-    # ==================================================================================================================
-
     def create_zones(self) -> None:
-        """ create zones and zone map data based on the rectangle method. """
+        """ create zones based on the rectangle method. """
         self.lg.info1("Step: creating zones [ZoneData] and their map data")
 
         # create zones rectangles
         zone_rectangles: list[Rectangle] = self.create_one_zone_rectangle()
 
-        # create zone map data and zones
+        # create all zones [zone data(zone_map_data)]
         for i, zr in enumerate(zone_rectangles):
             self.lg.info(f"creating map data and creating zone [{i}]")
             z_spa: SpaceAnalyzer = deepcopy(self.spa_obj)
             z_spa.update_by_rectangle(zr)   # space analyzer updated by zone rectangle
-            zmd = z_spa.zone_map_data       # zone_map_data
+            zmd = z_spa.zone_map_data       # zone_map_data from space analyzer
             zmd.set_ind(i)
             # create zone
             zd = ZoneData(i, zmd)
@@ -91,16 +104,17 @@ class DistrictData:
         self.dmd.map_planning = mapp
 
     def save_map_planning(self) -> None:
-        if not self.dcfgs.save_map_planning:
+        """ save district map_planning to file. """
+        if not self.dcfg.save_map_planning:
             return
-        m_name = f"/map_planning_{self.dcfgs.method}.png"
-        map_planning_path = self.dmd.zone_path + m_name
+        m_name = f"/map_planning_{self.dcfg.method}.png"
+        map_planning_path = self.dmd.zone_dir + m_name
         cv.imwrite(map_planning_path, self.dmd.map_planning)
-        # self.lg.info(f"[save]: map planning saved to: {m_name}")
 
     # ==================================================================================================================
 
     def create_zone_rectangles_1(self) -> list[Rectangle]:
+        """ create two zone rectangles by splitting the district rectangle into two halves. """
         data = self.dmd.rect_data
         h = data["h"]
         w = data["w"]
@@ -120,6 +134,7 @@ class DistrictData:
         return [rect1, rect2]
 
     def create_zone_rectangles_2(self) -> list[Rectangle]:
+        """ create two zone rectangles by splitting the final district rectangle into two halves. """
         data = self.dmd.final_rect_data
         h = data["h"]
         w = data["w"]

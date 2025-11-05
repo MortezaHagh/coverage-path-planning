@@ -1,10 +1,8 @@
-""" Events for decomposition """
+""" Event class for decomposition """
 
 
 class Event:
-    """
-    event for decomposition.
-    """
+    """Event class for decomposition."""
 
     def __init__(self, obst_ind: int, ind: int, v: tuple[float, float]):
         self.xy: tuple[float, float] = v
@@ -24,36 +22,36 @@ class Event:
         self.next_e: 'Event' = None         # next event in the obstacle
         self.prev_e: 'Event' = None         # previous event in the obstacle
         #
-        self.hit_up_y: float = None
-        self.hit_down_y: float = None
-        self.hit_up_event: 'Event' = None
-        self.hit_down_event: 'Event' = None
+        self.hit_up_y: float = None         # y of the event which this event hit when sweeping up
+        self.hit_down_y: float = None       # y of the event which this event hit when sweeping down
+        self.hit_up_event: 'Event' = None   # event which this event hit when sweeping up
+        self.hit_down_event: 'Event' = None  # event which this event hit when sweeping down
 
         # end edge xy (up and down)
-        self.end_up_ed_xy: tuple[float, float] = None       # updated by hit down event
-        self.end_down_ed_xy: tuple[float, float] = None     # updated by hit up event
+        self.end_up_ed_xy: tuple[float, float] = None       # endpoint of the up edge
+        self.end_down_ed_xy: tuple[float, float] = None     # endpoint of the down edge
 
         # ci: cell index, cil: cell index list
-        self.base_ci_up: int = None        # cell index which created from this event by hit up
-        self.base_ci_down: int = None      # cell index which created from this event by hit down
-        self.up_cil_d = dict()        # cell index list dictionary - created by other hit down event which hitted to this event
-        self.up_cil_k = []            # keys list of up_cil_d
-        self.down_cil_d = dict()      # cell index list dictionary - created by other hit up event which hitted to this event
-        self.down_cil_k = []          # keys list of down_cil_d
+        self.base_ci_up: int = None         # cell index which created from this event by hit up
+        self.base_ci_down: int = None       # cell index which created from this event by hit down
+        self.up_cil_d = dict()              # cell index list dictionary - created by other hit down event which hitted to this event
+        self.up_cil_k = []                  # keys list of up_cil_d
+        self.down_cil_d = dict()            # cell index list dictionary - created by other hit up event which hitted to this event
+        self.down_cil_k = []                # keys list of down_cil_d
         #
-        self.has_adj: bool = True         # if this event should has adjacent cells
-        self.has_parent: bool = True      # if this event should has parent cells
+        self.has_adj: bool = True           # if this event should has adjacent cells
+        self.has_parent: bool = True        # if this event should has parent cells
         #
-        self.fake: bool = False
-        self.vertical: bool = False
+        self.vertical: bool = False         # is in vertical edge (set in the obstacle processing)
+        self.fake: bool = False             # is a fake event  (added between two vertical vertices) (set in the obstacle processing)
         #
         #
-        self.skip_sweep: bool = False
+        self.skip_sweep: bool = False       # skip sweeping from this event (set in the obstacle processing)
         self.skip_hit: bool = False
         self.direct_trap: bool = False
         #
-        self.done: bool = False
-        self.can_down: bool = True
+        self.done: bool = False         # no need to do sweep and hit for this event (set during decomposition)
+        self.can_down: bool = True      # do sweep down from this event (set during decomposition)
         # self.can_up: bool = True
         #
         self.concave: bool = False

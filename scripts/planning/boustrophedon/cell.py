@@ -1,3 +1,4 @@
+""" Cell and CellGroup classes for boustrophedon decomposition."""
 from shapely import Polygon
 from shapely.ops import unary_union
 from scripts.segmentation.cell_base import CellBase
@@ -8,7 +9,6 @@ class Cell (CellBase):
     """ Cell for boustrophedon decomposition. """
 
     def __init__(self, ind: int, poly: Polygon, event: Event):
-        # initialize base class
         super().__init__(ind, poly)
 
         #
@@ -106,6 +106,10 @@ class Cell (CellBase):
     def set_shift_le(self, shift: bool):
         self.shift_le = shift
 
+# ------------------------------------------------------------------------------
+# CellGroup
+# ------------------------------------------------------------------------------
+
 
 class CellGroup:
     """ Group of adjacent cells for boustrophedon decomposition. """
@@ -119,10 +123,10 @@ class CellGroup:
             self.id = ncg
             self.opt_id = ncg
         CellGroup._counter += 1
-        self.cells: list[Cell] = [first_cell]
-        self.first_cell: Cell = first_cell
-        self.last_cell: Cell = None
-        self.merged_cell: Cell = None
+        self.cells: list[Cell] = [first_cell]   # list of cells in the group
+        self.first_cell: Cell = first_cell      # first cell in the group
+        self.last_cell: Cell = None             # last cell in the group
+        self.merged_cell: Cell = None           # merged cell of the group
 
     def add_cell(self, cell: Cell):
         if cell:

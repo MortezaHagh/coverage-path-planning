@@ -1,3 +1,4 @@
+""" Coverage Path Planning Handler"""
 from scripts.base.logger import MyLogger
 from scripts.base.configs import PipeLineConfig
 from scripts.segmentation.cell_processed import PCell
@@ -6,6 +7,13 @@ from scripts.planning.coverage_pp_base import CoveragePathPlannerBase
 
 
 class CoveragePathPlanHandler:
+    """
+    Coverage Path Planning Handler for all cells in the zone.
+
+    Result:
+        path_m and path_px are set for each cell after planning.
+    """
+
     def __init__(self, zone_map_data: ZoneMapData):
         self.lg = MyLogger('CoveragePathPlanHandler')
 
@@ -44,7 +52,7 @@ class CoveragePathPlanHandler:
         else:
             raise ValueError(f"Unknown coverage path planning method: {covpp_method}. ")
 
-        #
+        # plan for all cells
         cell: PCell
         for cell in self.cells:
             cell_covp_planner = CoveragePathPlanner(cell=cell, zmd=self.zmd)

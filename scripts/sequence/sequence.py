@@ -1,3 +1,4 @@
+""" Sequence class to create sequence of cells to be covered, connect paths between cells and create full paths. """
 import os
 import cv2 as cv
 import numpy as np
@@ -12,11 +13,21 @@ from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.sequence.connect_paths import ConnectPaths
 from scripts.planning.planning_plotter import PlannerPlotter
-from scripts.sequence.optimize_mcells_seq_1 import OptimCellsSeq
+from scripts.sequence.optimize_mcells_seq_1 import OptimizeCellsSeq
 from scripts.base.configs import PipeLineConfig, PlanningConfig
 
 
 class SequencePaths:
+    """
+    Class to store sequence paths.
+
+    Paths:
+    - paths: list of coverage paths
+    - c_paths: list of connection paths between coverage paths
+    - f_path: final complete connected path
+    - n_paths: number of coverage paths
+    """
+
     def __init__(self):
         self.paths_px: list[MyPath] = []
         self.paths_m: list[MyPath] = []
@@ -29,8 +40,16 @@ class SequencePaths:
 
 class Sequence:
     def __init__(self, zmd: ZoneMapData) -> None:
-        """ Create sequence of cells to be covered.
-            Also connect paths between cells and create full paths.
+        """
+        Sequence class to create sequence of cells to be covered, connect paths between cells and create full paths.
+
+        Steps:
+        1. Create sequence of cells to be covered.
+        2. Connect paths between cells.
+        3. Post planning: apply distance filter, create full path.
+        4. Set sequence paths.
+        5. Plot paths.
+        6. Update map planning with cells and paths.
         """
 
         self.lg = MyLogger("Sequence")
@@ -43,12 +62,12 @@ class Sequence:
         self.n_cells: int = 0
 
         # configurations
-        self.pcfgs: PlanningConfig = PlanningConfig()
+        self.pcfg: PlanningConfig = PlanningConfig()
         self.dcfgs: PipeLineConfig = PipeLineConfig()
         self.colors: list[tuple] = []
 
         # params
-        self.min_points_distance: float = self.pcfgs.min_wp_dist
+        self.min_points_distance: float = self.pcfg.min_wp_dist
         self.resolution: float = zmd.resolution
 
         # connect paths interface
@@ -66,7 +85,7 @@ class Sequence:
         self.c_paths_m: list[MyPath] = []
 
         # plotter
-        self.plotter: PlannerPlotter = PlannerPlotter(zmd.result_path)
+        self.plotter: PlannerPlotter = PlannerPlotter(zmd.result_dir)
 
         # animation
         self.anim_line = None  # for animation
@@ -93,7 +112,14 @@ class Sequence:
         # **********************
 
     def create_sequence(self) -> None:
-        """ Create optimum sequence of cells to be covered. """
+        """
+        Create optimum sequence of cells to be covered.
+
+        Steps:
+        1. Calculate distances between cells (if needed).
+        2. Optimize sequence of cells based on distances.
+        3. Store paths in sequence paths.
+        """
 
         # Initialize distances between cells (paths start and end points)
         distances = None
@@ -122,13 +148,13 @@ class Sequence:
             self.s_cells = self.cells
             return
 
-        #
+        # todo
         start_cell_idx = 0
         if self.zmd.orig_map_data.name == "map_fr52":
             start_cell_idx = 4
 
             # create optimized sequence of cells
-        opt_seq = OptimCellsSeq(cells=self.cells, distances=distances, start_cell_idx=start_cell_idx)
+        opt_seq = OptimizeCellsSeq(cells=self.cells, distances=distances, start_cell_idx=start_cell_idx)
         self.seq_idxs = opt_seq.tour_idxs
         self.s_cells = [self.cells[i] for i in opt_seq.tour_idxs]
 
@@ -165,7 +191,7 @@ class Sequence:
     def plot_paths(self):
         self.plot_paths_px()
         self.plot_final_path_m()
-        if self.pcfgs.animation:
+        if self.pcfg.animation:
             self.animate_robot_paths()
 
     def set_sequence_paths(self) -> None:
@@ -208,7 +234,7 @@ class Sequence:
 
     def add_cell_paths_to_map_planning(self) -> None:
         map_planning = self.zmd.map_planning.copy()
-        robot_r_px = int(self.pcfgs.cleaning_r_ov / self.resolution)
+        robot_r_px = int(self.pcfg.cleaning_r_ov / self.resolution)
         robot_d_px = robot_r_px * 2
         p_r = 5  # int(robot_r_px/10)
         for i, path_px in enumerate(self.paths_px):
@@ -367,11 +393,11 @@ class Sequence:
 
     def save_path_fig(self, fig, is_anim=False):
         if not is_anim:
-            fig_path = os.path.join(self.zmd.result_path, "paths.png")
+            fig_path = os.path.join(self.zmd.result_dir, "paths.png")
             fig.savefig(fig_path, format="png", dpi=300)
         else:
             self.lg.info(f"saving animation ... n_frames: {self.f_path_px.n}")
-            fig_path = os.path.join(self.zmd.result_path, "anim_paths.gif")
+            fig_path = os.path.join(self.zmd.result_dir, "anim_paths.gif")
             self.anim.save(fig_path)
 
     def plot_paths_m(self):
@@ -402,7 +428,7 @@ class Sequence:
         if self.f_path_m is not None:
             pp = np.array(self.f_path_m.xy, dtype=np.float32)
             ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2, linestyle='-', markersize=3)
-        fig_path = os.path.join(self.zmd.result_path, "final_path.png")
+        fig_path = os.path.join(self.zmd.result_dir, "final_path.png")
         fig.savefig(fig_path, format="png", dpi=300)
         # plt.show()
 

@@ -1,14 +1,16 @@
+""" Utility classes and functions. """
+import dataclasses
 import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
 
 
+@dataclasses.dataclass
 class MyPoint:
-    """ simple point class x, y. """
+    """ simple point class x, y. Represents a point in 2D space. """
 
-    def __init__(self, x=None, y=None):
-        self.x = x
-        self.y = y
+    x: float = None
+    y: float = None
 
     @property
     def xy(self):
@@ -29,6 +31,7 @@ class MyPath:
         self.set_xys()
 
     def set_xys(self):
+        """ create xy array (list of tuples) from points. """
         if self.points is not None:
             xy = [(p.x, p.y) for p in self.points]
             if isinstance(xy[0][0], (float, np.float32)):
@@ -38,26 +41,33 @@ class MyPath:
             self.n = len(self.points)
 
     def point(self, i: int) -> MyPoint:
+        """ get point at index i. """
         if i < 0 or i >= self.n:
             raise IndexError("Index out of range")
         return self.points[i]
 
 
-def get_n_colors_plt(n) -> list:
-    # Get n distinct colors from matplotlib's tab10/Set3 colormaps or HSV spectrum
+# ----------------------------------------------------------------------------------------------------------------------
+# Utility functions
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+def get_n_colors_plt(n: int) -> list:
+    """ Get n distinct colors from matplotlib's colormaps or HSV spectrum. """
     cmap = plt.get_cmap('hsv')  # You can use 'tab10', 'tab20', 'Set3', etc.
     colors_rgb = [cmap(i / n)[:3] for i in range(n)]  # RGB values (0-1)
     return colors_rgb
 
 
-def get_n_colors_cv(n) -> list:
+def get_n_colors_cv(n: int) -> list:
+    """ Get n distinct colors in BGR format for OpenCV. """
     colors_rgb = get_n_colors_plt(n)
     # Convert to BGR and scale to 0-255
     colors_bgr = [tuple(int(255 * c) for c in reversed(rgb)) for rgb in colors_rgb]
     return colors_bgr
 
 
-def mod_angle(theta) -> float:
+def mod_angle(theta: float) -> float:
     return theta % (2 * np.pi)
 
 

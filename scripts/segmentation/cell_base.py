@@ -1,3 +1,4 @@
+""" Base Cell Class for Segmentation. """
 import numpy as np
 from shapely.geometry import Polygon
 from scripts.base.my_utils import MyPoint, MyPath
@@ -7,13 +8,15 @@ class CellBase:
     """Base cell class for segmentation and coverage path planning. """
 
     def __init__(self, idx: int, poly: Polygon):
-        self.id: int = idx
-        self.opt_id: int = None  # optimized id after sequencing
-        self.next_cell_seq: int = None
-        #
-        self.poly: Polygon = poly
-        self.points: np.ndarray = np.array([], dtype=np.int32)
-        #
+        self.id: int = idx                  # cell id
+        self.opt_id: int = None             # optimized id after sequencing
+        self.next_cell_id_seq: int = None   # next cell id in the sequence
+
+        # polygon and points
+        self.poly: Polygon = poly                               # cell polygon
+        self.points: np.ndarray = np.array([], dtype=np.int32)  # cell polygon points
+
+        # cell specs
         self.cxy: tuple[float, float] = None  # center x,y
         self.x_min: float = None
         self.x_max: float = None
@@ -24,21 +27,21 @@ class CellBase:
         self.width: float = None
         self.height: float = None
         self.area: float = None
-        #
-        self.adjacent_ids: list[int] = []
-        #
-        self.do_planning: bool = True
 
-        # main direction angle of the cell (free space) - radians
-        self.major_direction: float = 0.0
+        # cell specs
+        self.major_direction: float = 0.0   # main direction angle of the cell (free space) - radians
+        self.do_planning: bool = True       # whether to do planning in this cell
 
-        # start-end points
-        self.start_point: MyPoint = None
-        self.end_point: MyPoint = None
+        # adjacency
+        self.adjacent_ids: list[int] = []   # adjacent cell ids
 
-        # paths
+        # cell paths (to be set later)
         self.path_m: MyPath = None      # path in meters
         self.path_px: MyPath = None     # path in pixels
+
+        # start-end points (based on cell path)
+        self.start_point: MyPoint = None
+        self.end_point: MyPoint = None
 
         # calculate cell specs
         self.calculate_cell_specs()
@@ -49,9 +52,9 @@ class CellBase:
     def set_optim_id(self, ind: int, next_cell_idx: int = None):
         self.opt_id = ind
         if next_cell_idx is not None:
-            self.next_cell_seq = next_cell_idx
+            self.next_cell_id_seq = next_cell_idx
         else:
-            self.next_cell_seq = None
+            self.next_cell_id_seq = None
 
     def calculate_cell_specs(self):
         # center
@@ -76,13 +79,19 @@ class CellBase:
         else:
             self.points = []
 
+    # --------------------------------------------------------------------------
+    # setters
+    # --------------------------------------------------------------------------
+
     def add_adjacent_id(self, ind: int):
         self.adjacent_ids.append(ind)
 
     def set_path_m(self, path: MyPath):
+        """ set cell path in meters. """
         self.path_m = path
 
     def set_path_px(self, path: MyPath):
+        """ set cell path in pixels. """
         self.path_px = path
         self.set_start_point(path.points[0])
         self.set_end_point(path.points[-1])

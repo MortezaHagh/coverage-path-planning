@@ -11,7 +11,15 @@ from scripts.planning.coverage_pp_base import CoveragePathPlannerBase
 
 
 class CoveragePathPlanner(CoveragePathPlannerBase):
-    """ Class to plan coverage path for a given cell in a zone using contour-based methods. """
+    """
+    Class to plan coverage path for a given cell in a zone using contour-based methods.
+
+    Steps:
+    3. Calculate coverage path using either polygon buffering or a combination of distance transform and inscribed rectangle.
+    4. Create the final path in world coordinates.
+
+
+    """
 
     def __init__(self, cell: Cell, zmd: ZoneMapData):
         super().__init__(cell, zmd)
@@ -31,7 +39,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         poly = self.cell.poly
         # scale the polygon to smaller size
 
-        robot_r_px = self.pcfgs.cleaning_r_ov / self.resolution
+        robot_r_px = self.pcfg.cleaning_r_ov / self.resolution
         robot_d_px = robot_r_px * 2
 
         scaled_polys = []
@@ -61,7 +69,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
     def calculate_path_combinaiton(self) -> None:
         """ Calculate the coverage path by distance transform and inscribed rectangle if available. """
 
-        robot_r_px = int(self.pcfgs.cleaning_r_ov / self.resolution)
+        robot_r_px = int(self.pcfg.cleaning_r_ov / self.resolution)
         points = []
 
         # initial scale
@@ -93,7 +101,15 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.path_px = path_px
 
     def complete_path_by_rectangle(self, points: list, robot_r_px: int) -> MyPath:
-        """ Complete the path using the inscribed rectangle of the cell. """
+        """
+        Complete the path using the inscribed rectangle of the cell.
+
+        Steps:
+        1. Start from the inscribed rectangle and scale it down iteratively.
+        2. Rearrange and add rectangle points to the path.
+        3. Handle the center line if necessary (e.g., for odd-width rectangles).
+        4. Create the final path.
+        """
 
         rect = self.cell.rectangle_poly
         robot_d_px = int(robot_r_px * 2)
@@ -177,6 +193,16 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         return MyPath(points)
 
     def complete_path_by_distance_transform(self, points: list, c_map: np.ndarray, s_xy: np.ndarray, robot_r_px: int) -> MyPath:
+        """
+        Complete the path using distance transform method.
+
+        Steps:
+        1. Compute the distance transform of the cell map.
+        2. Iteratively find contours at increasing distances from the boundary.
+        3. Rearrange and add contour points to the path.
+        4. Handle any remaining area with a final contour extraction.
+        """
+
         robot_d_px = int(robot_r_px * 2)
 
         # todo could crop the c_map to the cell polygon map

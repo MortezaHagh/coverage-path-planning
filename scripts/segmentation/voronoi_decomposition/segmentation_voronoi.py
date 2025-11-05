@@ -1,3 +1,4 @@
+""" Voronoi segmentation module. """
 import numpy as np
 from shapely import Polygon
 from matplotlib import pyplot as plt
@@ -12,7 +13,13 @@ from scripts.segmentation.voronoi_decomposition.voronoi_decomposition import Vor
 
 
 class Segmentation(SegmentationBase):
-    """ Voronoi segmentation handler."""
+    """ Voronoi segmentation handler.
+
+        Steps:
+            1- Voronoi decomposition.
+            2- Segmentation (creating rings from critical points).
+            3- Creating cells from rings.
+    """
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
         super().__init__(zmd, map_polygons)
@@ -21,7 +28,7 @@ class Segmentation(SegmentationBase):
         # voronoi decomposition object
         self.vor: Voronoi = None
 
-        #
+        # attributes for segmentation
         self.poly_start_idxs: list[int] = []                # start indices of the polygons in self.vor.points
         self.poly_end_idxs: list[int] = []                  # end indices of the polygons in self.vor.points
         self.critical_points: list[CriticalPoint] = []      # list of critical points found in the Voronoi decomposition
@@ -52,7 +59,17 @@ class Segmentation(SegmentationBase):
         self.plot_rings()
 
     def main_segmentation(self, b_poly: Polygon, obs_polys: list[Polygon]) -> None:
-        """Main segmentation process to create rings from critical points. """
+        """
+        Main segmentation process to create rings from critical points. 
+
+        Steps:
+            1- Preprocess:
+                - Create polygon points start and end indices.
+                - Create critical point basis indices lists.
+                - Find skip critical points.
+            2- Rings:
+                - Create all segments (rings) from critical points.
+        """
         # pre process
         self.create_poly_points_start_ends(b_poly, obs_polys)
         self.create_cp_bases_idxs()
@@ -60,7 +77,9 @@ class Segmentation(SegmentationBase):
         # rings
         self.create_all_segments()
 
-    # Preprocess ===============================================================
+    # ==================================================================================================================
+    # Preprocess
+    # ==================================================================================================================
 
     def check_critical_points(self, b_poly: Polygon) -> bool:
         """Check if there are critical points in the Voronoi decomposition.
@@ -89,14 +108,17 @@ class Segmentation(SegmentationBase):
         self.poly_end_idxs = poly_end_idxs
 
     def create_cp_bases_idxs(self) -> None:
+        """ Create lists of basis point indices for critical points. """
         self.cp_base1_idxs = [c.bs1_idx for c in self.critical_points]  # first basis point indices
         self.cp_base2_idxs = [c.bs2_idx for c in self.critical_points]  # second basis point indices
         # initialize critical point dictionary
         # self.critp_ring_dict = {i: set() for i in range(len(self.critical_points))}
 
     def find_skip_cps(self) -> None:
-        """ find critical points that if starting from them in a poly, end to them with only passing one basis point.
-            mark these critical points to be skipped. """
+        """
+        Find critical points that if starting from them in a poly, end to them with only passing one basis point.
+        mark these critical points to be skipped.
+        """
         for i in range(1, len(self.poly_start_idxs)):
             n_bs = 0
             start_idx = self.poly_start_idxs[i]
@@ -114,7 +136,9 @@ class Segmentation(SegmentationBase):
                 self.critical_points[cp_idx].skip = True
                 self.lg.warn(f"Critical point {cp_idx} is skipped.")
 
-    # rings ====================================================================
+    # ==================================================================================================================
+    # rings
+    # ==================================================================================================================
 
     def create_all_segments(self) -> None:
         """Create segments (rings) for all critical points. """
@@ -143,7 +167,16 @@ class Segmentation(SegmentationBase):
         self.lg.info(f"Created {len(self.rings)} rings.")
 
     def create_cp_segment(self, i_cp: int, cp: CriticalPoint) -> Ring:
-        """Create a segment (ring) for a critical point. """
+        """
+        Create a segment (ring) for a critical point.
+
+        Method:
+        - Start from one of the basis points of the critical point.
+        - Traverse the Voronoi points along the polygon until reaching the other basis point.
+        - Along the way, if another critical point is encountered, add it to the ring and
+            jump to its other basis point.
+        - Continue until returning to the starting critical point.
+        """
 
         n_points = len(self.vor.points)
         if cp.n_passed > 2:
@@ -238,7 +271,9 @@ class Segmentation(SegmentationBase):
         # return np.array(ring), set(ring_cp_idxs)
         return Ring(ring, ring_cp_idxs, ring_cp_ring_idxs)
 
-    # Cell =====================================================================
+    # ==================================================================================================================
+    # Cell creation
+    # ==================================================================================================================
 
     def create_cells(self):
         """Create cells from the rings. """
@@ -250,7 +285,11 @@ class Segmentation(SegmentationBase):
             self.cells.append(cell)
 
     def set_cell_adjacents(self) -> None:
-        """Set adjacent cells for each cell based on touching polygons. """
+        """
+        Set adjacent cells for each cell based on touching polygons.
+
+        Method: Check if the polygons of two cells touch each other.
+        """
         # method 1: using touches
         self.lg.info("Setting cell adjacents")
         for i, cell in enumerate(self.cells):
@@ -266,7 +305,9 @@ class Segmentation(SegmentationBase):
         for cell in self.cells:
             cell.process_cell()
 
-    # Plotting =========================================================================================================
+    # ==================================================================================================================
+    # Plotting
+    # ==================================================================================================================
 
     def plot_rings(self) -> None:
         if not (self.dcfgs.plot_decomposition or self.dcfgs.save_decomposition_plot):
@@ -284,7 +325,7 @@ class Segmentation(SegmentationBase):
             ax.annotate(f"{i}", (cp.vp.v[0], cp.vp.v[1]), fontsize=6, color='blue')
         #
         if self.dcfgs.save_decomposition_plot:
-            save_path = self.zmd.result_path + "/rings.png"
+            save_path = self.zmd.result_dir + "/rings.png"
             fig.savefig(save_path, dpi=300)
 
         #

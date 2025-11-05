@@ -1,3 +1,4 @@
+""" Common classes for Voronoi decomposition. Includes Voronoi points, critical points, and rings. """
 import numpy as np
 from shapely.geometry import Polygon
 
@@ -9,12 +10,12 @@ class VPoint:
         self.idx: int = idx                         # index in the Voronoi vertice
         self.v: np.ndarray = v                      # coordinates of the Voronoi vertex
         self.free: bool = False                     # inside the bounding polygon and not in obstacles
-        self.feasible: bool = False
-        self.critical: bool = False                 # critical Voronoi vertex
+        self.feasible: bool = False                 # is feasible (for creating critical points and finding adjacents)
+        self.critical: bool = False                 # is it a critical point
         self.has_inf_adj: bool = False              # has adjacent Voronoi vertices with infinite distance
-        self.in_bd_poly: bool = False               # inside the outer bounding polygon 1
+        self.in_bd_poly: bool = False               # inside the outer bounding polygon
         #
-        self.basis_idxs: np.ndarray = None          # two closest basis points
+        self.basis_idxs: np.ndarray = None          # two closest basis points indices
         self.basis_points: np.ndarray = None        # two closest basis points in the Voronoi diagram
         self.basis_dists: np.ndarray = None         # distances to the basis points
         self.clearance: float = np.inf              # clearance to the obstacles
@@ -34,6 +35,7 @@ class VPoint:
         self.set_basis_dists(basis_dist)
 
     def set_basis_dists(self, dists: np.ndarray):
+        """ Set the distances to the basis points and calculate the clearance. """
         if dists is None or len(dists) < 1:
             raise ValueError("Basis distances must be provided and contain at least one distances.")
         self.basis_dists = dists
@@ -45,7 +47,12 @@ class VPoint:
         self.adjacent_vp_idxs = adj_vp_idxs
 
     def set_adjacents_vp_dists(self, dists: np.ndarray):
+        """ Set the distances to adjacent Voronoi points. """
         self.adjacent_vp_dists = dists
+
+# ------------------------------------------------------------------------------
+# CriticalPoint
+# ------------------------------------------------------------------------------
 
 
 class CriticalPoint:
@@ -81,6 +88,10 @@ class CriticalPoint:
             self.bs1_vp = self.vp.basis_points[1]
             self.bs2_vp = self.vp.basis_points[0]
 
+
+# ------------------------------------------------------------------------------
+# Ring
+# ------------------------------------------------------------------------------
 
 class Ring:
     """ Ring class representing a closed loop of Voronoi points containing critical points. """
