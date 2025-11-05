@@ -1,4 +1,4 @@
-""" New Trapezoidal decomposition """
+"""New Trapezoidal decomposition module for boustrophedon cell generation."""
 import math
 from shapely import Polygon
 from scripts.base.logger import MyLogger
@@ -11,19 +11,21 @@ from scripts.planning.boustrophedon.post_process_mcells import eval_cells_path_s
 
 
 class CellDecomposition:
-    """
-    New trapezoidal decomposition.
+    """Perform new trapezoidal decomposition for boustrophedon path planning.
 
-    Steps:
-        1- Create obstacles and events
-        2- Decompose all cells
-        3- Find adjacent cells
-        4- Complete adjacency
-        5- Create cell groups and merged cells
-        6- Set merged cells adjacents
-        7- Evaluate merged cells for planning
-        8- Visualize results
+    This class decomposes a workspace into trapezoidal cells suitable for
+    parallel sweeping coverage patterns, handles cell adjacency, and merges
+    compatible cells for efficient coverage.
 
+    Decomposition Pipeline:
+        1. Create obstacles and events
+        2. Decompose into trapezoidal cells
+        3. Find adjacent cells
+        4. Complete adjacency relationships
+        5. Create cell groups and merge compatible cells
+        6. Set merged cell adjacency
+        7. Evaluate cells for planning requirements
+        8. Visualize decomposition results
     """
 
     def __init__(self, resolution: float = 0.05, result_dir: str = None):
@@ -51,6 +53,11 @@ class CellDecomposition:
         self.plotter: BoustPlotter = None
 
     def initiate(self):
+        """Execute complete decomposition pipeline.
+
+        Runs all steps from obstacle creation through visualization of the
+        final decomposed cells.
+        """
         self.create_obstacles()
         self.create_events()
 
@@ -72,10 +79,12 @@ class CellDecomposition:
         self.visualize()
 
     def set_bounding_polygon(self, poly: Polygon):
+        """Set the workspace boundary polygon."""
         self.b_poly = poly
         self.b_obstacle = Obstacle(0, self.b_poly)
 
     def set_obstacle_polygons(self, polygons: list[Polygon]):
+        """Set the list of obstacle polygons within the workspace."""
         self.polygons = polygons
 
     def create_obstacles(self):

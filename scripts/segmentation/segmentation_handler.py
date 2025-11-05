@@ -1,4 +1,8 @@
-""" Segmentation Handler Module."""
+"""Segmentation handler module for managing zone decomposition into cells.
+
+This module implements the Handler pattern to dynamically load and execute
+different segmentation algorithms based on configuration.
+"""
 from scripts.base.logger import MyLogger
 from scripts.base.configs import PipeLineConfig
 from scripts.planning.map_polygons import MapPolygons
@@ -9,8 +13,29 @@ from scripts.segmentation.segmentation_base import SegmentationBase
 
 
 class SegmentationHandler:
-    """ High-level Segmentation Interface.
-        Handles segmentation of a zone. Results in processed cells.
+    """High-level interface for zone segmentation into coverage cells.
+
+    This handler dynamically loads the appropriate segmentation algorithm
+    based on the pipeline configuration and converts raw cells into
+    processed cells ready for coverage planning.
+
+    Args:
+        zmd: Zone map data object.
+
+    Attributes:
+        zmd: Zone map data object.
+        map_polygons: Polygon representation of the workspace.
+        segmentor: The actual segmentation algorithm instance.
+        bcells: Base cells from segmentation algorithm.
+        cells: Processed cells ready for planning.
+        s_cells: Sorted processed cells.
+        n_cells: Number of cells created.
+        dcfgs: Pipeline configuration object.
+
+    Supported Methods:
+        - "simple": Single cell covering entire zone
+        - "voronoi": Voronoi-based decomposition
+        - Custom methods can be added by extending SegmentationBase
     """
 
     def __init__(self, zmd: ZoneMapData):
@@ -35,12 +60,15 @@ class SegmentationHandler:
         self.n_cells: int = 0                   # number of cells
 
     def run(self) -> None:
-        """ Run segmentation.
+        """Execute segmentation pipeline using configured method.
 
-        Steps:
-            1. select segmentation method from configs.
-            2. create segmentor object and run segmentation.
-            3. create processed cells from base cells.
+        This method:
+            1. Loads the segmentation algorithm based on configuration
+            2. Executes the segmentation to create base cells
+            3. Converts base cells to processed cells (PCell objects)
+
+        Raises:
+            ValueError: If segmentation method is not recognized.
         """
 
         # segmentation method

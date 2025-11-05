@@ -16,10 +16,19 @@ from scripts.spa.space_analyzer import SpaceAnalyzer
 
 
 def run_pipeline(map_name: str) -> None:
-    """
-    Main function to run the coverage path planning pipeline.
-    Inputs:
-        map_name: str - Name of the map to be processed.
+    """Run the complete coverage path planning pipeline.
+
+    Args:
+        map_name: Name of the map to be processed.
+
+    Pipeline Steps:
+        1. Process inputs (configs and map image)
+        2. Process map image and create MapData
+        3. Create district rectangle
+        4. Analyze workspace and initialize district MapData
+        5. Create DistrictData and zone MapData
+        6. Create zones
+        7. Run coverage planning for all zones
     """
 
     ns = "PipeLine"

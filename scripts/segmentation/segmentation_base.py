@@ -1,4 +1,8 @@
-""" Base class for Segmentation."""
+"""Base class for segmentation algorithms.
+
+This module defines the abstract interface that all segmentation methods
+must implement, enabling a plugin-based architecture.
+"""
 from scripts.base.logger import MyLogger
 from scripts.base.configs import PipeLineConfig
 from scripts.segmentation.cell_base import CellBase
@@ -7,7 +11,32 @@ from scripts.district.zone_map_data import ZoneMapData
 
 
 class SegmentationBase:
-    """ Base class for Segmentation.
+    """Abstract base class for zone segmentation algorithms.
+
+    All segmentation implementations must inherit from this class and
+    implement the run() method. This design allows easy addition of
+    new segmentation methods without modifying the core pipeline.
+
+    Args:
+        zmd: Zone map data object.
+        map_polygons: Polygon representation of workspace and obstacles.
+
+    Attributes:
+        zmd: Zone map data object.
+        map_polygons: Polygon representation of the workspace.
+        cells: List of cells created by segmentation.
+        n_cells: Number of cells created.
+        dcfgs: Pipeline configuration object.
+        lg: Logger instance.
+
+    Example:
+        To create a new segmentation method:
+
+        >>> class MySegmentation(SegmentationBase):
+        ...     def run(self):
+        ...         # Implement your segmentation logic
+        ...         self.cells = [...]  # Create CellBase objects
+        ...         self.n_cells = len(self.cells)
     """
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
@@ -27,7 +56,13 @@ class SegmentationBase:
         self.n_cells: int = 0
 
     def run(self):
-        """ Run segmentation.
-            to be implemented in child classes.
+        """Execute the segmentation algorithm.
+
+        This method must be implemented by all child classes. It should
+        decompose the zone workspace into cells and populate the cells
+        and n_cells attributes.
+
+        Raises:
+            NotImplementedError: If not implemented in child class.
         """
-        raise NotImplementedError
+        raise NotImplementedError("Segmentation subclasses must implement run() method")

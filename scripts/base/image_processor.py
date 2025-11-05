@@ -1,4 +1,4 @@
-""" Map image processing module for loaded map image file """
+"""Map image processing module for binary map generation and morphological operations."""
 import copy
 import cv2 as cv
 import numpy as np
@@ -8,15 +8,17 @@ from scripts.base.map_data import MapData
 
 
 class MapImageProcessor:
-    """
-    Process loaded map image arr (grayscale) and create MapData.
+    """Process grayscale map image and create structured MapData object.
 
-    Inputs:
-        map_arr: np.ndarray - loaded map image array (grayscale).
-        map_config: MapConfig - map configurations object.
+    Args:
+        map_arr: Loaded grayscale map image array (2D numpy array).
+        map_config: Map configuration object with robot and workspace parameters.
 
     Attributes:
-        mdata: MapData - processed MapData object.
+        map_data: Processed MapData object containing binary maps and metadata.
+
+    Raises:
+        ValueError: If image is not found, not grayscale, or format is unsupported.
     """
 
     def __init__(self, map_arr: np.ndarray, map_config: MapConfig):
@@ -49,14 +51,21 @@ class MapImageProcessor:
         return copy.deepcopy(self.__map_data)
 
     def check_map(self, image: np.ndarray) -> None:
-        """ check if map image is loaded. """
+        """Validate that the map image is properly loaded and formatted.
+
+        Args:
+            image: Input map image array.
+
+        Raises:
+            ValueError: If image is None or not grayscale.
+        """
         if image is None:
             raise ValueError("Image not found or the format is not supported")
         if len(image.shape) > 2:
             raise ValueError("Image must be grayscale")
 
     def set_map_data(self) -> None:
-        """ set basic map data: name, origin, original map. """
+        """Initialize basic map data attributes: name, origin, and original map."""
         map_arr = self.__orig_map.copy()
         self.__map_data.set_basic_configs(self.mcfg, self.mcfg.map_name)
         self.__map_data.set_origin_m(self.mcfg.origin_m)

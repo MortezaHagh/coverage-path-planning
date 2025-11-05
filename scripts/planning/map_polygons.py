@@ -1,4 +1,4 @@
-""" Create bounding and obstacle polygons from map image. """
+"""Polygon extraction module for workspace boundaries and obstacles."""
 import cv2 as cv
 import numpy as np
 # from shapely import affinity
@@ -8,7 +8,11 @@ from scripts.district.zone_map_data import ZoneMapData
 
 
 class MapPolygons:
-    """ Create bounding and obstacle polygons from map image. """
+    """Extract and represent workspace boundary and obstacle polygons.
+
+    This class processes binary workspace maps to identify and create
+    polygon representations of the coverage boundary and internal obstacles.
+    """
 
     def __init__(self, zmd: ZoneMapData, map_ws: np.ndarray = None, dec_mid_dist: int = 10):
         self.lg = MyLogger("MapPolygons")
@@ -36,12 +40,16 @@ class MapPolygons:
         self.create_obstacle_polygons()
 
     def set_start_coord(self, zmd: ZoneMapData):
-        """ Set starting coordinates from map rectangle. """
+        """Set starting coordinates from zone map rectangle."""
         self.s_x = zmd.rectangle.x_min
         self.s_y = zmd.rectangle.y_min
 
     def create_bounding(self):
-        """ Create bounding polygon from map image. """
+        """Extract workspace boundary polygon from binary map.
+
+        Uses contour detection to find the largest contour representing
+        the workspace boundary.
+        """
         contours, _ = cv.findContours(self.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         biggest_contour = max(contours, key=cv.contourArea)
 
@@ -51,9 +59,7 @@ class MapPolygons:
         self.b_poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
 
     def create_obstacle_polygons(self):
-        """ Create obstacle polygons from map image.
-            Approach: find contours of obstacles in the map image and create polygons from them.
-        """
+        """Extract obstacle polygons from binary map using contour detection."""
         # get obstacle contours inside the biggest contour from map image
         contours, hierarchy = cv.findContours(self.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
 

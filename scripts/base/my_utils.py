@@ -1,4 +1,4 @@
-""" Utility classes and functions. """
+"""Utility classes and functions for geometric primitives and visualizations."""
 import dataclasses
 import cv2 as cv
 import numpy as np
@@ -7,18 +7,34 @@ from matplotlib import pyplot as plt
 
 @dataclasses.dataclass
 class MyPoint:
-    """ simple point class x, y. Represents a point in 2D space. """
+    """Simple 2D point representation.
+
+    Attributes:
+        x: X-coordinate (float or int).
+        y: Y-coordinate (float or int).
+        xy: Property returning (x, y) tuple.
+    """
 
     x: float = None
     y: float = None
 
     @property
     def xy(self):
+        """Return point as (x, y) tuple."""
         return (self.x, self.y)
 
 
 class MyPath:
-    """ simple path class - list of points (MyPoint). """
+    """Path representation as sequence of MyPoint objects.
+
+    This class provides a convenient container for storing and manipulating
+    sequences of 2D points representing paths.
+
+    Attributes:
+        points: List of MyPoint objects.
+        xy: NumPy array of (x, y) coordinates.
+        n: Number of points in the path.
+    """
 
     def __init__(self, points: list[MyPoint] = None):
         self.points: list[MyPoint] = points
@@ -27,11 +43,20 @@ class MyPath:
         self.set_xys()
 
     def set_points(self, points: list[MyPoint]) -> None:
+        """Set new list of points and update xy array.
+
+        Args:
+            points: List of MyPoint objects.
+        """
         self.points = points
         self.set_xys()
 
     def set_xys(self):
-        """ create xy array (list of tuples) from points. """
+        """Create xy numpy array from points list.
+
+        Automatically detects appropriate dtype (float32 or int32) based on
+        the coordinate types.
+        """
         if self.points is not None:
             xy = [(p.x, p.y) for p in self.points]
             if isinstance(xy[0][0], (float, np.float32)):
@@ -41,7 +66,17 @@ class MyPath:
             self.n = len(self.points)
 
     def point(self, i: int) -> MyPoint:
-        """ get point at index i. """
+        """Get point at specified index.
+
+        Args:
+            i: Index of point to retrieve.
+
+        Returns:
+            MyPoint at index i.
+
+        Raises:
+            IndexError: If index is out of range.
+        """
         if i < 0 or i >= self.n:
             raise IndexError("Index out of range")
         return self.points[i]

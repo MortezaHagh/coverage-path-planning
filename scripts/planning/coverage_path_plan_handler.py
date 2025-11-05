@@ -1,4 +1,8 @@
-""" Coverage Path Planning Handler"""
+"""Coverage path planning handler module for managing cell-level path generation.
+
+This module implements the Handler pattern to dynamically load and execute
+different coverage planning algorithms based on configuration.
+"""
 from scripts.base.logger import MyLogger
 from scripts.base.configs import PipeLineConfig
 from scripts.segmentation.cell_processed import PCell
@@ -7,11 +11,27 @@ from scripts.planning.coverage_pp_base import CoveragePathPlannerBase
 
 
 class CoveragePathPlanHandler:
-    """
-    Coverage Path Planning Handler for all cells in the zone.
+    """High-level interface for coverage path planning across all zone cells.
+
+    This handler dynamically loads the appropriate coverage planning algorithm
+    based on pipeline configuration and applies it to all cells in the zone.
+
+    Args:
+        zone_map_data: Zone map data object.
+
+    Attributes:
+        zmd: Zone map data object.
+        cells: List of cells to plan paths for.
+        all_cell_covp_planners: List of planner instances for each cell.
+        lg: Logger instance.
 
     Result:
-        path_m and path_px are set for each cell after planning.
+        After planning, path_m and path_px are set for each cell.
+
+    Supported Methods:
+        - "boust": Boustrophedon (back-and-forth) coverage
+        - "contour": Contour-following coverage
+        - Custom methods can be added by extending CoveragePathPlannerBase
     """
 
     def __init__(self, zone_map_data: ZoneMapData):
@@ -27,7 +47,11 @@ class CoveragePathPlanHandler:
         self.all_cell_covp_planners: list[CoveragePathPlannerBase] = []
 
     def plan(self, cells: list[PCell]):
-        """Run coverage path planning."""
+        """Execute coverage path planning for all cells.
+
+        Args:
+            cells: List of processed cells from segmentation.
+        """
 
         self.cells = cells
 
@@ -35,7 +59,15 @@ class CoveragePathPlanHandler:
         self.all_cells_covpp()
 
     def all_cells_covpp(self) -> None:
-        """ apply coverage path planning for all cells in the zone """
+        """Apply coverage path planning algorithm to all cells in the zone.
+
+        This method loads the configured planning algorithm and creates a
+        planner instance for each cell. Successfully planned paths are stored
+        in the cell objects (path_m and path_px attributes).
+
+        Raises:
+            ValueError: If coverage planning method is not recognized.
+        """
 
         self.lg.info2("start coverage path planning for cells")
 

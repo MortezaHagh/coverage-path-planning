@@ -1,4 +1,4 @@
-""" Voronoi segmentation module. """
+"""Voronoi-based segmentation for optimal workspace decomposition."""
 import numpy as np
 from shapely import Polygon
 from matplotlib import pyplot as plt
@@ -13,12 +13,15 @@ from scripts.segmentation.voronoi_decomposition.voronoi_decomposition import Vor
 
 
 class Segmentation(SegmentationBase):
-    """ Voronoi segmentation handler.
+    """Voronoi diagram-based segmentation for workspace decomposition.
 
-        Steps:
-            1- Voronoi decomposition.
-            2- Segmentation (creating rings from critical points).
-            3- Creating cells from rings.
+    Uses Voronoi decomposition to partition the workspace into cells based
+    on critical points, creating geometrically optimal regions for coverage.
+
+    Segmentation Pipeline:
+        1. Voronoi decomposition of workspace
+        2. Identify critical points and create rings
+        3. Generate cells from rings
     """
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
@@ -37,7 +40,7 @@ class Segmentation(SegmentationBase):
         self.rings: list[Ring] = []                         # segments created from critical points
 
     def run(self) -> None:
-        """Run the voronoi-based decomposition process. """
+        """Execute Voronoi-based decomposition and segmentation process."""
 
         # voronoi processing
         vor_dec = VoronoiDecomposition(self.zmd, self.map_polygons)
@@ -59,16 +62,15 @@ class Segmentation(SegmentationBase):
         self.plot_rings()
 
     def main_segmentation(self, b_poly: Polygon, obs_polys: list[Polygon]) -> None:
-        """
-        Main segmentation process to create rings from critical points. 
+        """Create segmentation rings from critical points.
 
-        Steps:
-            1- Preprocess:
-                - Create polygon points start and end indices.
-                - Create critical point basis indices lists.
-                - Find skip critical points.
-            2- Rings:
-                - Create all segments (rings) from critical points.
+        Pipeline Steps:
+            1. Preprocess:
+                - Create polygon point start/end indices
+                - Create critical point basis indices lists
+                - Find skip critical points
+            2. Rings:
+                - Create all segments (rings) from critical points
         """
         # pre process
         self.create_poly_points_start_ends(b_poly, obs_polys)

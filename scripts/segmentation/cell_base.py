@@ -1,11 +1,15 @@
-""" Base Cell Class for Segmentation. """
+"""Base cell class for segmentation and coverage path planning."""
 import numpy as np
 from shapely.geometry import Polygon
 from scripts.base.my_utils import MyPoint, MyPath
 
 
 class CellBase:
-    """Base cell class for segmentation and coverage path planning. """
+    """Base cell representation for decomposed workspace regions.
+
+    This class provides the fundamental structure for cells created during
+    space segmentation, storing geometric properties and adjacency information.
+    """
 
     def __init__(self, idx: int, poly: Polygon):
         self.id: int = idx                  # cell id
@@ -50,6 +54,7 @@ class CellBase:
         self.create_cell_points()
 
     def set_optim_id(self, ind: int, next_cell_idx: int = None):
+        """Set optimized sequence ID and next cell reference after sequencing."""
         self.opt_id = ind
         if next_cell_idx is not None:
             self.next_cell_id_seq = next_cell_idx
@@ -57,6 +62,7 @@ class CellBase:
             self.next_cell_id_seq = None
 
     def calculate_cell_specs(self):
+        """Calculate geometric properties: bounds, center, dimensions, and area."""
         # center
         self.cxy = self.poly.centroid.coords[0]
         # bounds
@@ -73,6 +79,7 @@ class CellBase:
         self.area = self.poly.area
 
     def create_cell_points(self):
+        """Extract integer coordinate points from cell polygon boundary."""
         if self.poly:
             points = [[int(p[0]), int(p[1])] for p in self.poly.exterior.coords]
             self.points = np.array(points, dtype=np.int32)

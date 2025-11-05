@@ -1,4 +1,4 @@
-""" boustrophedon coverage planning inside the given decomposed cell """
+"""Boustrophedon coverage path generation for decomposed trapezoidal cells."""
 import numpy as np
 from shapely.geometry import Polygon, Point, LineString
 from scripts.base.logger import MyLogger
@@ -8,14 +8,16 @@ from scripts.planning.boustrophedon.cell import Cell
 
 
 class CellCoveragePathPlanner:
-    """
-    Coverage path planning inside the given decomposed cell using boustrophedon method.
+    """Generate sweeping coverage paths for individual trapezoidal cells.
 
-    Method:
-    1. Create cell polygon in meter coordinates.
-    2. Find hitting points with the cell polygon from top and bottom.
-    3. Calculate coverage path by connecting the hitting points in boustrophedon manner.
-    4. Create path in pixel coordinates.
+    Creates alternating back-and-forth coverage paths within a decomposed cell
+    by finding intersection points with horizontal scan lines.
+
+    Planning Process:
+        1. Convert cell polygon to meter coordinates
+        2. Find hitting points with cell boundary from top and bottom
+        3. Connect hitting points in alternating boustrophedon pattern
+        4. Convert final path to pixel coordinates
     """
 
     def __init__(self, cell: Cell, zone_ind: int = 0, resolution: float = 0.05):
@@ -37,6 +39,7 @@ class CellCoveragePathPlanner:
         self.coverage_planning()
 
     def coverage_planning(self) -> None:
+        """Execute boustrophedon path planning for the trapezoidal cell."""
         if not self.cell.do_planning:
             # self.lg.warn(f"--- Boust cell {self.cell.id} does not require planning.")
             return
@@ -58,7 +61,7 @@ class CellCoveragePathPlanner:
     #     return True
 
     def create_cell_polygon_in_meter(self) -> bool:
-        """ create cell polygon in meter coordinates """
+        """Convert cell polygon from pixel to meter coordinates and validate."""
         points = self.cell.points
         points_m = [(p[0] * self.resolution, p[1] * self.resolution) for p in points]
         points_m_p = [Point(p) for p in points_m]

@@ -1,11 +1,10 @@
-
+"""District-level evaluation for aggregating zone statistics."""
 import json
 from scripts.evaluation.zone_evaluation_base import ZoneStatsBase
 
 
 class DistrictStatsBase:
-    """Base class for district statistics.
-    """
+    """Container for district-level aggregated statistics."""
 
     def __init__(self):
         self.map_name: str = None
@@ -28,7 +27,7 @@ class DistrictStatsBase:
         self.overlap_p: float = None
 
     def get_data_dict(self) -> dict:
-        """Get statistics data as a dictionary. """
+        """Convert statistics to dictionary format for serialization."""
         return {
             "map_name": self.map_name,
             "method": self.method,
@@ -50,14 +49,14 @@ class DistrictStatsBase:
 
 
 class DistrictEvaluationHandler:
-    """District evaluation handler class to manage district evaluations.
-    """
+    """Handler for district-level evaluation and statistics aggregation."""
 
     def __init__(self, result_file: str = None):
         self.stats = DistrictStatsBase()
         self.result_file = result_file
 
     def evaluate(self, zone_stats: list[ZoneStatsBase]):
+        """Aggregate zone statistics to compute district-level metrics."""
         self.stats.map_name = zone_stats[0].map_name
         self.stats.method = zone_stats[0].method
         self.stats.n_zones = len(zone_stats)

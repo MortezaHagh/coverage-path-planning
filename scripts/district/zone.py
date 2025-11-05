@@ -1,4 +1,4 @@
-""" Zone Data class to store zone data and run coverage planning. """
+"""Zone data management module for zone-level coverage planning operations."""
 import os
 import time
 import cv2 as cv
@@ -15,18 +15,31 @@ from scripts.evaluation.zone_evaluation_base import ZoneStatsBase
 
 
 class ZoneData:
-    """ Zone Data class to store zone map data and run coverage planning.
+    """Manage zone-level data and execute complete coverage planning pipeline.
+
+    This class coordinates all zone-level operations including segmentation,
+    coverage path planning, path sequencing, and performance evaluation.
+
+    Args:
+        ind: Zone index identifier.
+        zmd: Zone map data object containing workspace and map information.
 
     Attributes:
-        ind (int): zone index
-        zmd (ZoneMapData): zone map data
-        segmentation_handler (SegmentationHandler): zone segmentation handler
-        cells (list[PCell]): list of cells from segmentation
-        cov_path_planner (CoveragePathPlanner): coverage path planner handler
-        sequence (Sequence): sequence handler
-        evaluator (ZoneEvaluationHandler): zone evaluation handler
-        complete_path (np.ndarray): complete path (todo)
-        stats (ZoneStatsBase): zone statistics
+        ind: Zone index identifier.
+        zmd: Zone map data object.
+        segmentation_handler: Handler for space segmentation operations.
+        cells: List of processed cells from segmentation.
+        cov_path_planner: Handler for coverage path planning operations.
+        sequence: Handler for path sequencing and connection operations.
+        evaluator: Handler for zone performance evaluation.
+        complete_path: Complete connected path (future implementation).
+        stats: Zone-level statistics object.
+        dcfg: Pipeline configuration object.
+        pcfg: Planning configuration object.
+
+    Example:
+        >>> zone = ZoneData(ind=0, zmd=zone_map_data)
+        >>> zone.zone_planning_pipeline()
     """
 
     def __init__(self, ind: int, zmd: ZoneMapData):
@@ -63,19 +76,21 @@ class ZoneData:
         self.initialize()
 
     def initialize(self):
-        """ initialize zone data by saving zone map data and creating initial map_planning. """
+        """Initialize zone data by saving map data and creating initial planning map."""
         self.zmd.save_data()
         self.create_map_planning()
 
     def zone_planning_pipeline(self):
-        """ run coverage path planning for the zone and then post planning.
+        """Execute complete coverage planning pipeline for the zone.
 
-        Steps:
-            1. segmentation
-            2. coverage path planning
-            3. sequence creation
-            4. evaluate statistics
-            5. post planning
+        Pipeline Steps:
+            1. Segmentation: Divide zone into cells
+            2. Coverage Planning: Generate paths for each cell
+            3. Sequencing: Optimize cell order and connect paths
+            4. Evaluation: Compute performance statistics
+            5. Post-processing: Update visualization maps
+
+        This method orchestrates all planning operations and measures execution time.
         """
         start_time = time.time()
 

@@ -1,3 +1,4 @@
+"""Cell sequencing optimization using various algorithms."""
 import numpy as np
 import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp
@@ -7,13 +8,15 @@ from scripts.segmentation.cell_processed import PCell
 
 
 class OptimizeCellsSeq:
-    """
-    Create optimized sequence of cells to be covered.
+    """Optimize cell visit order using configurable sequencing algorithms.
 
-    Methods available:
-    - simple: simple sequence (as is)
-    - dfs: depth first search
-    - milp: mixed integer linear programming (MILP) using ortools
+    Supports multiple optimization strategies for determining the optimal
+    order to visit coverage cells, minimizing transition distances and time.
+
+    Available Methods:
+        - simple: Use cells in original order (no optimization)
+        - dfs: Depth-first search for connected cell traversal
+        - milp: Mixed Integer Linear Programming for optimal TSP solution
     """
 
     def __init__(self, cells: list[PCell], distances: np.ndarray = None, start_cell_idx: int = 0):
@@ -55,6 +58,7 @@ class OptimizeCellsSeq:
         # self.plot()
 
     def set_cells_optim_ind(self):
+        """Assign optimized sequence indices and next cell references to cells."""
         for i, idx in enumerate(self.tour_idxs[:-1]):
             next_idx = self.tour_idxs[i + 1]
             self.cells[idx].set_optim_id(idx, next_idx)

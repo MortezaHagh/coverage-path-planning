@@ -1,4 +1,8 @@
-""" Sequence class to create sequence of cells to be covered, connect paths between cells and create full paths. """
+"""Sequence optimization module for cell ordering and path connection.
+
+This module handles the sequencing of coverage cells, connection of individual
+cell paths, and generation of the complete zone coverage path.
+"""
 import os
 import cv2 as cv
 import numpy as np
@@ -13,19 +17,21 @@ from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.sequence.connect_paths import ConnectPaths
 from scripts.planning.planning_plotter import PlannerPlotter
-from scripts.sequence.optimize_mcells_seq_1 import OptimizeCellsSeq
+from scripts.sequence.optimize_cells_seq_1 import OptimizeCellsSeq
 from scripts.base.configs import PipeLineConfig, PlanningConfig
 
 
 class SequencePaths:
-    """
-    Class to store sequence paths.
+    """Container for storing all path variants (coverage, connection, and full paths).
 
-    Paths:
-    - paths: list of coverage paths
-    - c_paths: list of connection paths between coverage paths
-    - f_path: final complete connected path
-    - n_paths: number of coverage paths
+    Attributes:
+        paths_px: List of coverage paths in pixels.
+        paths_m: List of coverage paths in meters.
+        c_paths_px: List of connection paths between cells in pixels.
+        c_paths_m: List of connection paths between cells in meters.
+        f_path_px: Final complete connected path in pixels.
+        f_path_m: Final complete connected path in meters.
+        n_paths: Number of coverage paths.
     """
 
     def __init__(self):
@@ -39,18 +45,37 @@ class SequencePaths:
 
 
 class Sequence:
-    def __init__(self, zmd: ZoneMapData) -> None:
-        """
-        Sequence class to create sequence of cells to be covered, connect paths between cells and create full paths.
+    """Optimize cell visit order and create complete connected coverage path.
 
-        Steps:
-        1. Create sequence of cells to be covered.
-        2. Connect paths between cells.
-        3. Post planning: apply distance filter, create full path.
-        4. Set sequence paths.
-        5. Plot paths.
-        6. Update map planning with cells and paths.
-        """
+    This class handles the sequencing problem (determining optimal cell visit
+    order) and path connection (creating transitions between cells) to generate
+    a complete coverage path for the zone.
+
+    Args:
+        zmd: Zone map data object.
+
+    Attributes:
+        zmd: Zone map data object.
+        cells: List of cells to sequence.
+        n_cells: Number of cells.
+        map_polygons: Polygon representation of workspace.
+        connections: Path connection handler.
+        paths: SequencePaths object containing all path variants.
+        seq_idxs: Optimized sequence of cell indices.
+        s_cells: Sorted cells according to optimized sequence.
+        plotter: Visualization handler.
+        pcfg: Planning configuration.
+        dcfgs: Pipeline configuration.
+
+    Pipeline Steps:
+        1. Optimize cell visit sequence
+        2. Connect paths between consecutive cells
+        3. Apply distance filtering and smoothing
+        4. Generate complete path
+        5. Update visualization maps
+    """
+
+    def __init__(self, zmd: ZoneMapData) -> None:
 
         self.lg = MyLogger("Sequence")
 

@@ -1,4 +1,4 @@
-""" contour based coverage planning inside the given cell """
+"""Contour-following coverage path planning implementation."""
 import cv2 as cv
 import numpy as np
 # from shapely.affinity import scale
@@ -11,14 +11,18 @@ from scripts.planning.coverage_pp_base import CoveragePathPlannerBase
 
 
 class CoveragePathPlanner(CoveragePathPlannerBase):
-    """
-    Class to plan coverage path for a given cell in a zone using contour-based methods.
+    """Coverage path planner using contour-following approach.
 
-    Steps:
-    3. Calculate coverage path using either polygon buffering or a combination of distance transform and inscribed rectangle.
-    4. Create the final path in world coordinates.
+    This planner generates spiral or contour-following paths by progressively
+    shrinking the cell polygon or using distance transforms.
 
+    Planning Methods:
+        - Polygon buffering: Iterative inward scaling
+        - Distance transform: Skeleton-based path generation
+        - Combination: Hybrid approach for complex shapes
 
+    Result:
+        Sets path_m and path_px attributes for the cell.
     """
 
     def __init__(self, cell: Cell, zmd: ZoneMapData):
@@ -27,6 +31,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.coverage_planning()
 
     def coverage_planning(self) -> None:
+        """Execute contour-following coverage planning for the cell."""
         if not self.cell.do_planning:
             self.lg.warn(f"cell {self.cell.id} does not require planning.")
             return
@@ -35,7 +40,11 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.create_path_m()
 
     def calculate_path_by_poly_buffer(self) -> None:
-        """ Calculate the coverage path by scaling the polygon of the cell. """
+        """Calculate coverage path by iteratively shrinking the cell polygon.
+
+        Uses polygon buffering to create concentric contours that form a
+        spiral coverage pattern.
+        """
         poly = self.cell.poly
         # scale the polygon to smaller size
 

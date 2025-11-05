@@ -1,4 +1,4 @@
-""" Simple Segmentation Method."""
+"""Simple segmentation method creating a single cell for the entire zone."""
 from scripts.base.logger import MyLogger
 from scripts.segmentation.cell_base import CellBase
 from scripts.planning.map_polygons import MapPolygons
@@ -7,9 +7,11 @@ from scripts.segmentation.segmentation_base import SegmentationBase
 
 
 class Segmentation(SegmentationBase):
-    """
-    Interface for Simple segmentation method.
-    Creates one cell for the whole zone area.
+    """Simple segmentation implementation creating one cell for entire zone.
+
+    This is the simplest segmentation strategy, treating the entire workspace
+    as a single cell without further decomposition. Useful for small or
+    convex workspaces.
     """
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
@@ -17,7 +19,7 @@ class Segmentation(SegmentationBase):
         self.lg = MyLogger("SegmentationSimple")
 
     def run(self) -> None:
-        """ Run simple segmentation method. """
+        """Execute simple segmentation by creating a single cell."""
 
         # create one cell for the whole area
         cell = CellBase(idx=0, poly=self.map_polygons.b_poly)

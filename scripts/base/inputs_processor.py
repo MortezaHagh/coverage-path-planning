@@ -1,4 +1,4 @@
-""" Input processor Module. Read input files (map.pgm and map.yaml). Complete the MapConfig object. """
+"""Input processor module for reading and validating map files and configurations."""
 import os
 import json
 import copy
@@ -10,16 +10,19 @@ from scripts.base.configs import MapConfig
 
 
 class InputsProcessor:
-    """
-    Read input files (map.pgm and map.yaml). Complete the MapConfig object.
+    """Process input files (map.pgm and map.yaml) and create MapConfig object.
 
-    Inputs:
-        map_name: str - Name of the map to be processed.
+    This class handles loading map images and configuration files, validating
+    directory structures, and initializing the map configuration object.
+
+    Args:
+        map_name: Name of the map to be processed (e.g., "Map1", "Map2").
 
     Attributes:
-        map_name: str - Name of the map to be processed.
-        map_config: MapConfig - Map Configurations object.
-        orig_map: np.ndarray - Original map gray scale image array.
+        map_name: Name of the map being processed.
+        map_config: Map configuration object containing all map parameters.
+        orig_map: Original grayscale map image as numpy array.
+        paths: Dictionary of file and directory paths.
     """
 
     def __init__(self, map_name: str = "Map1"):

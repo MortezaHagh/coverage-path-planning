@@ -1,4 +1,4 @@
-""" District data class. Includes all zones data and district map data. """
+"""District data management module for zone creation and coverage planning orchestration."""
 from copy import deepcopy
 import cv2 as cv
 import numpy as np
@@ -12,19 +12,27 @@ from scripts.evaluation.district_evaluation import DistrictEvaluationHandler, Di
 
 
 class DistrictData:
-    """
-    District data class. Includes all zones data and district map data.
+    """Manage district-level data, zones, and coordinate coverage planning operations.
 
-    Methods:
-        create_zones_hl: create all zones in the district and create map_planning (high level).
-        run_coverage_planning: run coverage planning for all zones.
+    This class serves as the high-level orchestrator for the coverage planning
+    pipeline at the district level. It creates and manages zones, coordinates
+    coverage planning across all zones, and aggregates results.
+
+    Args:
+        spa: SpaceAnalyzer object containing processed workspace data.
 
     Attributes:
-        spa_obj: SpaceAnalyzer - space analyzer object.
-        dmd: ZoneMapData - main district map data.
-        zone_datas: list[ZoneData] - list of zones in the district.
-        evaluator: DistrictEvaluationHandler - evaluator for district statistics.
-        stats: DistrictStatsBase - statistics for the district.
+        spa_obj: Reference to the SpaceAnalyzer object.
+        dmd: District map data (ZoneMapData object).
+        zone_datas: List of ZoneData objects representing subdivisions.
+        evaluator: Handler for district-level statistics evaluation.
+        stats: Aggregated district statistics object.
+        dcfg: Pipeline configuration object.
+
+    Example:
+        >>> district = DistrictData(space_analyzer)
+        >>> district.create_zones_hl()
+        >>> district.run_coverage_planning()
     """
 
     def __init__(self, spa: SpaceAnalyzer):
@@ -52,13 +60,22 @@ class DistrictData:
         self.stats = DistrictStatsBase()
 
     def create_zones_hl(self) -> None:
-        """create all zones in the district and create map_planning (high level). """
+        """Create all zones in the district and initialize high-level map planning.
+
+        This method creates zone subdivisions and updates the district-level
+        planning visualization map.
+        """
         self.create_zones()
         self.update_map_planning()
         # self.save_map_planning()
 
     def run_coverage_planning(self) -> None:
-        """run coverage planning for all zones. Then, evaluate district stats."""
+        """Execute coverage planning pipeline for all zones and aggregate statistics.
+
+        This method runs the complete planning pipeline (segmentation, path planning,
+        sequencing, evaluation) for each zone, then aggregates district-level statistics
+        and updates the final planning visualization.
+        """
 
         zone_stats = []
         for zd in self.zone_datas:
@@ -75,7 +92,11 @@ class DistrictData:
         self.save_map_planning()
 
     def create_zones(self) -> None:
-        """ create zones based on the rectangle method. """
+        """Create zones based on rectangle subdivision method.
+
+        Generates zone rectangles, creates ZoneMapData for each zone,
+        and initializes ZoneData objects.
+        """
         self.lg.info1("Step: creating zones [ZoneData] and their map data")
 
         # create zones rectangles

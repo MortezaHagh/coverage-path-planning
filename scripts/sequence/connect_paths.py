@@ -1,4 +1,4 @@
-""" Module for connecting paths between cells in a zone map using A* pathfinding algorithm."""
+"""Path connection module using A* pathfinding for cell transitions."""
 from collections import deque
 import numpy as np
 
@@ -22,9 +22,11 @@ OCCUPIED = 0
 
 
 class ConnectPaths:
-    """ Connect cell paths.
-    Find paths between end of one cell and start of the next cell in the map.
-    Uses A* algorithm (skimage.graph.route_through_array) to find the shortest path in the occupancy grid.
+    """Generate transition paths between consecutive coverage cells.
+
+    Uses A* pathfinding algorithm to find collision-free paths connecting
+    the end point of one cell's coverage path to the start point of the
+    next cell in the sequence.
     """
 
     def __init__(self, zone_map_data: ZoneMapData, ns: str = ""):

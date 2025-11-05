@@ -1,4 +1,4 @@
-""" boustrophedon coverage planning inside the given cell """
+"""Boustrophedon (back-and-forth) coverage path planning implementation."""
 import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
@@ -14,18 +14,20 @@ from scripts.planning.boustrophedon.decomposition_bs_mh import CellDecomposition
 
 
 class CoveragePathPlanner(CoveragePathPlannerBase):
-    """
-    Coverage path planning inside the given cell using boustrophedon method.
+    """Coverage path planner using boustrophedon (back-and-forth) decomposition.
 
-    Steps:
-    1. Create MapPolygons object for the cell area in the map.
-    2. Decompose the cell area into boustrophedon cells.
-    3. Perform coverage path planning for each boustrophedon cell.
-    4. Rotate back all the paths to original orientation.
-    5. Create a connected path for all the boustrophedon cells.
+    This planner creates parallel sweeping paths by decomposing the cell into
+    trapezoidal regions and generating alternating scan lines.
+
+    Pipeline Steps:
+        1. Create map polygons for cell workspace
+        2. Decompose cell into boustrophedon sub-cells
+        3. Plan coverage path for each sub-cell
+        4. Rotate paths back to original orientation
+        5. Connect all sub-cell paths into complete coverage
 
     Result:
-        self.path_m and self.path_px are set for the cell.
+        Sets path_m and path_px attributes for the cell.
     """
 
     def __init__(self, cell: Cell, zmd: ZoneMapData):
@@ -52,7 +54,11 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.coverage_planning()
 
     def coverage_planning(self) -> None:
-        """ Main function to plan the coverage path for the cell. """
+        """Execute boustrophedon coverage planning for the cell.
+
+        Orchestrates the complete planning process from decomposition to
+        connected path generation.
+        """
         if not self.cell.do_planning:
             self.lg.warn(f"cell {self.cell.id} does not require planning.")
             return

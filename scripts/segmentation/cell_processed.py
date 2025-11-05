@@ -1,4 +1,4 @@
-""" Processed Cell Class for Segmentation and Coverage Path Planning."""
+"""Processed cell class with advanced geometric analysis for coverage planning."""
 import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,9 +14,10 @@ from scripts.base.configs import PipeLineConfig, PlanningConfig
 
 
 class PCell(CellBase):
-    """
-    Processed cell class for segmentation and coverage path planning.
-    Add features for rectangle-like and inscribed rectangle-like evaluation.
+    """Enhanced cell with geometric analysis for optimal coverage planning.
+
+    Extends CellBase with rectangle-likeness evaluation, inscribed rectangle
+    detection, and main direction analysis to optimize coverage patterns.
     """
 
     def __init__(self, cell: CellBase, zmd: ZoneMapData) -> None:
@@ -49,13 +50,13 @@ class PCell(CellBase):
         self.find_cell_main_direction()
 
     def eval_cell_rectangles(self) -> None:
-        """ Evaluate the cell for rectangle-like and inscribed rectangle-like properties.
+        """Evaluate cell for rectangle-like properties to optimize planning.
 
-            Steps:
-            1. evaluate rectangle-like based on circumscribed rectangle (minimum_rotated_rectangle).
-            2. create base inscribed rectangle based on maximum inscribed circle.
-            3. evaluate inscribed rectangle by expanding it in three different ways.
-            4. set rectangle-like property based on inscribed rectangle evaluation.
+        Pipeline Steps:
+            1. Evaluate based on circumscribed rectangle (minimum_rotated_rectangle)
+            2. Create base inscribed rectangle from maximum inscribed circle
+            3. Expand inscribed rectangle in multiple directions
+            4. Set rectangle-like property based on evaluation results
         """
 
         # circ: circumscribed
