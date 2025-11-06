@@ -10,7 +10,7 @@ This is a comprehensive coverage path planning system that generates optimal pat
 
 The system follows a **modular, plugin-based architecture** where new algorithms can be easily integrated by extending base classes. Each major component (Segmentation, Coverage Planning, Sequence Optimization, and Evaluation) is designed with abstract base classes that define the interface, allowing developers to add new methods without modifying the core pipeline.
 
-```
+```text
 Input Map → Process → District → Zones → Segmentation → Coverage Planning → Sequencing → Output
 ```
 

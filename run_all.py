@@ -18,6 +18,12 @@ if __name__ == "__main__":
     # run for all maps
     for map_name in map_names:
 
+        # set start cell idx based on map
+        if map_name == "map_fr52":
+            S_CELL_IDX = 4
+        else:
+            S_CELL_IDX = 0
+
         # run for all segmentation methods
         for segm_method in ['voronoi']:
 
@@ -33,7 +39,8 @@ if __name__ == "__main__":
                 for rect in rects:
 
                     # update configs
-                    dcfgs.update(segmentation_method=segm_method, covpp_method=cpp_method, use_insc_ret=rect, sequence_method='milp')
+                    dcfgs.update(segmentation_method=segm_method, covpp_method=cpp_method,
+                                 use_insc_ret=rect, sequence_method='milp', start_cell_idx=S_CELL_IDX)
 
                     print(f"\n Running pipeline for method [{dcfgs.method}] on map [{map_name}].")
                     print(" --------------------------------------------------------------")

@@ -28,6 +28,7 @@ class PipeLineConfig:
     # Main configs
     whole_map = True    # Select whole map as district (True) or select rectangle (False)
     method = ""         # full method name (to be completed based on other configs)
+    start_cell_ind = 0  # index of starting cell for coverage path planning sequence
 
     # plots configs
     save_map_planning = True
@@ -43,7 +44,7 @@ class PipeLineConfig:
     method = segmentation_method + '_' + covpp_method + '_' + sequence_method
 
     # segmentation options
-    use_insc_ret = True  # find approx rectangles from initial segmentation cells
+    use_insc_ret = False  # find approx rectangles from initial segmentation cells
 
     # voronoi specific options
     if segmentation_method == "voronoi":
@@ -52,12 +53,13 @@ class PipeLineConfig:
 
     @classmethod
     def update(cls, segmentation_method: str = 'voronoi', covpp_method: str = 'boust',
-               use_insc_ret: bool = False, sequence_method: str = 'milp'):
+               use_insc_ret: bool = False, sequence_method: str = 'milp', start_cell_idx: int = 0) -> None:
         """ Update configs. """
         cls.segmentation_method = segmentation_method
         cls.covpp_method = covpp_method
         cls.sequence_method = sequence_method
         cls.use_insc_ret = use_insc_ret
+        cls.start_cell_ind = start_cell_idx
 
         # main method
         cls.method = cls.segmentation_method + '_' + cls.covpp_method + '_' + cls.sequence_method

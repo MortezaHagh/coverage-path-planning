@@ -2,8 +2,8 @@
 import os
 import time
 import cv2 as cv
-import numpy as np
 from scripts.base.logger import MyLogger
+from scripts.base.my_utils import MyPath
 from scripts.sequence.sequence import Sequence
 from scripts.segmentation.cell_processed import PCell
 from scripts.district.zone_map_data import ZoneMapData
@@ -67,7 +67,8 @@ class ZoneData:
         self.evaluator: ZoneEvaluationHandler = ZoneEvaluationHandler(self.zmd)
 
         # resulting data
-        self.complete_path: np.ndarray = None  # todo
+        self.complete_path_px: MyPath = None
+        self.complete_path_m: MyPath = None
 
         # statistics
         self.stats: ZoneStatsBase = None
@@ -128,6 +129,10 @@ class ZoneData:
         self.save_map_cleaning_data()
 
     # ==================================================================================================================
+
+    def zone_complete_path(self):
+        self.complete_path_px = self.sequence.f_path_px
+        self.complete_path_m = self.sequence.f_path_m
 
     def create_map_planning(self):
         """ create initial map_planning with zone boundary. """

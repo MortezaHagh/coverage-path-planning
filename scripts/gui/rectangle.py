@@ -21,6 +21,8 @@ class Rectangle:
         # min x,y
         self.x_min: int = 0
         self.y_min: int = 0
+        self.x_max: int = 0
+        self.y_max: int = 0
 
         # rid
         if rid is None:
@@ -129,6 +131,8 @@ class Rectangle:
     def cal_min_xy(self):
         self.x_min = min(xy[0] for xy in self.vertices_t)
         self.y_min = min(xy[1] for xy in self.vertices_t)
+        self.x_max = max(xy[0] for xy in self.vertices_t)
+        self.y_max = max(xy[1] for xy in self.vertices_t)
 
     # --------------------------------------------------------------------------
     # Methods for point rotation and distance calculations

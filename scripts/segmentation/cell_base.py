@@ -22,12 +22,12 @@ class CellBase:
 
         # cell specs
         self.cxy: tuple[float, float] = None  # center x,y
-        self.x_min: float = None
-        self.x_max: float = None
-        self.y_min: float = None
-        self.y_max: float = None
-        self.x_mid: float = None
-        self.y_mid: float = None
+        self.x_min_p: float = None
+        self.x_max_p: float = None
+        self.y_min_p: float = None
+        self.y_max_p: float = None
+        self.x_mid_p: float = None
+        self.y_mid_p: float = None
         self.width: float = None
         self.height: float = None
         self.area: float = None
@@ -67,11 +67,11 @@ class CellBase:
         self.cxy = self.poly.centroid.coords[0]
         # bounds
         minx, miny, maxx, maxy = self.poly.bounds
-        self.x_min, self.y_min = minx, miny
-        self.x_max, self.y_max = maxx, maxy
+        self.x_min_p, self.y_min_p = minx, miny
+        self.x_max_p, self.y_max_p = maxx, maxy
         # center
-        self.x_mid = (self.x_min + self.x_max) / 2
-        self.y_mid = (self.y_min + self.y_max) / 2
+        self.x_mid_p = (self.x_min_p + self.x_max_p) / 2
+        self.y_mid_p = (self.y_min_p + self.y_max_p) / 2
         # width and height
         self.width = maxx - minx
         self.height = maxy - miny

@@ -433,6 +433,7 @@ class CellDecomposition:
         3- If conditions are met, add adjacent and parent relationships.
         """
 
+        cell: Cell = None
         for ic, cell in enumerate(self.cells):
             e = cell.event
             # adjacent cells
@@ -442,10 +443,10 @@ class CellDecomposition:
                     if next_c.id in cell.mid_adjlist:
                         continue
                     #
-                    if cell.x_max == next_c.x_min:
+                    if cell.x_max_p == next_c.x_min_p:
                         # check y condition
-                        if next_c.y_min < cell.y_mid < next_c.y_max or \
-                                cell.y_min < next_c.y_mid < cell.y_max:
+                        if next_c.y_min_p < cell.y_mid_p < next_c.y_max_p or \
+                                cell.y_min_p < next_c.y_mid_p < cell.y_max_p:
                             # add adjacent cells
                             cell.add_mid_adjlist(next_c.id)
                             next_c.add_mid_parentlist(cell.id)

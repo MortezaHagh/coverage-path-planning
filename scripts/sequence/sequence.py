@@ -173,12 +173,8 @@ class Sequence:
             self.s_cells = self.cells
             return
 
-        # todo
-        start_cell_idx = 0
-        if self.zmd.orig_map_data.name == "map_fr52":
-            start_cell_idx = 4
-
-            # create optimized sequence of cells
+        start_cell_idx = self.dcfgs.start_cell_ind
+        # create optimized sequence of cells
         opt_seq = OptimizeCellsSeq(cells=self.cells, distances=distances, start_cell_idx=start_cell_idx)
         self.seq_idxs = opt_seq.tour_idxs
         self.s_cells = [self.cells[i] for i in opt_seq.tour_idxs]

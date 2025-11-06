@@ -35,7 +35,9 @@
 
 ## todo now
 
+- fix main direction
 - sequence opt methods
 - new planning method
 - new boustraphedon
 - paper draft (pipeline, my boustraphedon)
+- plugin based

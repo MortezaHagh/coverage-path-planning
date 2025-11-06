@@ -56,6 +56,8 @@ class MapPolygons:
         # check mid distance
         filtered_c = self.filter_contour_points(biggest_contour)
         filtered_c.reverse()  # reverse to have clockwise order
+
+        # shift points by starting coordinates
         self.b_poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
 
     def create_obstacle_polygons(self):

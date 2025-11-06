@@ -39,6 +39,7 @@ class VoronoiDecomposition:
         self.fixed_max_n_adj: int = 15              # maximum number of adjacent Voronoi vertices
         self.d_clearance_thresh_p: float = 0.05     # percentage of the clearance difference in finding critical points
         self.robot_r_px: int = self.pcfg.spa.robot_radius / zmd.resolution
+        self.adj_dist_threshold = 2 * self.robot_r_px  # distance threshold for adjacent Voronoi vertices
         # updated later
         self.min_n_adjacents: int = None            # minimum number of adjacent Voronoi vertices
 
@@ -66,8 +67,7 @@ class VoronoiDecomposition:
         self.set_basis_points_and_feasibility()
         # adjacents
         self.find_min_n_adjacents()
-        adj_dist_ub = self.calculate_adj_dist_ub()
-        self.find_adjacents_by_distance(adj_dist_ub=adj_dist_ub)
+        self.find_adjacents_by_distance(adj_dist_ub=self.adj_dist_threshold)
         # critical points
         self.find_critical_points()
         self.create_critical_points_list()
@@ -184,12 +184,6 @@ class VoronoiDecomposition:
         """ setting minimum number of adjacent Voronoi vertices. (for finding adjacents by distance). """
         min_n = len(self.v_verts_free) // 10  # at least 10% of the Voronoi vertices
         self.min_n_adjacents = max(self.fixed_min_n_adj, min_n)
-
-    def calculate_adj_dist_ub(self) -> float:
-        """ Calculate the upper bound for the distance between adjacent Voronoi vertices. """
-        dist_threshold = 2 * self.robot_r_px  # todo param
-        self.lg.info3(f"Calculated distance threshold: {dist_threshold:.2f}")
-        return dist_threshold
 
     def find_adjacents_by_distance(self, adj_dist_ub: float = 10.0):
         """ Find adjacent Voronoi vertices based on a distance and [min_n_adjacents] params. """

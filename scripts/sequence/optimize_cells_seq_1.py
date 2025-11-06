@@ -162,7 +162,7 @@ class MILPSeq(BaseSeqOpt):
 
         #
         self.tour = None
-        self.distm = np.zeros((self.n_p_cells, self.n_p_cells), dtype=float)  # todo
+        self.distm = np.full((self.n_p_cells, self.n_p_cells), np.inf, dtype=float)
 
         # create distance matrix
         for i, ci in enumerate(p_idxs):

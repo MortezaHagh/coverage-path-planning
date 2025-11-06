@@ -101,9 +101,9 @@ class Segmentation(SegmentationBase):
         # then for the obstacle polygons
         for poly in obs_polys:
             n_p = len(poly.exterior.coords)
-            if n_p < 3:  # todo: check if this is correct
-                self.lg.warn("Skipping polygon with less than 3 points.")
-                continue
+            if n_p < 3:
+                self.lg.error("Obstacle polygon with less than 3 points found, skipping.")
+                raise ValueError("Obstacle polygon with less than 3 points found.")
             poly_start_idxs.append(poly_end_idxs[-1] + 1)
             poly_end_idxs.append(poly_end_idxs[-1] + n_p - 1)
         self.poly_start_idxs = poly_start_idxs

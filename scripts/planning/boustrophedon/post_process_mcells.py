@@ -6,8 +6,8 @@ def eval_cells_path_shift(cells: list[Cell]):
     prob_lim = 0.8
     for cell in cells:
         # right side
-        p0_up = cell.ru
-        p0_down = cell.rd
+        p0_up = cell.ru_point
+        p0_down = cell.rd_point
         l0 = p0_up[1] - p0_down[1]  # dy
         if l0 == 0:
             continue
@@ -16,8 +16,8 @@ def eval_cells_path_shift(cells: list[Cell]):
         inds = []
         for i, adj_i in enumerate(cell.mid_adjlist):
             adjc: Cell = cells[adj_i]
-            p1_up = adjc.lu
-            p1_down = adjc.ld
+            p1_up = adjc.lu_point
+            p1_down = adjc.ld_point
             l1 = p1_up[1] - p1_down[1]  # dy
             if l1 == 0:
                 continue
@@ -45,11 +45,11 @@ def eval_cells_path_shift(cells: list[Cell]):
 
     # check parent cells
     for cell in cells:
-        if cell.shift_le:
+        if cell.shift_l:
             continue
         # left side
-        p0_up = cell.lu
-        p0_down = cell.ld
+        p0_up = cell.lu_point
+        p0_down = cell.ld_point
         l0 = p0_up[1] - p0_down[1]  # dy
         if l0 == 0:
             continue
@@ -58,10 +58,10 @@ def eval_cells_path_shift(cells: list[Cell]):
         inds = []
         for i, adj_i in enumerate(cell.mid_parentlist):
             adjc: Cell = cells[adj_i]
-            if adjc.shift_re:
+            if adjc.shift_r:
                 continue
-            p1_up = adjc.ru
-            p1_down = adjc.rd
+            p1_up = adjc.ru_point
+            p1_down = adjc.rd_point
             l1 = p1_up[1] - p1_down[1]  # dy
             if l1 == 0:
                 continue

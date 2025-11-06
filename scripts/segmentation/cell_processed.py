@@ -6,9 +6,10 @@ from shapely import Polygon
 from shapely.geometry import Point
 from shapely.affinity import scale
 from shapely import maximum_inscribed_circle
-from scripts.base.logger import MyLogger
+from scripts.gui.rectangle import Rectangle
 from scripts.segmentation.cell_base import CellBase
 from scripts.district.zone_map_data import ZoneMapData
+from scripts.base.logger import MyLogger
 from scripts.base.configs import PipeLineConfig, PlanningConfig
 # from shapely import maximum_inscribed_circle, minimum_bounding_circle
 
@@ -27,6 +28,10 @@ class PCell(CellBase):
         # zone map data
         self.zmd: ZoneMapData = zmd
 
+        # cell map
+        self.map: np.ndarray = None         # binary map of the cell area
+        self.map_bd: dict = {}              # boundary distance map
+
         # rectangle-like properties
         self.rect_like: bool = False              # whether the cell is rectangle-like or inscribed rectangle-like
         self.rect_circum_like: bool = False         # whether the cell is rectangle-like based on circumscribed rectangle.
@@ -42,12 +47,59 @@ class PCell(CellBase):
         self.k_circum = 0.8
         self.k_inscr = 0.74
 
+        # create cell map
+        self.create_cell_map(self.zmd.map_ws.copy(), zmd.rectangle)
+
         # find rectangle-like properties
         if self.dcfgs.use_insc_ret:
             self.eval_cell_rectangles()
 
         # find main directions
         self.find_cell_main_direction()
+
+    def create_cell_map(self, zone_map: np.ndarray, zone_rectangle: Rectangle) -> None:
+        """ Create binary map for the given cell. """
+
+        x_min = int(self.x_min_p - zone_rectangle.x_min)
+        y_min = int(self.y_min_p - zone_rectangle.y_min)
+        x_max = int(self.x_max_p - zone_rectangle.x_min)
+        y_max = int(self.y_max_p - zone_rectangle.y_min)
+        n = 5
+        x_min = max(x_min-n, 0)
+        y_min = max(y_min-n, 0)
+        x_max = min(x_max+n, zone_rectangle.x_max)
+        y_max = min(y_max+n, zone_rectangle.y_max)
+        self.map_bd = {
+            "x_min": x_min,
+            "y_min": y_min,
+            "x_max": x_max,
+            "y_max": y_max
+        }
+
+        # crop map_ws to bounding box
+        map_ws = zone_map.copy()
+        map_ws = map_ws[y_min: y_max, x_min: x_max]
+
+        # create empty map
+        map_cell = np.zeros_like(map_ws, dtype=np.uint8)
+
+        # get polygon points of the cell
+        points = self.points
+        if self.dcfgs.use_insc_ret and self.rect_like:
+            points = np.array(self.rectangle_poly.exterior.coords, dtype=np.int32)
+
+        # shift points to the bounding box origin
+        poly_pts = points - np.array([[x_min, y_min]], dtype=np.int32)
+        # consider difference between zone rectangle and map origin
+        poly_pts -= np.array([[zone_rectangle.x_min, zone_rectangle.y_min]], dtype=np.int32)
+
+        # fill cell polygon area with free space (255)
+        cv.fillPoly(map_cell, [poly_pts], 255)
+
+        # mask with free space in the original map
+        map_cell = cv.bitwise_and(map_cell, map_ws)
+
+        self.map = map_cell
 
     def eval_cell_rectangles(self) -> None:
         """Evaluate cell for rectangle-like properties to optimize planning.
@@ -105,8 +157,7 @@ class PCell(CellBase):
         if self.rect_like:
             self.major_direction = self.main_direction_by_cell_rectangle()
         else:
-            map_cell = self.create_cell_map()
-            self.major_direction = self.cell_main_direction(map_cell)
+            self.major_direction = self.cell_main_direction()
 
     # ==================================================================================================================
     # main direction of the cell
@@ -133,41 +184,11 @@ class PCell(CellBase):
                 longest_angle = np.arctan2(dy, dx)
         return (longest_angle + np.pi/2) % np.pi
 
-    def create_cell_map(self) -> np.ndarray:
-        """ Create binary map for the given cell. """
-
-        # get polygon bounding box
-        minx, miny, maxx, maxy = self.poly.bounds
-        minx = minx - self.zmd.rectangle.x_min
-        miny = miny - self.zmd.rectangle.y_min
-
-        # crop map_ws to bounding box
-        map_ws = self.zmd.map_ws.copy()
-        map_ws = map_ws[int(miny):int(maxy), int(minx):int(maxx)]
-
-        # create empty map
-        map_cell = np.zeros_like(map_ws, dtype=np.uint8)
-
-        # get polygon points of the cell
-        points = self.points
-        if self.dcfgs.use_insc_ret and self.rect_like:
-            points = np.array(self.rectangle_poly.exterior.coords, dtype=np.int32)
-
-        # fill cell polygon area with free space (255)
-        # poly_pts = points - self.zmd.rectangle.min_point
-        poly_pts = points - np.array([[minx, miny]], dtype=np.int32)
-        cv.fillPoly(map_cell, [poly_pts], 255)
-
-        # mask with free space in the original map
-        map_cell = cv.bitwise_and(map_cell, map_ws)
-
-        return map_cell
-
-    def cell_main_direction(self, map_cell: np.ndarray) -> float:
+    def cell_main_direction(self) -> float:
         """ Find main direction of the cell using Hough Transform. """
 
         # Edge detection
-        edges = cv.Canny(map_cell, 50, 150, apertureSize=3)
+        edges = cv.Canny(self.map, 50, 150, apertureSize=3)
 
         # Hough Transform # tweak threshold if needed
         threshold = 120   # start threshold
@@ -188,26 +209,35 @@ class PCell(CellBase):
             # Fallback: assume horizontal direction
             angles.append(0.0)
 
-        # Compute dominant wall orientation
-        dominant_angle = np.median(angles)   # robust estimate
-        # major_direction = (dominant_angle + np.pi/2) % np.pi
+        # select dominant wall orientation (not median)
+        dominant_angle = max(set(angles), key=angles.count)
         major_direction = (dominant_angle) % np.pi
 
-        # # Convert grayscale map to BGR for drawing
-        # vis = cv.cvtColor(map_cell, cv.COLOR_GRAY2BGR)
-
+        # # visualization
         # # Draw arrow from center of map in free-space direction
-        # h, w = map_cell.shape
+        # h, w = self.map.shape
         # center = (w//2, h//2)
         # length = min(w, h) // 3  # arrow length
 
         # dx = int(length * np.cos(major_direction))
         # dy = int(length * np.sin(major_direction))
 
+        # # Convert grayscale map to BGR for drawing
+        # vis = cv.cvtColor(self.map, cv.COLOR_GRAY2BGR)
+        # # # add lines to vis by green color
+        # # if lines is not None:
+        # #     for rho, theta in lines[:, 0]:
+        # #         a = np.cos(theta)
+        # #         b = np.sin(theta)
+        # #         x0 = a * rho
+        # #         y0 = b * rho
+        # #         pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
+        # #         pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
+        # #         cv.line(vis, pt1, pt2, (0, 255, 0), 2)
+        # # draw major direction arrow
         # cv.arrowedLine(vis, center, (center[0] + dx, center[1] + dy), (0, 0, 255), 3, tipLength=0.2)
-
-        # # Show results
-        # cv.imshow("Map with Direction", vis)
+        # # display image, lines, and major direction
+        # cv.imshow(f"Cell {self.id} Main Direction", vis)
         # cv.waitKey(0)
         # cv.destroyAllWindows()
 

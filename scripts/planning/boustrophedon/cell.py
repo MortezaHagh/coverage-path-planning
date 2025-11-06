@@ -15,29 +15,29 @@ class Cell (CellBase):
         self.group_id: int = None
         self.event: Event = event
 
+        # corners (used in post processing (shift detection))
+        self.ld_point: tuple[float, float] = None  # lower left corner xy
+        self.lu_point: tuple[float, float] = None  # lower right corner xy
+        self.rd_point: tuple[float, float] = None  # upper left corner xy
+        self.ru_point: tuple[float, float] = None  # upper right corner xy
         #
-        self.ld: tuple[float, float] = None
-        self.lu: tuple[float, float] = None
-        self.rd: tuple[float, float] = None
-        self.ru: tuple[float, float] = None
-        #
-        self.up_adj_ci = None
-        self.down_adj_ci = None
-        self.parent_up_ci = None
-        self.parent_down_ci = None
+        self.up_adj_ci = None       # upper adjacent cell index
+        self.down_adj_ci = None     # lower adjacent cell index
+        self.parent_up_ci = None    # upper parent cell index
+        self.parent_down_ci = None  # lower parent cell index
         #
         self.n_adj = 0
         self.n_parent = 0
         #
-        self.mid_adjlist = []
-        self.mid_parentlist = []
+        self.mid_adjlist = []       # list of mid adjacent cell indices
+        self.mid_parentlist = []    # list of mid parent cell indices
         #
-        self.grouped = False
-        self.found_connection = True
+        self.grouped = False            # whether the cell is assigned to a group
+        self.found_connection = True    # whether a connection to adjacent cell is found (either parent or adjacent)
         #
         # for cov planning
-        self.shift_re: bool = False
-        self.shift_le: bool = False
+        self.shift_r: bool = False
+        self.shift_l: bool = False
 
         # --------------------------------------
 
@@ -50,15 +50,15 @@ class Cell (CellBase):
         self.group_id = group_id
 
     def find_corner(self):
-        lps = [xy for xy in self.points if xy[0] == int(self.x_min)]  # todo toeval
+        lps = [xy for xy in self.points if xy[0] == int(self.x_min_p)]
         lps = sorted(lps, key=lambda xy: xy[1])
-        self.ld = lps[0]
-        self.lu = lps[-1]
+        self.ld_point = lps[0]
+        self.lu_point = lps[-1]
         #
-        rps = [xy for xy in self.points if xy[0] == int(self.x_max)]  # todo toeval
+        rps = [xy for xy in self.points if xy[0] == int(self.x_max_p)]
         rps = sorted(rps, key=lambda xy: xy[1])
-        self.rd = rps[0]
-        self.ru = rps[-1]
+        self.rd_point = rps[0]
+        self.ru_point = rps[-1]
 
     def set_up_adj_ci(self, ci: int):
         if ci is not None:
@@ -101,10 +101,10 @@ class Cell (CellBase):
             self.do_planning = False
 
     def set_shift_re(self, shift: bool):
-        self.shift_re = shift
+        self.shift_r = shift
 
     def set_shift_le(self, shift: bool):
-        self.shift_le = shift
+        self.shift_l = shift
 
 # ------------------------------------------------------------------------------
 # CellGroup

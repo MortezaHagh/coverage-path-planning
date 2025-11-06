@@ -81,42 +81,46 @@ class CellCoveragePathPlanner:
         return True
 
     def find_top_but_hit_points(self) -> bool:
-        """ find hitting points with the cell polygon from top and bottom """
-        # # parameters and configurations
+        """
+        Find hitting points with the cell polygon from top and bottom.
+
+        Process:
+            1. Determine x-coordinates of vertical scan lines based on cell width
+               and cleaning distance, adjusting for any shifts.
+            2. For each x-coordinate, create a vertical line from above the cell
+               downwards and find intersection points with the cell polygon.
+            3. Store the bottom and top intersection points for path generation.
+        """
+
+        # parameters and configurations
         cleaning_d = 2*self.pcfg.cleaning_r_ov
         resolution = self.resolution
         cell = self.cell
 
         # start point - top left
-        x_min = cell.x_min * resolution
-        x_max = cell.x_max * resolution
-        y_min = cell.y_min * resolution
-        y_max = cell.y_max * resolution
+        x_min = cell.x_min_p * resolution
+        x_max = cell.x_max_p * resolution
+        y_min = cell.y_min_p * resolution
+        y_max = cell.y_max_p * resolution
 
-        # width
-        s_w_m = cell.width * resolution
+        # width in meters
+        w_m = cell.width * resolution
         # shift
         d_shift = resolution * 5
 
-        # #
-        # self.lg.info(cell.id, "l", cell.shift_le, "r", cell.shift_re)
-        # s_w_m = w_m - cleaning_d * (cell.shift_le + cell.shift_re)
-        # if cell.shift_le:
-        #     x_max -= cleaning_d
-        # if cell.shift_re:
-        #     x_min += cleaning_d
-
-        #
-        if s_w_m < cleaning_d/3:  # todo
-            if cell.shift_le or cell.shift_re:
+        # find xx: the x coordinates of the vertical scan lines
+        w_thresh_1 = cleaning_d / 3
+        w_thresh_2 = cleaning_d * 1.1
+        if w_m < w_thresh_1:
+            if cell.shift_l or cell.shift_r:
                 return False
             xx = [(x_min + x_max)/2]
-        elif s_w_m < cleaning_d*1.1:
+        elif w_m < w_thresh_2:
             xx = [x_min+d_shift, x_max-d_shift]
         else:
-            ww = s_w_m - cleaning_d
+            ww = w_m - cleaning_d
             n_r = int(np.ceil(ww / (cleaning_d)))
-            d_c = s_w_m / (n_r+1)
+            d_c = w_m / (n_r+1)
             #
             xl = x_min + d_shift
             xr = x_max - d_shift
@@ -124,10 +128,10 @@ class CellCoveragePathPlanner:
             xx.insert(0, xl)
             xx.append(xr)
 
-        # check shifting
-        if cell.shift_le:
+        # check shifting: remove first/last if shifted
+        if cell.shift_l:
             xx.pop(0)
-        if cell.shift_re:
+        if cell.shift_r:
             xx.pop(-1)
 
         # find hitting points with the cell polygon

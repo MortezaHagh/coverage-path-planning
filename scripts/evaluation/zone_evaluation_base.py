@@ -5,7 +5,7 @@ from scripts.base.configs import PipeLineConfig, PlanningConfig, RobotConfig
 
 
 class ZoneStatsBase:
-    """Zone statistics Base class to store zone statistics. 
+    """Zone statistics Base class to store zone statistics.
     Attributes:
         map_name (str): map name
         method (str): planning method
@@ -88,8 +88,7 @@ class ZoneEvaluationBase:
 
     def evaluate(self, duration: float = 0.0):
         """ evaluate zone statistics. To be implemented in derived classes. """
-        self.stats = ZoneStatsBase()
-        self.save_result()
+        raise NotImplementedError("Zone evaluation subclasses must implement evaluate() method")
 
     def save_result(self):
         """ save zone statistics and planner statistics of the zone to json file. """
