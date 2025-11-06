@@ -98,8 +98,8 @@ class Ring:
 
     def __init__(self, points: list[np.ndarray], cp_icp_dxs: list[int], cp_ring_idxs: list[int]):
         self.points: np.ndarray = np.array(points)      # vor.points in the ring
-        self.cp_icp_idxs: list[int] = cp_icp_dxs        # indices (in the cp list) of critical points in the ring
-        self.cp_ring_idxs: list[int] = cp_ring_idxs     # indices of critical points in the ring
+        self.cp_icp_idxs: set[int] = set(cp_icp_dxs)    # indices (in the cp list) of critical points in the ring
+        self.cp_ring_idxs: set[int] = set(cp_ring_idxs)  # indices of critical points in the ring
         self.cp_points: list[CriticalPoint] = []
         self.poly: Polygon = Polygon(points)
         self.n_p: int = len(self.points)                # number of points in the ring

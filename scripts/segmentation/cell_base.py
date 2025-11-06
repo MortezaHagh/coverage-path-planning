@@ -1,6 +1,7 @@
 """Base cell class for segmentation and coverage path planning."""
 import numpy as np
 from shapely.geometry import Polygon
+from scripts.base.configs import PlanningConfig
 from scripts.base.my_utils import MyPoint, MyPath
 
 
@@ -11,12 +12,18 @@ class CellBase:
     space segmentation, storing geometric properties and adjacency information.
     """
 
-    def __init__(self, idx: int, poly: Polygon):
+    def __init__(self, idx: int, poly: Polygon, resolution: float = 0.05):
         self.id: int = idx                  # cell id
         self.opt_id: int = None             # optimized id after sequencing
         self.next_cell_id_seq: int = None   # next cell id in the sequence
 
+        # settings
+        self.resolution: float = resolution
+        self.small_cell_thresh_c = 10.0      # small cell threshold coefficient
+        self.robot_r_px = int(PlanningConfig.cleaning_r_ov / resolution)
+
         # polygon and points
+        self.base_poly: Polygon = poly                          # original cell polygon before any modifications
         self.poly: Polygon = poly                               # cell polygon
         self.points: np.ndarray = np.array([], dtype=np.int32)  # cell polygon points
 
@@ -31,6 +38,7 @@ class CellBase:
         self.width: float = None
         self.height: float = None
         self.area: float = None
+        self.size_type: str = "normal"    # small, normal, large
 
         # cell specs
         self.major_direction: float = 0.0   # main direction angle of the cell (free space) - radians
@@ -49,6 +57,7 @@ class CellBase:
 
         # calculate cell specs
         self.calculate_cell_specs()
+        self.evaluate_cell_area()
 
         # create cell points
         self.create_cell_points()
@@ -77,6 +86,12 @@ class CellBase:
         self.height = maxy - miny
         # area
         self.area = self.poly.area
+
+    def evaluate_cell_area(self) -> None:
+        """ Evaluate cell area and classify size. """
+        robot_area = np.pi * (self.robot_r_px ** 2)
+        if self.area < self.small_cell_thresh_c * robot_area:
+            self.size_type = "small"
 
     def create_cell_points(self):
         """Extract integer coordinate points from cell polygon boundary."""

@@ -35,7 +35,7 @@
 
 ## todo now
 
-- fix main direction
+- merge small cells
 - sequence opt methods
 - new planning method
 - new boustraphedon

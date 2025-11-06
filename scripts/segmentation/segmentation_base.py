@@ -66,3 +66,19 @@ class SegmentationBase:
             NotImplementedError: If not implemented in child class.
         """
         raise NotImplementedError("Segmentation subclasses must implement run() method")
+
+    def create_cells(self):
+        """Create CellBase objects for each segmented cell.
+
+        Raises:
+            NotImplementedError: If not implemented in child class.
+        """
+        raise NotImplementedError("Segmentation subclasses must implement run() method")
+
+    def set_cell_adjacents(self):
+        """Set adjacent cells for each cell based on shared boundaries or other criteria.
+
+        Raises:
+            NotImplementedError: If not implemented in child class.
+        """
+        raise NotImplementedError("Segmentation subclasses must implement set_cell_adjacents() method")

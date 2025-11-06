@@ -102,7 +102,7 @@ class CellDecomposition:
 
     def add_cell(self, poly: Polygon, event: Event):
         self.trapezoids.append(poly)
-        cell = Cell(self.n_cells, poly, event)
+        cell = Cell(self.n_cells, poly, event, self.resolution)
         self.cells.append(cell)
         self.n_cells += 1
 

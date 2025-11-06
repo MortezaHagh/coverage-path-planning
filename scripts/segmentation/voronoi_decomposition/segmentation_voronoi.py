@@ -246,7 +246,7 @@ class Segmentation(SegmentationBase):
                     ring = ring[:found_cp_idx+1]
                     self.critical_points[idx_cp].skip = True
                     ring_cp_ring_idxs = ring_cp_ring_idxs[:idx]
-                    self.lg.warn(f"Critical point {idx_cp} already in the ring, skipping.")
+                    # self.lg.warn(f"Critical point {idx_cp} already in the ring, skipping.")
                 else:
                     ring_cp_idxs.append(new_cp_idx)
                     ring_cp_ring_idxs.append(len(ring) - 2)
@@ -292,14 +292,21 @@ class Segmentation(SegmentationBase):
 
         Method: Check if the polygons of two cells touch each other.
         """
-        # method 1: using touches
         self.lg.info("Setting cell adjacents")
+
+        # method 1: using touches
         for i, cell in enumerate(self.cells):
-            for j, other_cell in enumerate(self.cells):
-                if i == j:
-                    continue
+            for j, other_cell in enumerate(self.cells[i+1:]):
                 if cell.poly.touches(other_cell.poly):
-                    cell.add_adjacent_id(j)
+                    cell.add_adjacent_id(other_cell.id)
+                    other_cell.add_adjacent_id(cell.id)
+
+        # # method 2: using critical points in rings
+        # for i, cell in enumerate(self.cells):
+        #     for j, other_cell in enumerate(self.cells[i+1:]):
+        #         if cell.ring.cp_ring_idxs.intersection(other_cell.ring.cp_ring_idxs):
+        #             cell.add_adjacent_id(j)
+        #             other_cell.add_adjacent_id(i)
 
     def process_cells(self) -> None:
         """processing cells. """
@@ -313,7 +320,6 @@ class Segmentation(SegmentationBase):
 
     def plot_rings(self) -> None:
         if not (self.dcfgs.plot_decomposition or self.dcfgs.save_decomposition_plot):
-            self.lg.info("Skipping voronoi decomposition.")
             return
         fig, ax = plt.subplots(figsize=(15, 10))
         ax.set_aspect('equal', adjustable='box')

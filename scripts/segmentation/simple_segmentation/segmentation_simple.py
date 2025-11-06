@@ -22,6 +22,6 @@ class Segmentation(SegmentationBase):
         """Execute simple segmentation by creating a single cell."""
 
         # create one cell for the whole area
-        cell = CellBase(idx=0, poly=self.map_polygons.b_poly)
+        cell = CellBase(idx=0, poly=self.map_polygons.b_poly, resolution=self.zmd.resolution)
         self.cells.append(cell)
         self.n_cells = 1

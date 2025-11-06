@@ -10,15 +10,16 @@ from scripts.gui.rectangle import Rectangle
 from scripts.segmentation.cell_base import CellBase
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.logger import MyLogger
-from scripts.base.configs import PipeLineConfig, PlanningConfig
+from scripts.base.configs import PipeLineConfig
 # from shapely import maximum_inscribed_circle, minimum_bounding_circle
 
 
 class PCell(CellBase):
     """Enhanced cell with geometric analysis for optimal coverage planning.
 
-    Extends CellBase with rectangle-likeness evaluation, inscribed rectangle
-    detection, and main direction analysis to optimize coverage patterns.
+    Extends the base Cell class to include:
+    - Binary map representation of the cell area
+    - Rectangle-like property evaluation (circumscribed and inscribed)
     """
 
     def __init__(self, cell: CellBase, zmd: ZoneMapData) -> None:
@@ -30,7 +31,7 @@ class PCell(CellBase):
 
         # cell map
         self.map: np.ndarray = None         # binary map of the cell area
-        self.map_bd: dict = {}              # boundary distance map
+        self.map_bd: dict = {}              # cell local map bounds
 
         # rectangle-like properties
         self.rect_like: bool = False              # whether the cell is rectangle-like or inscribed rectangle-like
@@ -42,10 +43,11 @@ class PCell(CellBase):
         # self.major_direction: float = 0.0
 
         # settings
-        self.robot_r_px = int(PlanningConfig.cleaning_r_ov / zmd.resolution)
         self.dcfgs = PipeLineConfig()
         self.k_circum = 0.8
         self.k_inscr = 0.74
+
+        # ----------------------------------------------------------------------
 
         # create cell map
         self.create_cell_map(self.zmd.map_ws.copy(), zmd.rectangle)
@@ -60,6 +62,7 @@ class PCell(CellBase):
     def create_cell_map(self, zone_map: np.ndarray, zone_rectangle: Rectangle) -> None:
         """ Create binary map for the given cell. """
 
+        # determine bounding box  of the cell in the zone map
         x_min = int(self.x_min_p - zone_rectangle.x_min)
         y_min = int(self.y_min_p - zone_rectangle.y_min)
         x_max = int(self.x_max_p - zone_rectangle.x_min)

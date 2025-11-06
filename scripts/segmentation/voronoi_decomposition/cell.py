@@ -20,7 +20,7 @@ class Cell (CellBase):
     """
 
     def __init__(self, ind: int, ring: Ring, resolution: float = None) -> None:
-        super().__init__(ind, ring.poly)
+        super().__init__(ind, ring.poly, resolution)
         self.lg = MyLogger(f"Cell-{self.id}")
 
         # attributes

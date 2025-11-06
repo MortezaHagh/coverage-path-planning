@@ -10,6 +10,7 @@ from scripts.district.zone_map_data import ZoneMapData
 from scripts.segmentation.cell_base import CellBase
 from scripts.segmentation.cell_processed import PCell
 from scripts.segmentation.segmentation_base import SegmentationBase
+from scripts.segmentation.merge_cells import MergeCells
 
 
 class SegmentationHandler:
@@ -88,8 +89,16 @@ class SegmentationHandler:
         self.segmentor.run()
 
         # resulting base cells from segmentor
-        self.bcells = self.segmentor.cells
-        self.n_cells = self.segmentor.n_cells
+        bcells = self.segmentor.cells
+        self.lg.warn(f"Segmentation produced {len(bcells)} base cells.")
+        # self.n_cells = self.segmentor.n_cells
+
+        # merge cells
+        merger = MergeCells(bcells)
+        self.bcells = merger.updated_cells
+        self.n_cells = len(self.bcells)
+        self.lg.warn(f"Segmentation produced {self.n_cells} base cells.")
 
         # create processed cells
         self.cells = [PCell(cell, self.zmd) for cell in self.bcells]
+        self.lg.warn(f"Segmentation produced {self.n_cells} base cells.")

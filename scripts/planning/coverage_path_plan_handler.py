@@ -56,9 +56,9 @@ class CoveragePathPlanHandler:
         self.cells = cells
 
         # coverage path planning for all cells
-        self.all_cells_covpp()
+        self.run_covpp_method()
 
-    def all_cells_covpp(self) -> None:
+    def run_covpp_method(self) -> None:
         """Apply coverage path planning algorithm to all cells in the zone.
 
         This method loads the configured planning algorithm and creates a

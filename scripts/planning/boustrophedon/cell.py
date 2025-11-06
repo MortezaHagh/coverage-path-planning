@@ -8,8 +8,8 @@ from scripts.planning.boustrophedon.events import Event
 class Cell (CellBase):
     """ Cell for boustrophedon decomposition. """
 
-    def __init__(self, ind: int, poly: Polygon, event: Event):
-        super().__init__(ind, poly)
+    def __init__(self, ind: int, poly: Polygon, event: Event, resolution: float = 0.05):
+        super().__init__(ind, poly, resolution)
 
         #
         self.group_id: int = None
@@ -149,7 +149,7 @@ class CellGroup:
         # Merge all polygons
         if self.cells:
             merged_polygon = unary_union([cell.poly for cell in self.cells])
-            self.merged_cell = Cell(self.id, merged_polygon, self.first_cell.event)
+            self.merged_cell = Cell(self.id, merged_polygon, self.first_cell.event, resolution=self.first_cell.resolution)
 
         # Update the group index for all cells in the group
         for cell in self.cells:
