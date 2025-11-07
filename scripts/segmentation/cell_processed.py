@@ -43,7 +43,7 @@ class PCell(CellBase):
         # self.major_direction: float = 0.0
 
         # settings
-        self.dcfgs = PipeLineConfig()
+        self.dcfg = PipeLineConfig()
         self.k_circum = 0.8
         self.k_inscr = 0.74
 
@@ -53,7 +53,7 @@ class PCell(CellBase):
         self.create_cell_map(self.zmd.map_ws.copy(), zmd.rectangle)
 
         # find rectangle-like properties
-        if self.dcfgs.use_insc_ret:
+        if self.dcfg.use_insc_ret:
             self.eval_cell_rectangles()
 
         # find main directions
@@ -88,7 +88,7 @@ class PCell(CellBase):
 
         # get polygon points of the cell
         points = self.points
-        if self.dcfgs.use_insc_ret and self.rect_like:
+        if self.dcfg.use_insc_ret and self.rect_like:
             points = np.array(self.rectangle_poly.exterior.coords, dtype=np.int32)
 
         # shift points to the bounding box origin

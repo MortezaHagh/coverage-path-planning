@@ -146,19 +146,23 @@ class ZoneData:
         """ save zone map_planning and map_segmentation to files. """
         if not self.dcfg.save_map_planning:
             return
+        # PNG parameters for lossless compression
+        png_params = [cv.IMWRITE_PNG_COMPRESSION, 0]
         # save map planning
         m_name = "map_planning.png"
         map_hl_path = os.path.join(self.zmd.result_dir, m_name)
-        cv.imwrite(map_hl_path, self.zmd.map_planning)
+        cv.imwrite(map_hl_path, self.zmd.map_planning, png_params)
         # save map segmentation
         m_name_s = "map_segmentation.png"
         map_s_path = os.path.join(self.zmd.result_dir, m_name_s)
-        cv.imwrite(map_s_path, self.zmd.map_segmentation)
+        cv.imwrite(map_s_path, self.zmd.map_segmentation, png_params)
 
     def save_map_cleaning_data(self):
         """ save map showing cleaned area and uncleaned area. """
         if not self.dcfg.save_map_planning:
             return
+        # PNG parameters for lossless compression
+        png_params = [cv.IMWRITE_PNG_COMPRESSION, 0]
         m_name = "map_cleaned.png"
         map_hl_path = os.path.join(self.zmd.result_dir, m_name)
-        cv.imwrite(map_hl_path, self.zmd.map_clean_data)
+        cv.imwrite(map_hl_path, self.zmd.map_clean_data, png_params)

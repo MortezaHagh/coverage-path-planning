@@ -4,7 +4,7 @@ from shapely import Polygon
 from scripts.base.logger import MyLogger
 from scripts.base.configs import PlanningConfig
 from scripts.segmentation.cell_base import CellBase
-from scripts.segmentation.voronoi_decomposition.common import Ring  # , CriticalPoint
+from scripts.segmentation.voronoi_segmentation.common import Ring  # , CriticalPoint
 
 
 class Cell (CellBase):

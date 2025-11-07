@@ -80,7 +80,7 @@ class ZoneEvaluationBase:
     def __init__(self, zmd: ZoneMapData, paths: SequencePaths):
         self.zmd: ZoneMapData = zmd
         self.paths: SequencePaths = paths
-        self.dcfgs = PipeLineConfig()
+        self.dcfg = PipeLineConfig()
         self.pcfg = PlanningConfig()
         self.robot_cfgs = RobotConfig()
         # statistics

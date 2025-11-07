@@ -28,7 +28,7 @@ class CoveragePathPlannerBase:
         path_m: Generated path in meters (list of coordinate tuples).
         path_px: Generated path in pixels (list of coordinate tuples).
         resolution: Map resolution (meters per pixel).
-        dcfgs: Pipeline configuration object.
+        dcfg: Pipeline configuration object.
         pcfg: Planning configuration object.
         lg: Logger instance.
 
@@ -49,7 +49,7 @@ class CoveragePathPlannerBase:
         self.zmd: ZoneMapData = zmd
 
         # configurations
-        self.dcfgs = PipeLineConfig()
+        self.dcfg = PipeLineConfig()
         self.pcfg = PlanningConfig()
         self.resolution: float = zmd.resolution
 

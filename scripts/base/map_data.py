@@ -16,6 +16,7 @@ class MapData:
 
     def __init__(self):
         self.lg = MyLogger("MapData")
+        self.should_resize: bool = True               # whether to resize the map to fit window
         #
         self.mcfg: MapConfig = None                    # base configs
         self.name: str = None                           # map name
@@ -66,7 +67,6 @@ class MapData:
         """ set original map data and update related attributes. """
         self.orig_map = map_data
         self.set_map_hw()
-        self.set_wind_wh()
         self.resize_map()
         self.create_rgb_map()
         self.set_orig_center()
@@ -78,16 +78,23 @@ class MapData:
         self.orig_w = width
         self.lg.info2(f"Map size [w,h]: {width}x{height}")
 
+    def resize_map(self) -> None:
+        self.set_wind_wh()
+        self.up_map = cv.resize(self.orig_map, self.updated_wh, interpolation=cv.INTER_AREA)
+
     def set_wind_wh(self, wind_hw=None) -> None:
         """ set window height and width. calculate zoom and updated map size. """
-        if wind_hw is None:
-            wind_hw = self.wind_hw
-        if (self.orig_h > wind_hw[0]) or (self.orig_w > wind_hw[1]):
-            self.wind_hw = (self.orig_h, self.orig_w)
-        self.wind_h, self.wind_w = self.wind_hw
-
+        if self.should_resize:
+            if wind_hw is None:
+                wind_hw = self.wind_hw
+            if (self.orig_h > wind_hw[0]) or (self.orig_w > wind_hw[1]):
+                self.wind_hw = (self.orig_h, self.orig_w)
+            self.wind_h, self.wind_w = self.wind_hw
+            zoom = min(self.wind_h/self.orig_h, self.wind_w/self.orig_w)
+        else:
+            self.wind_h, self.wind_w = self.orig_h, self.orig_w
+            zoom = 1.0
         #
-        zoom = min(self.wind_h/self.orig_h, self.wind_w/self.orig_w)
         updated_h = int(self.orig_h * zoom)
         updated_w = int(self.orig_w * zoom)
         self.zoom = zoom
@@ -98,9 +105,6 @@ class MapData:
         self.updated_w = w
         self.updated_wh = (w, h)
         self.lg.info2(f"Updated Map size [w,h]: {w}x{h}")
-
-    def resize_map(self) -> None:
-        self.up_map = cv.resize(self.orig_map, self.updated_wh, interpolation=cv.INTER_AREA)
 
     def create_rgb_map(self) -> None:
         self.up_rgb_map = cv.cvtColor(self.up_map, cv.COLOR_GRAY2BGR)

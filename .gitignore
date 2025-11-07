@@ -13,6 +13,7 @@ archive/
 *.pgm
 *.zip
 *.png
+*.svg
 *.gif
 *.csv
 # 

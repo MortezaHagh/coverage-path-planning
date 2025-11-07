@@ -40,27 +40,31 @@ class ConnectPaths:
         self.all_connection_paths: np.ndarray = np.array([])    # 2D array of paths between cells
         self.all_distances: np.ndarray | None = None            # 2D array of distances between cells
         self.c_paths_px: list[MyPath] = []
+        self.n: int = None  # number of cells
 
-    def initialize(self, mcells: list[PCell]):
-        n = len(mcells)
+    def initialize(self, cells: list[PCell]):
+        # cell_ids = [cell.id for cell in cells]
+        # n = max(cell_ids)
+        n = len(cells)
+        self.n = n
         self.all_connection_paths = np.full((n, n), None, dtype=object)
         self.all_distances = np.zeros((n, n), dtype=float)
 
-    def find_all_connections(self, mcells: list[PCell]):
+    def find_all_connections(self, cells: list[PCell]):
         self.lg.info2("Step: find all connections paths")
-        n = len(mcells)
+        n = self.n
         all_connections = np.full((n, n), None, dtype=object)
 
         for i in range(n):
             for j in range(i + 1, n):
-                # if j in mcells[i].adjacent_cell_idxs:
+                # if j in cells[i].adjacent_cell_idxs:
                 #     pass
-                if mcells[i].end_point is None or mcells[j].start_point is None:
+                if cells[i].end_point is None or cells[j].start_point is None:
                     all_connections[i, j] = None
                     all_connections[j, i] = None
                 else:
-                    all_connections[i, j] = self.find_path(mcells[i].end_point, mcells[j].start_point)
-                    all_connections[j, i] = self.find_path(mcells[j].end_point, mcells[i].start_point)
+                    all_connections[i, j] = self.find_path(cells[i].end_point, cells[j].start_point)
+                    all_connections[j, i] = self.find_path(cells[j].end_point, cells[i].start_point)
         self.all_connection_paths = all_connections
 
     def find_all_distances(self):

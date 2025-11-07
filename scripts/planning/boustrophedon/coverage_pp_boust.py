@@ -79,7 +79,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
         # get polygon points of the cell
         points = self.cell.points
-        if self.dcfgs.use_insc_ret and self.cell.rect_like:
+        if self.dcfg.use_insc_ret and self.cell.rect_like:
             points = np.array(self.cell.rectangle_poly.exterior.coords, dtype=np.int32)
 
         # get ws map

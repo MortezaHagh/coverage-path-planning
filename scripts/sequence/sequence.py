@@ -65,7 +65,7 @@ class Sequence:
         s_cells: Sorted cells according to optimized sequence.
         plotter: Visualization handler.
         pcfg: Planning configuration.
-        dcfgs: Pipeline configuration.
+        dcfg: Pipeline configuration.
 
     Pipeline Steps:
         1. Optimize cell visit sequence
@@ -88,7 +88,7 @@ class Sequence:
 
         # configurations
         self.pcfg: PlanningConfig = PlanningConfig()
-        self.dcfgs: PipeLineConfig = PipeLineConfig()
+        self.dcfg: PipeLineConfig = PipeLineConfig()
         self.colors: list[tuple] = []
 
         # params
@@ -148,7 +148,7 @@ class Sequence:
 
         # Initialize distances between cells (paths start and end points)
         distances = None
-        if self.dcfgs.sequence_method == "milp":
+        if self.dcfg.sequence_method == "milp":
             # Initialize connections object with cells
             self.connections.initialize(self.cells)
 
@@ -173,7 +173,7 @@ class Sequence:
             self.s_cells = self.cells
             return
 
-        start_cell_idx = self.dcfgs.start_cell_ind
+        start_cell_idx = self.dcfg.start_cell_ind
         # create optimized sequence of cells
         opt_seq = OptimizeCellsSeq(cells=self.cells, distances=distances, start_cell_idx=start_cell_idx)
         self.seq_idxs = opt_seq.tour_idxs
@@ -228,7 +228,7 @@ class Sequence:
 
     def update_map_planning(self) -> None:
         """ update map_planning with paths and cells, save map_planning. """
-        if not self.dcfgs.save_map_planning:
+        if not self.dcfg.save_map_planning:
             return
         self.plotter.run(self.cells)
         n = self.n_cells
@@ -374,7 +374,7 @@ class Sequence:
 
     def plot_paths_px(self) -> None:
         """ Plot the calculated coverage paths (different colors) and connections between them. """
-        if not self.dcfgs.save_map_planning:
+        if not self.dcfg.save_map_planning:
             return
         fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
@@ -415,7 +415,7 @@ class Sequence:
     def save_path_fig(self, fig, is_anim=False):
         if not is_anim:
             fig_path = os.path.join(self.zmd.result_dir, "paths.png")
-            fig.savefig(fig_path, format="png", dpi=300)
+            fig.savefig(fig_path, format="png", dpi=self.dcfg.dpi)
         else:
             self.lg.info(f"saving animation ... n_frames: {self.f_path_px.n}")
             fig_path = os.path.join(self.zmd.result_dir, "anim_paths.gif")
@@ -446,11 +446,13 @@ class Sequence:
         fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
         ax.set_title("Final Path")
+        scale = min(self.zmd.hw)*self.zmd.resolution/10
         if self.f_path_m is not None:
             pp = np.array(self.f_path_m.xy, dtype=np.float32)
-            ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2, linestyle='-', markersize=3)
-        fig_path = os.path.join(self.zmd.result_dir, "final_path.png")
-        fig.savefig(fig_path, format="png", dpi=300)
+            ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2/scale, linestyle='-', markersize=3/scale)
+        fig_path = os.path.join(self.zmd.result_dir, "final_path")
+        # fig.savefig(fig_path+'.png', format="png", dpi=self.dcfg.dpi)
+        fig.savefig(fig_path+'.svg', format="svg", dpi=self.dcfg.dpi)
         # plt.show()
 
     # Animate path =====================================================================================================

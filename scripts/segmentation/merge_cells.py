@@ -3,12 +3,14 @@
 from shapely.ops import unary_union
 from shapely.geometry import LineString
 from scripts.segmentation.cell_base import CellBase
+from scripts.base.logger import MyLogger
 
 
 class MergeCells:
     """ Class to merge adjacent cells based on certain criteria. """
 
     def __init__(self, cells: list[CellBase]):
+        self.lg = MyLogger("MergeCells")
         self.cells: list[CellBase] = cells
         self.updated_cells: list[CellBase] = []
         self.resolution = cells[0].resolution
@@ -57,15 +59,16 @@ class MergeCells:
         merged_cells: list[CellBase] = []
         cell_id_map = {cell.id: cell for cell in self.cells}
         for group_ids in group_cell_ids:
-            print(f"Merging group: {group_ids}")
+            new_id = min(group_ids)
             if len(group_ids) <= 1:
                 cell_id = group_ids.pop()
                 merged_cells.append(cell_id_map[cell_id])
             else:
+                self.lg.info(f"Merging group: {group_ids}")
                 merged_polys = [cell_id_map[cell_id].base_poly for cell_id in group_ids]
                 new_poly = unary_union(merged_polys).convex_hull
                 new_poly = new_poly.convex_hull
-                new_cell = CellBase(idx=min(group_ids), poly=new_poly, resolution=self.resolution)
+                new_cell = CellBase(idx=new_id, poly=new_poly, resolution=self.resolution)
                 # update adjacent ids
                 merged_adjacent_ids = set()
                 for cell_id in group_ids:
@@ -73,6 +76,10 @@ class MergeCells:
                 merged_adjacent_ids.difference_update(group_ids)
                 new_cell.adjacent_ids = list(merged_adjacent_ids)
                 merged_cells.append(new_cell)
+                # update adjacent ids of neighboring cells
+                for adj_id in merged_adjacent_ids:
+                    adj_cell = cell_id_map[adj_id]
+                    adj_cell.adjacent_ids = [new_id if x in group_ids else x for x in adj_cell.adjacent_ids]
         return merged_cells
 
     def merge_adjacent_cells(self) -> None:
@@ -91,7 +98,7 @@ class MergeCells:
                 if other_cell.id in skip_indices:
                     continue
                 if self.should_merge(cell, other_cell):
-                    print(f"Merging cell {cell.id} with cell {other_cell.id}")
+                    self.lg.info(f"Merging cell {cell.id} with cell {other_cell.id}")
                     cell = self.merge_two_cells(cell, other_cell)
                     skip_indices.add(other_cell.id)
                     break

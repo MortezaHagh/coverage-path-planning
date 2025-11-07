@@ -18,7 +18,7 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
     def evaluate(self, duration: float = 0.0):
         self.stats = ZoneStatsBase()
         self.stats.map_name = self.zmd.orig_map_data.name
-        self.stats.method = self.dcfgs.method
+        self.stats.method = self.dcfg.method
         self.stats.ind = self.zmd.ind
         self.stats.processing_time = duration
         #

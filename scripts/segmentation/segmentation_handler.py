@@ -9,8 +9,9 @@ from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.segmentation.cell_base import CellBase
 from scripts.segmentation.cell_processed import PCell
-from scripts.segmentation.segmentation_base import SegmentationBase
 from scripts.segmentation.merge_cells import MergeCells
+from scripts.segmentation.segmentation_base import SegmentationBase
+from scripts.segmentation.simple_segmentation.segmentation_simple import Segmentation as SegmentationSimple
 
 
 class SegmentationHandler:
@@ -31,7 +32,7 @@ class SegmentationHandler:
         cells: Processed cells ready for planning.
         s_cells: Sorted processed cells.
         n_cells: Number of cells created.
-        dcfgs: Pipeline configuration object.
+        dcfg: Pipeline configuration object.
 
     Supported Methods:
         - "simple": Single cell covering entire zone
@@ -43,7 +44,7 @@ class SegmentationHandler:
         self.lg = MyLogger("SegmentationHandler")
 
         # configs
-        self.dcfgs = PipeLineConfig()
+        self.dcfg = PipeLineConfig()
 
         # zone data
         self.zmd: ZoneMapData = zmd
@@ -73,14 +74,13 @@ class SegmentationHandler:
         """
 
         # segmentation method
-        segmentation_method = self.dcfgs.segmentation_method
+        segmentation_method = self.dcfg.segmentation_method
 
         # create segmentor
         if segmentation_method == "simple":
-            from scripts.segmentation.simple_segmentation.segmentation_simple import Segmentation
-            self.segmentor = Segmentation(self.zmd, self.map_polygons)
+            self.segmentor = SegmentationSimple(self.zmd, self.map_polygons)
         elif segmentation_method == "voronoi":
-            from scripts.segmentation.voronoi_decomposition.segmentation_voronoi import Segmentation
+            from scripts.segmentation.voronoi_segmentation.segmentation_voronoi import Segmentation
             self.segmentor = Segmentation(self.zmd, self.map_polygons)
         else:
             raise ValueError(f"Segmentation method '{segmentation_method}' not recognized.")
@@ -90,12 +90,34 @@ class SegmentationHandler:
 
         # resulting base cells from segmentor
         bcells = self.segmentor.cells
-        # self.n_cells = self.segmentor.n_cells
+        n_bcells = self.segmentor.n_cells
+
+        if n_bcells == 0:
+            self.lg.warn("No cells were created by the segmentation algorithm.")
+            self.lg.warn("Trying simple segmentation.")
+            self.segmentor = SegmentationSimple(self.zmd, self.map_polygons)
+            self.segmentor.run()
+            bcells = self.segmentor.cells
+            n_bcells = self.segmentor.n_cells
+            if n_bcells == 0:
+                raise ValueError("No cells were created even by simple segmentation.")
 
         # merge cells
         merger = MergeCells(bcells)
         self.bcells = merger.updated_cells
         self.n_cells = len(self.bcells)
+
+        # check if ids are unique
+        cell_ids = [cell.id for cell in self.bcells]
+        if len(cell_ids) != len(set(cell_ids)):
+            raise ValueError("Cell IDs are not unique after merging.")
+
+        # update cell ids to be consecutive
+        cell_id_indx_map = {cell.id: i for i, cell in enumerate(self.bcells)}
+        for cell in self.bcells:
+            cell.id = cell_id_indx_map[cell.id]
+            # update adjacent ids
+            cell.adjacent_ids = [cell_id_indx_map[adj_id] for adj_id in cell.adjacent_ids]
 
         # create processed cells
         self.cells = [PCell(cell, self.zmd) for cell in self.bcells]

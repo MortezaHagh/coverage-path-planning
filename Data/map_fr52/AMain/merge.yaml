@@ -1,5 +1,5 @@
 image: merge.png
-resolution: 0.050000
+resolution: 0.050000 # 0.28
 origin: [0.0, 0.0, 0.0]
 negate: 0
 occupied_thresh: 0.65

@@ -25,7 +25,7 @@ class OptimizeCellsSeq:
 
         # initialize
         self.cells: list[PCell] = cells
-        dcfgs = PipeLineConfig()
+        dcfg = PipeLineConfig()
 
         # sequence results initialization
         self.tour_idxs: list[int] = []  # indices of cells in the optimized sequence
@@ -33,17 +33,17 @@ class OptimizeCellsSeq:
 
         # create optimizer
         optimizer: BaseSeqOpt = None
-        if dcfgs.sequence_method == "simple":
+        if dcfg.sequence_method == "simple":
             optimizer = SimpleSeqOpt(cells)
-        elif dcfgs.sequence_method == "dfs":
+        elif dcfg.sequence_method == "dfs":
             optimizer = DepthFirstSearch(cells, start_cell_idx)
-        elif dcfgs.sequence_method == "milp":
+        elif dcfg.sequence_method == "milp":
             # cell graph
             if distances is None:
                 raise ValueError("Distances matrix is required for MILPSeq optimization.")
             optimizer = MILPSeq(cells, distances, start_cell_idx)
         else:
-            self.lg.error(f"Invalid cell sequence method: {dcfgs.sequence_method}")
+            self.lg.error(f"Invalid cell sequence method: {dcfg.sequence_method}")
             return
 
         # check if the optimizer was successful
@@ -172,6 +172,10 @@ class MILPSeq(BaseSeqOpt):
                 self.distm[i, j] = distances[ci, cj]
                 self.distm[j, i] = distances[cj, ci]
 
+                # to dont consider return to start in cost
+                if j == start_cell_idx:
+                    self.distm[i, j] = 0.0
+
         #
         self.create_tour()
 
@@ -209,12 +213,12 @@ class MILPSeq(BaseSeqOpt):
         u = [solver.NumVar(0, n-1, f"u_{i}") for i in range(n)]
         for i in range(1, n):
             for j in range(1, n):
-                if i != j and i != start_node and j != start_node:
+                if i != j:
                     solver.Add(u[i] - u[j] + (n-1) * x[i, j] <= n-2)
 
         # Objective: Minimize total distance
         solver.Minimize(
-            solver.Sum([self.distm[i, j] * x[i, j] for i in range(n) for j in range(n) if (i != j and j != start_node)])
+            solver.Sum([self.distm[i, j] * x[i, j] for i in range(n) for j in range(n) if i != j])
         )
 
         # Solve

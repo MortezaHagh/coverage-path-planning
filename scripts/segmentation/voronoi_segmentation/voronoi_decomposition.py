@@ -10,7 +10,7 @@ from scripts.base.logger import MyLogger
 from scripts.district.zone_map_data import ZoneMapData
 from scripts.planning.map_polygons import MapPolygons
 from scripts.base.configs import PlanningConfig, PipeLineConfig
-from scripts.segmentation.voronoi_decomposition.common import VPoint, CriticalPoint
+from scripts.segmentation.voronoi_segmentation.common import VPoint, CriticalPoint
 
 
 class VoronoiDecomposition:
@@ -33,7 +33,7 @@ class VoronoiDecomposition:
 
         # settings
         self.pcfg: PlanningConfig = PlanningConfig()
-        self.dcfgs: PipeLineConfig = PipeLineConfig()
+        self.dcfg: PipeLineConfig = PipeLineConfig()
         # self.adj_dist_lb: float = 50.0            # distance threshold for adjacent Voronoi vertices
         self.fixed_min_n_adj: int = 8               # fixed minimum number of adjacent Voronoi vertices
         self.fixed_max_n_adj: int = 15              # maximum number of adjacent Voronoi vertices
@@ -351,7 +351,7 @@ class VoronoiDecomposition:
     # ==========================================================================
 
     def plot_voronoi(self):
-        if not (self.dcfgs.plot_decomposition or self.dcfgs.save_decomposition_plot):
+        if not (self.dcfg.plot_decomposition or self.dcfg.save_decomposition_plot):
             self.lg.info("Skipping Voronoi plot.")
             return
 
@@ -422,9 +422,9 @@ class VoronoiDecomposition:
         #         ax.fill(*zip(*polygon), alpha=0.3, fc='blue', ec='black', label='Voronoi Region')
 
         #
-        if self.dcfgs.save_decomposition_plot:
+        if self.dcfg.save_decomposition_plot:
             save_path = self.result_dir + "/voronoi.png"
-            fig.savefig(save_path, dpi=300)
+            fig.savefig(save_path, dpi=self.dcfg.dpi)
 
     # ==========================================================================
     # self.find_adjacents()

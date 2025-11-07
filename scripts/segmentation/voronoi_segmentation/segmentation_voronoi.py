@@ -6,10 +6,10 @@ from scipy.spatial import Voronoi  # pylint: disable=no-name-in-module
 from scripts.base.logger import MyLogger
 from scripts.planning.map_polygons import MapPolygons
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.segmentation.voronoi_decomposition.cell import Cell
+from scripts.segmentation.voronoi_segmentation.cell import Cell
 from scripts.segmentation.segmentation_base import SegmentationBase
-from scripts.segmentation.voronoi_decomposition.common import CriticalPoint, Ring
-from scripts.segmentation.voronoi_decomposition.voronoi_decomposition import VoronoiDecomposition
+from scripts.segmentation.voronoi_segmentation.common import CriticalPoint, Ring
+from scripts.segmentation.voronoi_segmentation.voronoi_decomposition import VoronoiDecomposition
 
 
 class Segmentation(SegmentationBase):
@@ -319,7 +319,7 @@ class Segmentation(SegmentationBase):
     # ==================================================================================================================
 
     def plot_rings(self) -> None:
-        if not (self.dcfgs.plot_decomposition or self.dcfgs.save_decomposition_plot):
+        if not (self.dcfg.plot_decomposition or self.dcfg.save_decomposition_plot):
             return
         fig, ax = plt.subplots(figsize=(15, 10))
         ax.set_aspect('equal', adjustable='box')
@@ -332,10 +332,10 @@ class Segmentation(SegmentationBase):
             ax.plot(cp.vp.v[0], cp.vp.v[1], 'o', color='red', markersize=5)
             ax.annotate(f"{i}", (cp.vp.v[0], cp.vp.v[1]), fontsize=6, color='blue')
         #
-        if self.dcfgs.save_decomposition_plot:
+        if self.dcfg.save_decomposition_plot:
             save_path = self.zmd.result_dir + "/rings.png"
-            fig.savefig(save_path, dpi=300)
+            fig.savefig(save_path, dpi=self.dcfg.dpi)
 
         #
-        if self.dcfgs.plot_decomposition:
+        if self.dcfg.plot_decomposition:
             plt.show()

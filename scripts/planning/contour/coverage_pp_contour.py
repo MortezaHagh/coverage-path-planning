@@ -6,7 +6,7 @@ from shapely.geometry import MultiPolygon, Polygon
 from scripts.base.logger import MyLogger
 from scripts.base.my_utils import MyPoint, MyPath
 from scripts.district.zone_map_data import ZoneMapData
-from scripts.segmentation.voronoi_decomposition.cell import Cell
+from scripts.segmentation.voronoi_segmentation.cell import Cell
 from scripts.planning.coverage_pp_base import CoveragePathPlannerBase
 
 
@@ -102,7 +102,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         c_map[mask] = z_map[mask]
 
         # complete the path
-        if self.dcfgs.use_insc_ret and self.cell.rect_like:
+        if self.dcfg.use_insc_ret and self.cell.rect_like:
             points = []
             path_px = self.complete_path_by_rectangle(points, robot_r_px)
         else:

@@ -130,7 +130,7 @@ class DistrictData:
             return
         m_name = f"/map_planning_{self.dcfg.method}.png"
         map_planning_path = self.dmd.zone_dir + m_name
-        cv.imwrite(map_planning_path, self.dmd.map_planning)
+        cv.imwrite(map_planning_path, self.dmd.map_planning, [cv.IMWRITE_PNG_COMPRESSION, 0])
 
     # ==================================================================================================================
 

@@ -39,6 +39,7 @@ class ZoneMapData:
         self.vertices: list[tuple[int, int]] = None     # vertices: [(x, y), ...]
         self.final_vertices: np.ndarray = None          # vertices: [(x, y), ...]
         self.hw_bd_px: dict = None                      # map hw bound, dict keys: h_min, w_min, h_max, w_max
+        self.hw: tuple[int, int] = None                 # height and width of the zone map
         # maps
         self.map_orig: np.ndarray = None                # cropped original map based on rectangle
         self.map_ws: np.ndarray = None                  # cropped work space selected free space filtered (map_7_c_ws_sf_f)
@@ -128,6 +129,8 @@ class ZoneMapData:
         dict with keys = {"h_min", "w_min", "h_max", "w_max"}
         """
         self.hw_bd_px = hw_bd_px
+        self.hw = (hw_bd_px["h_max"] - hw_bd_px["h_min"],
+                   hw_bd_px["w_max"] - hw_bd_px["w_min"])
 
     # --------------------------------------------------------------------------
     # Save Data
@@ -136,11 +139,12 @@ class ZoneMapData:
     def save_data(self) -> None:
         """ save zone map data to files. maps, local_map.json. """
 
-        # Save map images
-        cv.imwrite(self.maps_dir + "/" + "local_map_1_orig.png", self.map_orig)
-        cv.imwrite(self.maps_dir + "/" + "local_map_2_sf_orig.png", self.map_sf_orig)
-        cv.imwrite(self.maps_dir + "/" + "local_map_3_cleaning.png", self.map_cleaning)
-        cv.imwrite(self.maps_dir + "/" + "local_map_4_viz.png", self.map_planning)
+        # Save map images with maximum quality (lossless PNG)
+        png_params = [cv.IMWRITE_PNG_COMPRESSION, 0]
+        cv.imwrite(self.maps_dir + "/" + "local_map_1_orig.png", self.map_orig, png_params)
+        cv.imwrite(self.maps_dir + "/" + "local_map_2_sf_orig.png", self.map_sf_orig, png_params)
+        cv.imwrite(self.maps_dir + "/" + "local_map_3_cleaning.png", self.map_cleaning, png_params)
+        cv.imwrite(self.maps_dir + "/" + "local_map_4_viz.png", self.map_planning, png_params)
 
         # Save local_map.json
         zone_data_d = dict()

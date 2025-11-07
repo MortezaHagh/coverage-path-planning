@@ -35,7 +35,7 @@
 
 ## todo now
 
-- merge small cells
+- fix merge
 - sequence opt methods
 - new planning method
 - new boustraphedon

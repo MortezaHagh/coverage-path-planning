@@ -15,7 +15,7 @@ class PlannerPlotter:
 
     def __init__(self, result_dir: str):
         self.result_dir = result_dir
-        self.dcfgs = PipeLineConfig()
+        self.dcfg = PipeLineConfig()
         #
         self.fig_mcells = None
         self.fig_mcells_seq = None
@@ -25,7 +25,7 @@ class PlannerPlotter:
         self.visualize_cells_sequence(cells)
 
         # save figures
-        if self.dcfgs.save_decomposition_plot:
+        if self.dcfg.save_decomposition_plot:
             self.save_figs()
 
     def visualize_cells_sequence(self, cells: list[Cell]):
@@ -71,7 +71,6 @@ class PlannerPlotter:
             ax.plot([x1, x2], [y1, y2], color="gray", linewidth=1, linestyle='--')
 
     def save_figs(self):
-        dpi = 300
-        self.fig_mcells.savefig(self.result_dir + "/cells.png", format="png", dpi=dpi)
+        self.fig_mcells.savefig(self.result_dir + "/cells.png", format="png", dpi=self.dcfg.dpi)
         if self.fig_mcells_seq:
-            self.fig_mcells_seq.savefig(self.result_dir + "/sequence.png", format="png", dpi=dpi)
+            self.fig_mcells_seq.savefig(self.result_dir + "/sequence.png", format="png", dpi=self.dcfg.dpi)

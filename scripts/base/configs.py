@@ -34,6 +34,7 @@ class PipeLineConfig:
     save_map_planning = True
     save_decomposition_plot = True
     plot_decomposition = False
+    dpi = 300
 
     # Methods names for main modules: segmentation, coverage path planning, sequence
     segmentation_method = "voronoi"     # simple, voronoi

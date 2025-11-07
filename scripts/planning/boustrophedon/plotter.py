@@ -12,7 +12,7 @@ class BoustPlotter:
 
     def __init__(self, dec_obj):
         self.dec_obj = dec_obj
-        self.dcfgs = PipeLineConfig()
+        self.dcfg = PipeLineConfig()
         self.result_dir: str = dec_obj.result_dir
         #
         self.viz_together = True
@@ -25,17 +25,17 @@ class BoustPlotter:
         self.fig_all = None
 
     def visualize(self):
-        if not (self.dcfgs.save_decomposition_plot or self.dcfgs.plot_decomposition):
+        if not (self.dcfg.save_decomposition_plot or self.dcfg.plot_decomposition):
             return
         if self.viz_together:
             self.visualize_together()
         else:
             self.visualize_seperate()
-        if self.dcfgs.plot_decomposition:
+        if self.dcfg.plot_decomposition:
             plt.show()
 
         # save figures
-        if self.dcfgs.save_decomposition_plot:
+        if self.dcfg.save_decomposition_plot:
             self.save_figs()
 
     def visualize_seperate(self):
@@ -153,10 +153,9 @@ class BoustPlotter:
 
     def save_figs(self):
         ns = "/"
-        dpi = 300
         path = self.result_dir
         if self.viz_together:
-            self.fig_all.savefig(path + f"{ns}boust_decomposition.png", format="png", dpi=dpi)
+            self.fig_all.savefig(path + f"{ns}boust_decomposition.png", format="png", dpi=self.dcfg.dpi)
         else:
-            self.fig_mcells.savefig(path + f"{ns}mcells.png", format="png", dpi=dpi)
-            self.fig_cells_events.savefig(path + f"{ns}cells.png", format="png", dpi=dpi)
+            self.fig_mcells.savefig(path + f"{ns}mcells.png", format="png", dpi=self.dcfg.dpi)
+            self.fig_cells_events.savefig(path + f"{ns}cells.png", format="png", dpi=self.dcfg.dpi)

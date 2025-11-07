@@ -26,7 +26,7 @@ class SegmentationBase:
         map_polygons: Polygon representation of the workspace.
         cells: List of cells created by segmentation.
         n_cells: Number of cells created.
-        dcfgs: Pipeline configuration object.
+        dcfg: Pipeline configuration object.
         lg: Logger instance.
 
     Example:
@@ -49,7 +49,7 @@ class SegmentationBase:
         self.map_polygons: MapPolygons = map_polygons
 
         # configs
-        self.dcfgs: PipeLineConfig = PipeLineConfig()
+        self.dcfg: PipeLineConfig = PipeLineConfig()
 
         # cells
         self.cells: list[CellBase] = []

@@ -12,7 +12,7 @@ from scripts.planning.boustrophedon.cell import Cell
 class OptimizeCellsSeq:
     def __init__(self, mcells: list[Cell]):
         self.lg = MyLogger("OptimizeCellsSeq")
-        dcfgs = PipeLineConfig()
+        dcfg = PipeLineConfig()
         self.lg.info1("Step: creating optimized cell sequence")
 
         # cell graph
@@ -28,14 +28,14 @@ class OptimizeCellsSeq:
 
         #
         optimizer = None
-        if dcfgs.sequence_method == "simple":
+        if dcfg.sequence_method == "simple":
             optimizer = SimpleSeqOpt(pmcells)
-        elif dcfgs.sequence_method == "dfs":
+        elif dcfg.sequence_method == "dfs":
             optimizer = DepthFirstSearch(pmcells)
-        elif dcfgs.sequence_method == "milp":
+        elif dcfg.sequence_method == "milp":
             optimizer = MILPSeq(self.cells_graph, mcells)
         else:
-            self.lg.error(f"Invalid cell sequence method: {dcfgs.sequence_method}")
+            self.lg.error(f"Invalid cell sequence method: {dcfg.sequence_method}")
             return
 
         #

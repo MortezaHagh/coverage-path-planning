@@ -13,7 +13,7 @@ map_names = [
 if __name__ == "__main__":
 
     covpp_method = ["boust", "contour"]
-    dcfgs = PipeLineConfig()
+    dcfg = PipeLineConfig()
 
     # run for all maps
     for map_name in map_names:
@@ -39,10 +39,10 @@ if __name__ == "__main__":
                 for rect in rects:
 
                     # update configs
-                    dcfgs.update(segmentation_method=segm_method, covpp_method=cpp_method,
-                                 use_insc_ret=rect, sequence_method='milp', start_cell_idx=S_CELL_IDX)
+                    dcfg.update(segmentation_method=segm_method, covpp_method=cpp_method,
+                                use_insc_ret=rect, sequence_method='milp', start_cell_idx=S_CELL_IDX)
 
-                    print(f"\n Running pipeline for method [{dcfgs.method}] on map [{map_name}].")
+                    print(f"\n Running pipeline for method [{dcfg.method}] on map [{map_name}].")
                     print(" --------------------------------------------------------------")
                     from main import run_pipeline
                     run_pipeline(map_name)
