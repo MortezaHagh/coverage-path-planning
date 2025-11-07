@@ -296,7 +296,7 @@ class Segmentation(SegmentationBase):
 
         # method 1: using touches
         for i, cell in enumerate(self.cells):
-            for j, other_cell in enumerate(self.cells[i+1:]):
+            for other_cell in self.cells[i+1:]:
                 if cell.poly.touches(other_cell.poly):
                     cell.add_adjacent_id(other_cell.id)
                     other_cell.add_adjacent_id(cell.id)

@@ -1,4 +1,5 @@
 """Base cell class for segmentation and coverage path planning."""
+from copy import deepcopy
 import numpy as np
 from shapely.geometry import Polygon
 from shapely import maximum_inscribed_circle
@@ -25,7 +26,7 @@ class CellBase:
         self.slim_cell_thresh_c = 2.0   # slim cell threshold coefficient
 
         # polygon and points
-        self.base_poly: Polygon = poly                          # original cell polygon before any modifications
+        self.base_poly: Polygon = deepcopy(poly)                # original cell polygon before any modifications
         self.poly: Polygon = poly                               # cell polygon
         self.points: np.ndarray = np.array([], dtype=np.int32)  # cell polygon points
 

@@ -1,4 +1,5 @@
 
+""" Module to merge adjacent cells based on certain criteria. """
 # from shapely import coverage_union
 from shapely.ops import unary_union
 from shapely.geometry import LineString
@@ -66,8 +67,8 @@ class MergeCells:
             else:
                 self.lg.info(f"Merging group: {group_ids}")
                 merged_polys = [cell_id_map[cell_id].base_poly for cell_id in group_ids]
-                new_poly = unary_union(merged_polys).convex_hull
-                new_poly = new_poly.convex_hull
+                new_poly = unary_union(merged_polys)  # .convex_hull
+                # new_poly = new_poly.convex_hull
                 new_cell = CellBase(idx=new_id, poly=new_poly, resolution=self.resolution)
                 # update adjacent ids
                 merged_adjacent_ids = set()
@@ -132,18 +133,18 @@ class MergeCells:
     def check_line_within_union(self, cell1: CellBase, cell2: CellBase) -> bool:
         """ Check if the line connecting the centroids of two cells lies within their union polygon. """
 
-        centroid1 = cell1.poly.centroid
-        centroid2 = cell2.poly.centroid
+        centroid1 = cell1.base_poly.centroid
+        centroid2 = cell2.base_poly.centroid
         line = LineString([centroid1, centroid2])
-        union_poly = unary_union([cell1.poly, cell2.poly])
-        union_poly = union_poly.convex_hull
+        union_poly = unary_union([cell1.base_poly, cell2.base_poly])
+        # union_poly = union_poly.convex_hull
         return union_poly.contains(line)
 
     def merge_two_cells(self, cell1: CellBase, cell2: CellBase) -> CellBase:
         """ Merge two cells into one, normalizing MultiPolygon to a single Polygon. """
         # new_poly = coverage_union(cell1.poly, cell2.poly).normalize()
         new_poly = unary_union([cell1.base_poly, cell2.base_poly])
-        new_poly = new_poly.convex_hull
+        # new_poly = new_poly.convex_hull
         new_cell = CellBase(idx=cell1.id, poly=new_poly, resolution=cell1.resolution)
         merged_adjacent_ids = set(cell1.adjacent_ids).union(set(cell2.adjacent_ids))
         merged_adjacent_ids.discard(cell1.id)
@@ -155,9 +156,9 @@ class MergeCells:
         # fig, ax = plt.subplots()
         # # fix aspect ratio
         # ax.set_aspect('equal', 'box')
-        # x1, y1 = cell1.poly.exterior.xy
+        # x1, y1 = cell1.base_poly.exterior.xy
         # ax.fill(x1, y1, alpha=0.5, fc='red', ec='black', label='Cell 1')
-        # x2, y2 = cell2.poly.exterior.xy
+        # x2, y2 = cell2.base_poly.exterior.xy
         # ax.fill(x2, y2, alpha=0.5, fc='blue', ec='black', label='Cell 2')
         # x_new, y_new = new_poly.exterior.xy
         # ax.fill(x_new, y_new, alpha=0.5, fc='green', ec='black', label='Merged Cell')
