@@ -189,7 +189,7 @@ class FindPathInMap:
         start_s = (start[1], start[0])
         end_s = (end[1], end[0])
         # find path
-        path = pyastar2d.astar_path(self.cost_map, start_s, end_s, allow_diagonal=True)
+        path = pyastar2d.astar_path(self.cost_map, start_s, end_s, allow_diagonal=False)
         path_list = [(x, y) for y, x in path]
         return path_list
 

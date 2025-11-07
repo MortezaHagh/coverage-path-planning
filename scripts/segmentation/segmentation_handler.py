@@ -90,15 +90,12 @@ class SegmentationHandler:
 
         # resulting base cells from segmentor
         bcells = self.segmentor.cells
-        self.lg.warn(f"Segmentation produced {len(bcells)} base cells.")
         # self.n_cells = self.segmentor.n_cells
 
         # merge cells
         merger = MergeCells(bcells)
         self.bcells = merger.updated_cells
         self.n_cells = len(self.bcells)
-        self.lg.warn(f"Segmentation produced {self.n_cells} base cells.")
 
         # create processed cells
         self.cells = [PCell(cell, self.zmd) for cell in self.bcells]
-        self.lg.warn(f"Segmentation produced {self.n_cells} base cells.")

@@ -1,6 +1,7 @@
 """Base cell class for segmentation and coverage path planning."""
 import numpy as np
 from shapely.geometry import Polygon
+from shapely import maximum_inscribed_circle
 from scripts.base.configs import PlanningConfig
 from scripts.base.my_utils import MyPoint, MyPath
 
@@ -19,8 +20,9 @@ class CellBase:
 
         # settings
         self.resolution: float = resolution
-        self.small_cell_thresh_c = 10.0      # small cell threshold coefficient
         self.robot_r_px = int(PlanningConfig.cleaning_r_ov / resolution)
+        self.small_cell_thresh_c = 12.0      # small cell threshold coefficient
+        self.slim_cell_thresh_c = 2.0   # slim cell threshold coefficient
 
         # polygon and points
         self.base_poly: Polygon = poly                          # original cell polygon before any modifications
@@ -39,6 +41,7 @@ class CellBase:
         self.height: float = None
         self.area: float = None
         self.size_type: str = "normal"    # small, normal, large
+        self.slim_type: str = "normal"    # slim, normal
 
         # cell specs
         self.major_direction: float = 0.0   # main direction angle of the cell (free space) - radians
@@ -58,6 +61,7 @@ class CellBase:
         # calculate cell specs
         self.calculate_cell_specs()
         self.evaluate_cell_area()
+        self.eval_cell_slimness()
 
         # create cell points
         self.create_cell_points()
@@ -92,6 +96,15 @@ class CellBase:
         robot_area = np.pi * (self.robot_r_px ** 2)
         if self.area < self.small_cell_thresh_c * robot_area:
             self.size_type = "small"
+
+    def eval_cell_slimness(self) -> None:
+        """ Evaluate cell slimness based on maximum inscribed circle. """
+        # maximum_inscribed_circle
+        insc_circle_poly = maximum_inscribed_circle(self.poly)
+        insc_circle_center, circle_insc_boundary = insc_circle_poly.coords
+        insc_circle_radius = np.linalg.norm(np.array(insc_circle_center) - np.array(circle_insc_boundary))
+        if insc_circle_radius < self.robot_r_px * self.slim_cell_thresh_c:
+            self.slim_type = "slim"
 
     def create_cell_points(self):
         """Extract integer coordinate points from cell polygon boundary."""

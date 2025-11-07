@@ -63,16 +63,18 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             self.lg.warn(f"cell {self.cell.id} does not require planning.")
             return
 
-        # ********************
-        self.create_polygons()
+        # *******************************
+        if not self.create_polygons():
+            self.cell.do_planning = False
+            return
         self.decompose()
         # self.rotate_back_cells()
         self.all_cells_coverage_pp()
         self.rotate_back_paths()
         self.create_connected_path()
-        # ********************
+        # *******************************
 
-    def create_polygons(self) -> None:
+    def create_polygons(self) -> bool:
         """ Create MapPolygons object for the cell area in the map"""
 
         # get polygon points of the cell
@@ -97,12 +99,16 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
         # create MapPolygons object
         self.map_polygons = MapPolygons(zmd=self.zmd, map_ws=masked_map, dec_mid_dist=30)
+        if not self.map_polygons.success:
+            self.lg.error("Failed to create map polygons for the cell area.")
+            return False
 
         # get origin (center of bounding polygon)
         self.origin = np.array(self.map_polygons.b_poly.centroid.coords)[0]
 
         # rotate all polygons to align with cell free angle
         self.map_polygons.rotate_all_polygons(-self.cell.major_direction, self.origin)
+        return True
 
     def decompose(self) -> None:
         """ Decompose the cell area into boustrophedon cells. """

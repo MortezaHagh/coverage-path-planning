@@ -18,6 +18,7 @@ class MapPolygons:
         self.lg = MyLogger("MapPolygons")
         self.b_poly: Polygon = None  # bounding polygon
         self.obs_polys: list[Polygon] = []  # obstacle polygons
+        self.success: bool = True
 
         # map workspace
         if map_ws is not None:
@@ -34,7 +35,9 @@ class MapPolygons:
         self.set_start_coord(zmd)
 
         # set bounding polygon
-        self.create_bounding()
+        if not self.create_bounding():
+            self.success = False
+            return
 
         # set obstacle polygons
         self.create_obstacle_polygons()
@@ -44,7 +47,7 @@ class MapPolygons:
         self.s_x = zmd.rectangle.x_min
         self.s_y = zmd.rectangle.y_min
 
-    def create_bounding(self):
+    def create_bounding(self) -> bool:
         """Extract workspace boundary polygon from binary map.
 
         Uses contour detection to find the largest contour representing
@@ -57,8 +60,14 @@ class MapPolygons:
         filtered_c = self.filter_contour_points(biggest_contour)
         filtered_c.reverse()  # reverse to have clockwise order
 
+        # check size
+        if len(filtered_c) < 3:
+            self.lg.warn("Not enough points to create bounding polygon for zone")
+            return False
+
         # shift points by starting coordinates
         self.b_poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
+        return True
 
     def create_obstacle_polygons(self):
         """Extract obstacle polygons from binary map using contour detection."""
@@ -82,7 +91,7 @@ class MapPolygons:
             filtered_c = self.filter_contour_points(c)
             # get the polygon
             if len(filtered_c) < 3:
-                self.lg.warning("Not enough points to create polygon for contour in zone")
+                self.lg.warn("Not enough points to create polygon for contour in zone")
                 continue
             poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
             obs_polys.append(poly)

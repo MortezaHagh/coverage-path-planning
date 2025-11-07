@@ -336,6 +336,8 @@ class CellDecomposition:
                                  hit_down_event.end_up_ed_xy, (base_e.xy[0], hit_down_y)]
                 else:
                     self.lg.warn("[create_trapezoid]: updown: hit_up_event and hit_down_event are both None [updown-out]")
+                    base_e.hit_down_event = None
+                    base_e.hit_up_event = None
                     return
             if not (hit_up_event or hit_down_event):
                 self.lg.warn("[create_trapezoid]: updown: hit_up_event and hit_down_event are both None")
