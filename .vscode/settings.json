@@ -38,7 +38,7 @@
         "--disable=E1121"
     ],
     "github.copilot.editor.enableAutoCompletions": true,
-    "python.pipenvPath": "/home/morteza/Documents/00-CPP/00-CPP/venv",
+    "python.pipenvPath": "/home/morteza/Documents/00-CovPP/covpp/venv",
     "python.autoComplete.extraPaths": [
         "/home/morteza/mo_ws/devel/lib/python3/dist-packages",
         "/home/morteza/catkin_ws/devel/lib/python3/dist-packages",

@@ -3,16 +3,16 @@
 import sys
 # import cv2 as cv
 import numpy as np
-from scripts.gui.rectangle import Rectangle
-from scripts.base.logger import MyLogger
-from scripts.base.map_data import MapData
-from scripts.base.configs import MapConfig, PipeLineConfig
-from scripts.base.inputs_processor import InputsProcessor
-from scripts.base.image_processor import MapImageProcessor
-from scripts.district.district import DistrictData
-from scripts.district.create_district_simple import DistrictGen
-# from scripts.district.create_district import DistrictGen
-from scripts.spa.space_analyzer import SpaceAnalyzer
+from covpp.gui.rectangle import Rectangle
+from covpp.base.logger import MyLogger
+from covpp.base.map_data import MapData
+from covpp.base.configs import MapConfig, PipeLineConfig
+from covpp.base.inputs_processor import InputsProcessor
+from covpp.base.image_processor import MapImageProcessor
+from covpp.district.district import DistrictData
+from covpp.district.create_district_simple import DistrictGen
+# from covpp.district.create_district import DistrictGen
+from covpp.spa.space_analyzer import SpaceAnalyzer
 
 
 def run_pipeline(map_name: str) -> None:

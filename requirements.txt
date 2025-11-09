@@ -1,12 +1,7 @@
-# python -m  pipreqs.pipreqs .
-colorama
-PyYAML
-pynput
-opencv-python
-# opencv-python-headless
-# 
 numpy
 matplotlib
+opencv-python
+# opencv-python-headless
 Shapely
 # 
 scipy # voronoi
@@ -14,3 +9,9 @@ ortools
 pyastar2d
 scikit-image
 # pathfinding
+# 
+colorama
+PyYAML
+pynput
+# python -m  pipreqs.pipreqs .
+# virtualenv venv --python=python3.11

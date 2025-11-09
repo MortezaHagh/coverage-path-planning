@@ -508,7 +508,7 @@ main.py
 ### Directory Structure
 
 ```text
-Data/
+results/
   └─ <map_name>/
        └─ District/
             ├─ map_planning_<method>.png
@@ -613,9 +613,9 @@ Each handler uses the Strategy pattern to select algorithms:
 ```python
 # Example from SegmentationHandler
 if segmentation_method == "simple":
-    from scripts.segmentation.simple_segmentation.segmentation_simple import Segmentation
+    from covpp.segmentation.simple_segmentation.segmentation_simple import Segmentation
 elif segmentation_method == "voronoi":
-    from scripts.segmentation.voronoi_decomposition.segmentation_voronoi import Segmentation
+    from covpp.segmentation.voronoi_decomposition.segmentation_voronoi import Segmentation
 else:
     raise ValueError(f"Segmentation method '{segmentation_method}' not recognized.")
 
@@ -653,8 +653,8 @@ scripts/segmentation/my_method/
 **Step 2**: Inherit from `SegmentationBase`:
 
 ```python
-from scripts.segmentation.segmentation_base import SegmentationBase
-from scripts.segmentation.cell_base import CellBase
+from covpp.segmentation.segmentation_base import SegmentationBase
+from covpp.segmentation.cell_base import CellBase
 
 class Segmentation(SegmentationBase):
     def __init__(self, zmd, map_polygons):
@@ -674,7 +674,7 @@ class Segmentation(SegmentationBase):
 ```python
 # In scripts/segmentation/segmentation_hl.py
 if segmentation_method == "my_method":
-    from scripts.segmentation.my_method.segmentation_my_method import Segmentation
+    from covpp.segmentation.my_method.segmentation_my_method import Segmentation
     self.segmentor = Segmentation(self.zmd, self.map_polygons)
 ```
 
@@ -700,7 +700,7 @@ scripts/planning/my_planner/
 **Step 2**: Inherit from `CoveragePathPlannerBase`:
 
 ```python
-from scripts.planning.coverage_pp_base import CoveragePathPlannerBase
+from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
 
 class CoveragePathPlanner(CoveragePathPlannerBase):
     def __init__(self, cell, zmd):
@@ -719,7 +719,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 ```python
 # In scripts/planning/coverage_path_plan_handler.py
 if covpp_method == "my_planner":
-    from scripts.planning.my_planner.coverage_pp_my_planner import CoveragePathPlanner
+    from covpp.planning.my_planner.coverage_pp_my_planner import CoveragePathPlanner
 ```
 
 **Step 4**: Update configuration:
@@ -750,7 +750,7 @@ class OptimizeCellsSeq:
 ```python
 # In scripts/sequence/sequence.py
 if self.plcfgs.sequence_method == "my_method":
-    from scripts.sequence.optimize_my_method import OptimizeCellsSeq
+    from covpp.sequence.optimize_my_method import OptimizeCellsSeq
     optimizer = OptimizeCellsSeq(self.cells, ...)
     self.seq_idxs = optimizer.optimize()
 ```
@@ -767,7 +767,7 @@ sequence_method: "my_method"
 
 ```python
 # In scripts/evaluation/zone_evaluation_my_method.py
-from scripts.evaluation.zone_evaluation_base import ZoneEvaluationBase
+from covpp.evaluation.zone_evaluation_base import ZoneEvaluationBase
 
 class ZoneEvaluation(ZoneEvaluationBase):
     def evaluate(self, paths, duration):

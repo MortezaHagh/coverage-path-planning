@@ -4,8 +4,8 @@
 # docs/source/.templates/
 coverage_path_planning/
 __pycache__/
-Data/Map3
-Data/Map4
+results/Map3
+results/Map4
 venv/
 archive/
 #*.png

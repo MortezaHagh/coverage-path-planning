@@ -1,0 +1,23 @@
+# Include documentation
+include README.md
+include LICENSE
+include documentation.md
+include requirements.txt
+
+# Include configuration files
+# Project configuration files live under the `covpp` package directory
+recursive-include covpp *.yaml *.yml *.json
+
+# Exclude unnecessary files
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * .DS_Store
+exclude .gitignore
+recursive-exclude .git *
+recursive-exclude .vscode *
+recursive-exclude venv *
+recursive-exclude .devcontainer *
+recursive-exclude __pycache__ *
+recursive-exclude results *
+recursive-exclude design *
+recursive-exclude zother *
