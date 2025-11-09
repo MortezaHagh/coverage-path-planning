@@ -15,6 +15,7 @@ class MyLogger:
         self.name: str = name
 
     def info1(self, message: str) -> None:
+        print(f"{Fore.WHITE} ======================================================================= {Style.RESET_ALL}")
         print(f"{Fore.CYAN}[{self.name}]: {message}{Style.RESET_ALL}")
 
     def info2(self, message: str) -> None:

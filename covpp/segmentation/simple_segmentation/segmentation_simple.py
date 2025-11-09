@@ -20,8 +20,14 @@ class Segmentation(SegmentationBase):
 
     def run(self) -> None:
         """Execute simple segmentation by creating a single cell."""
+        self.create_cells()
 
+    def create_cells(self) -> list[CellBase]:
         # create one cell for the whole area
         cell = CellBase(idx=0, poly=self.map_polygons.b_poly, resolution=self.zmd.resolution)
         self.cells.append(cell)
         self.n_cells = 1
+
+    def set_cell_adjacents(self):
+        # no adjacents in simple segmentation
+        return

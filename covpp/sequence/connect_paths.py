@@ -54,7 +54,7 @@ class ConnectPaths:
 
     def find_all_connections(self, cells: list[PCell]):
         """ Find all connection paths between cells (based on their coverage paths endpoints) and store them in a matrix. """
-        self.lg.info2("Step: find all connections paths")
+        self.lg.info2("find all connections paths")
         n = self.n_cells
         all_connections = np.full((n, n), None, dtype=object)
 
@@ -86,7 +86,7 @@ class ConnectPaths:
             - If seq_idxs is None, connect paths in the given order.
             - If path between two cells is not found, create it.
         """
-        self.lg.info2("Step: connecting paths")
+        self.lg.info2("connecting paths")
         c_paths = []  # list of connection paths
 
         # check if seq_idxs (sequence) is given

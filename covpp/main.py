@@ -32,33 +32,27 @@ def run_pipeline(map_name: str) -> None:
     inp_processor = InputsProcessor(map_name)
     orig_map = inp_processor.orig_map
     map_config: MapConfig = inp_processor.map_config
-    print(" ============================================================================== ")
 
     # 2. Initial Process of the map image and create MapData object
     mp = MapImageProcessor(map_arr=orig_map, map_config=map_config)
     map_data: MapData = mp.map_data
-    print(" ============================================================================== ")
 
     # 3. Select area of interest in the map and create District rectangle
     district_g = DistrictGen(map_data=map_data)
     district_rect: Rectangle = district_g.get_district_rect()
-    print(" ============================================================================== ")
 
     # 4. Process Space based on map and configs (robot and workspace) - Initialize District MapData
     spa = SpaceAnalyzer(map_data=map_data, rectangle=district_rect)
     spa.create_local_map_ws_selection()
-    print(" ============================================================================== ")
 
     # 5. Create DistrictData and district ZoneMapData
     district_data = DistrictData(spa)
 
     # 6. create zones in the district
     district_data.create_zones_hl()
-    print(" ============================================================================== ")
 
     # 7. run main coverage path planning operations sequentially for all zones
     district_data.run_coverage_planning()
-    print(" ============================================================================== ")
 
     # Log execution time
     end_time = np.datetime64('now')

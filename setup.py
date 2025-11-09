@@ -60,6 +60,9 @@ setup(
         "console_scripts": [
             "covpp=covpp.main:main",
         ],
+        "segmentors": [
+            "segmentor_simple=covpp.segmentation.simple_segmentation:ExampleSegmentor",
+        ],
     },
     include_package_data=True,
     zip_safe=False,
