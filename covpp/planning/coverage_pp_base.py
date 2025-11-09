@@ -32,6 +32,9 @@ class CoveragePathPlannerBase:
         pcfg: Planning configuration object.
         lg: Logger instance.
 
+    Result:
+        Sets path_m and path_px attributes for the cell.
+
     Example:
         To create a new coverage planning method:
 

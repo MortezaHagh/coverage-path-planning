@@ -14,7 +14,7 @@ class ZoneStatsBase:
         coverage_trav_time (float): travel time in seconds (coverage path)
         processing_time (float): processing time in seconds
         full_length (float): full path length in meters (coverage and connecting)
-        coverage_length (float): coverage path length in meters (todo)
+        coverage_length (float): coverage path length in meters
         full_yaw_rad (float): yaw changes in radians
         coverage_yaw_rad (float): yaw changes in radians (coverage path)
         cleaning_area_px (int): area to be cleaned in pixels

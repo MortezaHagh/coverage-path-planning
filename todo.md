@@ -39,5 +39,4 @@
 - new planning method
 - new boustraphedon
 - paper draft (pipeline, my boustraphedon)
-- plugin based
 - add to inputs: positions of docking stations (later check in which cell they fell in to)

@@ -33,7 +33,7 @@ class MapImageProcessor:
         self.check_map(map_arr)
 
         # set map data
-        self.__map_data: MapData = MapData()
+        self.__map_data = MapData()
         self.set_map_data()
 
         # initial processes on map image - set binary map

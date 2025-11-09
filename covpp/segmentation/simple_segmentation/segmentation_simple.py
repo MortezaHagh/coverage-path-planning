@@ -1,13 +1,13 @@
 """Simple segmentation method creating a single cell for the entire zone."""
 from covpp.base.logger import MyLogger
-from covpp.segmentation.cell_base import CellBase
-from covpp.planning.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
+from covpp.segmentation.cell_base import CellBase
+from covpp.segmentation.map_polygons import MapPolygons
 from covpp.segmentation.segmentation_base import SegmentationBase
 
 
 class Segmentation(SegmentationBase):
-    """Simple segmentation implementation creating one cell for entire zone.
+    """Simple segmentation implementation creating one cell for entire zone. Creates a single cell.
 
     This is the simplest segmentation strategy, treating the entire workspace
     as a single cell without further decomposition. Useful for small or

@@ -4,8 +4,8 @@ from shapely import Polygon
 from matplotlib import pyplot as plt
 from scipy.spatial import Voronoi  # pylint: disable=no-name-in-module
 from covpp.base.logger import MyLogger
-from covpp.planning.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
+from covpp.segmentation.map_polygons import MapPolygons
 from covpp.segmentation.voronoi_segmentation.cell import Cell
 from covpp.segmentation.segmentation_base import SegmentationBase
 from covpp.segmentation.voronoi_segmentation.common import CriticalPoint, Ring
@@ -13,7 +13,7 @@ from covpp.segmentation.voronoi_segmentation.voronoi_decomposition import Vorono
 
 
 class Segmentation(SegmentationBase):
-    """Voronoi diagram-based segmentation for workspace decomposition.
+    """Voronoi diagram-based segmentation for workspace decomposition. Creates cells.
 
     Uses Voronoi decomposition to partition the workspace into cells based
     on critical points, creating geometrically optimal regions for coverage.

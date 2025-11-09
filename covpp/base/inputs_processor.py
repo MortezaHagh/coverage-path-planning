@@ -33,7 +33,7 @@ class InputsProcessor:
 
         # attributes
         self.map_name: str = map_name
-        self.mcfg: MapConfig = MapConfig()
+        self.mcfg = MapConfig()
         self.__orig_map: np.ndarray = None
 
         # paths (directories and files)

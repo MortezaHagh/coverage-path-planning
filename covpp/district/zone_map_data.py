@@ -19,7 +19,10 @@ def convert_to_native(data: dict) -> dict:
 
 
 class ZoneMapData:
-    """ZoneMapData class to store zone map data. values are in pixel by default."""
+    """ZoneMapData class to store zone map data. values are in pixel by default.
+
+        All coordinates are stored with respect to the original map (global coordinates).
+    """
 
     def __init__(self, ind: int = 0):
         self.ind: int = ind
@@ -38,8 +41,9 @@ class ZoneMapData:
         self._final_rect_data: dict = None              # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
         self.vertices: list[tuple[int, int]] = None     # vertices: [(x, y), ...]
         self.final_vertices: np.ndarray = None          # vertices: [(x, y), ...]
-        self.hw_bd_px: dict = None                      # map hw bound, dict keys: h_min, w_min, h_max, w_max
+        self.hw_bd: dict = None                         # map hw bound, dict keys: h_min, w_min, h_max, w_max
         self.hw: tuple[int, int] = None                 # height and width of the zone map
+        self.global_xy: np.ndarray = None               # global map offset (x_offset, y_offset)
         # maps
         self.map_orig: np.ndarray = None                # cropped original map based on rectangle
         self.map_ws: np.ndarray = None                  # cropped work space selected free space filtered (map_7_c_ws_sf_f)
@@ -124,13 +128,14 @@ class ZoneMapData:
     def set_map_viz(self, map_viz: np.ndarray):
         self.map_planning = map_viz
 
-    def set_hw_bd_px(self, hw_bd_px: dict):
+    def set_hw_bd_px(self, hw_bd: dict):
         """ set map boundary in pixels.
         dict with keys = {"h_min", "w_min", "h_max", "w_max"}
         """
-        self.hw_bd_px = hw_bd_px
-        self.hw = (hw_bd_px["h_max"] - hw_bd_px["h_min"],
-                   hw_bd_px["w_max"] - hw_bd_px["w_min"])
+        self.hw_bd = hw_bd
+        self.hw = (hw_bd["h_max"] - hw_bd["h_min"],
+                   hw_bd["w_max"] - hw_bd["w_min"])
+        self.global_xy = np.array([hw_bd["w_min"], hw_bd["h_min"]], dtype=np.int32)
 
     # --------------------------------------------------------------------------
     # Save Data
@@ -150,7 +155,7 @@ class ZoneMapData:
         zone_data_d = dict()
         zone_data_d["origin_m"] = self.orig_map_data.origin_m
         zone_data_d["up_resolution"] = self.orig_map_data.up_resolution
-        zone_data_d["hw_bd_px"] = self.hw_bd_px
+        zone_data_d["hw_bd"] = self.hw_bd
         zone_data_d["rect_data"] = convert_to_native(self.rect_data)
         zone_data_d["final_rect_data"] = convert_to_native(self.final_rect_data)
 

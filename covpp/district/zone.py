@@ -50,21 +50,21 @@ class ZoneData:
         self.zmd: ZoneMapData = zmd
 
         # # # configs
-        self.dcfg: PipeLineConfig = PipeLineConfig()
-        self.pcfg: PlanningConfig = PlanningConfig()
+        self.dcfg = PipeLineConfig()
+        self.pcfg = PlanningConfig()
 
         # # # segmentation
-        self.segmentation_hl: SegmentationHandler = SegmentationHandler(self.zmd)
+        self.segmentation_hl = SegmentationHandler(self.zmd)
         self.cells: list[PCell] = []
 
         # # # coverage path planner
-        self.cov_path_planner: CoveragePPHandler = CoveragePPHandler(self.zmd)
+        self.cov_path_planner = CoveragePPHandler(self.zmd)
 
         # # # sequence
-        self.sequence_hl: SequenceHandler = SequenceHandler(self.zmd)
+        self.sequence_hl = SequenceHandler(self.zmd)
 
         # # # evaluator
-        self.evaluator: ZoneEvaluationHandler = ZoneEvaluationHandler(self.zmd)
+        self.evaluator = ZoneEvaluationHandler(self.zmd)
 
         # resulting data
         self.complete_path_px: MyPath = None

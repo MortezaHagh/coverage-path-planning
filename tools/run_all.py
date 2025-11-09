@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
                     print(f"\n Running pipeline for method [{dcfg.method}] on map [{map_name}].")
                     print(" --------------------------------------------------------------")
-                    from main import run_pipeline
+                    from covpp.main import run_pipeline
                     run_pipeline(map_name)
                     print(f"Finished processing {map_name}.\n")
                     print(" ######################################################## \n")

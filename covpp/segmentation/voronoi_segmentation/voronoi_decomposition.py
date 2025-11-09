@@ -5,12 +5,12 @@ from matplotlib import pyplot as plt
 from shapely import Polygon, Point
 # from shapely.affinity import scale
 # from scipy import ndimage
-from scipy.spatial import Voronoi, voronoi_plot_2d  # pylint: disable=no-name-in-module
 from covpp.base.logger import MyLogger
-from covpp.district.zone_map_data import ZoneMapData
-from covpp.planning.map_polygons import MapPolygons
 from covpp.base.configs import PlanningConfig, PipeLineConfig
+from covpp.district.zone_map_data import ZoneMapData
+from covpp.segmentation.map_polygons import MapPolygons
 from covpp.segmentation.voronoi_segmentation.common import VPoint, CriticalPoint
+from scipy.spatial import Voronoi, voronoi_plot_2d  # pylint: disable=no-name-in-module
 
 
 class VoronoiDecomposition:
@@ -32,8 +32,8 @@ class VoronoiDecomposition:
         self.lg.info2("Voronoi decomposition.")
 
         # settings
-        self.pcfg: PlanningConfig = PlanningConfig()
-        self.dcfg: PipeLineConfig = PipeLineConfig()
+        self.pcfg = PlanningConfig()
+        self.dcfg = PipeLineConfig()
         # self.adj_dist_lb: float = 50.0            # distance threshold for adjacent Voronoi vertices
         self.fixed_min_n_adj: int = 8               # fixed minimum number of adjacent Voronoi vertices
         self.fixed_max_n_adj: int = 15              # maximum number of adjacent Voronoi vertices
@@ -236,7 +236,7 @@ class VoronoiDecomposition:
             for adj_idx in vp.adjacent_vp_idxs:
                 adj_vp = self.v_points[adj_idx]
                 # adjacent vertex must be free
-                if not adj_vp.free:  # feasible toeval todo
+                if not adj_vp.free:  # feasible
                     continue
                 # if vp has this kind of adjacent vertex, it is not set as critical
                 if adj_vp.critical or adj_vp.has_inf_adj:

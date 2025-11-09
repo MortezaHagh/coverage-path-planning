@@ -14,7 +14,7 @@ class DistrictGen:
 
         # attributes
         self.__md: MapData = map_data
-        self.__cfg: PipeLineConfig = PipeLineConfig()
+        self.__cfg = PipeLineConfig()
 
         # Check if whole map is selected
         if not self.__cfg.whole_map:

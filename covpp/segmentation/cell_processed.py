@@ -33,8 +33,9 @@ class PCell(CellBase):
         self.zmd: ZoneMapData = zmd
 
         # cell map
-        self.map: np.ndarray = None         # binary map of the cell area
-        self.map_bd: dict = {}              # cell local map bounds
+        self.map: np.ndarray = None                 # binary map of the cell area
+        self.map_xy_bd: dict = {}                   # cell local map bounds
+        self.global_xy = np.array([0, 0], dtype=np.int32)    # global map offset (x_offset, y_offset)
 
         # rectangle-like properties
         self.rect_like: bool = False              # whether the cell is rectangle-like or inscribed rectangle-like
@@ -75,12 +76,13 @@ class PCell(CellBase):
         y_min = max(y_min-n, 0)
         x_max = min(x_max+n, zone_rectangle.x_max)
         y_max = min(y_max+n, zone_rectangle.y_max)
-        self.map_bd = {
-            "x_min": x_min,
-            "y_min": y_min,
-            "x_max": x_max,
-            "y_max": y_max
-        }
+        self.global_xy = np.array([x_min + zone_rectangle.x_min, y_min + zone_rectangle.y_min], dtype=np.int32)
+        # self.map_xy_bd = {
+        #     "x_min": x_min,
+        #     "y_min": y_min,
+        #     "x_max": x_max,
+        #     "y_max": y_max
+        # }
 
         # crop map_ws to bounding box
         map_ws = zone_map.copy()
@@ -94,9 +96,8 @@ class PCell(CellBase):
         if self.dcfg.use_insc_ret and self.rect_like:
             points = np.array(self.rectangle_poly.exterior.coords, dtype=np.int32)
 
-        # shift points to the bounding box origin
+        # points in the new local map coordinates
         poly_pts = points - np.array([[x_min, y_min]], dtype=np.int32)
-        # consider difference between zone rectangle and map origin
         poly_pts -= np.array([[zone_rectangle.x_min, zone_rectangle.y_min]], dtype=np.int32)
 
         # fill cell polygon area with free space (255)

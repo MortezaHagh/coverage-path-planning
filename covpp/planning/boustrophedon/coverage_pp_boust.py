@@ -4,9 +4,9 @@ import numpy as np
 from covpp.base.logger import MyLogger
 from covpp.base.my_utils import MyPath, MyPoint
 from covpp.planning.boustrophedon.cell import Cell
-from covpp.planning.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
+from covpp.segmentation.map_polygons import MapPolygons
 from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
 from covpp.planning.boustrophedon.cell_cov_planner import CellCoveragePathPlanner
 from covpp.planning.boustrophedon.decomposition_bs_mh import CellDecomposition
@@ -40,10 +40,10 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.origin: np.ndarray = np.array([0.0, 0.0], dtype=np.float32)
 
         # cell decomposition
-        self.decomposer: CellDecomposition = CellDecomposition(zmd.resolution, zmd.result_dir)
+        self.decomposer = CellDecomposition(zmd.resolution, zmd.result_dir)
 
         # connect paths interface
-        self.connections: ConnectPaths = ConnectPaths(zone_map_data=self.zmd, ns=f"C{cell.id}")
+        self.connections = ConnectPaths(zone_map_data=self.zmd, ns=f"C{cell.id}")
 
         # resulting cells after decomposition
         self.mcells: list[Cell] = []    # boustrophedon cells within the given cell
@@ -77,28 +77,18 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
     def create_polygons(self) -> bool:
         """ Create MapPolygons object for the cell area in the map"""
 
-        # get polygon points of the cell
-        points = self.cell.points
+        cell_map = self.cell.map
+
+        # update cell map if inscribed rectangle is used
         if self.dcfg.use_insc_ret and self.cell.rect_like:
             points = np.array(self.cell.rectangle_poly.exterior.coords, dtype=np.int32)
-
-        # get ws map
-        map_ws = self.zmd.map_ws.copy()
-
-        # - Create polygon coordinates relative to map origin
-        poly_coords = [points - self.zmd.rectangle.min_point]
-
-        # - Create mask (same size as map)
-        mask = np.zeros_like(map_ws, dtype=np.uint8)
-
-        # - Fill polygon area with 1’s
-        cv.fillPoly(mask, poly_coords, 1)
-
-        # - Apply mask
-        masked_map = np.where(mask == 1, map_ws, 0)
+            poly_coords = [points - self.cell.global_xy]
+            mask = np.zeros_like(cell_map, dtype=np.uint8)
+            cv.fillPoly(mask, poly_coords, 1)
+            cell_map = np.where(mask == 1, cell_map, 0)
 
         # create MapPolygons object
-        self.map_polygons = MapPolygons(zmd=self.zmd, map_ws=masked_map, dec_mid_dist=30)
+        self.map_polygons = MapPolygons(map_ws=cell_map, xy=self.cell.global_xy, dec_mid_dist=30)
         if not self.map_polygons.success:
             self.lg.error("Failed to create map polygons for the cell area.")
             return False

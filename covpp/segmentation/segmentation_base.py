@@ -6,12 +6,12 @@ must implement, enabling a plugin-based architecture.
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig
 from covpp.segmentation.cell_base import CellBase
-from covpp.planning.map_polygons import MapPolygons
+from covpp.segmentation.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
 
 
 class SegmentationBase:
-    """Abstract base class for zone segmentation algorithms.
+    """Abstract base class for zone segmentation algorithms. Results in cells.
 
     All segmentation implementations must inherit from this class and
     implement the run() method. This design allows easy addition of
@@ -49,7 +49,7 @@ class SegmentationBase:
         self.map_polygons: MapPolygons = map_polygons
 
         # configs
-        self.dcfg: PipeLineConfig = PipeLineConfig()
+        self.dcfg = PipeLineConfig()
 
         # cells
         self.cells: list[CellBase] = []

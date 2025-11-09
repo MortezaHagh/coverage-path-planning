@@ -138,9 +138,9 @@ class FindPathInMap:
         # self.cost_map = np.where(binary_map == 1, 1, 0)                       # method 2 # 1 = free, 0 = obstacle
         # self.grid = Grid(matrix=self.cost_map)     # method 3 # grid for pathfinding algorithm (function find_path_al_pathfinding)
 
-        # and start point
-        self.s_x = zmd.rectangle.x_min
-        self.s_y = zmd.rectangle.y_min
+        # start point (offset in global map)
+        self.s_x = zmd.global_xy[0]
+        self.s_y = zmd.global_xy[1]
 
     def distance_between_points(self, p1: MyPoint, p2: MyPoint) -> float:
         """ Calculate distance between two points in the map.
@@ -153,9 +153,7 @@ class FindPathInMap:
             return float('inf')
 
         # calculate path length
-        length = 0.0
-        for i in range(len(path.points) - 1):
-            length += np.linalg.norm(np.array(path.points[i].xy) - np.array(path.points[i + 1].xy))
+        length = np.sum(np.linalg.norm(np.diff(np.array(path.xy), axis=1), axis=1))
         return length
 
     def find_path(self, start: MyPoint, end: MyPoint) -> MyPath:

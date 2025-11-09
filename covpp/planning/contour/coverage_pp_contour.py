@@ -1,4 +1,4 @@
-"""Contour-following coverage path planning implementation."""
+"""Contour Line-based Coverage Path Planning implementation."""
 import cv2 as cv
 import numpy as np
 # from shapely.affinity import scale
@@ -81,32 +81,24 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         robot_r_px = int(self.pcfg.cleaning_r_ov / self.resolution)
         points = []
 
-        # initial scale
+        # initial scale of the polygon
         scaled_poly = self.cell.poly.buffer(-1, join_style=2, resolution=8)
         if scaled_poly.is_empty or scaled_poly is None:
             raise ValueError(f"Cell {self.cell.id} has an empty scaled_poly.")
         if isinstance(scaled_poly, MultiPolygon):
+            # take the first polygon if multiple polygons exist
             scaled_poly = scaled_poly.geoms[0]
         points.extend(list(scaled_poly.exterior.coords))
 
         # shift in the rectangle coordinates
-        s_x = self.zmd.rectangle.x_min
-        s_y = self.zmd.rectangle.y_min
-        s_xy = np.array([s_x, s_y], dtype=np.int32)
-
-        # create a cell map
-        z_map = self.zmd.map_ws  # .copy()
-        c_map = np.zeros_like(z_map, dtype=np.uint8)
-        cv.fillPoly(c_map, [np.array(self.cell.points)-s_xy], color=255)
-        mask = c_map == 255
-        c_map[mask] = z_map[mask]
+        s_xy = self.cell.global_xy
 
         # complete the path
         if self.dcfg.use_insc_ret and self.cell.rect_like:
             points = []
             path_px = self.complete_path_by_rectangle(points, robot_r_px)
         else:
-            path_px = self.complete_path_by_distance_transform(points, c_map, s_xy, robot_r_px)
+            path_px = self.complete_path_by_distance_transform(points, self.cell.map, s_xy, robot_r_px)
         self.path_px = path_px
 
     def complete_path_by_rectangle(self, points: list, robot_r_px: int) -> MyPath:
@@ -213,8 +205,6 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         """
 
         robot_d_px = int(robot_r_px * 2)
-
-        # todo could crop the c_map to the cell polygon map
 
         # distance transform
         dist_transform = cv.distanceTransform(c_map, cv.DIST_L2, 5)

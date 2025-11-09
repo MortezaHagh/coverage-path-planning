@@ -14,7 +14,7 @@ from covpp.base.my_utils import MyPoint, MyPath
 from covpp.base.my_utils import get_n_colors_plt
 from covpp.base.my_utils import get_n_colors_cv
 from covpp.segmentation.cell_processed import PCell
-from covpp.planning.map_polygons import MapPolygons
+from covpp.segmentation.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
 from covpp.planning.planning_plotter import PlannerPlotter

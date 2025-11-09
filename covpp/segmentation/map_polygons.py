@@ -4,7 +4,6 @@ import numpy as np
 # from shapely import affinity
 from shapely import Polygon, Point
 from covpp.base.logger import MyLogger
-from covpp.district.zone_map_data import ZoneMapData
 
 
 class MapPolygons:
@@ -14,25 +13,23 @@ class MapPolygons:
     polygon representations of the coverage boundary and internal obstacles.
     """
 
-    def __init__(self, zmd: ZoneMapData, map_ws: np.ndarray = None, dec_mid_dist: int = 10):
+    def __init__(self, map_ws: np.ndarray, xy: np.ndarray, dec_mid_dist: int = 10):
         self.lg = MyLogger("MapPolygons")
-        self.b_poly: Polygon = None  # bounding polygon
-        self.obs_polys: list[Polygon] = []  # obstacle polygons
+
+        # polygons
+        self.b_poly: Polygon = None         # bounding polygon (in global coordinates (pixels))
+        self.obs_polys: list[Polygon] = []  # obstacle polygons (in global coordinates (pixels))
         self.success: bool = True
 
         # map workspace
-        if map_ws is not None:
-            self.map_ws = map_ws
-        else:
-            self.map_ws = zmd.map_ws
+        self.map_ws = map_ws
 
-        # starting coordinates
-        self.s_x: int = None
-        self.s_y: int = None
+        # starting coordinates (offset in global map)
+        self.s_x: int = xy[0]
+        self.s_y: int = xy[1]
 
         # settings
-        self.dec_mid_dist = dec_mid_dist
-        self.set_start_coord(zmd)
+        self.dec_mid_dist = dec_mid_dist  # min distance to keep contour points
 
         # set bounding polygon
         if not self.create_bounding():
@@ -41,11 +38,6 @@ class MapPolygons:
 
         # set obstacle polygons
         self.create_obstacle_polygons()
-
-    def set_start_coord(self, zmd: ZoneMapData):
-        """Set starting coordinates from zone map rectangle."""
-        self.s_x = zmd.rectangle.x_min
-        self.s_y = zmd.rectangle.y_min
 
     def create_bounding(self) -> bool:
         """Extract workspace boundary polygon from binary map.

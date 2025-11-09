@@ -6,11 +6,11 @@ different segmentation algorithms based on configuration.
 from importlib.metadata import entry_points
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig
-from covpp.planning.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.cell_processed import PCell
 from covpp.segmentation.merge_cells import MergeCells
+from covpp.segmentation.map_polygons import MapPolygons
 from covpp.segmentation.segmentation_base import SegmentationBase
 from covpp.segmentation.simple_segmentation.segmentation_simple import Segmentation as SegmentationSimple
 
@@ -51,7 +51,7 @@ class SegmentationHandler:
         self.zmd: ZoneMapData = zmd
 
         # create map polygons object for the zone
-        self.map_polygons: MapPolygons = MapPolygons(self.zmd)
+        self.map_polygons = MapPolygons(map_ws=self.zmd.map_ws, xy=self.zmd.global_xy)
 
         # main segmentor (to be created in the run method based on configs)
         self.segmentor: SegmentationBase = None
@@ -81,13 +81,15 @@ class SegmentationHandler:
             raise ValueError(f"Segmentation method '{segmentation_method}' not recognized.")
         self.segmentor: SegmentationBase = segmentors[segmentation_method].load()(self.zmd, self.map_polygons)
 
-        # run segmentation
+        # run segmentation =====================================================
         self.segmentor.run()
+        # ======================================================================
 
         # resulting base cells from segmentor
         bcells = self.segmentor.cells
         n_bcells = self.segmentor.n_cells
 
+        # if no cells were created, try simple segmentation
         if n_bcells == 0:
             self.lg.warn("No cells were created by the segmentation algorithm.")
             self.lg.warn("Trying simple segmentation.")

@@ -34,9 +34,9 @@ class Event:
         # ci: cell index, cil: cell index list
         self.base_ci_up: int = None         # cell index which created from this event by hit up
         self.base_ci_down: int = None       # cell index which created from this event by hit down
-        self.up_cil_d = dict()              # cell index list dictionary - created by other hit down event which hitted to this event
+        self.up_cil_d = {}                  # cell index list dictionary - created by other hit down event which hitted to this event
         self.up_cil_k = []                  # keys list of up_cil_d
-        self.down_cil_d = dict()            # cell index list dictionary - created by other hit up event which hitted to this event
+        self.down_cil_d = {}                # cell index list dictionary - created by other hit up event which hitted to this event
         self.down_cil_k = []                # keys list of down_cil_d
         #
         self.has_adj: bool = True           # if this event should has adjacent cells

@@ -110,7 +110,7 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
 
         # Draw cleaned paths on a mask
         cleaned_acc = np.zeros_like(map_cleaning, dtype=np.uint8)
-        hw_bd = self.zmd.hw_bd_px
+        hw_bd = self.zmd.hw_bd
         h, w = hw_bd["h_min"], hw_bd["w_min"]
         color_p = 1
         # for path in paths:
