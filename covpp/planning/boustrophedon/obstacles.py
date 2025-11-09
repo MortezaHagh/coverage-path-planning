@@ -5,8 +5,12 @@ from covpp.planning.boustrophedon.events import Event
 
 
 class Obstacle:
-    """ Obstacle class for boustrophedon decomposition.
-        Includes events and methods to process them.
+    """Encapsulate a polygonal obstacle and its decomposition events.
+
+    Each obstacle generates a sequence of sweep-line events that drive the
+    trapezoidal decomposition. The class pre-processes vertices, injects fake
+    events for vertical edges, and evaluates event types (up/down/in/out) used
+    by :class:`CellDecomposition`.
     """
 
     def __init__(self, ind: int, poly: Polygon):

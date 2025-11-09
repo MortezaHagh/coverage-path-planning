@@ -1,12 +1,17 @@
 
-""" All configs """
+"""Configuration dataclasses used by the pipeline."""
 
 import dataclasses
 
 
 @dataclasses.dataclass
 class MapConfig:
-    """ Map configuration including base map specs and directories. """
+    """Container for occupancy grid metadata and map directory layout.
+
+    Attributes capture the transform from pixel to metric space in addition to
+    the on-disk structure of a dataset (e.g. base, district folders). All
+    values default to ``None`` and are populated by the input loader at runtime.
+    """
     # map configs
     origin_m = None         # origin x, y in meters
     resolution = None       # meters/pixel
@@ -23,7 +28,11 @@ class MapConfig:
 
 @dataclasses.dataclass
 class PipeLineConfig:
-    """ Main pipeline configurations. Includes main module methods and plot options. """
+    """Global switches that describe the end-to-end coverage pipeline setup.
+
+    The configuration controls which segmentation, coverage path planning, and
+    sequencing modules are used together with plotting and debugging options.
+    """
 
     # Main configs
     whole_map = True    # Select whole map as district (True) or select rectangle (False)
@@ -55,7 +64,7 @@ class PipeLineConfig:
     @classmethod
     def update(cls, segmentation_method: str = 'voronoi', covpp_method: str = 'boust',
                use_insc_ret: bool = False, sequence_method: str = 'milp', start_cell_idx: int = 0) -> None:
-        """ Update configs. """
+        """Update pipeline configuration values."""
         cls.segmentation_method = segmentation_method
         cls.covpp_method = covpp_method
         cls.sequence_method = sequence_method
@@ -73,6 +82,8 @@ class PipeLineConfig:
 
 @dataclasses.dataclass
 class RobotConfig:
+    """Nominal robot characteristics used to estimate motion effort."""
+
     radius = 0.5
     v_lin_avg = 0.4  # average linear velocity in m/s
     v_ang_avg = 0.6  # average angular velocity in rad/s
@@ -80,7 +91,7 @@ class RobotConfig:
 
 @dataclasses.dataclass
 class SpaceConfig:
-    """ Workspace and space analysis configurations. """
+    """Workspace safety margins and derived robot clearances."""
     select_free_space = False  # manually select free space area from image, otherwise use select biggest free space automatically
     # robot configs
     robot_radius = 0.5      # 0.5
@@ -109,7 +120,7 @@ class SpaceConfig:
 
 @dataclasses.dataclass
 class PlanningConfig:
-    """ Coverage path planning configurations. """
+    """Aggregated planning parameters derived from space analysis inputs."""
     spa = SpaceConfig()
     animation = False                                   # animate final coverage path in sequence planning
     cleaning_r = spa.cleaning_r                         # effective cleaning radius
