@@ -58,7 +58,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "covpp=main:main",  # Command-line interface
+            "covpp=covpp.main:main",
         ],
     },
     include_package_data=True,

@@ -88,7 +88,9 @@ class BaseSeqOpt:
     def __init__(self, cells: list[PCell], start_idx: int = 0):
         self.lg = MyLogger("BaseSeqOpt")
 
+        # start cell
         self.start_idx: int = start_idx  # default start index for the tour
+        self.start_id: int = cells[start_idx].id
 
         # cell id to index mapping
         self.cells: list[PCell] = cells
@@ -132,7 +134,7 @@ class DepthFirstSearch(BaseSeqOpt):
 
     def create_tour(self):
         # Start DFS from the first cell
-        start = self.ids[self.start_idx]
+        start = self.start_id
         self.dfs(start, 0)
 
     def dfs(self, c_id: int, level: int):
@@ -192,7 +194,7 @@ class MILPSeq(BaseSeqOpt):
         solver = pywraplp.Solver.CreateSolver("SCIP")  # Use "CBC" for open-source
 
         # Variables
-        start_node = self.start_idx
+        start_node = self.id_idx[self.start_id]
         n = self.n
         x = {}
         for i in range(n):
@@ -249,7 +251,7 @@ class MILPSeq(BaseSeqOpt):
 #     def create_graph(self):
 #         id_depths = {i: 0 for i in self.ids}
 #         visited = []
-#         current_id = self.ids[self.start_idx]
+#         current_id = self.start_id
 #         id_depths[current_id] = 0
 
 #         # open: [current_id, depth]
@@ -272,7 +274,7 @@ class MILPSeq(BaseSeqOpt):
 #         self.id_depths = id_depths
 
 #     def create_tour(self):
-#         tour_ids = [self.ids[self.start_idx]]
+#         tour_ids = [self.start_id]
 #         while self.id_depths:
 #             current_id = min(self.id_depths, key=self.id_depths.get)
 #             tour_ids.append(current_id)

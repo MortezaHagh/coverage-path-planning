@@ -1,7 +1,9 @@
+"""Command-line entry point for the covpp package.
 
-""" Main module to run the coverage path planning pipeline. """
+This module provides the `main()` function used by the console script.
+It mirrors the behavior previously provided by the top-level `main.py`.
+"""
 import sys
-# import cv2 as cv
 import numpy as np
 from covpp.gui.rectangle import Rectangle
 from covpp.base.logger import MyLogger
@@ -20,15 +22,6 @@ def run_pipeline(map_name: str) -> None:
 
     Args:
         map_name: Name of the map to be processed.
-
-    Pipeline Steps:
-        1. Process inputs (configs and map image)
-        2. Process map image and create MapData
-        3. Create district rectangle
-        4. Analyze workspace and initialize district MapData
-        5. Create DistrictData and zone MapData
-        6. Create zones
-        7. Run coverage planning for all zones
     """
 
     ns = "PipeLine"
@@ -37,7 +30,7 @@ def run_pipeline(map_name: str) -> None:
 
     #  1. process inputs: configs and map (yaml and pgm)
     inp_processor = InputsProcessor(map_name)
-    orig_map: np.ndarray = inp_processor.orig_map
+    orig_map = inp_processor.orig_map
     map_config: MapConfig = inp_processor.map_config
     print(" ============================================================================== ")
 
@@ -74,19 +67,13 @@ def run_pipeline(map_name: str) -> None:
     # Log pipeline method
     lg.info1(f"Method: {PipeLineConfig().method}")
 
-    # # display map_planning
-    # map_planning = district_data.dmd.map_planning
-    # cv.imshow("map_planning", map_planning)
-    # cv.waitKey(0)
-    # cv.destroyAllWindows()
-
 
 def main():
     ns = "main"
     lg = MyLogger(ns)
     if len(sys.argv) < 2:
         lg.error("Usage: python main.py <map_name>")
-        map_name = "map_fr52"  # map_fr52 Map2 Map4
+        map_name = "Map2"  # map_fr52 Map2 Map4
     else:
         map_name = sys.argv[1]
     run_pipeline(map_name)
