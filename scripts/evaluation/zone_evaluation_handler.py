@@ -1,6 +1,6 @@
 """Zone evaluation handler for computing coverage performance metrics."""
-from scripts.sequence.sequence import SequencePaths
 from scripts.district.zone_map_data import ZoneMapData
+from scripts.sequence.sequence_handler import SequencePaths
 from scripts.evaluation.zone_evaluation_simple import ZoneEvaluationSimple
 from scripts.evaluation.zone_evaluation_base import ZoneStatsBase, ZoneEvaluationBase
 

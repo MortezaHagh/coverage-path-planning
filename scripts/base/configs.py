@@ -28,7 +28,7 @@ class PipeLineConfig:
     # Main configs
     whole_map = True    # Select whole map as district (True) or select rectangle (False)
     method = ""         # full method name (to be completed based on other configs)
-    start_cell_ind = 0  # index of starting cell for coverage path planning sequence
+    start_cell_ind = 3  # index of starting cell for coverage path planning sequence
 
     # plots configs
     save_map_planning = True

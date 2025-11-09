@@ -26,6 +26,9 @@ class PCell(CellBase):
         super().__init__(cell.id, cell.poly)
         self.lg = MyLogger(f"PCell-{self.id}")
 
+        # adjacent ids
+        self.adjacent_ids = cell.adjacent_ids
+
         # zone map data
         self.zmd: ZoneMapData = zmd
 

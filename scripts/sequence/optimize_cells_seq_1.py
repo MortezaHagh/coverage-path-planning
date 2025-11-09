@@ -38,18 +38,15 @@ class OptimizeCellsSeq:
         elif dcfg.sequence_method == "dfs":
             optimizer = DepthFirstSearch(cells, start_cell_idx)
         elif dcfg.sequence_method == "milp":
-            # cell graph
             if distances is None:
                 raise ValueError("Distances matrix is required for MILPSeq optimization.")
             optimizer = MILPSeq(cells, distances, start_cell_idx)
         else:
-            self.lg.error(f"Invalid cell sequence method: {dcfg.sequence_method}")
-            return
+            raise ValueError(f"Invalid cell sequence method: {dcfg.sequence_method}")
 
         # check if the optimizer was successful
         if optimizer.tour_idxs is None or len(optimizer.tour_idxs) == 0:
-            self.lg.error("No cells sequence found.")
-            return
+            raise ValueError("No cells sequence found.")
 
         # save the tour
         self.tour_idxs = optimizer.tour_idxs
@@ -81,14 +78,29 @@ class OptimizeCellsSeq:
         plt.show()
 
 
+# ==============================================================================
+# Sequence optimization methods
+# ==============================================================================
+
 class BaseSeqOpt:
     """ Base class for sequence optimization of cells. """
 
     def __init__(self, cells: list[PCell], start_idx: int = 0):
         self.lg = MyLogger("BaseSeqOpt")
-        self.cells: list[PCell] = cells
-        self.c_id_idx_dict: dict[int, int] = {c.id: i for i, c in enumerate(cells)}  # cell id to index mapping
+
         self.start_idx: int = start_idx  # default start index for the tour
+
+        # cell id to index mapping
+        self.cells: list[PCell] = cells
+        self.id_idx: dict[int, int] = {c.id: i for i, c in enumerate(cells)}
+
+        # planning cells
+        self.ids = [c.id for c in self.cells if c.do_planning]  # planning cell ids
+        self.n = len(self.ids)
+        if self.n == 0:
+            raise ValueError("No planning cells available for sequencing.")
+
+        # solution
         self.tour_idxs: list[int] = []
         self.tour_ids: list[int] = []
         self.success = False
@@ -103,8 +115,8 @@ class SimpleSeqOpt(BaseSeqOpt):
         self.lg.info("using SimpleSeqOpt sequence optimization method.")
 
     def create_tour(self):
-        self.tour_idxs = list(range(len(self.cells)))
-        self.tour_ids = [c.id for c in self.cells]
+        self.tour_ids = self.ids
+        self.tour_idxs = [self.id_idx[i] for i in self.tour_ids]
         self.success = True
 
 
@@ -112,57 +124,44 @@ class DepthFirstSearch(BaseSeqOpt):
     def __init__(self, cells: list[PCell], start_cell_idx: int = 0):
         super().__init__(cells, start_cell_idx)
         self.lg.info("using DepthFirstSearch sequence optimization method.")
-        #
-        self.c_ids = [c.id for c in cells]
-        self.visited_ids_dict: dict = {i: False for i in self.c_ids}
-        self.depth_ids_dict: dict = {i: 0 for i in self.c_ids}
-        #
+        self.visited_ids: dict = {i: False for i in self.ids}
+        self.ids_depth: dict = {i: 0 for i in self.ids}
         self.create_tour()
-        self.tour_idxs = [self.c_id_idx_dict[i] for i in self.tour_ids]
+        self.tour_idxs = [self.id_idx[i] for i in self.tour_ids]
+        self.success = True
 
     def create_tour(self):
         # Start DFS from the first cell
-        start = self.c_ids[0]
+        start = self.ids[self.start_idx]
         self.dfs(start, 0)
-        # for i, cell in enumerate(self.cells):
-        #     if not self.visited[i]:
-        #         self.dfs(cell.id)
-        self.success = True
 
     def dfs(self, c_id: int, level: int):
-        self.visited_ids_dict[c_id] = True
+        self.visited_ids[c_id] = True
         self.tour_ids.append(c_id)
-        idx = self.c_id_idx_dict[c_id]
-        neighbors = self.cells[idx].adjacent_ids
-        neighbors = [n for n in neighbors if n in self.c_ids]
-        new_level = 0
+        idx = self.id_idx[c_id]
+        # Get adjacent planning cells
+        neighbors = [n for n in self.cells[idx].adjacent_ids if n in self.ids]
+        levels = []
         for neigh_id in neighbors:
-            if not self.visited_ids_dict[neigh_id]:
-                level = self.dfs(neigh_id, new_level)
-                new_level = max(level, new_level)
-        self.depth_ids_dict[c_id] = new_level
+            if not self.visited_ids[neigh_id]:
+                level = self.dfs(neigh_id, 0)
+                levels.append(level)
+        new_level = max(levels) if levels else 0
+        self.ids_depth[c_id] = new_level
         return new_level + 1
 
 
 class MILPSeq(BaseSeqOpt):
+    """ Linear programming approach for sequence optimization. """
+
     def __init__(self, cells: list[PCell], distances: np.ndarray, start_cell_idx: int = 0):
         super().__init__(cells, start_cell_idx)
         self.lg.info("using MILPSeq sequence optimization method.")
 
-        # planning cells
-        p_cells = [c for c in cells if c.do_planning]
-        p_idxs = [i for i, c in enumerate(cells) if c.do_planning]
-        self.p_cells = p_cells
-        self.n_p_cells = len(p_idxs)
-
-        #
-        if self.n_p_cells == 0:
-            self.lg.error("No planning cells found. Cannot create tour.")
-            return
-
-        #
+        # planning cell indices
+        p_idxs = [self.id_idx[id] for id in self.ids]
         self.tour = None
-        self.distm = np.full((self.n_p_cells, self.n_p_cells), np.inf, dtype=float)
+        self.distm = np.full((self.n, self.n), np.inf, dtype=float)
 
         # create distance matrix
         for i, ci in enumerate(p_idxs):
@@ -175,8 +174,7 @@ class MILPSeq(BaseSeqOpt):
                 # to dont consider return to start in cost
                 if j == start_cell_idx:
                     self.distm[i, j] = 0.0
-
-        #
+        # create tour
         self.create_tour()
 
     def create_tour(self):
@@ -185,16 +183,17 @@ class MILPSeq(BaseSeqOpt):
             self.lg.error("No optimal solution found.")
             return
 
-        c_ids = [c.id for c in self.p_cells]
-        self.tour_ids = [c_ids[i] for i in self.tour]
-        self.tour_idxs = [self.c_id_idx_dict[i] for i in self.tour_ids]
+        self.tour_ids = [self.ids[i] for i in self.tour]
+        self.tour_idxs = [self.id_idx[i] for i in self.tour_ids]
 
     def solve_tsp_milp(self) -> bool:
+
+        # Create the MILP solver
         solver = pywraplp.Solver.CreateSolver("SCIP")  # Use "CBC" for open-source
 
-        #
+        # Variables
         start_node = self.start_idx
-        n = self.n_p_cells
+        n = self.n
         x = {}
         for i in range(n):
             for j in range(n):
@@ -217,18 +216,13 @@ class MILPSeq(BaseSeqOpt):
                     solver.Add(u[i] - u[j] + (n-1) * x[i, j] <= n-2)
 
         # Objective: Minimize total distance
-        solver.Minimize(
-            solver.Sum([self.distm[i, j] * x[i, j] for i in range(n) for j in range(n) if i != j])
-        )
+        solver.Minimize(solver.Sum([self.distm[i, j] * x[i, j] for i in range(n) for j in range(n) if i != j]))
 
         # Solve
         status = solver.Solve()
 
         # solution
         if status == pywraplp.Solver.OPTIMAL:
-            # self.lg.info("Optimal solution found!")
-            # self.lg.info(f"Total cost = {solver.Objective().Value()}\n")
-
             # Extract the path (not a cycle)
             tour = [start_node]
             current = start_node
@@ -242,5 +236,45 @@ class MILPSeq(BaseSeqOpt):
         else:
             self.lg.error("[solve_tsp_milp]: No optimal solution found.")
             return False
-        #
         return True
+
+
+# class GraphSearch(BaseSeqOpt):
+#     def __init__(self, cells: list[PCell]):
+#         super().__init__(cells)
+#         self.lg.info("using GraphSearch sequence optimization method.")
+#         self.id_depths = dict()
+#         self.create_graph()
+
+#     def create_graph(self):
+#         id_depths = {i: 0 for i in self.ids}
+#         visited = []
+#         current_id = self.ids[self.start_idx]
+#         id_depths[current_id] = 0
+
+#         # open: [current_id, depth]
+#         open_list = [(current_id, 0)]
+
+#         while len(open_list) > 0:
+
+#             # select min depth node
+#             current_id, depth = min(open_list, key=lambda x: x[1])
+#             open_list.remove((current_id, depth))
+#             visited.append(current_id)
+
+#             # expand neighbors
+#             current_idx = self.id_idx[current_id]
+#             neighbors = [n for n in self.cells[current_idx].adjacent_ids if n in self.ids and n not in visited]
+#             for neigh_id in neighbors:
+#                 if id_depths[neigh_id] == 0 or depth + 1 < id_depths[neigh_id]:
+#                     open_list.append((neigh_id, depth + 1))
+#                     id_depths[neigh_id] = depth + 1
+#         self.id_depths = id_depths
+
+#     def create_tour(self):
+#         tour_ids = [self.ids[self.start_idx]]
+#         while self.id_depths:
+#             current_id = min(self.id_depths, key=self.id_depths.get)
+#             tour_ids.append(current_id)
+#             self.id_depths.pop(current_id)
+#         self.tour_ids = tour_ids

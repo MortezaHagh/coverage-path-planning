@@ -16,8 +16,8 @@ class CellsGraph:
         self.n_cells: int = len(cells)
         self.con_path = con_path
         #
-        self.dists_m: np.ndarray = np.full((self.n_cells, self.n_cells), np.inf, dtype=float)   # Distance matrix between cells
-        self.adj_inds: list[list[int]] | None = None                                            # Adjacency indices for each cell
+        self.dists: np.ndarray = np.full((self.n_cells, self.n_cells), np.inf, dtype=float)   # Distance matrix between cells
+        self.adj_inds: list[list[int]] | None = None                                          # Adjacency indices for each cell
 
         # Create adjacency distance matrix
         # self.create_distance_matrix_center_center()
@@ -26,20 +26,20 @@ class CellsGraph:
 
     def create_distance_matrix_center_center(self):
         adj_inds = [[] for _ in range(self.n_cells)]
-        dists_m = np.full((self.n_cells, self.n_cells), np.inf, dtype=float)
+        dists = np.full((self.n_cells, self.n_cells), np.inf, dtype=float)
         for i in range(self.n_cells):
             cxy1 = self.cells[i].cxy
             for j in self.cells[i].adjacent_ids:
                 adj_inds[i].append(j)
                 cxy2 = self.cells[j].cxy
-                dists_m[i, j] = np.linalg.norm(np.array(cxy1) - np.array(cxy2))
-                dists_m[j, i] = dists_m[i][j]
-        self.dists_m = dists_m
+                dists[i, j] = np.linalg.norm(np.array(cxy1) - np.array(cxy2))
+                dists[j, i] = dists[i][j]
+        self.dists = dists
         self.adj_inds = adj_inds
 
     def create_distance_matrix_by_path(self):
         adj_inds = [[] for _ in range(self.n_cells)]
-        dists_m = np.full((self.n_cells, self.n_cells), np.inf, dtype=float)
+        dists = np.full((self.n_cells, self.n_cells), np.inf, dtype=float)
 
         for i, cell in enumerate(self.cells):
             for adj_id in cell.adjacent_ids:
@@ -50,18 +50,18 @@ class CellsGraph:
                 # cell is empty
                 if cell.path_px is None or adj_cell.path_px is None:
                     self.lg.warn(f"Cell {cell.id} or adjacent cell {adj_cell.id} has no path_px.")
-                    dist = self.con_path.update_connections(i, adj_id, None, None)
+                    dist = self.con_path.update_connection_2_cells(i, adj_id, None, None)
                 else:
                     # find path between cell end point and adjacent cell start point
-                    dist = self.con_path.update_connections(i, adj_id, cell.end_point, adj_cell.start_point)
+                    dist = self.con_path.update_connection_2_cells(i, adj_id, cell.end_point, adj_cell.start_point)
 
                 # Update distance matrix
-                dists_m[i, adj_id] = dist
+                dists[i, adj_id] = dist
 
                 # Add to adjacency indices
                 adj_inds[i].append(adj_id)
 
-        self.dists_m = dists_m
+        self.dists = dists
         self.adj_inds = adj_inds
 
     def find_all_distances(self):
@@ -71,11 +71,11 @@ class CellsGraph:
                 if i == j:
                     continue
                 # check if distance is already calculated
-                if self.dists_m[i, j] != np.inf:
+                if self.dists[i, j] != np.inf:
                     continue
                 dist, _ = self.dijkstra(i, j)
                 if dist is not None:
-                    self.dists_m[i, j] = dist
+                    self.dists[i, j] = dist
 
     def get_distance(self, start_index, end_index):
         path_len, _ = self.dijkstra(start_index, end_index)
@@ -114,7 +114,7 @@ class CellsGraph:
                     continue
 
                 # Calculate distance
-                new_dist = current_dist + self.dists_m[current_index, neighbor_index]
+                new_dist = current_dist + self.dists[current_index, neighbor_index]
 
                 # If found a shorter path to neighbor
                 if new_dist < distances[neighbor_index]:

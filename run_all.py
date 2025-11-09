@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
         # set start cell idx based on map
         if map_name == "map_fr52":
-            S_CELL_IDX = 4
+            S_CELL_IDX = 3
         else:
             S_CELL_IDX = 0
 

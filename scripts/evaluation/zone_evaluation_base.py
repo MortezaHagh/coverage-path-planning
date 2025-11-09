@@ -1,6 +1,6 @@
 import json
-from scripts.sequence.sequence import SequencePaths
 from scripts.district.zone_map_data import ZoneMapData
+from scripts.sequence.sequence_handler import SequencePaths
 from scripts.base.configs import PipeLineConfig, PlanningConfig, RobotConfig
 
 

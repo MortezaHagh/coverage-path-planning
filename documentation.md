@@ -207,7 +207,7 @@ Manages district and zone-level operations.
 - **Key Attributes**:
   - `zmd`: Zone map data
   - `cells`: List of segmentation cells
-  - `segmentation_handler`: Segmentation interface
+  - `segmentation_hl`: Segmentation interface
   - `cov_path_planner`: Coverage planning interface
   - `sequence`: Path sequencing handler
   - `stats`: Zone statistics
@@ -344,11 +344,11 @@ Generates coverage paths for individual cells.
 
 ---
 
-### 7. Sequence Module (`scripts/sequence/`)
+### 7. SequenceHandler Module (`scripts/sequence_handler/`)
 
 Optimizes cell visit order and connects paths.
 
-#### **Sequence**
+#### **SequenceHandler**
 
 - **Purpose**: Create optimal cell traversal sequence
 - **Key Methods**:
@@ -460,7 +460,7 @@ main.py
                     │           └─> CoveragePathPlanner
                     │                 └─> Generate path_m, path_px
                     │
-                    ├─> Sequence.run(cells, map_polygons)
+                    ├─> SequenceHandler.run(cells, map_polygons)
                     │     ├─> Optimize cell order
                     │     ├─> Connect paths
                     │     └─> Create full path
@@ -584,7 +584,7 @@ High-level handler classes dynamically load specific implementations based on co
   - Loads evaluation strategy based on requirements
   - Computes metrics using standardized interface
 
-- **`Sequence`**:
+- **`SequenceHandler`**:
   - Selects optimization algorithm from config
   - Creates cell traversal order using pluggable optimizers
 
@@ -672,7 +672,7 @@ class Segmentation(SegmentationBase):
 **Step 3**: Register in `SegmentationHandler`:
 
 ```python
-# In scripts/segmentation/segmentation_handler.py
+# In scripts/segmentation/segmentation_hl.py
 if segmentation_method == "my_method":
     from scripts.segmentation.my_method.segmentation_my_method import Segmentation
     self.segmentor = Segmentation(self.zmd, self.map_polygons)

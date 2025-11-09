@@ -4,10 +4,10 @@ import time
 import cv2 as cv
 from scripts.base.logger import MyLogger
 from scripts.base.my_utils import MyPath
-from scripts.sequence.sequence import Sequence
-from scripts.segmentation.cell_processed import PCell
-from scripts.district.zone_map_data import ZoneMapData
 from scripts.base.configs import PipeLineConfig, PlanningConfig
+from scripts.district.zone_map_data import ZoneMapData
+from scripts.sequence.sequence_handler import SequenceHandler
+from scripts.segmentation.cell_processed import PCell
 from scripts.segmentation.segmentation_handler import SegmentationHandler
 from scripts.planning.coverage_path_plan_handler import CoveragePathPlanHandler
 from scripts.evaluation.zone_evaluation_handler import ZoneEvaluationHandler
@@ -27,7 +27,7 @@ class ZoneData:
     Attributes:
         ind: Zone index identifier.
         zmd: Zone map data object.
-        segmentation_handler: Handler for space segmentation operations.
+        segmentation_hl: Handler for space segmentation operations.
         cells: List of processed cells from segmentation.
         cov_path_planner: Handler for coverage path planning operations.
         sequence: Handler for path sequencing and connection operations.
@@ -54,14 +54,14 @@ class ZoneData:
         self.pcfg: PlanningConfig = PlanningConfig()
 
         # # # segmentation
-        self.segmentation_handler: SegmentationHandler = SegmentationHandler(self.zmd)
+        self.segmentation_hl: SegmentationHandler = SegmentationHandler(self.zmd)
         self.cells: list[PCell] = []
 
         # # # coverage path planner
         self.cov_path_planner: CoveragePathPlanHandler = CoveragePathPlanHandler(self.zmd)
 
         # # # sequence
-        self.sequence: Sequence = Sequence(self.zmd)
+        self.sequence_hl: SequenceHandler = SequenceHandler(self.zmd)
 
         # # # evaluator
         self.evaluator: ZoneEvaluationHandler = ZoneEvaluationHandler(self.zmd)
@@ -97,8 +97,8 @@ class ZoneData:
 
         # ************ segmentation
         self.lg.info1(f"Step: running segmentation using method '{self.dcfg.segmentation_method}'")
-        self.segmentation_handler.run()
-        self.cells = self.segmentation_handler.cells
+        self.segmentation_hl.run()
+        self.cells = self.segmentation_hl.cells
 
         # ************ coverage planning
         self.lg.info1(f"Step: running coverage path planning using method '{self.dcfg.covpp_method}'")
@@ -106,13 +106,13 @@ class ZoneData:
 
         # ************ sequence
         self.lg.info1(f"Step: creating sequence and full path using method '{self.dcfg.sequence_method}'")
-        self.sequence.run(cells=self.cells, map_polygons=self.segmentation_handler.map_polygons)
+        self.sequence_hl.run(cells=self.cells, map_polygons=self.segmentation_hl.map_polygons)
 
         end_time = time.time()
         process_time = end_time - start_time
 
         # ************ evaluate statistics
-        self.evaluator.evaluate(paths=self.sequence.paths, duration=process_time)
+        self.evaluator.evaluate(paths=self.sequence_hl.paths, duration=process_time)
         self.stats = self.evaluator.stats
 
         # ************
@@ -131,8 +131,8 @@ class ZoneData:
     # ==================================================================================================================
 
     def zone_complete_path(self):
-        self.complete_path_px = self.sequence.f_path_px
-        self.complete_path_m = self.sequence.f_path_m
+        self.complete_path_px = self.sequence_hl.f_path_px
+        self.complete_path_m = self.sequence_hl.f_path_m
 
     def create_map_planning(self):
         """ create initial map_planning with zone boundary. """

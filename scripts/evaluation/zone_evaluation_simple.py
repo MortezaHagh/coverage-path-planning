@@ -2,8 +2,8 @@ import cv2 as cv
 import numpy as np
 from scripts.base.logger import MyLogger
 from scripts.base.my_utils import MyPath
-from scripts.sequence.sequence import SequencePaths
 from scripts.district.zone_map_data import ZoneMapData
+from scripts.sequence.sequence_handler import SequencePaths
 from scripts.evaluation.zone_evaluation_base import ZoneStatsBase, ZoneEvaluationBase
 
 

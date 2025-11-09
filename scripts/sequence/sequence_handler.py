@@ -44,7 +44,7 @@ class SequencePaths:
         self.n_paths: int = 0
 
 
-class Sequence:
+class SequenceHandler:
     """Optimize cell visit order and create complete connected coverage path.
 
     This class handles the sequencing problem (determining optimal cell visit
@@ -77,7 +77,7 @@ class Sequence:
 
     def __init__(self, zmd: ZoneMapData) -> None:
 
-        self.lg = MyLogger("Sequence")
+        self.lg = MyLogger("SequenceHandler")
 
         # attributes
         self.zmd: ZoneMapData = zmd
@@ -146,12 +146,12 @@ class Sequence:
         3. Store paths in sequence paths.
         """
 
-        # Initialize distances between cells (paths start and end points)
+        # Initialize connections object with cells
+        self.connections.initialize(self.cells)
         distances = None
-        if self.dcfg.sequence_method == "milp":
-            # Initialize connections object with cells
-            self.connections.initialize(self.cells)
 
+        # Initialize distances between cells (paths start and end points)
+        if self.dcfg.sequence_method == "milp":
             # calculate all paths and calculate distances between cells entries (based on cell paths)
             self.connections.find_all_connections(self.cells)
             self.connections.find_all_distances()
