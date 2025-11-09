@@ -279,7 +279,7 @@ Decomposes zones into coverage cells.
 
 Generates coverage paths for individual cells.
 
-#### **CoveragePathPlanHandler**
+#### **CoveragePPHandler**
 
 - **Purpose**: Manage coverage planning for all cells
 - **Key Methods**:
@@ -455,7 +455,7 @@ main.py
                     ├─> SegmentationHandler.run()
                     │     └─> Create cells (PCell)
                     │
-                    ├─> CoveragePathPlanHandler.plan(cells)
+                    ├─> CoveragePPHandler.plan(cells)
                     │     └─> For each cell:
                     │           └─> CoveragePathPlanner
                     │                 └─> Generate path_m, path_px
@@ -573,7 +573,7 @@ High-level handler classes dynamically load specific implementations based on co
   - Dynamically imports appropriate `Segmentation` class (simple/voronoi/custom)
   - Calls base class methods (`run()`) without knowing implementation details
 
-- **`CoveragePathPlanHandler`**:
+- **`CoveragePPHandler`**:
 
   - Reads `covpp_method` from config
   - Dynamically imports appropriate `CoveragePathPlanner` class (boust/contour/custom)
@@ -714,7 +714,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.create_path_m()  # Convert to meters (inherited method)
 ```
 
-**Step 3**: Register in `CoveragePathPlanHandler`:
+**Step 3**: Register in `CoveragePPHandler`:
 
 ```python
 # In scripts/planning/coverage_path_plan_handler.py

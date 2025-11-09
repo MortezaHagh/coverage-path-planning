@@ -61,7 +61,16 @@ setup(
             "covpp=covpp.main:main",
         ],
         "segmentors": [
-            "segmentor_simple=covpp.segmentation.simple_segmentation:ExampleSegmentor",
+            "simple=covpp.segmentation.simple_segmentation.segmentation_simple:Segmentation",
+            "voronoi=covpp.segmentation.voronoi_segmentation.segmentation_voronoi:Segmentation",
+        ],
+        "planners": [
+            "boust=covpp.planning.boustrophedon.coverage_pp_boust:CoveragePathPlanner",
+            "contour=covpp.planning.contour.coverage_pp_contour:CoveragePathPlanner",
+        ],
+        "sequencers": [
+            "dfs=covpp.sequence.sequence_optimizers:DfsSO",
+            "milp=covpp.sequence.sequence_optimizers:MilpSO",
         ],
     },
     include_package_data=True,

@@ -3,6 +3,7 @@
 This module implements the Handler pattern to dynamically load and execute
 different segmentation algorithms based on configuration.
 """
+from importlib.metadata import entry_points
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig
 from covpp.planning.map_polygons import MapPolygons
@@ -73,19 +74,14 @@ class SegmentationHandler:
             ValueError: If segmentation method is not recognized.
         """
 
-        # segmentation method
+        # create segmentor based on segmentation method
         segmentation_method = self.dcfg.segmentation_method
-
-        # create segmentor
-        if segmentation_method == "simple":
-            self.segmentor = SegmentationSimple(self.zmd, self.map_polygons)
-        elif segmentation_method == "voronoi":
-            from covpp.segmentation.voronoi_segmentation.segmentation_voronoi import Segmentation
-            self.segmentor = Segmentation(self.zmd, self.map_polygons)
-        else:
+        segmentors = entry_points(group="segmentors")
+        if segmentation_method not in segmentors.names:
             raise ValueError(f"Segmentation method '{segmentation_method}' not recognized.")
+        self.segmentor: SegmentationBase = segmentors[segmentation_method].load()(self.zmd, self.map_polygons)
 
-        # initiate segmentation
+        # run segmentation
         self.segmentor.run()
 
         # resulting base cells from segmentor

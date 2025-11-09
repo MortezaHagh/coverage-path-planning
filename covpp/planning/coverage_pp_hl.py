@@ -3,6 +3,8 @@
 This module implements the Handler pattern to dynamically load and execute
 different coverage planning algorithms based on configuration.
 """
+
+from importlib.metadata import entry_points
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig
 from covpp.segmentation.cell_processed import PCell
@@ -10,7 +12,7 @@ from covpp.district.zone_map_data import ZoneMapData
 from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
 
 
-class CoveragePathPlanHandler:
+class CoveragePPHandler:
     """High-level interface for coverage path planning across all zone cells.
 
     This handler dynamically loads the appropriate coverage planning algorithm
@@ -35,7 +37,7 @@ class CoveragePathPlanHandler:
     """
 
     def __init__(self, zone_map_data: ZoneMapData):
-        self.lg = MyLogger('CoveragePathPlanHandler')
+        self.lg = MyLogger('CoveragePPHandler')
 
         # zone map data
         self.zmd: ZoneMapData = zone_map_data
@@ -71,22 +73,19 @@ class CoveragePathPlanHandler:
 
         self.lg.info2("start coverage path planning for cells")
 
+        # create coverage path planner
         # coverage path planning method from configs
         dcfg = PipeLineConfig()
         covpp_method = dcfg.covpp_method
-
-        # create coverage path planner
-        if covpp_method == "boust":
-            from covpp.planning.boustrophedon.coverage_pp_boust import CoveragePathPlanner
-        elif covpp_method == "contour":
-            from covpp.planning.contour.coverage_pp_contour import CoveragePathPlanner
-        else:
-            raise ValueError(f"Unknown coverage path planning method: {covpp_method}. ")
+        planners = entry_points(group="planners")
+        if covpp_method not in planners.names:
+            raise ValueError(f"Coverage planning method '{covpp_method}' not recognized.")
+        planner_cls: CoveragePathPlannerBase = planners[covpp_method].load()
 
         # plan for all cells
         cell: PCell
         for cell in self.cells:
-            cell_covp_planner = CoveragePathPlanner(cell=cell, zmd=self.zmd)
+            cell_covp_planner = planner_cls(cell=cell, zmd=self.zmd)
             self.all_cell_covp_planners.append(cell_covp_planner)
             if cell_covp_planner.path_m:
                 cell.set_path_m(cell_covp_planner.path_m)

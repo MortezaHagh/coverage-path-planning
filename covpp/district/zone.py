@@ -9,7 +9,7 @@ from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.sequence_handler import SequenceHandler
 from covpp.segmentation.cell_processed import PCell
 from covpp.segmentation.segmentation_handler import SegmentationHandler
-from covpp.planning.coverage_path_plan_handler import CoveragePathPlanHandler
+from covpp.planning.coverage_pp_hl import CoveragePPHandler
 from covpp.evaluation.zone_evaluation_handler import ZoneEvaluationHandler
 from covpp.evaluation.zone_evaluation_base import ZoneStatsBase
 
@@ -58,7 +58,7 @@ class ZoneData:
         self.cells: list[PCell] = []
 
         # # # coverage path planner
-        self.cov_path_planner: CoveragePathPlanHandler = CoveragePathPlanHandler(self.zmd)
+        self.cov_path_planner: CoveragePPHandler = CoveragePPHandler(self.zmd)
 
         # # # sequence
         self.sequence_hl: SequenceHandler = SequenceHandler(self.zmd)

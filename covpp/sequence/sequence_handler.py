@@ -6,6 +6,7 @@ cell paths, and generation of the complete zone coverage path.
 import os
 import cv2 as cv
 import numpy as np
+from importlib.metadata import entry_points
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 from covpp.base.logger import MyLogger
@@ -17,7 +18,7 @@ from covpp.planning.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
 from covpp.planning.planning_plotter import PlannerPlotter
-from covpp.sequence.optimize_cells_seq_1 import OptimizeCellsSeq
+from covpp.sequence.sequence_optimizers import BaseSeqOpt
 from covpp.base.configs import PipeLineConfig, PlanningConfig
 
 
@@ -95,6 +96,13 @@ class SequenceHandler:
         self.min_points_distance: float = self.pcfg.min_wp_dist
         self.resolution: float = zmd.resolution
 
+        # sequence optimizer
+        sequencer_name = self.dcfg.sequence_method
+        sequencers = entry_points(group="sequencers")
+        if sequencer_name not in sequencers.names:
+            raise ValueError(f"Sequence optimizer '{sequencer_name}' not recognized.")
+        self.sequencer: BaseSeqOpt = sequencers[sequencer_name].load()()
+
         # connect paths interface
         self.connections: ConnectPaths = ConnectPaths(self.zmd)
 
@@ -145,6 +153,7 @@ class SequenceHandler:
         2. Optimize sequence of cells based on distances.
         3. Store paths in sequence paths.
         """
+        self.lg.info1("Step: creating optimized cell sequence")
 
         # Initialize connections object with cells
         self.connections.initialize(self.cells)
@@ -172,12 +181,10 @@ class SequenceHandler:
         elif len(self.cells) == 1:
             self.s_cells = self.cells
             return
-
-        start_cell_idx = self.dcfg.start_cell_ind
-        # create optimized sequence of cells
-        opt_seq = OptimizeCellsSeq(cells=self.cells, distances=distances, start_cell_idx=start_cell_idx)
-        self.seq_idxs = opt_seq.tour_idxs
-        self.s_cells = [self.cells[i] for i in opt_seq.tour_idxs]
+        # run sequence optimizer
+        self.sequencer.run(cells=self.cells, distances=distances, start_idx=self.dcfg.start_cell_ind)
+        self.seq_idxs = self.sequencer.tour_idxs
+        self.s_cells = [self.cells[i] for i in self.seq_idxs]
 
     def connect_paths(self) -> None:
         """ Connect the paths based on the created sequence.
