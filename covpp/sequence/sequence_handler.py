@@ -3,10 +3,10 @@
 This module handles the sequencing of coverage cells, connection of individual
 cell paths, and generation of the complete zone coverage path.
 """
+from importlib.metadata import entry_points
 import os
 import cv2 as cv
 import numpy as np
-from importlib.metadata import entry_points
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 from covpp.base.logger import MyLogger
@@ -17,7 +17,6 @@ from covpp.segmentation.cell_processed import PCell
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
-from covpp.planning.planning_plotter import PlannerPlotter
 from covpp.sequence.sequence_optimizers import BaseSeqOpt
 from covpp.base.configs import PipeLineConfig, PlanningConfig
 
@@ -116,9 +115,6 @@ class SequenceHandler:
         # connection paths between cells
         self.c_paths_px: list[MyPath] = []
         self.c_paths_m: list[MyPath] = []
-
-        # plotter
-        self.plotter: PlannerPlotter = PlannerPlotter(zmd.result_dir)
 
         # animation
         self.anim_line = None  # for animation
@@ -237,7 +233,6 @@ class SequenceHandler:
         """ update map_planning with paths and cells, save map_planning. """
         if not self.dcfg.save_map_planning:
             return
-        self.plotter.run(self.cells)
         n = self.n_cells
         self.colors = get_n_colors_cv(n)
         self.add_cells_to_map_planning()

@@ -17,14 +17,15 @@ class MergeCells:
         self.resolution = cells[0].resolution
 
         #
-        group_cell_ids = self.find_merge_groups()
-        merged_cells = self.merge_groups(group_cell_ids)
+        id_cell_map = {cell.id: cell for cell in self.cells}
+        groups_ids = self.find_merge_groups(id_cell_map)
+        merged_cells = self.merge_groups(groups_ids, id_cell_map)
         self.updated_cells = merged_cells
+        self.update_ids(groups_ids)
+        print("hi")
 
-    def find_merge_groups(self) -> list[set[int]]:
+    def find_merge_groups(self, id_cell_map: dict[int, CellBase]) -> list[set[int]]:
         skip_indices: set[int] = set()
-        cell_id_map = {cell.id: cell for cell in self.cells}
-
         merge_groups: list[set[int]] = []
 
         # method:
@@ -35,59 +36,77 @@ class MergeCells:
                 continue
             skip_indices.add(cell.id)
 
-            group_cell_ids: set[int] = {cell.id}
+            groups_ids: set[int] = {cell.id}
             stack: list[int] = [cell.id]
 
             while stack:
                 current_id = stack.pop()
-                current_cell = cell_id_map[current_id]
+                current_cell = id_cell_map[current_id]
 
                 for j in current_cell.adjacent_ids:
-                    other_cell = cell_id_map.get(j)
+                    other_cell = id_cell_map.get(j)
                     if other_cell.id in skip_indices:
                         continue
                     if self.should_merge(current_cell, other_cell):
-                        group_cell_ids.add(other_cell.id)
+                        groups_ids.add(other_cell.id)
                         skip_indices.add(other_cell.id)
                         stack.append(other_cell.id)
 
-            merge_groups.append(group_cell_ids)
+            merge_groups.append(groups_ids)
         return merge_groups
 
-    def merge_groups(self, group_cell_ids: list[set[int]]) -> None:
-        # if len(merge_group) <= 1: keep as is
-        # else: merge all cells in the group and create a new cell
+    def merge_groups(self, groups_ids: list[set[int]], id_cell_map: dict[int, CellBase]) -> None:
+        """ Merge cells in each group and update ids and adjacent ids. """
+
+        # create merged cells
         merged_cells: list[CellBase] = []
-        cell_id_map = {cell.id: cell for cell in self.cells}
-        for group_ids in group_cell_ids:
-            new_id = min(group_ids)
-            if len(group_ids) <= 1:
-                cell_id = group_ids.pop()
-                merged_cells.append(cell_id_map[cell_id])
+        for group_ids in groups_ids:
+
+            if len(group_ids) == 1:
+                old_id = min(group_ids)
+                new_cell = id_cell_map[old_id]
             else:
                 self.lg.info(f"Merging group: {group_ids}")
-                merged_polys = [cell_id_map[cell_id].base_poly for cell_id in group_ids]
-                new_poly = unary_union(merged_polys)  # .convex_hull
+                old_id = min(group_ids)
+
+                # create merged polygon
+                merged_polys = [id_cell_map[id].base_poly for id in group_ids]
+                new_poly = unary_union(merged_polys)
                 # new_poly = new_poly.convex_hull
-                new_cell = CellBase(idx=new_id, poly=new_poly, resolution=self.resolution)
-                # update adjacent ids
-                merged_adjacent_ids = set()
-                for cell_id in group_ids:
-                    merged_adjacent_ids.update(cell_id_map[cell_id].adjacent_ids)
-                merged_adjacent_ids.difference_update(group_ids)
-                new_cell.adjacent_ids = list(merged_adjacent_ids)
-                merged_cells.append(new_cell)
+                new_cell = CellBase(idx=old_id, poly=new_poly, resolution=self.resolution)
+
+                # all old_ids of the adjacent cells of the group
+                adjacent_ids = set()
+                for gid in group_ids:
+                    adjacent_ids.update(id_cell_map[gid].adjacent_ids)
+                adjacent_ids.difference_update(group_ids)
+                new_cell.adjacent_ids = list(adjacent_ids)
+
                 # update adjacent ids of neighboring cells
-                for adj_id in merged_adjacent_ids:
-                    adj_cell = cell_id_map[adj_id]
-                    adj_cell.adjacent_ids = [new_id if x in group_ids else x for x in adj_cell.adjacent_ids]
+                for old_adj_id in adjacent_ids:
+                    adj_cell = id_cell_map[old_adj_id]
+                    adj_cell.adjacent_ids = [old_id if x in group_ids else x for x in adj_cell.adjacent_ids]
+
+            merged_cells.append(new_cell)
         return merged_cells
+
+    def update_ids(self, groups_ids: list[set[int]]) -> None:
+        # create a mapping from old id to new id
+        old_new_id_map = {}
+        for new_id, group in enumerate(groups_ids):
+            for old_id in group:
+                old_new_id_map[old_id] = new_id
+
+        # update cell ids and adjacent ids
+        for cell in self.updated_cells:
+            cell.id = old_new_id_map[cell.id]
+            cell.adjacent_ids = [old_new_id_map[adj_id] for adj_id in cell.adjacent_ids]
 
     def merge_adjacent_cells(self) -> None:
         """ Merge adjacent cells if they meet the merging criteria. """
         merged_cells: list[CellBase] = []
         skip_indices: set[int] = set()
-        cell_id_map = {cell.id: cell for cell in self.cells}
+        id_cell_map = {cell.id: cell for cell in self.cells}
 
         for cell in self.cells:
             if cell.id in skip_indices:
@@ -95,7 +114,7 @@ class MergeCells:
             skip_indices.add(cell.id)
 
             for j in cell.adjacent_ids:
-                other_cell = cell_id_map.get(j)
+                other_cell = id_cell_map.get(j)
                 if other_cell.id in skip_indices:
                     continue
                 if self.should_merge(cell, other_cell):

@@ -110,12 +110,5 @@ class SegmentationHandler:
         if len(cell_ids) != len(set(cell_ids)):
             raise ValueError("Cell IDs are not unique after merging.")
 
-        # update cell ids to be consecutive
-        cell_id_indx_map = {cell.id: i for i, cell in enumerate(self.bcells)}
-        for cell in self.bcells:
-            cell.id = cell_id_indx_map[cell.id]
-            # update adjacent ids
-            cell.adjacent_ids = [cell_id_indx_map[adj_id] for adj_id in cell.adjacent_ids]
-
         # create processed cells
         self.cells = [PCell(cell, self.zmd) for cell in self.bcells]

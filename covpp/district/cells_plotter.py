@@ -1,10 +1,10 @@
 """ Plotting and saving figures of the coverage planning results. """
 import matplotlib.pyplot as plt
 from covpp.base.configs import PipeLineConfig
-from covpp.planning.boustrophedon.cell import Cell
+from covpp.segmentation.cell_processed import PCell
 
 
-class PlannerPlotter:
+class CellsPlotter:
     """
     Plotting and saving figures of the coverage planning results.
 
@@ -20,7 +20,7 @@ class PlannerPlotter:
         self.fig_mcells = None
         self.fig_mcells_seq = None
 
-    def run(self, cells: list[Cell]):
+    def run(self, cells: list[PCell]):
         self.fig_mcells, _ = self.visualize_cells(cells)
         self.visualize_cells_sequence(cells)
 
@@ -28,13 +28,13 @@ class PlannerPlotter:
         if self.dcfg.save_decomposition_plot:
             self.save_figs()
 
-    def visualize_cells_sequence(self, cells: list[Cell]):
+    def visualize_cells_sequence(self, cells: list[PCell]):
         """ Visualize the sequence on cells figure. """
         fig_mcells, ax_mcells = self.visualize_cells(cells)
         self.visualize_sequence(cells, ax_mcells)
         self.fig_mcells_seq = fig_mcells
 
-    def visualize_cells(self, cells: list[Cell]):
+    def visualize_cells(self, cells: list[PCell]):
         fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
         ng = len(cells)
@@ -56,7 +56,7 @@ class PlannerPlotter:
             ax.fill(x, y, alpha=0.2, fc=color)
         return fig, ax
 
-    def visualize_sequence(self, cells: list[Cell], ax):
+    def visualize_sequence(self, cells: list[PCell], ax):
         for i, cell in enumerate(cells):
             # text = f"g{i}-({cell.opt_id})"
             x1, y1 = cell.cxy

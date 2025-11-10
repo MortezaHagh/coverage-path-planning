@@ -106,6 +106,15 @@ def mod_angle(theta: float) -> float:
     return theta % (2 * np.pi)
 
 
+def angle_diff(a, b):
+    """
+    Returns the smallest signed difference between two angles (in radians).
+    Result is in range [-pi, pi).
+    """
+    diff = (a - b + np.pi) % (2 * np.pi) - np.pi
+    return diff
+
+
 def visualize_map(pgm_data_in: np.ndarray, name=None) -> None:
     # ns = "utils"
     # print(f"[{ns}]: display map image")

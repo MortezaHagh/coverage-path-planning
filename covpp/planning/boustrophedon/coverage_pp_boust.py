@@ -67,7 +67,9 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         if not self.create_polygons():
             self.cell.do_planning = False
             return
-        self.decompose()
+        if not self.decompose():
+            self.cell.do_planning = False
+            return
         # self.rotate_back_cells()
         self.all_cells_coverage_pp()
         self.rotate_back_paths()
@@ -90,7 +92,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         # create MapPolygons object
         self.map_polygons = MapPolygons(map_ws=cell_map, xy=self.cell.global_xy, dec_mid_dist=30)
         if not self.map_polygons.success:
-            self.lg.error("Failed to create map polygons for the cell area.")
+            self.lg.error(f"Failed to create map polygons for the cell {self.cell.id}.")
             return False
 
         # get origin (center of bounding polygon)
@@ -100,7 +102,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.map_polygons.rotate_all_polygons(-self.cell.major_direction, self.origin)
         return True
 
-    def decompose(self) -> None:
+    def decompose(self) -> bool:
         """ Decompose the cell area into boustrophedon cells. """
 
         # set bounding polygon
@@ -115,12 +117,15 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.mcells = self.decomposer.mcells
         self.n_mcells = self.decomposer.n_mcells
 
+        # check if there are any cells
+        if self.n_mcells == 0:
+            self.lg.error(f"Decomposition for cell {self.cell.id} returned no boust cells to plan coverage path.")
+            # raise ValueError("No cells to plan coverage path.")
+            return False
+        return True
+
     def all_cells_coverage_pp(self) -> None:
         """ Perform coverage path planning for all the boustrophedon cells. """
-
-        if self.n_mcells == 0:
-            self.lg.error("No cells to plan coverage path.")
-            raise ValueError("No cells to plan coverage path.")
 
         for cell in self.mcells:
 

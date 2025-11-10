@@ -231,16 +231,16 @@ class PCell(CellBase):
 
         # # Convert grayscale map to BGR for drawing
         # vis = cv.cvtColor(self.map, cv.COLOR_GRAY2BGR)
-        # # # add lines to vis by green color
-        # # if lines is not None:
-        # #     for rho, theta in lines[:, 0]:
-        # #         a = np.cos(theta)
-        # #         b = np.sin(theta)
-        # #         x0 = a * rho
-        # #         y0 = b * rho
-        # #         pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
-        # #         pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
-        # #         cv.line(vis, pt1, pt2, (0, 255, 0), 2)
+        # # add lines to vis by green color
+        # if lines is not None:
+        #     for rho, theta in lines[:, 0]:
+        #         a = np.cos(theta)
+        #         b = np.sin(theta)
+        #         x0 = a * rho
+        #         y0 = b * rho
+        #         pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
+        #         pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
+        #         cv.line(vis, pt1, pt2, (0, 255, 0), 2)
         # # draw major direction arrow
         # cv.arrowedLine(vis, center, (center[0] + dx, center[1] + dy), (0, 0, 255), 3, tipLength=0.2)
         # # display image, lines, and major direction

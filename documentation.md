@@ -254,6 +254,13 @@ Manages district and zone-level operations.
   - `resolution`: Map resolution
   - `result_dir`: Output directory path
 
+#### **CellsPlotter** (cells_plotter.py)
+
+- **Purpose**: Visualization of planning results
+- **Key Methods**:
+  - `plot_paths()`: Display coverage paths
+  - `plot_cells()`: Show cell decomposition
+
 ---
 
 ### 5. Segmentation Module (`covpp/segmentation/`)
@@ -305,6 +312,13 @@ Segmentation algorithms are discovered via the `segmentors` entry point group:
   - `adjacent_ids`: Adjacent cell IDs
   - `do_planning`: Flag for planning requirement
 
+#### **MapPolygons** (map_polygons.py)
+
+- **Purpose**: Polygon representation of workspace
+- **Attributes**:
+  - `b_poly`: Boundary polygon
+  - `obs_polys`: Obstacle polygons
+
 ---
 
 ### 6. Coverage Planning Module (`covpp/planning/`)
@@ -343,20 +357,6 @@ Coverage planners are discovered via the `planners` entry point group:
 | `contour` | `covpp.planning.contour.coverage_pp_contour:CoveragePathPlanner`     | Inward contour / distance transform / rectangle hybrid       |
 
 Key boustrophedon submodules: `decomposition_bs_mh.py`, `cell_cov_planner.py`, `obstacles.py`, `events.py`, `plotter.py`.
-
-#### **MapPolygons** (map_polygons.py)
-
-- **Purpose**: Polygon representation of workspace
-- **Attributes**:
-  - `b_poly`: Boundary polygon
-  - `obs_polys`: Obstacle polygons
-
-#### **PlannerPlotter** (planning_plotter.py)
-
-- **Purpose**: Visualization of planning results
-- **Key Methods**:
-  - `plot_paths()`: Display coverage paths
-  - `plot_cells()`: Show cell decomposition
 
 ---
 

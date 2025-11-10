@@ -5,6 +5,7 @@ import cv2 as cv
 from covpp.base.logger import MyLogger
 from covpp.base.my_utils import MyPath
 from covpp.base.configs import PipeLineConfig, PlanningConfig
+from covpp.district.cells_plotter import CellsPlotter
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.sequence_handler import SequenceHandler
 from covpp.segmentation.cell_processed import PCell
@@ -66,6 +67,9 @@ class ZoneData:
         # # # evaluator
         self.evaluator = ZoneEvaluationHandler(self.zmd)
 
+        # plotter
+        self.cells_plotter = CellsPlotter(zmd.result_dir)
+
         # resulting data
         self.complete_path_px: MyPath = None
         self.complete_path_m: MyPath = None
@@ -125,6 +129,7 @@ class ZoneData:
             2. save map_planning.
             3. save map showing cleaned area and uncleaned area.
         """
+        self.cells_plotter.run(self.sequence_hl.cells)
         self.save_map_planning()
         self.save_map_cleaning_data()
 

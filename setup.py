@@ -67,6 +67,7 @@ setup(
         "planners": [
             "boust=covpp.planning.boustrophedon.coverage_pp_boust:CoveragePathPlanner",
             "contour=covpp.planning.contour.coverage_pp_contour:CoveragePathPlanner",
+            "grid_energy_min=covpp.planning.local_energy_minimization.cov_pp_local_energy_min:CoveragePathPlanner",
         ],
         "sequencers": [
             "dfs=covpp.sequence.sequence_optimizers:DfsSO",
