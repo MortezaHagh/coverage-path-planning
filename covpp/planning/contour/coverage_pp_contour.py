@@ -4,6 +4,7 @@ import numpy as np
 # from shapely.affinity import scale
 from shapely.geometry import MultiPolygon, Polygon
 from covpp.base.logger import MyLogger
+from covpp.base import planning_utils as pu
 from covpp.base.base_utils import MyPoint, MyPath
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.voronoi_segmentation.cell import Cell
@@ -116,12 +117,6 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         rect = self.cell.rectangle_poly
         robot_d_px = int(robot_r_px * 2)
 
-        # start rectangle from closest point to the start of the original polygon
-        poly_points = self.cell.poly.exterior.coords
-        rec_points = rect.exterior.coords
-        new_points = self.rearrange_points(poly_points[0], rec_points)
-        rect = Polygon(new_points)
-
         # main rectangle
         scaled_rect = rect.buffer(-4, join_style=2, resolution=8)
         if scaled_rect.is_empty or scaled_rect is None:
@@ -172,7 +167,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             if scaled_rect.is_empty or scaled_rect is None:
                 break
             new_points = scaled_rect.exterior.coords
-            new_points = self.rearrange_points(points[-1], new_points)
+            new_points = pu.rearrange_points_by_point(points[-1], new_points)
             points.extend(list(new_points))
 
         # line like at the center of the rectangle
@@ -181,7 +176,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             scaled_rect = rect.buffer(-last_scale_c, join_style=2, resolution=8)
             if not (scaled_rect.is_empty or scaled_rect is None):
                 new_points = scaled_rect.exterior.coords
-                new_points = self.rearrange_points(points[-1], new_points)
+                new_points = pu.rearrange_points_by_point(points[-1], new_points)
                 # remove next big edge
                 edges = np.diff(new_points, axis=0)
                 edge_lengths = np.linalg.norm(edges, axis=1)
@@ -239,7 +234,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             for poly in polys:
                 new_points = poly.exterior.coords + s_xy
                 # rearrange points starting from the closest point to the last point in points
-                new_points = self.rearrange_points(points[-1], new_points)
+                new_points = pu.rearrange_points_by_point(points[-1], new_points)
                 points.extend(list(new_points))
 
         # last try
@@ -255,7 +250,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
                     new_points = coords + s_xy
                     # rearrange points starting from the closest point to the last point in points
-                    new_points = self.rearrange_points(points[-1], new_points)
+                    new_points = pu.rearrange_points_by_point(points[-1], new_points)
                     points.extend(list(new_points))
 
         # create a path from the scaled polygon
@@ -297,27 +292,3 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         """ Rearrange polygons by area in descending order. """
         polys.sort(key=lambda p: p.area, reverse=True)
         return polys
-
-    def rearrange_points(self, point: np.ndarray, points: np.ndarray) -> np.ndarray:
-        """ Rearrange points starting from the closest point to the given point. """
-        # Find the index of the closest point to the given point
-        idx = self.find_closest_point_idx(point, points)
-        # Rearrange points starting from the closest point
-        rearranged_points = self.rearrange_points_by_idx(idx, points)
-        # add first point to the end of the list
-        rearranged_points = np.concatenate((rearranged_points, [rearranged_points[0]]), axis=0)
-        return rearranged_points
-
-    def rearrange_points_by_idx(self, idx: int, points: np.ndarray) -> np.ndarray:
-        """ Rearrange points starting from idx. """
-        if idx < 0 or idx >= len(points):
-            self.lg.error(f"Index {idx} is out of bounds for points list.")
-            return points
-        if idx == 0:
-            return points
-        return np.concatenate((points[idx:], points[:idx]), axis=0)
-
-    def find_closest_point_idx(self, p: np.ndarray, points: np.ndarray) -> int:
-        """ Find the index of the closest point to p in points. """
-        dists = [np.linalg.norm(np.array(p) - np.array(pt)) for pt in points]
-        return np.argmin(dists)

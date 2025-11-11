@@ -8,7 +8,7 @@ map_names = [
     "Map4",
     "map_fr52",]
 
-# map_names = ["map_fr52"]
+map_names = ["map_fr52", "Map4"]
 
 if __name__ == "__main__":
 

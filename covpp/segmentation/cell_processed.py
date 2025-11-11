@@ -7,10 +7,11 @@ from shapely.geometry import Point
 from shapely.affinity import scale
 from shapely import maximum_inscribed_circle
 from covpp.gui.rectangle import Rectangle
+from covpp.base.logger import MyLogger
+from covpp.base import planning_utils as pu
+from covpp.base.configs import PipeLineConfig
 from covpp.segmentation.cell_base import CellBase
 from covpp.district.zone_map_data import ZoneMapData
-from covpp.base.logger import MyLogger
-from covpp.base.configs import PipeLineConfig
 # from shapely import maximum_inscribed_circle, minimum_bounding_circle
 
 
@@ -144,8 +145,12 @@ class PCell(CellBase):
 
         # # eval rectangle-like based on inscribed rectangle
         base_inscribed_rect_poly = self.create_base_inscribed_rectangle(circum_rect_poly, insc_circle_center, insc_circle_radius)
-        self.rectangle_poly = self.eval_by_expand_inscribed_rectangle(base_inscribed_rect_poly, insc_circle_center)
+        rectangle_poly = self.eval_by_expand_inscribed_rectangle(base_inscribed_rect_poly, insc_circle_center)
         self.rect_like = self.rect_insc_like
+
+        # start rectangle from closest point to the start of the original polygon
+        new_points = pu.rearrange_points_by_point(self.points[0], rectangle_poly.exterior.coords)
+        self.rectangle_poly = Polygon(new_points)
 
         # #
         # rect_area = self.rectangle_poly.area
@@ -227,33 +232,33 @@ class PCell(CellBase):
         dominant_angle = max(set(angles), key=angles.count)
         major_direction = (dominant_angle) % np.pi
 
-        # visualization
-        # Draw arrow from center of map in free-space direction
-        h, w = self.map.shape
-        center = (w//2, h//2)
-        length = min(w, h) // 3  # arrow length
+        # # visualization
+        # # Draw arrow from center of map in free-space direction
+        # h, w = self.map.shape
+        # center = (w//2, h//2)
+        # length = min(w, h) // 3  # arrow length
 
-        dx = int(length * np.cos(major_direction))
-        dy = int(length * np.sin(major_direction))
+        # dx = int(length * np.cos(major_direction))
+        # dy = int(length * np.sin(major_direction))
 
-        # Convert grayscale map to BGR for drawing
-        vis = cv.cvtColor(self.map, cv.COLOR_GRAY2BGR)
-        # add lines to vis by green color
-        if lines is not None:
-            for rho, theta in lines[:, 0]:
-                a = np.cos(theta)
-                b = np.sin(theta)
-                x0 = a * rho
-                y0 = b * rho
-                pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
-                pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
-                cv.line(vis, pt1, pt2, (0, 255, 0), 2)
-        # draw major direction arrow
-        cv.arrowedLine(vis, center, (center[0] + dx, center[1] + dy), (0, 0, 255), 3, tipLength=0.2)
-        # display image, lines, and major direction
-        cv.imshow(f"Cell {self.id} Main Direction", vis)
-        cv.waitKey(0)
-        cv.destroyAllWindows()
+        # # Convert grayscale map to BGR for drawing
+        # vis = cv.cvtColor(self.map, cv.COLOR_GRAY2BGR)
+        # # add lines to vis by green color
+        # if lines is not None:
+        #     for rho, theta in lines[:, 0]:
+        #         a = np.cos(theta)
+        #         b = np.sin(theta)
+        #         x0 = a * rho
+        #         y0 = b * rho
+        #         pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
+        #         pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
+        #         cv.line(vis, pt1, pt2, (0, 255, 0), 2)
+        # # draw major direction arrow
+        # cv.arrowedLine(vis, center, (center[0] + dx, center[1] + dy), (0, 0, 255), 3, tipLength=0.2)
+        # # display image, lines, and major direction
+        # cv.imshow(f"Cell {self.id} Main Direction", vis)
+        # cv.waitKey(0)
+        # cv.destroyAllWindows()
 
         return major_direction
 
