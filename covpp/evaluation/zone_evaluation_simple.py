@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 from covpp.base.logger import MyLogger
-from covpp.base.my_utils import MyPath
+from covpp.base.base_utils import MyPath
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.sequence_handler import SequencePaths
 from covpp.evaluation.zone_evaluation_base import ZoneStatsBase, ZoneEvaluationBase

@@ -60,9 +60,9 @@ class GridGenerator:
 
         # create grid
         self.calculate_grid_size()
-        self.create_grid()
-        self.find_start_node()
-        self.find_start_heading()
+        self.create_grid_by_reshape_reduce()
+        self.find_start_node_in_grid()
+        self.find_start_heading_in_grid()
         self.grid.current_node = self.start_node
         self.grid.heading = self.heading
 
@@ -88,7 +88,10 @@ class GridGenerator:
         n_rows = width // self.grid_l
         self.grid_l = int(np.ceil(width / n_rows))
 
-    def create_grid(self) -> None:
+    # def create_grid(self) -> None:
+    #     x0, y0 = 0, 0
+
+    def create_grid_by_reshape_reduce(self) -> None:
 
         # ---------------------------------
         # create new downsampled map
@@ -143,7 +146,7 @@ class GridGenerator:
         self.grid = grid
         self.map = g_map
 
-    def find_start_node(self):
+    def find_start_node_in_grid(self):
 
         # find first free node as starting point
         # expand from first node until first free node found
@@ -171,7 +174,33 @@ class GridGenerator:
             raise ValueError("No free start node found in the grid.")
         self.start_node = start_node
 
-    def find_start_heading(self):
+    def find_start_heading_in_map(self):
+        heading1 = (self.cell.major_direction + np.pi / 2) % (2 * np.pi)
+        heading2 = (self.cell.major_direction - np.pi / 2) % (2 * np.pi)
+        heading = heading1
+
+        # select heading with more free space
+        free_count1 = 0
+        free_count2 = 0
+        check_distance = 5  # number of pixels to check in each direction
+        dists = np.arange(1, check_distance + 1)
+        x1s = (self.start_node.x * self.grid.grid_l + dists * np.cos(heading1)).astype(int)
+        y1s = (self.start_node.y * self.grid.grid_l + dists * np.sin(heading1)).astype(int)
+        x2s = (self.start_node.x * self.grid.grid_l + dists * np.cos(heading2)).astype(int)
+        y2s = (self.start_node.y * self.grid.grid_l + dists * np.sin(heading2)).astype(int)
+        for x1, y1, x2, y2 in zip(x1s, y1s, x2s, y2s):
+            if 0 <= x1 < self.cell.map.shape[1] and 0 <= y1 < self.cell.map.shape[0]:
+                if self.cell.map[y1, x1] == 255:
+                    free_count1 += 1
+            if 0 <= x2 < self.cell.map.shape[1] and 0 <= y2 < self.cell.map.shape[0]:
+                if self.cell.map[y2, x2] == 255:
+                    free_count2 += 1
+
+        if free_count1 < free_count2:
+            heading = heading2
+        self.heading = heading
+
+    def find_start_heading_in_grid(self):
         heading1 = (self.cell.major_direction + np.pi / 2) % (2 * np.pi)
         heading2 = (self.cell.major_direction - np.pi / 2) % (2 * np.pi)
         heading = heading1

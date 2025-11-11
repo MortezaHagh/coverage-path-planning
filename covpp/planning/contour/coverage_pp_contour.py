@@ -4,7 +4,7 @@ import numpy as np
 # from shapely.affinity import scale
 from shapely.geometry import MultiPolygon, Polygon
 from covpp.base.logger import MyLogger
-from covpp.base.my_utils import MyPoint, MyPath
+from covpp.base.base_utils import MyPoint, MyPath
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.voronoi_segmentation.cell import Cell
 from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
@@ -81,6 +81,11 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         robot_r_px = int(self.pcfg.cleaning_r_ov / self.resolution)
         points = []
 
+        # plan by inscribed rectangle if available
+        if self.cell.rect_like:
+            self.path_px = self.complete_path_by_rectangle(points, robot_r_px)
+            return
+
         # initial scale of the polygon
         scaled_poly = self.cell.poly.buffer(-1, join_style=2, resolution=8)
         if scaled_poly.is_empty or scaled_poly is None:
@@ -93,12 +98,8 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         # shift in the rectangle coordinates
         s_xy = self.cell.global_xy
 
-        # complete the path
-        if self.cell.rect_like:
-            points = []
-            path_px = self.complete_path_by_rectangle(points, robot_r_px)
-        else:
-            path_px = self.complete_path_by_distance_transform(points, self.cell.map, s_xy, robot_r_px)
+        # complete the path by distance transform
+        path_px = self.complete_path_by_distance_transform(points, self.cell.map, s_xy, robot_r_px)
         self.path_px = path_px
 
     def complete_path_by_rectangle(self, points: list, robot_r_px: int) -> MyPath:

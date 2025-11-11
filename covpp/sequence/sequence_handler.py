@@ -9,16 +9,15 @@ import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
-from covpp.base.logger import MyLogger
-from covpp.base.my_utils import MyPoint, MyPath
-from covpp.base.my_utils import get_n_colors_plt
-from covpp.base.my_utils import get_n_colors_cv
 from covpp.segmentation.cell_processed import PCell
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
 from covpp.sequence.sequence_optimizers import BaseSeqOpt
+from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig, PlanningConfig
+from covpp.base.base_utils import MyPoint, MyPath
+from covpp.base.base_utils import get_n_colors_cv, get_n_colors_plt
 
 
 class SequencePaths:

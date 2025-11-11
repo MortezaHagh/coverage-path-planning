@@ -3,7 +3,7 @@ import numpy as np
 from shapely.geometry import Polygon, Point, LineString
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PlanningConfig
-from covpp.base.my_utils import MyPoint, MyPath
+from covpp.base.base_utils import MyPoint, MyPath
 from covpp.planning.boustrophedon.cell import Cell
 
 

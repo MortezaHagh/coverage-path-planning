@@ -7,7 +7,7 @@ import numpy as np
 from covpp.gui.rectangle import Rectangle
 from covpp.base.map_data import MapData
 from covpp.base.configs import PipeLineConfig
-from covpp.base.my_utils import visualize_map_s
+from covpp.base.base_utils import visualize_map_s
 
 
 def convert_to_native(data: dict) -> dict:

@@ -1,7 +1,7 @@
 """Boustrophedon (back-and-forth) coverage path planning implementation."""
 import numpy as np
 from covpp.base.logger import MyLogger
-from covpp.base.my_utils import MyPath, MyPoint
+from covpp.base.base_utils import MyPath, MyPoint
 from covpp.planning.boustrophedon.cell import Cell
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
@@ -14,6 +14,9 @@ from covpp.planning.boustrophedon.decomposition_bs_mh import CellDecomposition
 
 class CoveragePathPlanner(CoveragePathPlannerBase):
     """Coverage path planner using boustrophedon (back-and-forth) decomposition.
+
+    Basic input data for the planner is MapPolygons object created from **cell.map**.
+    cell.map boundary is either original cell polygon or inscribed rectangle.
 
     This planner creates parallel sweeping paths by decomposing the cell into
     trapezoidal regions and generating alternating scan lines.
@@ -87,7 +90,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         # get origin (center of bounding polygon)
         self.origin = np.array(self.map_polygons.b_poly.centroid.coords)[0]
 
-        # rotate all polygons to align with cell free angle
+        # rotate all polygons to align with cell major direction angle
         self.map_polygons.rotate_all_polygons(-self.cell.major_direction, self.origin)
         return True
 

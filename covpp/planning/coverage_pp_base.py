@@ -4,10 +4,10 @@ This module defines the abstract interface that all coverage planning methods
 must implement, enabling a plugin-based architecture.
 """
 import numpy as np
-from covpp.base.logger import MyLogger
-from covpp.base.my_utils import MyPoint, MyPath
 from covpp.segmentation.cell_processed import PCell
 from covpp.district.zone_map_data import ZoneMapData
+from covpp.base.logger import MyLogger
+from covpp.base.base_utils import MyPoint, MyPath
 from covpp.base.configs import PlanningConfig, PipeLineConfig
 
 

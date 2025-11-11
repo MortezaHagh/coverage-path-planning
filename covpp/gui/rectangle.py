@@ -3,7 +3,7 @@ import copy
 import numpy as np
 from shapely.affinity import rotate
 from shapely.geometry import box, Point
-from covpp.base.my_utils import mod_angle
+from covpp.base.base_utils import mod_angle
 
 
 class Rectangle:

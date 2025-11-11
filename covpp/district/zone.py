@@ -3,7 +3,7 @@ import os
 import time
 import cv2 as cv
 from covpp.base.logger import MyLogger
-from covpp.base.my_utils import MyPath
+from covpp.base.base_utils import MyPath
 from covpp.base.configs import PipeLineConfig, PlanningConfig
 from covpp.district.cells_plotter import CellsPlotter
 from covpp.district.zone_map_data import ZoneMapData

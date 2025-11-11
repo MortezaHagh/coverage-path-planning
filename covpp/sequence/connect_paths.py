@@ -13,7 +13,7 @@ import pyastar2d
 # from pathfinding.finder.a_star import AStarFinder
 #
 from covpp.base.logger import MyLogger
-from covpp.base.my_utils import MyPath, MyPoint
+from covpp.base.base_utils import MyPath, MyPoint
 from covpp.segmentation.cell_processed import PCell
 from covpp.district.zone_map_data import ZoneMapData
 

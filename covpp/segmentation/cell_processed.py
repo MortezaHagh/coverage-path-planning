@@ -33,6 +33,7 @@ class PCell(CellBase):
         self.zmd: ZoneMapData = zmd
 
         # cell map
+        # map boundary is either original cell polygon or inscribed rectangle.
         self.map: np.ndarray = None                 # binary map of the cell area
         self.map_xy_bd: dict = {}                   # cell local map bounds
         self.global_xy = np.array([0, 0], dtype=np.int32)    # global map offset (x_offset, y_offset)
@@ -226,33 +227,33 @@ class PCell(CellBase):
         dominant_angle = max(set(angles), key=angles.count)
         major_direction = (dominant_angle) % np.pi
 
-        # # visualization
-        # # Draw arrow from center of map in free-space direction
-        # h, w = self.map.shape
-        # center = (w//2, h//2)
-        # length = min(w, h) // 3  # arrow length
+        # visualization
+        # Draw arrow from center of map in free-space direction
+        h, w = self.map.shape
+        center = (w//2, h//2)
+        length = min(w, h) // 3  # arrow length
 
-        # dx = int(length * np.cos(major_direction))
-        # dy = int(length * np.sin(major_direction))
+        dx = int(length * np.cos(major_direction))
+        dy = int(length * np.sin(major_direction))
 
-        # # Convert grayscale map to BGR for drawing
-        # vis = cv.cvtColor(self.map, cv.COLOR_GRAY2BGR)
-        # # add lines to vis by green color
-        # if lines is not None:
-        #     for rho, theta in lines[:, 0]:
-        #         a = np.cos(theta)
-        #         b = np.sin(theta)
-        #         x0 = a * rho
-        #         y0 = b * rho
-        #         pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
-        #         pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
-        #         cv.line(vis, pt1, pt2, (0, 255, 0), 2)
-        # # draw major direction arrow
-        # cv.arrowedLine(vis, center, (center[0] + dx, center[1] + dy), (0, 0, 255), 3, tipLength=0.2)
-        # # display image, lines, and major direction
-        # cv.imshow(f"Cell {self.id} Main Direction", vis)
-        # cv.waitKey(0)
-        # cv.destroyAllWindows()
+        # Convert grayscale map to BGR for drawing
+        vis = cv.cvtColor(self.map, cv.COLOR_GRAY2BGR)
+        # add lines to vis by green color
+        if lines is not None:
+            for rho, theta in lines[:, 0]:
+                a = np.cos(theta)
+                b = np.sin(theta)
+                x0 = a * rho
+                y0 = b * rho
+                pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
+                pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
+                cv.line(vis, pt1, pt2, (0, 255, 0), 2)
+        # draw major direction arrow
+        cv.arrowedLine(vis, center, (center[0] + dx, center[1] + dy), (0, 0, 255), 3, tipLength=0.2)
+        # display image, lines, and major direction
+        cv.imshow(f"Cell {self.id} Main Direction", vis)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
 
         return major_direction
 

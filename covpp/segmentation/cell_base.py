@@ -4,7 +4,7 @@ import numpy as np
 from shapely.geometry import Polygon
 from shapely import maximum_inscribed_circle
 from covpp.base.configs import PlanningConfig
-from covpp.base.my_utils import MyPoint, MyPath
+from covpp.base.base_utils import MyPoint, MyPath
 
 
 class CellBase:

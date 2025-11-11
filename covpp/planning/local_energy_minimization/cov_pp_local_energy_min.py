@@ -1,7 +1,7 @@
 """ Coverage Path Planning - Local Energy Minimization Module """
 import numpy as np
 from covpp.base.logger import MyLogger
-from covpp.base.my_utils import angle_diff, MyPoint, MyPath
+from covpp.base.base_utils import angle_diff, MyPoint, MyPath
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.voronoi_segmentation.cell import Cell
 from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
