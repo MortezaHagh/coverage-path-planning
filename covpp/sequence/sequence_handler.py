@@ -255,6 +255,13 @@ class SequenceHandler:
             alpha = 0.1
             self.zmd.map_segmentation = cv.addWeighted(map_s_fill, alpha, map_s, 1 - alpha, 0)
 
+            # add rectangle if rect_like
+            if cell.rect_like:
+                rp = cell.rectangle_poly.exterior.coords.xy
+                rpoints = np.array(list(zip(rp[0], rp[1])), dtype=np.int32)
+                self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [rpoints], isClosed=True, color=(0, 0, 0), thickness=2)
+                self.zmd.map_segmentation = cv.polylines(self.zmd.map_segmentation, [rpoints], isClosed=True, color=(0, 0, 0), thickness=2)
+
     def add_cell_paths_to_map_planning(self) -> None:
         map_planning = self.zmd.map_planning.copy()
         robot_r_px = int(self.pcfg.cleaning_r_ov / self.resolution)

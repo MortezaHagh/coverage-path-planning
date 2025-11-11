@@ -93,28 +93,3 @@ class CoveragePPHandler:
             else:
                 cell.do_planning = False
                 self.lg.warn(f"Cell {cell.id} has no path after coverage planning.")
-
-    # def zone_covpp(self) -> None:
-    #     """ apply coverage path planning for all cells in the zone """
-    #     self.lg.info2("start coverage path planning for cells")
-
-    #     cell: PCell
-    #     adj_cell: PCell
-    #     for cell in self.cells:
-    #         cell_covp_planner = CellCoveragePathPlanner(cell=cell, z)
-    #         self.all_cell_covp_planners.append(cell_covp_planner)
-    #         if cell_covp_planner.path_m:
-    #             cell.set_path_m(cell_covp_planner.path_m)
-    #             cell.set_path_px(cell_covp_planner.path_px)
-    #         else:
-    #             # update adjacent cells to remove this cell
-    #             cell.do_planning = False
-    #             # self.lg.warn(f"Cell {cell.id} has no path after coverage planning.")
-    #             # fix adjacents and parent cells
-    #             adjs = cell.adjacent_ids[:]
-    #             for adj_id in adjs:
-    #                 adj_cell = self.cells[adj_id]
-    #                 adj_cell.adjacent_ids.remove(cell.id)
-    #                 adj_cell.adjacent_ids.extend(cell.adjacent_ids)
-    #                 adj_cell.adjacent_ids = list(set(adj_cell.adjacent_ids))  # remove duplicates
-    #             cell.adjacent_ids = []

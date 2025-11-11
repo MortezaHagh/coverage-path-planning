@@ -53,12 +53,12 @@ class PCell(CellBase):
 
         # ----------------------------------------------------------------------
 
-        # create cell map
-        self.create_cell_map(self.zmd.map_ws.copy(), zmd.rectangle)
-
         # find rectangle-like properties
         if self.dcfg.use_insc_ret:
             self.eval_cell_rectangles()
+
+        # create cell map
+        self.create_cell_map(self.zmd.map_ws.copy(), zmd.rectangle)
 
         # find main directions
         self.find_cell_main_direction()
@@ -93,7 +93,7 @@ class PCell(CellBase):
 
         # get polygon points of the cell
         points = self.points
-        if self.dcfg.use_insc_ret and self.rect_like:
+        if self.rect_like:
             points = np.array(self.rectangle_poly.exterior.coords, dtype=np.int32)
 
         # points in the new local map coordinates
@@ -105,6 +105,12 @@ class PCell(CellBase):
 
         # mask with free space in the original map
         map_cell = cv.bitwise_and(map_cell, map_ws)
+
+        # # plot for debugging
+        # cv.namedWindow(f"Cell {self.id} Map", cv.WINDOW_NORMAL)
+        # cv.imshow(f"Cell {self.id} Map", map_cell)
+        # cv.waitKey(0)
+        # cv.destroyAllWindows()
 
         self.map = map_cell
 

@@ -1,5 +1,4 @@
 """Boustrophedon (back-and-forth) coverage path planning implementation."""
-import cv2 as cv
 import numpy as np
 from covpp.base.logger import MyLogger
 from covpp.base.my_utils import MyPath, MyPoint
@@ -79,18 +78,8 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
     def create_polygons(self) -> bool:
         """ Create MapPolygons object for the cell area in the map"""
 
-        cell_map = self.cell.map
-
-        # update cell map if inscribed rectangle is used
-        if self.dcfg.use_insc_ret and self.cell.rect_like:
-            points = np.array(self.cell.rectangle_poly.exterior.coords, dtype=np.int32)
-            poly_coords = [points - self.cell.global_xy]
-            mask = np.zeros_like(cell_map, dtype=np.uint8)
-            cv.fillPoly(mask, poly_coords, 1)
-            cell_map = np.where(mask == 1, cell_map, 0)
-
         # create MapPolygons object
-        self.map_polygons = MapPolygons(map_ws=cell_map, xy=self.cell.global_xy, dec_mid_dist=30)
+        self.map_polygons = MapPolygons(map_ws=self.cell.map, xy=self.cell.global_xy, dec_mid_dist=30)
         if not self.map_polygons.success:
             self.lg.error(f"Failed to create map polygons for the cell {self.cell.id}.")
             return False

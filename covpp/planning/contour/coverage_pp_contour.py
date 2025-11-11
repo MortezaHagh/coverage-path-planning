@@ -94,7 +94,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         s_xy = self.cell.global_xy
 
         # complete the path
-        if self.dcfg.use_insc_ret and self.cell.rect_like:
+        if self.cell.rect_like:
             points = []
             path_px = self.complete_path_by_rectangle(points, robot_r_px)
         else:

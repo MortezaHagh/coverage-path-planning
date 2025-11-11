@@ -22,7 +22,6 @@ class MergeCells:
         merged_cells = self.merge_groups(groups_ids, id_cell_map)
         self.updated_cells = merged_cells
         self.update_ids(groups_ids)
-        print("hi")
 
     def find_merge_groups(self, id_cell_map: dict[int, CellBase]) -> list[set[int]]:
         skip_indices: set[int] = set()
