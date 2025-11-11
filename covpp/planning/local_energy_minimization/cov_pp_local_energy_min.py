@@ -35,8 +35,8 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         path_px = self.create_path_in_grid_map()
 
         # move path from grid map to original map
-        xy = self.cell.global_xy
-        path_px = [(int(p[0] + xy[0]), int(p[1] + xy[1])) for p in path_px]
+        # xy = self.cell.global_xy
+        # path_px = [(int(p[0] + xy[0]), int(p[1] + xy[1])) for p in path_px]
         path_px = [MyPoint(p[0], p[1]) for p in path_px]
 
         # set paths
@@ -48,17 +48,13 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         n_visited = 0
         path_nodes: list[GridNode] = []
         cur_node: GridNode = self.grid.current_node
-        cur_heading: float = self.grid.heading
+        cur_heading: float = self.grid.current_heading
 
         while cur_node.visited is False:
             # mark current node as visited
             cur_node.visited = True
             n_visited += 1
             path_nodes.append(cur_node)
-
-            if self.cell.id == 2:
-                if len(path_nodes) == 13:
-                    pass
 
             # find next node with minimum cost
             min_cost = float('inf')
@@ -81,15 +77,13 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         # convert path nodes to path points
         path_px: list[tuple] = []
         for node in path_nodes:
-            x = int(node.x * self.grid.grid_l + self.grid.grid_l / 2)
-            y = int(node.y * self.grid.grid_l + self.grid.grid_l / 2)
-            path_px.append((x, y))
+            path_px.append((node.x, node.y))
 
         # # plot for debugging (map and path)
         # import cv2 as cv
         # debug_map = cv.cvtColor(self.grid.map, cv.COLOR_GRAY2BGR)
-        # # for node in path_nodes:
-        # #     cv.circle(debug_map, (int(node.x), int(node.y)), 2, (0, 0, 255), -1)
+        # for node in path_nodes:
+        #     cv.circle(debug_map, (int(node.x), int(node.y)), 2, (0, 0, 255), -1)
         # cv.circle(debug_map, (int(path_nodes[0].x), int(path_nodes[0].y)), 1, (0, 0, 255), -1)
         # self.lg.debug(f"Coverage path planning completed. Visited {n_visited} nodes out of {self.grid.n_free} free nodes.")
         # cv.namedWindow("Debug Map", cv.WINDOW_NORMAL)
@@ -113,7 +107,8 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         d_heading = abs(d_heading) / np.pi/2  # normalize by pi/2
 
         # total cost
-        cost = distance + abs(d_heading) + self.cal_track_cost(to_node)
+        cost = distance  # + abs(d_heading)  # + self.cal_track_cost(to_node)
+        cost = abs(d_heading)
         return (cost, move_heading)
 
     def cal_track_cost(self, node: GridNode) -> float:
@@ -121,5 +116,5 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         for adj in node.adj_nodes:
             if adj.visited:
                 n_visited += 1
-        score = (node.n_adj - n_visited)/4
+        score = (node.n_adj - n_visited)/2
         return score

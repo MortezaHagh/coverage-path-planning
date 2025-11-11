@@ -35,7 +35,7 @@ class PCell(CellBase):
 
         # cell map
         # map boundary is either original cell polygon or inscribed rectangle.
-        self.map: np.ndarray = None                 # binary map of the cell area
+        self.map: np.ndarray = None                 # map of the cell area (free = 255, occupied = 0)
         self.map_xy_bd: dict = {}                   # cell local map bounds
         self.global_xy = np.array([0, 0], dtype=np.int32)    # global map offset (x_offset, y_offset)
 
@@ -43,7 +43,9 @@ class PCell(CellBase):
         self.rect_like: bool = False              # whether the cell is rectangle-like or inscribed rectangle-like
         self.rect_circum_like: bool = False         # whether the cell is rectangle-like based on circumscribed rectangle.
         self.rect_insc_like: bool = False         # whether the cell is inscribed rectangle-like or not
-        self.rectangle_poly: Polygon = None       # inscribed rectangle polygon (expanded)
+        # inscribed rectangle polygon (expanded)
+        # also it is rotated to start from closest point to the start of the original polygon
+        self.rectangle_poly: Polygon = None
 
         # # major direction defined in base cell
         # self.major_direction: float = 0.0
@@ -99,8 +101,7 @@ class PCell(CellBase):
             points = np.array(self.rectangle_poly.exterior.coords, dtype=np.int32)
 
         # points in the new local map coordinates
-        poly_pts = points - np.array([[x_min, y_min]], dtype=np.int32)
-        poly_pts -= np.array([[zone_rectangle.x_min, zone_rectangle.y_min]], dtype=np.int32)
+        poly_pts = points - self.global_xy
 
         # fill cell polygon area with free space (255)
         cv.fillPoly(map_cell, [poly_pts], 255)
@@ -109,8 +110,11 @@ class PCell(CellBase):
         map_cell = cv.bitwise_and(map_cell, map_ws)
 
         # # plot for debugging
+        # map_viz = cv.cvtColor(map_cell, cv.COLOR_GRAY2BGR)
+        # # add poly_pts to map_viz by red color
+        # cv.polylines(map_viz, [poly_pts], isClosed=True, color=(0, 0, 255), thickness=2)
         # cv.namedWindow(f"Cell {self.id} Map", cv.WINDOW_NORMAL)
-        # cv.imshow(f"Cell {self.id} Map", map_cell)
+        # cv.imshow(f"Cell {self.id} Map", map_viz)
         # cv.waitKey(0)
         # cv.destroyAllWindows()
 
@@ -149,7 +153,8 @@ class PCell(CellBase):
         self.rect_like = self.rect_insc_like
 
         # start rectangle from closest point to the start of the original polygon
-        new_points = pu.rearrange_points_by_point(self.points[0], rectangle_poly.exterior.coords)
+        # coords[:-1] so that last point (same as first) is not repeated
+        new_points = pu.rearrange_points_by_point(self.points[0], rectangle_poly.exterior.coords[:-1])
         self.rectangle_poly = Polygon(new_points)
 
         # #
@@ -187,7 +192,7 @@ class PCell(CellBase):
 
         # Extract coordinates (last point == first point, so we skip last)
         rect = self.rectangle_poly
-        coords = list(rect.exterior.coords)[:-1]
+        coords = list(rect.exterior.coords)
 
         longest_length = 0
         longest_angle = None
