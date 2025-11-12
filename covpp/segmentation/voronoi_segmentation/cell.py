@@ -2,7 +2,7 @@
 import numpy as np
 from shapely import Polygon
 from covpp.base.logger import MyLogger
-from covpp.base.configs import PlanningConfig
+from covpp.base.configs import PlanningConfig, PipeLineConfig
 from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.voronoi_segmentation.common import Ring  # , CriticalPoint
 
@@ -50,7 +50,8 @@ class Cell (CellBase):
         """ Main function to process the cell.
         1- Modify the cell by removing points that are too close to critical points.
         """
-        self.modify_cell()
+        if PipeLineConfig().method in ["contour"]:
+            self.modify_cell()
 
     def modify_cell(self) -> None:
         """ Modify the cell by removing points that are too close to critical points. """

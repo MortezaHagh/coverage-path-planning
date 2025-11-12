@@ -21,20 +21,18 @@ class GridNode:
 
 
 class PGrid:
-    def __init__(self, rows: int, cols: int, l_row: int, l_col: int, g_map: np.ndarray = None):
+    def __init__(self, l_row: int, l_col: int, g_map: np.ndarray):
         self.map: np.ndarray = g_map
         self.l_row: float = l_row                  # length of each row in pixels
         self.l_col: float = l_col                  # length of each column in pixels
         self.grid_l: float = min(l_row, l_col)     # size of each grid cell in pixels
-        self.rows = rows
-        self.cols = cols
         #
         self.current_node: GridNode = None
         self.current_heading: float = None
         #
-        self.nodes: np.ndarray = np.empty((rows, cols), dtype=object)
+        self.nodes: np.ndarray = np.empty(g_map.shape, dtype=object)
         #
-        self.n: int = self.rows * self.cols                 # total number of nodes
+        self.n: int = np.prod(g_map.shape)                  # total number of nodes
         self.n_occupied: int = np.sum(g_map == 0)           # number of occupied nodes
         self.n_free: int = self.n - self.n_occupied         # number of free nodes
 
@@ -66,9 +64,19 @@ class GridGenerator:
 
         # # for debugging
         # import cv2 as cv
-        # # viz_map = cv.cvtColor(self.cell.map, cv.COLOR_GRAY2BGR)
+        # # plot map
+        # viz_map = cv.cvtColor(self.cell.map, cv.COLOR_GRAY2BGR)
         # # viz_map = cv.cvtColor(self.grid.map, cv.COLOR_GRAY2BGR)
-        # viz_map = self.grid.map
+        # # viz_map = self.grid.map
+        # # plot start node and heading
+        # node = self.grid.current_node
+        # head = self.grid.current_heading
+        # gxy = self.cell.global_xy
+        # cv.circle(viz_map, (int(node.x - gxy[0]), int(node.y - gxy[1])), 3, (0, 0, 255), -1)
+        # if head is not None:
+        #     x_end = int(node.x + 50 * np.cos(head) - gxy[0])
+        #     y_end = int(node.y + 50 * np.sin(head) - gxy[1])
+        #     cv.line(viz_map, (int(node.x - gxy[0]), int(node.y - gxy[1])), (x_end, y_end), (255, 0, 0), 2)
         # cv.namedWindow("grid_map", cv.WINDOW_NORMAL)
         # cv.imshow("grid_map", viz_map)
         # cv.waitKey(0)
@@ -83,17 +91,17 @@ class GridGenerator:
         """ Create grid for rectangle-like cells. """
         rect_specs = self.calculate_grid_specs_rect(grid_l)
         grid = self.create_grid_and_nodes_rect(rect_specs)
-        grid = self.add_adjacencies_rect(grid)
+        grid = self.add_adjacencies(grid)
         grid.current_node = grid.nodes[0, 0]
         grid.current_heading = rect_specs["major_dir"]
         return grid
 
     def create_grid_by_map(self, grid_l: int) -> PGrid:
         """ Create grid from cell map by reshaping and reducing. """
-        grid = self.create_grid_by_reshape_reduce_m(grid_l)
-        grid = self.add_nodes_adjacents_m(grid)
-        self.find_start_in_grid_m(grid)
-        self.find_heading_in_grid_m(grid)
+        grid = self.create_grid_m(grid_l)
+        grid = self.add_adjacencies(grid)
+        heading = (self.cell.major_direction + np.pi / 2) % (2 * np.pi)
+        grid.current_heading = heading
         return grid
 
     # --------------------------------------------------------------------------
@@ -105,76 +113,51 @@ class GridGenerator:
 
         rs = rect_specs
 
-        # create empty grid map
-        g_map = np.full((rs["n_rows"], rs["n_cols"]), 255, dtype=np.uint8)
-
-        # fill grid map by checking occupancy in each grid cell
-        # create nodes of the grid
-        nodes = np.empty((rs["n_rows"], rs["n_cols"]), dtype=object)
+        # ----------------------------------------------------------------------
+        # create meshgrid (in rectangle coordinates)
+        y_coeff = 1 if rs["l_row"] > 0 else -1
+        xs = np.linspace(0, rs["length"], rs["n_cols"])
+        ys = np.linspace(0, rs["width"]*y_coeff, rs["n_rows"])
+        xv, yv = np.meshgrid(xs, ys)
+        xv_flattened = xv.flatten()
+        yv_flattened = yv.flatten()
+        points_rect = np.vstack((xv_flattened, yv_flattened)).T
+        # rotate and translate to global coordinates
         theta = rect_specs["major_dir"]
-        g_xy = self.cell.global_xy
-        max_map_x = self.cell.map.shape[1]
-        max_map_y = self.cell.map.shape[0]
-
         rot_matrix = np.array([[np.cos(theta), -np.sin(theta)],
                                [np.sin(theta),  np.cos(theta)]])
+        points_rotated = (rot_matrix @ points_rect.T).T
+        points_global = points_rotated + rs["start_xy"]
+        points_map = points_global - self.cell.global_xy
+        # make sure points are integers
+        points_map = points_map.astype(int)
+        points_global = points_global.astype(int)
+        # reshape back to grid
+        points_map = points_map.reshape((rs["n_rows"], rs["n_cols"], 2))
+        points_global = points_global.reshape((rs["n_rows"], rs["n_cols"], 2))
+
+        # ----------------------------------------------------------------------
+        # create empty grid map and nodes
+        g_map = np.full((rs["n_rows"], rs["n_cols"]), 255, dtype=np.uint8)
+        nodes = np.empty((rs["n_rows"], rs["n_cols"]), dtype=object)
+        max_map_y, max_map_x = self.cell.map.shape
         for i in range(rs["n_rows"]):
             for j in range(rs["n_cols"]):
-                # find center of the grid cell
-                offset = np.array([j * rs["l_col"], i * rs["l_row"]])
-                rotated_offset = rot_matrix @ offset
-                x = int(rs["start_xy"][0] + rotated_offset[0])
-                y = int(rs["start_xy"][1] + rotated_offset[1])
-                nodes[i, j] = GridNode(x, y)
+                nodes[i, j] = GridNode(int(points_global[i, j, 0]), int(points_global[i, j, 1]))
 
                 # check occupancy of the point (x, y) in the cell map
-                x_m, y_m = x - g_xy[0], y - g_xy[1]
+                x_m = points_map[i, j, 0]
+                y_m = points_map[i, j, 1]
                 if 0 <= y_m < max_map_y and 0 <= x_m < max_map_x:
-                    if self.cell.map[y_m, x_m] == 0:
-                        g_map[i, j] = 0  # occupied
+                    if self.cell.map[y_m, x_m] == 0:  # occupied
+                        g_map[i, j] = 0
                         nodes[i, j].free = False
                 else:
                     raise ValueError("Grid cell center is out of cell map bounds.")
 
-        # # for debugging
-        # # visualize self.cell.rectangle_poly.exterior.coords[:-1]
-        # # and vizualize grid cell centers
-        # import matplotlib.pyplot as plt
-        # fig, ax = plt.subplots()
-        # rect_coords = np.array(self.cell.rectangle_poly.exterior.coords)
-        # ax.plot(rect_coords[:, 0], rect_coords[:, 1], 'b-')
-        # for i in range(rs["n_rows"]):
-        #     for j in range(rs["n_cols"]):
-        #         node = nodes[i, j]
-        #         ax.plot(node.x, node.y, 'ro', markersize=2)
-        # ax.set_aspect('equal')
-        # plt.show()
-
         # create grid
-        grid = PGrid(rs["n_rows"], rs["n_cols"], rs["l_row"], rs["l_col"], g_map)
+        grid = PGrid(rs["l_row"], rs["l_col"], g_map)
         grid.nodes = nodes
-        return grid
-
-    def add_adjacencies_rect(self, grid: PGrid) -> PGrid:
-        """ add 8 neighbors adjacents for rectangle-like grid. """
-        node: GridNode
-        n_rows = grid.nodes.shape[0]
-        n_cols = grid.nodes.shape[1]
-        for i in range(n_rows):
-            for j in range(n_cols):
-                node = grid.nodes[i, j]
-                if node is None:
-                    raise ValueError("Node is None when adding adjacents.")
-                # Add 8-directional neighbors
-                for di in [-1, 0, 1]:
-                    for dj in [-1, 0, 1]:
-                        if di == 0 and dj == 0:
-                            continue  # Skip self
-                        ni, nj = i + di, j + dj
-                        if 0 <= ni < n_rows and 0 <= nj < n_cols:
-                            neighbor = grid.nodes[ni, nj]
-                            if neighbor is not None:
-                                node.add_adj_node(neighbor)
         return grid
 
     def calculate_grid_specs_rect(self, grid_l: int) -> dict:
@@ -200,11 +183,11 @@ class GridGenerator:
         if l_12 < l_13:
             width = l_12
             length = l_13
-            th_l, th_w = th_13, th_12
+            major_dir, minor_dir = th_13, th_12
         else:
             width = l_13
             length = l_12
-            th_l, th_w = th_12, th_13
+            major_dir, minor_dir = th_12, th_13
 
         # starting point
         start_xy = (int(xy1[0]), int(xy1[1]))
@@ -219,7 +202,7 @@ class GridGenerator:
         n_cols += 1
 
         # directions (ccw or cw)
-        angle_d = angle_diff(th_w, th_l)
+        angle_d = angle_diff(minor_dir, major_dir)
         if angle_d < 0:
             l_row = -l_row
 
@@ -228,8 +211,8 @@ class GridGenerator:
             "width": width,
             "length": length,
             "start_xy": start_xy,
-            "major_dir": th_l,
-            "minor_dir": th_w,
+            "major_dir": major_dir,
+            "minor_dir": minor_dir,
             "n_rows": n_rows,
             "n_cols": n_cols,
             "l_row": l_row,
@@ -240,6 +223,98 @@ class GridGenerator:
     # --------------------------------------------------------------------------
     # Create grid from map
     # --------------------------------------------------------------------------
+
+    def create_grid_m(self, grid_l: int) -> PGrid:
+
+        # create a meshgrid
+        n_h, n_w = self.cell.map.shape
+        l_square = np.linalg.norm([n_h, n_w]) / np.sqrt(2)
+        xs = np.arange(-l_square, l_square, grid_l)
+        ys = np.arange(-l_square, l_square, grid_l)
+        n_x, n_y = len(xs), len(ys)
+        xv, yv = np.meshgrid(xs, ys)
+        xv_flattened = xv.flatten()
+        yv_flattened = yv.flatten()
+        # points in the coordinates of the center of grid cells
+        points_px = np.vstack((xv_flattened, yv_flattened)).T
+        # rotate points based on major direction
+        theta = (self.cell.major_direction + np.pi / 2) % (2 * np.pi)
+        rot_matrix = np.array([[np.cos(theta), -np.sin(theta)],
+                               [np.sin(theta),  np.cos(theta)]])
+        points_rotated = (rot_matrix @ points_px.T).T + np.array([n_w / 2, n_h / 2])
+        points_global = points_rotated + self.cell.global_xy
+        points_map = points_rotated.astype(int)
+        points_global = points_global.astype(int)
+
+        # reshape back to grid
+        points_map = points_map.reshape((n_y, n_x, 2))
+        points_global = points_global.reshape((n_y, n_x, 2))
+
+        # create empty grid map and nodes
+        nodes: np.ndarray = np.empty((n_y, n_x), dtype=object)
+        g_map: np.ndarray = np.full((n_y, n_x), 255, dtype=np.uint8)
+        max_map_y, max_map_x = self.cell.map.shape
+        start_node = None
+        for i in range(n_y):
+            for j in range(n_x):
+                nodes[i, j] = GridNode(int(points_global[i, j, 0]), int(points_global[i, j, 1]))
+
+                # check occupancy of the point (x, y) in the cell map
+                x_m = points_map[i, j, 0]
+                y_m = points_map[i, j, 1]
+                if 0 <= y_m < max_map_y and 0 <= x_m < max_map_x:
+                    if self.cell.map[y_m, x_m] == 0:  # occupied
+                        g_map[i, j] = 0
+                        nodes[i, j].free = False
+                    elif start_node is None:
+                        start_node = nodes[i, j]
+                else:
+                    g_map[i, j] = 0
+                    nodes[i, j].free = False
+
+        # create grid
+        grid = PGrid(grid_l, grid_l, g_map)
+        grid.nodes = nodes
+        grid.current_node = start_node
+        return grid
+
+    # --------------------------------------------------------------------------
+    # Add adjacencies
+    # --------------------------------------------------------------------------
+
+    def add_adjacencies(self, grid: PGrid) -> PGrid:
+        """ add 8 neighbors adjacents for rectangle-like grid. """
+        node: GridNode
+        n_rows = grid.nodes.shape[0]
+        n_cols = grid.nodes.shape[1]
+        for i in range(n_rows):
+            for j in range(n_cols):
+                node = grid.nodes[i, j]
+                if node is None:
+                    raise ValueError("Node is None when adding adjacents.")
+                # Add 8-directional neighbors
+                for di in [-1, 0, 1]:
+                    for dj in [-1, 0, 1]:
+                        if di == 0 and dj == 0:
+                            continue  # Skip self
+                        ni, nj = i + di, j + dj
+                        if 0 <= ni < n_rows and 0 <= nj < n_cols:
+                            neighbor = grid.nodes[ni, nj]
+                            if neighbor is not None:
+                                node.add_adj_node(neighbor)
+        return grid
+
+    # --------------------------------------------------------------------------
+    # create grid from map by reshaping and reducing
+    # --------------------------------------------------------------------------
+
+    def create_grid_by_map_old(self, grid_l: int) -> PGrid:
+        """ Create grid from cell map by reshaping and reducing. """
+        grid = self.create_grid_by_reshape_reduce_m(grid_l)
+        grid = self.add_nodes_adjacents_m(grid)
+        self.find_start_in_grid_m(grid)
+        self.find_heading_in_grid_m(grid)
+        return grid
 
     def create_grid_by_reshape_reduce_m(self, grid_l: int) -> PGrid:
         """ Create grid map by reshaping and reducing the cell map. """
@@ -256,8 +331,7 @@ class GridGenerator:
         g_map = map_blocks.max(axis=(1, 3)).astype(np.uint8)
 
         # create grid
-        rows, cols = g_map.shape
-        grid = PGrid(rows, cols, grid_l, grid_l, g_map)
+        grid = PGrid(grid_l, grid_l, g_map)
         return grid
 
     def add_nodes_adjacents_m(self, grid: PGrid) -> PGrid:
@@ -265,7 +339,6 @@ class GridGenerator:
 
         # create nodes of the grid
         rows, cols = grid.map.shape
-        n_occupied = 0
         for i in range(rows):
             for j in range(cols):
                 x = j * grid.l_col + grid.l_col / 2
@@ -274,9 +347,7 @@ class GridGenerator:
                 # check if free or occupied
                 if grid.map[i, j] == 0:
                     node.free = False
-                    n_occupied += 1
                 grid.nodes[i, j] = node
-        grid.set_n_occupied(n_occupied)
 
         # ---------------------------------
         # set adjacent nodes
@@ -352,3 +423,19 @@ class GridGenerator:
         if free_count1 < free_count2:
             heading = heading2
         grid.current_heading = heading
+
+    # --------------------------------------------------------------------------
+    # Debugging plots
+    # --------------------------------------------------------------------------
+
+    def plot_debugging_m(self, points_map) -> None:
+        import matplotlib.pyplot as plt
+        _, ax = plt.subplots()
+        ax.imshow(self.cell.map, cmap='gray')
+        nr, nc, _ = points_map.shape
+        for i in range(nr):
+            for j in range(nc - 1):
+                x = points_map[i, j, 0]
+                y = points_map[i, j, 1]
+                plt.plot(x, y, 'ro')
+        plt.show()
