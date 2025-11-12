@@ -109,7 +109,7 @@ class PCell(CellBase):
         # mask with free space in the original map
         map_cell = cv.bitwise_and(map_cell, map_ws)
 
-        # # plot for debugging
+        # # for debugging
         # map_viz = cv.cvtColor(map_cell, cv.COLOR_GRAY2BGR)
         # # add poly_pts to map_viz by red color
         # cv.polylines(map_viz, [poly_pts], isClosed=True, color=(0, 0, 255), thickness=2)
@@ -157,7 +157,7 @@ class PCell(CellBase):
         new_points = pu.rearrange_points_by_point(self.points[0], rectangle_poly.exterior.coords[:-1])
         self.rectangle_poly = Polygon(new_points)
 
-        # #
+        # # for debugging
         # rect_area = self.rectangle_poly.area
         # rect_area_ratio = rect_area/self.area
         # print(f"rect_area_ratio: {rect_area_ratio:.2f}")

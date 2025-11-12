@@ -64,7 +64,7 @@ class GridGenerator:
         else:
             self.grid = self.create_grid_by_map(grid_l)
 
-        # # visual debug info
+        # # for debugging
         # import cv2 as cv
         # # viz_map = cv.cvtColor(self.cell.map, cv.COLOR_GRAY2BGR)
         # # viz_map = cv.cvtColor(self.grid.map, cv.COLOR_GRAY2BGR)
@@ -81,8 +81,8 @@ class GridGenerator:
 
     def create_grid_by_rectangle(self, grid_l: int) -> PGrid:
         """ Create grid for rectangle-like cells. """
-        rect_specs = self.calculate_grid_specs_rect()
-        grid = self.create_grid_and_nodes_rect(rect_specs, grid_l)
+        rect_specs = self.calculate_grid_specs_rect(grid_l)
+        grid = self.create_grid_and_nodes_rect(rect_specs)
         grid = self.add_adjacencies_rect(grid)
         grid.current_node = grid.nodes[0, 0]
         grid.current_heading = rect_specs["major_dir"]
@@ -100,28 +100,17 @@ class GridGenerator:
     # Create grid from rectangle-like cell
     # --------------------------------------------------------------------------
 
-    def create_grid_and_nodes_rect(self, rect_specs: dict, grid_l: int) -> PGrid:
+    def create_grid_and_nodes_rect(self, rect_specs: dict) -> PGrid:
         """ Create grid and nodes for rectangle-like cells based on rectangle specs. """
 
-        # find number of rows and columns
-        # calculate distance along each direction
-        n_rows = int(np.ceil(rect_specs["width"] // grid_l))
-        l_row = int(np.ceil(rect_specs["width"] / n_rows))
-        n_rows += 1
-        #
-        n_cols = int(np.ceil(rect_specs["length"] // grid_l))
-        l_col = int(np.ceil(rect_specs["length"] / n_cols))
-        n_cols += 1
-
-        if rect_specs["w_coeff"] == -1:
-            l_row = -l_row
+        rs = rect_specs
 
         # create empty grid map
-        g_map = np.full((n_rows, n_cols), 255, dtype=np.uint8)
+        g_map = np.full((rs["n_rows"], rs["n_cols"]), 255, dtype=np.uint8)
 
         # fill grid map by checking occupancy in each grid cell
         # create nodes of the grid
-        nodes = np.empty((n_rows, n_cols), dtype=object)
+        nodes = np.empty((rs["n_rows"], rs["n_cols"]), dtype=object)
         theta = rect_specs["major_dir"]
         g_xy = self.cell.global_xy
         max_map_x = self.cell.map.shape[1]
@@ -129,13 +118,13 @@ class GridGenerator:
 
         rot_matrix = np.array([[np.cos(theta), -np.sin(theta)],
                                [np.sin(theta),  np.cos(theta)]])
-        for i in range(n_rows):
-            for j in range(n_cols):
+        for i in range(rs["n_rows"]):
+            for j in range(rs["n_cols"]):
                 # find center of the grid cell
-                offset = np.array([j*l_col, i*l_row])
+                offset = np.array([j * rs["l_col"], i * rs["l_row"]])
                 rotated_offset = rot_matrix @ offset
-                x = int(rect_specs["start_xy"][0] + rotated_offset[0])
-                y = int(rect_specs["start_xy"][1] + rotated_offset[1])
+                x = int(rs["start_xy"][0] + rotated_offset[0])
+                y = int(rs["start_xy"][1] + rotated_offset[1])
                 nodes[i, j] = GridNode(x, y)
 
                 # check occupancy of the point (x, y) in the cell map
@@ -143,7 +132,7 @@ class GridGenerator:
                 if 0 <= y_m < max_map_y and 0 <= x_m < max_map_x:
                     if self.cell.map[y_m, x_m] == 0:
                         g_map[i, j] = 0  # occupied
-                        # nodes[i, j].free = False # todo
+                        nodes[i, j].free = False
                 else:
                     raise ValueError("Grid cell center is out of cell map bounds.")
 
@@ -154,15 +143,15 @@ class GridGenerator:
         # fig, ax = plt.subplots()
         # rect_coords = np.array(self.cell.rectangle_poly.exterior.coords)
         # ax.plot(rect_coords[:, 0], rect_coords[:, 1], 'b-')
-        # for i in range(n_rows):
-        #     for j in range(n_cols):
+        # for i in range(rs["n_rows"]):
+        #     for j in range(rs["n_cols"]):
         #         node = nodes[i, j]
         #         ax.plot(node.x, node.y, 'ro', markersize=2)
         # ax.set_aspect('equal')
         # plt.show()
 
         # create grid
-        grid = PGrid(n_rows, n_cols, l_row, l_col, g_map)
+        grid = PGrid(rs["n_rows"], rs["n_cols"], rs["l_row"], rs["l_col"], g_map)
         grid.nodes = nodes
         return grid
 
@@ -188,16 +177,15 @@ class GridGenerator:
                                 node.add_adj_node(neighbor)
         return grid
 
-    def calculate_grid_specs_rect(self) -> dict:
+    def calculate_grid_specs_rect(self, grid_l: int) -> dict:
         """ Calculate grid specifications for rectangle-like cells. """
 
-        # outputs
-        width = None        # smaller dimension
-        major_dir = None    # direction of the longer side (from start point)
-        start_xy = None     # starting point of the rectangle
+        # scale rectangle 0.9 times to avoid boundary issues
+        d_scale = -grid_l / 5
+        scaled_rect = self.cell.rectangle_poly.buffer(d_scale, join_style=2, resolution=8)
 
         # start point of the rectangle
-        coords = np.array(self.cell.rectangle_poly.exterior.coords[:-1])
+        coords = np.array(scaled_rect.exterior.coords[:-1])
         xy1 = coords[0]
         xy2 = coords[1]
         xy3 = coords[-1]
@@ -212,31 +200,41 @@ class GridGenerator:
         if l_12 < l_13:
             width = l_12
             length = l_13
-            major_dir = th_13
             th_l, th_w = th_13, th_12
         else:
             width = l_13
             length = l_12
-            major_dir = th_12
             th_l, th_w = th_12, th_13
-
-        # directions
-        if angle_diff(th_w, th_l) < 0:
-            w_coeff = -1
-        else:
-            w_coeff = 1
 
         # starting point
         start_xy = (int(xy1[0]), int(xy1[1]))
 
+        # find number of rows and columns
+        # calculate distance along each direction
+        n_rows = int(np.ceil(width // grid_l))
+        l_row = int(np.ceil(width / n_rows))
+        n_rows += 1
+        n_cols = int(np.ceil(length // grid_l))
+        l_col = int(np.ceil(length / n_cols))
+        n_cols += 1
+
+        # directions (ccw or cw)
+        angle_d = angle_diff(th_w, th_l)
+        if angle_d < 0:
+            l_row = -l_row
+
+        # output dictionary
         rect_specs = {
             "width": width,
             "length": length,
             "start_xy": start_xy,
-            "major_dir": major_dir,
-            "w_coeff": w_coeff
+            "major_dir": th_l,
+            "minor_dir": th_w,
+            "n_rows": n_rows,
+            "n_cols": n_cols,
+            "l_row": l_row,
+            "l_col": l_col
         }
-
         return rect_specs
 
     # --------------------------------------------------------------------------
