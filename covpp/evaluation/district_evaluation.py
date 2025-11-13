@@ -12,7 +12,11 @@ class DistrictStatsBase:
         self.n_zones: int = None
         self.full_trav_time: float = None
         self.coverage_trav_time: float = None
-        self.processing_time: float = None
+        #
+        self.time_segmentation: float = None
+        self.time_coverage_planning: float = None
+        self.time_sequencing: float = None
+        self.time_total: float = None
         #
         self.full_path_length: float = None
         self.coverage_path_length: float = None
@@ -34,7 +38,10 @@ class DistrictStatsBase:
             "n_zones": int(self.n_zones),
             "full_trav_time": round(float(self.full_trav_time), 2),
             "coverage_trav_time": round(float(self.coverage_trav_time), 2),
-            "processing_time": round(float(self.processing_time), 2),
+            "time_segmentation": round(float(self.time_segmentation), 2),
+            "time_coverage_planning": round(float(self.time_coverage_planning), 2),
+            "time_sequencing": round(float(self.time_sequencing), 2),
+            "time_total": round(float(self.time_total), 2),
             "full_path_length": round(float(self.full_path_length), 2),
             "coverage_path_length": round(float(self.coverage_path_length), 2),
             "full_yaw_rad": round(float(self.full_yaw_rad), 2),
@@ -67,7 +74,10 @@ class DistrictEvaluationHandler:
         # aggregate statistics from all zones
         self.stats.full_trav_time = sum(zs.full_trav_time for zs in zone_stats)
         self.stats.coverage_trav_time = sum(zs.coverage_trav_time for zs in zone_stats)
-        self.stats.processing_time = sum(zs.processing_time for zs in zone_stats)
+        self.stats.time_segmentation = sum(zs.time_segmentation for zs in zone_stats)
+        self.stats.time_coverage_planning = sum(zs.time_coverage_planning for zs in zone_stats)
+        self.stats.time_sequencing = sum(zs.time_sequencing for zs in zone_stats)
+        self.stats.time_total = sum(zs.time_total for zs in zone_stats)
         self.stats.full_path_length = sum(zs.full_length for zs in zone_stats)
         self.stats.coverage_path_length = sum(zs.coverage_length for zs in zone_stats)
         self.stats.full_yaw_rad = sum(zs.full_yaw_rad for zs in zone_stats)

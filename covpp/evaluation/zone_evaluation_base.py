@@ -12,7 +12,10 @@ class ZoneStatsBase:
         ind (int): zone index
         full_trav_time (float): travel time in seconds
         coverage_trav_time (float): travel time in seconds (coverage path)
-        processing_time (float): processing time in seconds
+        time_segmentation (float): segmentation time in seconds
+        time_coverage_planning (float): coverage planning time in seconds
+        time_sequencing (float): sequencing time in seconds
+        time_total (float): total processing time in seconds
         full_length (float): full path length in meters (coverage and connecting)
         coverage_length (float): coverage path length in meters
         full_yaw_rad (float): yaw changes in radians
@@ -33,7 +36,11 @@ class ZoneStatsBase:
         self.ind: int = None  # zone index
         self.full_trav_time: float = 0.0
         self.coverage_trav_time: float = 0.0
-        self.processing_time = 0.0
+        #
+        self.time_segmentation: float = None
+        self.time_coverage_planning: float = None
+        self.time_sequencing: float = None
+        self.time_total: float = None
         #
         self.full_length = None
         self.coverage_length = None
@@ -57,7 +64,10 @@ class ZoneStatsBase:
             "zone_ind": self.ind,
             "full_trav_time": round(float(self.full_trav_time), 2),
             "coverage_trav_time": round(float(self.coverage_trav_time), 2),
-            "processing_time": round(float(self.processing_time), 2),
+            "time_segmentation": round(float(self.time_segmentation), 2),
+            "time_coverage_planning": round(float(self.time_coverage_planning), 2),
+            "time_sequencing": round(float(self.time_sequencing), 2),
+            "time_total": round(float(self.time_total), 2),
             "full_length": round(float(self.full_length), 2),
             "coverage_length": round(float(self.coverage_length), 2),
             "full_yaw_rad": round(float(self.full_yaw_rad), 2),
@@ -86,7 +96,7 @@ class ZoneEvaluationBase:
         # statistics
         self.stats: ZoneStatsBase = None
 
-    def evaluate(self, duration: float = 0.0):
+    def evaluate(self, times: float = 0.0):
         """ evaluate zone statistics. To be implemented in derived classes. """
         raise NotImplementedError("Zone evaluation subclasses must implement evaluate() method")
 

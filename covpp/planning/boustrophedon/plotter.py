@@ -164,3 +164,4 @@ class BoustPlotter:
         else:
             self.fig_mcells.savefig(path + f"{ns}mcells.png", format="png", dpi=self.dcfg.dpi)
             self.fig_cells_events.savefig(path + f"{ns}cells.png", format="png", dpi=self.dcfg.dpi)
+        plt.close('all')

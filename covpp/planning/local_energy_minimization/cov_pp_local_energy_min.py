@@ -25,6 +25,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
         # attributes
         self.grid: PGrid = GridGenerator(cell=self.cell, zmd=zmd).grid
+        self.major_dir: float = (cell.major_direction + np.pi/2) % np.pi
 
         # start coverage path planning for the input cell and map
         self.coverage_planning()
@@ -35,8 +36,6 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         path_px = self.create_path_in_grid_map()
 
         # move path from grid map to original map
-        # xy = self.cell.global_xy
-        # path_px = [(int(p[0] + xy[0]), int(p[1] + xy[1])) for p in path_px]
         path_px = [MyPoint(p[0], p[1]) for p in path_px]
 
         # set paths
@@ -50,11 +49,12 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         cur_node: GridNode = self.grid.current_node
         cur_heading: float = self.grid.current_heading
 
-        while cur_node.visited is False:
-            # mark current node as visited
-            cur_node.visited = True
-            n_visited += 1
-            path_nodes.append(cur_node)
+        # mark current node as visited
+        n_visited += 1
+        cur_node.visited = True
+        path_nodes.append(cur_node)
+
+        while n_visited < self.grid.n_free:
 
             # find next node with minimum cost
             min_cost = float('inf')
@@ -68,11 +68,20 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
                         next_node = adj
                         next_heading = move_heading
 
-            # if no next node found, break
+            # if no next node found
             if next_node is None:
-                break
+                next_node, next_heading = self.backtrace_find_feasible(path_nodes)
+                if next_node is None:
+                    raise RuntimeError("No feasible next node found during coverage path planning.")
+
+            # move to next node
             cur_node = next_node
             cur_heading = next_heading
+
+            # mark current node as visited
+            n_visited += 1
+            cur_node.visited = True
+            path_nodes.append(cur_node)
 
         # convert path nodes to path points
         path_px: list[tuple] = []
@@ -99,7 +108,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
         # compute distance
         dxy = np.array([to_node.x - from_node.x, to_node.y - from_node.y], dtype=np.float32)
-        distance = np.linalg.norm(dxy) / self.grid.grid_l  # normalize by grid size
+        # distance = np.linalg.norm(dxy) / self.grid.grid_l  # normalize by grid size
 
         # compute heading change
         move_heading = np.arctan2(dxy[1], dxy[0])
@@ -107,8 +116,9 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         d_heading = abs(d_heading) / np.pi/2  # normalize by pi/2
 
         # total cost
-        cost = distance  # + abs(d_heading)  # + self.cal_track_cost(to_node)
-        cost = abs(d_heading)
+        # cost = distance + abs(d_heading) + self.cal_track_cost(to_node)
+        cost = abs(d_heading) + self.cal_track_cost(to_node)
+        cost += to_node.i_row * 10
         return (cost, move_heading)
 
     def cal_track_cost(self, node: GridNode) -> float:
@@ -116,5 +126,20 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         for adj in node.adj_nodes:
             if adj.visited:
                 n_visited += 1
+            elif not adj.free:
+                n_visited += 1
         score = (node.n_adj - n_visited)/2
         return score
+
+    def backtrace_find_feasible(self, path_nodes: list[GridNode]):
+        """ Backtrace to find the first node in the current path with free adjacent. """
+
+        # find the last node in path with free unvisited adjacent
+        for node in path_nodes[::-1]:
+            # find one free unvisited adjacent
+            for adj in node.adj_nodes:
+                if adj.free and not adj.visited:
+                    d_xy = np.array([adj.x - node.x, adj.y - node.y], dtype=np.float32)
+                    move_heading = np.arctan2(d_xy[1], d_xy[0])
+                    return (adj, move_heading)
+        return (None, None)

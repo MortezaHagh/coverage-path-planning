@@ -97,26 +97,27 @@ class ZoneData:
 
         This method orchestrates all planning operations and measures execution time.
         """
-        start_time = time.time()
+        times = {}
+        times['start'] = time.time()
 
         # ************ segmentation
         self.lg.info1(f"Step: running segmentation using method '{self.dcfg.segmentation_method}'")
         self.segmentation_hl.run()
         self.cells = self.segmentation_hl.cells
+        times['segmentation'] = time.time()
 
         # ************ coverage planning
         self.lg.info1(f"Step: running coverage path planning using method '{self.dcfg.covpp_method}'")
         self.cov_path_planner.plan(cells=self.cells)
+        times['coverage_planning'] = time.time()
 
         # ************ sequence
         self.lg.info1(f"Step: creating sequence and full path using method '{self.dcfg.sequence_method}'")
         self.sequence_hl.run(cells=self.cells, map_polygons=self.segmentation_hl.map_polygons)
-
-        end_time = time.time()
-        process_time = end_time - start_time
+        times['sequencing'] = time.time()
 
         # ************ evaluate statistics
-        self.evaluator.evaluate(paths=self.sequence_hl.paths, duration=process_time)
+        self.evaluator.evaluate(paths=self.sequence_hl.paths, times=times)
         self.stats = self.evaluator.stats
 
         # ************

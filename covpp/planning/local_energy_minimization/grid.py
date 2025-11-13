@@ -1,6 +1,7 @@
 """ Coverage Path Planning - Local Energy Minimization Module """
 import cv2 as cv
 import numpy as np
+from shapely.geometry import Point
 from covpp.base.logger import MyLogger
 from covpp.base.configs import SpaceConfig
 from covpp.base.base_utils import angle_diff
@@ -9,17 +10,21 @@ from covpp.district.zone_map_data import ZoneMapData
 
 
 class GridNode:
-    def __init__(self, x, y):
+    def __init__(self, x, y, i_row: int = None):
         self.x = x
         self.y = y
-        self.visited = False
-        self.n_adj = 0          # number of adjacent nodes
-        self.adj_nodes = []     # list of adjacent nodes
-        self.free: bool = True  # is the node free or occupied
+        self.i_row: int = i_row     # row index in the grid
+        self.free: bool = True      # is the node free or occupied
+        self.n_adj = 0              # number of adjacent nodes
+        self.n_free_adj = 0         # number of free adjacent nodes
+        self.adj_nodes = []         # list of adjacent nodes
+        self.visited = False        # has the node been visited(set during path planning)
 
     def add_adj_node(self, node: 'GridNode'):
         self.adj_nodes.append(node)
         self.n_adj += 1
+        if node.free:
+            self.n_free_adj += 1
 
 
 class PGrid:
@@ -58,7 +63,7 @@ class GridGenerator:
 
         # create grid ---------------------------------
         grid_l = self.calculate_base_grid_size(zmd.resolution)
-        grid_l = int(0.9 * grid_l)  # reduce grid size a bit to avoid boundary issues
+        grid_l = int(1.0 * grid_l)  # reduce grid size a bit to avoid boundary issues
 
         if self.cell.rect_like:
             self.grid = self.create_grid_by_rectangle(grid_l)
@@ -67,10 +72,10 @@ class GridGenerator:
 
         self.plot_grid_map(zmd.segmentation_dir)
 
-    def calculate_base_grid_size(self, resolution) -> int:
+    def calculate_base_grid_size(self, resolution) -> float:
 
         cleaning_r_px = SpaceConfig.cleaning_r / resolution
-        grid_l = int(np.sqrt(2) * cleaning_r_px)
+        grid_l = np.sqrt(2) * cleaning_r_px
         return grid_l
 
     def create_grid_by_rectangle(self, grid_l: int) -> PGrid:
@@ -129,7 +134,7 @@ class GridGenerator:
         max_map_y, max_map_x = self.cell.map.shape
         for i in range(rs["n_rows"]):
             for j in range(rs["n_cols"]):
-                nodes[i, j] = GridNode(int(points_global[i, j, 0]), int(points_global[i, j, 1]))
+                nodes[i, j] = GridNode(int(points_global[i, j, 0]), int(points_global[i, j, 1]), i_row=i)
 
                 # check occupancy of the point (x, y) in the cell map
                 x_m = points_map[i, j, 0]
@@ -149,7 +154,7 @@ class GridGenerator:
     def calculate_grid_specs_rect(self, grid_l: int) -> dict:
         """ Calculate grid specifications for rectangle-like cells. """
 
-        # scale rectangle 0.9 times to avoid boundary issues
+        # scale rectangle to avoid boundary issues
         d_scale = -grid_l / 5
         scaled_rect = self.cell.rectangle_poly.buffer(d_scale, join_style=2, resolution=8)
 
@@ -180,10 +185,10 @@ class GridGenerator:
 
         # find number of rows and columns
         # calculate distance along each direction
-        n_rows = int(np.ceil(width // grid_l))
+        n_rows = int(np.round(width / grid_l))
         l_row = int(np.ceil(width / n_rows))
         n_rows += 1
-        n_cols = int(np.ceil(length // grid_l))
+        n_cols = int(np.round(length / grid_l))
         l_col = int(np.ceil(length / n_cols))
         n_cols += 1
 
@@ -236,6 +241,11 @@ class GridGenerator:
         points_map = points_map.reshape((n_y, n_x, 2))
         points_global = points_global.reshape((n_y, n_x, 2))
 
+        # scale rectangle to avoid boundary issues
+        d_scale = grid_l / 3
+        poly = self.cell.poly
+        scaled_poly = poly.buffer(d_scale, join_style=2, resolution=8)
+
         # create empty grid map and nodes
         nodes: np.ndarray = np.empty((n_y, n_x), dtype=object)
         g_map: np.ndarray = np.full((n_y, n_x), 255, dtype=np.uint8)
@@ -243,20 +253,28 @@ class GridGenerator:
         start_node = None
         for i in range(n_y):
             for j in range(n_x):
-                nodes[i, j] = GridNode(int(points_global[i, j, 0]), int(points_global[i, j, 1]))
+                nodes[i, j] = GridNode(int(points_global[i, j, 0]), int(points_global[i, j, 1]), i_row=i)
 
                 # check occupancy of the point (x, y) in the cell map
                 x_m = points_map[i, j, 0]
                 y_m = points_map[i, j, 1]
                 if 0 <= y_m < max_map_y and 0 <= x_m < max_map_x:
                     if self.cell.map[y_m, x_m] == 0:  # occupied
-                        g_map[i, j] = 0
-                        nodes[i, j].free = False
-                    elif start_node is None:
-                        start_node = nodes[i, j]
+                        # check if point is between the scaled rectangle and original rectangle (boundary area)
+                        point = Point(points_global[i, j, 0], points_global[i, j, 1])
+                        if scaled_poly.contains(point) and not poly.contains(point):
+                            # between boundary area, consider free
+                            pass
+                        else:
+                            g_map[i, j] = 0
+                            nodes[i, j].free = False
                 else:
                     g_map[i, j] = 0
                     nodes[i, j].free = False
+
+                # set start node as first free node
+                if start_node is None and nodes[i, j].free:
+                    start_node = nodes[i, j]
 
         # create grid
         grid = PGrid(grid_l, grid_l, g_map)
@@ -441,6 +459,35 @@ class GridGenerator:
 
         # write image
         cv.imwrite(f"{path}/grid_map_{self.cell.id}.png", viz_map)
+
+        # # show image
         # cv.namedWindow("grid_map", cv.WINDOW_NORMAL)
         # cv.imshow("grid_map", viz_map)
         # cv.waitKey(0)
+
+        # from matplotlib import pyplot as plt
+        # fig, ax = plt.subplots(figsize=(8, 8))
+        # ax.set_aspect('equal', adjustable='box')
+
+        # # plot map
+        # ax.imshow(self.grid.map, cmap='gray', origin='upper')
+
+        # # plot nodes
+        # gxy = self.cell.global_xy
+        # for node in self.grid.nodes.flatten():
+        #     if node.free:
+        #         ax.plot(node.x - gxy[0], node.y - gxy[1], 'go', markersize=2)
+        #     else:
+        #         ax.plot(node.x - gxy[0], node.y - gxy[1], 'ro', markersize=2)
+
+        # # plot start node and heading
+        # node = self.grid.current_node
+        # head = self.grid.current_heading
+        # gxy = self.cell.global_xy
+        # ax.plot(node.x - gxy[0], node.y - gxy[1], 'bo', markersize=4)
+        # x_end = node.x + 50 * np.cos(head) - gxy[0]
+        # y_end = node.y + 50 * np.sin(head) - gxy[1]
+        # ax.plot([node.x - gxy[0], x_end], [node.y - gxy[1], y_end], 'b-')
+        # ax.set_title(f"Grid Map - Cell {self.cell.id}")
+        # fig.savefig(f"{path}/grid_map_{self.cell.id}.png")
+        # plt.close(fig)

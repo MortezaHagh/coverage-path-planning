@@ -15,12 +15,12 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
         super().__init__(zmd, paths)
         self.lg = MyLogger("ZoneEvaluationSimple")
 
-    def evaluate(self, duration: float = 0.0):
+    def evaluate(self, times: dict = None):
         self.stats = ZoneStatsBase()
         self.stats.map_name = self.zmd.orig_map_data.name
         self.stats.method = self.dcfg.method
         self.stats.ind = self.zmd.ind
-        self.stats.processing_time = duration
+        self.calculate_time_statistics(times)
         #
         self.calculate_path_statistics()
         self.calculate_travel_times()
@@ -29,6 +29,14 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
         self.add_cleaned_area_to_map()
         self.calculate_cleaned_area()
         self.save_result()
+
+    def calculate_time_statistics(self, times: dict) -> None:
+        if times is None:
+            return
+        self.stats.time_segmentation = times['segmentation'] - times['start']
+        self.stats.time_coverage_planning = times['coverage_planning'] - times['segmentation']
+        self.stats.time_sequencing = times['sequencing'] - times['coverage_planning']
+        self.stats.time_total = times['sequencing'] - times['start']
 
     def calculate_path_statistics(self) -> None:
         full_path: MyPath = self.paths.f_path_m

@@ -75,3 +75,4 @@ class CellsPlotter:
         self.fig_mcells.savefig(self.segmentation_dir + "/cells.png", format="png", dpi=self.dcfg.dpi)
         if self.fig_mcells_seq:
             self.fig_mcells_seq.savefig(self.method_results_dir + "/sequence.png", format="png", dpi=self.dcfg.dpi)
+        plt.close('all')

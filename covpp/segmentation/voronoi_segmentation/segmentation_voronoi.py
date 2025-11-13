@@ -339,3 +339,4 @@ class Segmentation(SegmentationBase):
         #
         if self.dcfg.plot_decomposition:
             plt.show()
+        plt.close('all')

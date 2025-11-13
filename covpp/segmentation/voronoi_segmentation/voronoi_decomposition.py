@@ -425,6 +425,7 @@ class VoronoiDecomposition:
         if self.dcfg.save_decomposition_plot:
             save_path = self.results_dir + "/voronoi.png"
             fig.savefig(save_path, dpi=self.dcfg.dpi)
+            plt.close('all')
 
     # ==========================================================================
     # self.find_adjacents()

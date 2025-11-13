@@ -8,11 +8,11 @@ map_names = [
     "Map4",
     "map_fr52",]
 
-map_names = ["map_fr52", "Map4"]
+# map_names = ["map_fr52", "Map4"]
 
 if __name__ == "__main__":
 
-    covpp_method = ["boust", "contour"]
+    covpp_method = ["boust", "contour", "grid_energy_min"]
     dcfg = PipeLineConfig()
 
     # run for all maps

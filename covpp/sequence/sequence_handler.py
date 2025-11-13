@@ -461,7 +461,7 @@ class SequenceHandler:
         fig_path = os.path.join(self.zmd.method_results_dir, "final_path")
         # fig.savefig(fig_path+'.png', format="png", dpi=self.dcfg.dpi)
         fig.savefig(fig_path+'.svg', format="svg", dpi=self.dcfg.dpi)
-        # plt.show()
+        plt.close('all')
 
     # Animate path =====================================================================================================
 
