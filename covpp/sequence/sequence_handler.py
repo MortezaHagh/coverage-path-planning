@@ -422,11 +422,11 @@ class SequenceHandler:
 
     def save_path_fig(self, fig, is_anim=False):
         if not is_anim:
-            fig_path = os.path.join(self.zmd.result_dir, "paths.png")
+            fig_path = os.path.join(self.zmd.method_results_dir, "paths.png")
             fig.savefig(fig_path, format="png", dpi=self.dcfg.dpi)
         else:
             self.lg.info(f"saving animation ... n_frames: {self.f_path_px.n}")
-            fig_path = os.path.join(self.zmd.result_dir, "anim_paths.gif")
+            fig_path = os.path.join(self.zmd.method_results_dir, "anim_paths.gif")
             self.anim.save(fig_path)
 
     def plot_paths_m(self):
@@ -458,7 +458,7 @@ class SequenceHandler:
         if self.f_path_m is not None:
             pp = np.array(self.f_path_m.xy, dtype=np.float32)
             ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2/scale, linestyle='-', markersize=3/scale)
-        fig_path = os.path.join(self.zmd.result_dir, "final_path")
+        fig_path = os.path.join(self.zmd.method_results_dir, "final_path")
         # fig.savefig(fig_path+'.png', format="png", dpi=self.dcfg.dpi)
         fig.savefig(fig_path+'.svg', format="svg", dpi=self.dcfg.dpi)
         # plt.show()

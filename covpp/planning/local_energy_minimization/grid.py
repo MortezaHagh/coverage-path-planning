@@ -1,9 +1,11 @@
 """ Coverage Path Planning - Local Energy Minimization Module """
+import cv2 as cv
 import numpy as np
 from covpp.base.logger import MyLogger
 from covpp.base.configs import SpaceConfig
 from covpp.base.base_utils import angle_diff
 from covpp.segmentation.cell_processed import PCell
+from covpp.district.zone_map_data import ZoneMapData
 
 
 class GridNode:
@@ -44,7 +46,7 @@ class PGrid:
 class GridGenerator:
     """ Creates a grid representation of the cell map for planning."""
 
-    def __init__(self, cell: PCell, resolution: float):
+    def __init__(self, cell: PCell, zmd: ZoneMapData):
         self.lg = MyLogger(f"GridGenerator-C{cell.id}")
         self.lg.info2("Creating grid representation of the cell map.")
 
@@ -55,31 +57,15 @@ class GridGenerator:
         self.grid: PGrid = None
 
         # create grid ---------------------------------
-        grid_l = self.calculate_base_grid_size(resolution)
+        grid_l = self.calculate_base_grid_size(zmd.resolution)
+        grid_l = int(0.9 * grid_l)  # reduce grid size a bit to avoid boundary issues
 
         if self.cell.rect_like:
             self.grid = self.create_grid_by_rectangle(grid_l)
         else:
             self.grid = self.create_grid_by_map(grid_l)
 
-        # # for debugging
-        # import cv2 as cv
-        # # plot map
-        # viz_map = cv.cvtColor(self.cell.map, cv.COLOR_GRAY2BGR)
-        # # viz_map = cv.cvtColor(self.grid.map, cv.COLOR_GRAY2BGR)
-        # # viz_map = self.grid.map
-        # # plot start node and heading
-        # node = self.grid.current_node
-        # head = self.grid.current_heading
-        # gxy = self.cell.global_xy
-        # cv.circle(viz_map, (int(node.x - gxy[0]), int(node.y - gxy[1])), 3, (0, 0, 255), -1)
-        # if head is not None:
-        #     x_end = int(node.x + 50 * np.cos(head) - gxy[0])
-        #     y_end = int(node.y + 50 * np.sin(head) - gxy[1])
-        #     cv.line(viz_map, (int(node.x - gxy[0]), int(node.y - gxy[1])), (x_end, y_end), (255, 0, 0), 2)
-        # cv.namedWindow("grid_map", cv.WINDOW_NORMAL)
-        # cv.imshow("grid_map", viz_map)
-        # cv.waitKey(0)
+        self.plot_grid_map(zmd.segmentation_dir)
 
     def calculate_base_grid_size(self, resolution) -> int:
 
@@ -428,14 +414,33 @@ class GridGenerator:
     # Debugging plots
     # --------------------------------------------------------------------------
 
-    def plot_debugging_m(self, points_map) -> None:
-        import matplotlib.pyplot as plt
-        _, ax = plt.subplots()
-        ax.imshow(self.cell.map, cmap='gray')
-        nr, nc, _ = points_map.shape
-        for i in range(nr):
-            for j in range(nc - 1):
-                x = points_map[i, j, 0]
-                y = points_map[i, j, 1]
-                plt.plot(x, y, 'ro')
-        plt.show()
+    def plot_grid_map(self, path: str) -> None:
+        """ Plot grid map with start node and heading. """
+
+        # plot map
+        viz_map = cv.cvtColor(self.cell.map, cv.COLOR_GRAY2BGR)
+
+        # plot nodes
+        gxy = self.cell.global_xy
+        rows, cols = self.grid.map.shape
+        for i in range(rows):
+            for j in range(cols):
+                node = self.grid.nodes[i, j]
+                if node.free:
+                    cv.circle(viz_map, (int(node.x - gxy[0]), int(node.y - gxy[1])), 2, (0, 255, 0), -1)
+                else:
+                    cv.circle(viz_map, (int(node.x - gxy[0]), int(node.y - gxy[1])), 2, (0, 0, 255), -1)
+        # plot start node and heading
+        node = self.grid.current_node
+        head = self.grid.current_heading
+        gxy = self.cell.global_xy
+        cv.circle(viz_map, (int(node.x - gxy[0]), int(node.y - gxy[1])), 3, (0, 0, 255), -1)
+        x_end = int(node.x + 50 * np.cos(head) - gxy[0])
+        y_end = int(node.y + 50 * np.sin(head) - gxy[1])
+        cv.line(viz_map, (int(node.x - gxy[0]), int(node.y - gxy[1])), (x_end, y_end), (255, 0, 0), 2)
+
+        # write image
+        cv.imwrite(f"{path}/grid_map_{self.cell.id}.png", viz_map)
+        # cv.namedWindow("grid_map", cv.WINDOW_NORMAL)
+        # cv.imshow("grid_map", viz_map)
+        # cv.waitKey(0)

@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 from covpp.base.configs import PipeLineConfig
 from covpp.planning.boustrophedon.cell import Cell, CellGroup
+from covpp.planning.boustrophedon.decomposition_bs_mh import CellDecomposition
 
 
 class BoustPlotter:
@@ -10,10 +11,10 @@ class BoustPlotter:
     Plots: boust cells and mcells.
     """
 
-    def __init__(self, dec_obj):
-        self.dec_obj = dec_obj
+    def __init__(self,):
         self.dcfg = PipeLineConfig()
-        self.result_dir: str = dec_obj.result_dir
+        self.dec_obj: CellDecomposition = None
+        self.results_dir: str = None
         #
         self.viz_together = True
         self.set_aspect = True
@@ -24,7 +25,11 @@ class BoustPlotter:
         self.fig_mcells_seq = None
         self.fig_all = None
 
-    def visualize(self):
+    def visualize(self, dec_obj: CellDecomposition):
+
+        self.dec_obj = dec_obj
+        self.results_dir = dec_obj.results_dir
+
         if not (self.dcfg.save_decomposition_plot or self.dcfg.plot_decomposition):
             return
         if self.viz_together:
@@ -153,7 +158,7 @@ class BoustPlotter:
 
     def save_figs(self):
         ns = "/"
-        path = self.result_dir
+        path = self.results_dir
         if self.viz_together:
             self.fig_all.savefig(path + f"{ns}boust_decomposition.png", format="png", dpi=self.dcfg.dpi)
         else:

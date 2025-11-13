@@ -13,8 +13,9 @@ class CellsPlotter:
         - visualize_sequence
     """
 
-    def __init__(self, result_dir: str):
-        self.result_dir = result_dir
+    def __init__(self, method_results_dir: str, segmentation_dir: str):
+        self.method_results_dir = method_results_dir
+        self.segmentation_dir = segmentation_dir
         self.dcfg = PipeLineConfig()
         #
         self.fig_mcells = None
@@ -71,6 +72,6 @@ class CellsPlotter:
             ax.plot([x1, x2], [y1, y2], color="gray", linewidth=1, linestyle='--')
 
     def save_figs(self):
-        self.fig_mcells.savefig(self.result_dir + "/cells.png", format="png", dpi=self.dcfg.dpi)
+        self.fig_mcells.savefig(self.segmentation_dir + "/cells.png", format="png", dpi=self.dcfg.dpi)
         if self.fig_mcells_seq:
-            self.fig_mcells_seq.savefig(self.result_dir + "/sequence.png", format="png", dpi=self.dcfg.dpi)
+            self.fig_mcells_seq.savefig(self.method_results_dir + "/sequence.png", format="png", dpi=self.dcfg.dpi)

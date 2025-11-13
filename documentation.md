@@ -252,7 +252,7 @@ Manages district and zone-level operations.
   - `map_planning`: Planning visualization
   - `vertices`: Zone boundary vertices
   - `resolution`: Map resolution
-  - `result_dir`: Output directory path
+  - `method_results_dir`: Output directory path
 
 #### **CellsPlotter** (cells_plotter.py)
 

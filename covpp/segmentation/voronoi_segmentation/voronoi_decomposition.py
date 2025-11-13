@@ -47,7 +47,7 @@ class VoronoiDecomposition:
         self.lg.info3(f"Robot radius in pixels: {self.robot_r_px:.2f}")
 
         # basic data
-        self.result_dir: str = zmd.result_dir
+        self.results_dir: str = zmd.method_results_dir
         self.b_poly: Polygon = map_polygs.b_poly                # bounding polygon
         self.obs_polys: list[Polygon] = map_polygs.obs_polys    # obstacle polygons
 
@@ -423,7 +423,7 @@ class VoronoiDecomposition:
 
         #
         if self.dcfg.save_decomposition_plot:
-            save_path = self.result_dir + "/voronoi.png"
+            save_path = self.results_dir + "/voronoi.png"
             fig.savefig(save_path, dpi=self.dcfg.dpi)
 
     # ==========================================================================

@@ -24,7 +24,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.lg = MyLogger(f"CovPPLocalEnergyMin-Z{zmd.ind}-C{cell.id}")
 
         # attributes
-        self.grid: PGrid = GridGenerator(cell=self.cell, resolution=zmd.resolution).grid
+        self.grid: PGrid = GridGenerator(cell=self.cell, zmd=zmd).grid
 
         # start coverage path planning for the input cell and map
         self.coverage_planning()

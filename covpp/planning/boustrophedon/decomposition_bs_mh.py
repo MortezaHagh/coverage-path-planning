@@ -6,7 +6,6 @@ from covpp.base.configs import PlanningConfig
 from covpp.planning.boustrophedon.events import Event
 from covpp.planning.boustrophedon.obstacles import Obstacle
 from covpp.planning.boustrophedon.cell import Cell, CellGroup
-from covpp.planning.boustrophedon.plotter import BoustPlotter
 from covpp.planning.boustrophedon.post_process_mcells import eval_cells_path_shift
 
 
@@ -28,10 +27,10 @@ class CellDecomposition:
         8. Visualize decomposition results
     """
 
-    def __init__(self, resolution: float = 0.05, result_dir: str = None):
+    def __init__(self, resolution: float = 0.05, results_dir: str = None):
         self.lg = MyLogger("CellDecompositionMH")
         #
-        self.result_dir: str = result_dir
+        self.results_dir: str = results_dir
         self.resolution: float = resolution
         self.bcfgs = PlanningConfig()
         #
@@ -49,8 +48,6 @@ class CellDecomposition:
         self.n_mcells: int = 0
         self.cells_groups: list[CellGroup] = []
         self.mcells: list[Cell] = []
-        #
-        self.plotter: BoustPlotter = None
 
     def initiate(self):
         """Execute complete decomposition pipeline.
@@ -74,9 +71,8 @@ class CellDecomposition:
         # find if coverage pp in cell should be shifted based on boarder with adjacents
         eval_cells_path_shift(self.mcells)
 
-        #
+        # evaluate cells for planning
         self.eval_mcells()
-        self.visualize()
 
     def set_bounding_polygon(self, poly: Polygon):
         """Set the workspace boundary polygon."""
@@ -540,7 +536,3 @@ class CellDecomposition:
         """check if area of the cell is enough for planning. """
         for cell in self.mcells:
             cell.eval_planning_area(self.resolution, self.bcfgs.cleaning_r)
-
-    def visualize(self):
-        self.plotter = BoustPlotter(self)
-        self.plotter.visualize()

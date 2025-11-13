@@ -2,13 +2,14 @@
 import numpy as np
 from covpp.base.logger import MyLogger
 from covpp.base.base_utils import MyPath, MyPoint
-from covpp.planning.boustrophedon.cell import Cell
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
-from covpp.planning.boustrophedon.cell_cov_planner import CellCoveragePathPlanner
+from covpp.planning.boustrophedon.cell import Cell
+from covpp.planning.boustrophedon.plotter import BoustPlotter
 from covpp.planning.boustrophedon.decomposition_bs_mh import CellDecomposition
+from covpp.planning.boustrophedon.cell_cov_planner import CellCoveragePathPlanner
 # from shapely import affinity  # , Point
 
 
@@ -42,7 +43,8 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.origin: np.ndarray = np.array([0.0, 0.0], dtype=np.float32)
 
         # cell decomposition
-        self.decomposer = CellDecomposition(zmd.resolution, zmd.result_dir)
+        self.decomposer = CellDecomposition(zmd.resolution, zmd.method_results_dir)
+        self.boust_plotter = BoustPlotter()
 
         # connect paths interface
         self.connections = ConnectPaths(zone_map_data=self.zmd, ns=f"C{cell.id}")
@@ -72,6 +74,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         if not self.decompose():
             self.cell.do_planning = False
             return
+        self.visualize_boust_cells()
         # self.rotate_back_cells()
         self.all_cells_coverage_pp()
         self.rotate_back_paths()
@@ -191,3 +194,6 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
     #         new_cell = Cell(ind=cell.id, poly=rot_poly, event=None)
     #         new_cells.append(new_cell)
     #     self.mcells = new_cells
+
+    def visualize_boust_cells(self):
+        self.boust_plotter.visualize(self.decomposer)

@@ -27,10 +27,11 @@ class ZoneMapData:
     def __init__(self, ind: int = 0):
         self.ind: int = ind
         self.name: str = f"Zone_{self.ind}"
-        self.zone_dir: str = None           # path to zone directory ./results/<map_name>/District/Zone_i
-        self.maps_dir: str = None           # path to zone maps directory ./results/<map_name>/District/Zone_i/maps
-        self.result_dir: str = None         # path to zone result directory ./results/<map_name>/District/Zone_i/<method>
-        self.result_file: str = None        # path to zone result file ./results/<map_name>/District/Zone_i/<method>/result.json
+        self.zone_dir: str = None                   # path to zone directory ./results/<map_name>/District/Zone_i
+        self.maps_dir: str = None                   # path to zone maps directory ./results/<map_name>/District/Zone_i/maps
+        self.result_file: str = None                # path to zone result file ./results/<map_name>/District/Zone_i/<method>/result.json
+        self.method_results_dir: str = None         # path to zone result directory ./results/<map_name>/District/Zone_i/<method>
+        self.segmentation_dir: str = None           # path to zone segmentation directory ./results/<map_name>/District/Zone_i/segmentation
         #
         self.resolution: float = None
         self.orig_map_data: MapData = None
@@ -68,16 +69,21 @@ class ZoneMapData:
 
     def set_result_path(self):
         """ set zone result paths based on zone name and original map data. """
-        self.zone_dir = os.path.join(self.orig_map_data.mcfg.district_dir, self.name)
-        os.makedirs(self.zone_dir, exist_ok=True)
+
         dcfg = PipeLineConfig()
         if self.name == 'District':
+            self.zone_dir = self.orig_map_data.mcfg.district_dir
             self.result_file = self.zone_dir + f"/result_{dcfg.method}.json"
         else:
+            self.zone_dir = os.path.join(self.orig_map_data.mcfg.district_dir, self.name)
             self.result_file = self.zone_dir + f"/{dcfg.method}/result.json"
-            self.result_dir = os.path.join(self.zone_dir, dcfg.method)
-            os.makedirs(self.result_dir, exist_ok=True)
-        #
+            self.segmentation_dir = os.path.join(self.zone_dir, "segmentation")
+            os.makedirs(self.segmentation_dir, exist_ok=True)
+            self.method_results_dir = os.path.join(self.zone_dir, dcfg.method)
+            os.makedirs(self.method_results_dir, exist_ok=True)
+
+        # create zone maps directory
+        os.makedirs(self.zone_dir, exist_ok=True)
         self.maps_dir = os.path.join(self.zone_dir, "maps")
         os.makedirs(self.maps_dir, exist_ok=True)
 
