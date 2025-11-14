@@ -20,15 +20,30 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
         self.stats.map_name = self.zmd.orig_map_data.name
         self.stats.method = self.dcfg.method
         self.stats.ind = self.zmd.ind
+
+        if not self.check_paths_validity():
+            self.save_result()
+            return
+
         self.calculate_time_statistics(times)
-        #
         self.calculate_path_statistics()
         self.calculate_travel_times()
         #
+        cleaned_acc = self.calculate_cleaned_accumulated_area()
         self.calculate_cleaning_area()
-        self.add_cleaned_area_to_map()
-        self.calculate_cleaned_area()
+        self.calculate_cleaned_area_stats(cleaned_acc)
+        self.update_map_planning(cleaned_acc)
+
         self.save_result()
+
+    def check_paths_validity(self) -> bool:
+        """ check if paths are valid for evaluation. """
+        # paths: from sequence paths (full path in pixels)
+        if self.paths.f_path_px is None:
+            self.lg.warn("fill path is None. Cannot add cleaned area to map.")
+            self.zmd.map_cleaned = self.zmd.map_cleaning.copy()
+            return False
+        return True
 
     def calculate_time_statistics(self, times: dict) -> None:
         if times is None:
@@ -86,85 +101,100 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
         t_ang = self.stats.coverage_yaw_rad / self.robot_cfgs.v_ang_avg
         self.stats.coverage_trav_time = t_lin + t_ang
 
+    # ------------------------------------------------------------------------------------------------------------------
+    # Cleaning area calculations
+    # ------------------------------------------------------------------------------------------------------------------
+
     def calculate_cleaning_area(self):
         self.stats.cleaning_area_px = np.sum(self.zmd.map_cleaning == 255)
         self.stats.cleaning_area_m = self.stats.cleaning_area_px * (self.zmd.resolution**2)
 
-    def calculate_cleaned_area(self):
-        paths_len = self.stats.full_length
-        cleaning_r = self.pcfg.cleaning_r
-        area = paths_len * (2 * cleaning_r)
-        # overlaped_area_m
-        self.stats.overlaped_area_m = area - self.stats.cleaned_area_m
-        self.stats.overlap_p = self.stats.overlaped_area_m / self.stats.cleaning_area_m * 100
-        # uncleaned_area_m
-        self.stats.uncleaned_area_m = self.stats.cleaning_area_m - self.stats.cleaned_area_m
-        # coverage percentage
-        self.stats.coverage_p = self.stats.cleaned_area_m / self.stats.cleaning_area_m * 100
+    def calculate_cleaned_area_stats(self, cleaned_acc: np.ndarray) -> None:
 
-    def add_cleaned_area_to_map(self):
-        """ add cleaned area to map_clean_data and update map_planning with cleaning paths. """
-
-        # map_cleaning: from zone map data (without any paths)
-        # used for creating map_clean_data
-        map_cleaning = self.zmd.map_cleaning.copy()
-        f_path = self.paths.f_path_px
-        cleaning_r_px = int(self.pcfg.cleaning_r / self.zmd.resolution)
-
-        if f_path is None:
-            self.lg.error("fill path is None. Cannot add cleaned area to map.")
-            self.zmd.map_clean_data = map_cleaning.copy()
-            return
-
-        # Draw cleaned paths on a mask
-        cleaned_acc = np.zeros_like(map_cleaning, dtype=np.uint8)
-        hw_bd = self.zmd.hw_bd
-        h, w = hw_bd["h_min"], hw_bd["w_min"]
-        color_p = 1
-        # for path in paths:
-        for i in range(f_path.n - 1):
-            segment_mask = np.zeros_like(map_cleaning, dtype=np.uint8)
-            pt1 = tuple(map(int, [f_path.point(i).x-w, f_path.point(i).y-h]))
-            pt2 = tuple(map(int, [f_path.point(i+1).x-w, f_path.point(i+1).y-h]))
-            cv.line(segment_mask, pt1, pt2, color=color_p, thickness=2 * cleaning_r_px)
-            cleaned_acc = cv.add(cleaned_acc, segment_mask)
-        max_overlap = np.max(cleaned_acc)
-
-        # map_clean_data: show uncleaned area and overlaps
-        d_c = int(np.floor(250/max_overlap))
-        map_clean_data = map_cleaning.copy()
-        map_clean_data = cv.cvtColor(map_clean_data, cv.COLOR_GRAY2BGR)
-        n, m = map_clean_data.shape[:2]
-        for i in range(n):
-            for j in range(m):
-                if map_cleaning[i, j] == 255:
-                    if cleaned_acc[i, j] == 0:
-                        map_clean_data[i, j] = (0, 0, 200)  # bgr
-                    else:
-                        map_clean_data[i, j] = (0, d_c*cleaned_acc[i, j], 0)
-        # for path in paths:
-        for p in f_path.points[1:-1]:
-            pz = (int(p.x-w), int(p.y-h))
-            map_clean_data = cv.circle(map_clean_data, pz, cleaning_r_px, (0, d_c, 0), -1)
-        self.zmd.map_clean_data = map_clean_data
-
-        # update map planning with cleaning paths
-        add_cleaned_area_to_map_planning = False
-        if add_cleaned_area_to_map_planning:
-            c = 40
-            color = (c, c, c)
-            map_p_c = self.zmd.map_planning.copy()
-            # for path in paths:
-            for i in range(f_path.n - 1):
-                pt1 = tuple(map(int, f_path.point(i).xy))
-                pt2 = tuple(map(int, f_path.point(i+1).xy))
-                cv.line(map_p_c, pt1, pt2, color=color, thickness=2 * cleaning_r_px)
-            alpha = 0.6
-            self.zmd.map_planning = cv.addWeighted(self.zmd.map_planning, alpha, map_p_c, 1 - alpha, 0)
-
-        # Only count cleaned area where there was free space (white in map_cleaned)
-        # cleaned_area_px = np.sum((cleaned_acc > 0) & (map_cleaned == 255))
         cleaned_area_px = np.sum(cleaned_acc > 0)
         cleaned_area_m = cleaned_area_px * (self.zmd.resolution ** 2)
         self.stats.cleaned_area_px = cleaned_area_px
         self.stats.cleaned_area_m = cleaned_area_m
+
+        # overlaped_area
+        overlapped_area_px = np.sum(cleaned_acc > 1)
+        self.stats.overlaped_area_m = overlapped_area_px * (self.zmd.resolution ** 2)
+        self.stats.overlap_p = self.stats.overlaped_area_m / self.stats.cleaning_area_m * 100
+
+        # uncleaned_area_m
+        self.stats.uncleaned_area_m = self.stats.cleaning_area_m - self.stats.cleaned_area_m
+
+        # coverage percentage
+        self.stats.coverage_p = self.stats.cleaned_area_m / self.stats.cleaning_area_m * 100
+
+    def calculate_cleaned_accumulated_area(self) -> np.ndarray:
+        """ calculate cleaned accumulated area from paths. """
+
+        # [cleaned_acc]: accumulate number of passes for each pixel from paths
+        # for covered area calculation
+
+        # data
+        cleaning_r_px = int(self.pcfg.cleaning_r / self.zmd.resolution)  # cleaning radius in pixels
+        g_xy = self.zmd.global_xy  # global offset
+
+        #
+        map_cleaning = self.zmd.map_cleaning.copy()     # map of cleanable area, from zone map data (without any paths)
+        mask_free = (map_cleaning == 255)               # free space mask in map_cleaning
+
+        # paths: from sequence paths (full path in pixels)
+        f_path = self.paths.f_path_px
+
+        cleaned_acc = np.zeros_like(map_cleaning, dtype=np.uint8)
+        color_p = 1
+        # for path in paths: draw cleaned path segments on cleaned_acc
+        for i in range(f_path.n - 1):
+            segment_mask = np.zeros_like(map_cleaning, dtype=np.uint8)
+            pt1 = tuple(map(int, [f_path.point(i).x-g_xy[0], f_path.point(i).y-g_xy[1]]))
+            pt2 = tuple(map(int, [f_path.point(i+1).x-g_xy[0], f_path.point(i+1).y-g_xy[1]]))
+            cv.line(segment_mask, pt1, pt2, color=color_p, thickness=2 * cleaning_r_px)
+            cleaned_acc = cv.add(cleaned_acc, segment_mask)
+        # consider only free space pixels
+        cleaned_acc = cleaned_acc * mask_free
+        return cleaned_acc
+
+    def update_map_planning(self, cleaned_acc: np.ndarray) -> None:
+        """ update map planning with cleaning paths. """
+
+        # [map_cleaned]: show uncleaned area and overlaps, only for visualization
+        # uncleaned free pixels -> red, cleaned -> scaled green
+
+        # data
+        cleaning_r_px = int(self.pcfg.cleaning_r / self.zmd.resolution)  # cleaning radius in pixels
+        g_xy = self.zmd.global_xy  # global offset
+
+        #
+        mask_free = self.zmd.map_cleaning == 255
+        max_overlap = np.max(cleaned_acc)  # maximum overlap count among pixels
+
+        d_c = int(np.floor(250 / max_overlap))
+        map_cleaned = cv.cvtColor(self.zmd.map_cleaning.copy(), cv.COLOR_GRAY2BGR)
+        mask_zero = mask_free & (cleaned_acc == 0)
+        mask_nonzero = mask_free & (cleaned_acc > 0)
+        map_cleaned[mask_zero] = (0, 0, 200)
+
+        if np.any(mask_nonzero):
+            green = np.clip(d_c * cleaned_acc, 0, 255).astype(np.uint8)
+            map_cleaned[..., 1][mask_nonzero] = green[mask_nonzero]
+        # for path in paths: draw circles at path points
+        for p in self.paths.f_path_px.points[1:-1]:
+            pz = (p.x-g_xy[0], p.y-g_xy[1])
+            map_cleaned = cv.circle(map_cleaned, pz, cleaning_r_px, (0, d_c, 0), -1)
+        self.zmd.map_cleaned = map_cleaned
+
+        # --------------------------------------------------------------------------------------------------------------
+        # # update map planning with cleaning paths
+        # c = 40
+        # color = (c, c, 0)
+        # map_p_c = self.zmd.map_planning.copy()
+        # # for path in paths:
+        # for i in range(f_path.n - 1):
+        #     pt1 = tuple(map(int, f_path.point(i).xy))
+        #     pt2 = tuple(map(int, f_path.point(i+1).xy))
+        #     cv.line(map_p_c, pt1, pt2, color=color, thickness=2 * cleaning_r_px)
+        # alpha = 0.6
+        # self.zmd.map_planning = cv.addWeighted(self.zmd.map_planning, alpha, map_p_c, 1 - alpha, 0)

@@ -15,8 +15,9 @@ class MyPoint:
         xy: Property returning (x, y) tuple.
     """
 
-    x: float = None
-    y: float = None
+    # float or int
+    x: float | int = None
+    y: float | int = None
 
     @property
     def xy(self):

@@ -238,10 +238,3 @@ class FindPathInMap:
                     visited.add((nx, ny))
         self.lg.error(f"No free cell found near {point}")
         raise ValueError(f"No free cell found near {point}")
-
-        # # find closest free cell
-        # y, x = np.where(self.cost_map == 0)
-        # # calculate distances to all free cells
-        # distances = np.sqrt((y - point[1])**2 + (x - point[0])**2)
-        # min_index = np.argmin(distances)
-        # return (x[min_index], y[min_index])

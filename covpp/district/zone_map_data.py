@@ -45,12 +45,12 @@ class ZoneMapData:
         self.hw_bd: dict = None                         # map hw bound, dict keys: h_min, w_min, h_max, w_max
         self.hw: tuple[int, int] = None                 # height and width of the zone map
         self.global_xy: np.ndarray = None               # global map offset (x_offset, y_offset)
-        # maps
+        # maps [fixed, for visualization, planning, and evaluation]
         self.map_orig: np.ndarray = None                # cropped original map based on rectangle
         self.map_ws: np.ndarray = None                  # cropped work space selected free space filtered (map_7_c_ws_sf_f)
         self.map_sf_orig: np.ndarray = None             # cropped work space selected free space filtered original
         self.map_cleaning: np.ndarray = None            # c work space selected free space filtered cleaning (map_11_c_ws_sf_f_cleaning)
-        #
+        # maps[updated during planning]
         self.map_planning: np.ndarray = None            # map visualization for planning (map_viz)
         self.map_segmentation: np.ndarray = None        # map segmentation visualization
 

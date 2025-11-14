@@ -47,14 +47,14 @@ class PipeLineConfig:
 
     # Methods names for main modules: segmentation, coverage path planning, sequence
     segmentation_method = "voronoi"     # simple, voronoi
-    covpp_method = "grid_energy_min"    # simple, boust, contour, grid_energy_min
+    covpp_method = "contour"            # simple, boust, contour, grid_energy_min
     sequence_method = "milp"            # simple, dfs, milp
 
     # complete method
     method = segmentation_method + '_' + covpp_method + '_' + sequence_method
 
     # segmentation options
-    use_insc_ret = True  # find approx rectangles from initial segmentation cells
+    use_insc_ret = False  # find approx rectangles from initial segmentation cells
 
     # voronoi specific options
     if segmentation_method == "voronoi":

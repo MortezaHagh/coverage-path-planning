@@ -117,7 +117,8 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
         # total cost
         # cost = distance + abs(d_heading) + self.cal_track_cost(to_node)
-        cost = abs(d_heading) + self.cal_track_cost(to_node)
+        # cost = abs(d_heading) + self.cal_track_cost(to_node)
+        cost = abs(d_heading)
         cost += to_node.i_row * 10
         return (cost, move_heading)
 

@@ -171,4 +171,4 @@ class ZoneData:
         png_params = [cv.IMWRITE_PNG_COMPRESSION, 0]
         m_name = "map_cleaned.png"
         map_hl_path = os.path.join(self.zmd.method_results_dir, m_name)
-        cv.imwrite(map_hl_path, self.zmd.map_clean_data, png_params)
+        cv.imwrite(map_hl_path, self.zmd.map_cleaned, png_params)
