@@ -13,7 +13,7 @@ import pyastar2d
 # from pathfinding.finder.a_star import AStarFinder
 #
 from covpp.base.logger import MyLogger
-from covpp.base.base_utils import MyPath, MyPoint
+from covpp.base.geometry import MyPath, MyPoint
 from covpp.segmentation.cell_processed import PCell
 from covpp.district.zone_map_data import ZoneMapData
 
@@ -86,7 +86,6 @@ class ConnectPaths:
             - If seq_idxs is None, connect paths in the given order.
             - If path between two cells is not found, create it.
         """
-        self.lg.info2("connecting paths")
         c_paths = []  # list of connection paths
 
         # check if seq_idxs (sequence) is given

@@ -12,8 +12,7 @@ from covpp.base.configs import MapConfig, PipeLineConfig
 from covpp.base.inputs_processor import InputsProcessor
 from covpp.base.image_processor import MapImageProcessor
 from covpp.district.district import DistrictData
-from covpp.district.create_district_simple import DistrictGen
-# from covpp.district.create_district import DistrictGen
+from covpp.district.create_district import DistrictGen
 from covpp.spa.space_analyzer import SpaceAnalyzer
 
 
@@ -52,14 +51,14 @@ def run_pipeline(map_name: str) -> None:
     district_data.create_zones_hl()
 
     # 7. run main coverage path planning operations sequentially for all zones
-    district_data.run_coverage_planning()
+    district_data.run_planning_pipeline()
 
     # Log execution time
     end_time = np.datetime64('now')
     lg.info(f"Total time: {end_time - start_time}")
 
     # Log pipeline method
-    lg.info1(f"Method: {PipeLineConfig().method}")
+    lg.info1(f"Finished, Method: {PipeLineConfig().method}")
 
 
 def main():

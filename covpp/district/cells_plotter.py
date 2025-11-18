@@ -1,4 +1,4 @@
-""" Plotting and saving figures of the coverage planning results. """
+""" Plotting and saving figures of resulted cells. """
 import matplotlib.pyplot as plt
 from covpp.base.configs import PipeLineConfig
 from covpp.segmentation.cell_processed import PCell
@@ -6,7 +6,7 @@ from covpp.segmentation.cell_processed import PCell
 
 class CellsPlotter:
     """
-    Plotting and saving figures of the coverage planning results.
+    Plotting and saving figures of the resulted cells from segmentation and sequencing.
 
     Includes:
         - visualize_cells
@@ -17,11 +17,13 @@ class CellsPlotter:
         self.method_results_dir = method_results_dir
         self.segmentation_dir = segmentation_dir
         self.dcfg = PipeLineConfig()
-        #
+
+        # figures
         self.fig_mcells = None
         self.fig_mcells_seq = None
 
     def run(self, cells: list[PCell]):
+        """ Main run function to plot and save figures based on the input cells. """
         self.fig_mcells, _ = self.visualize_cells(cells)
         self.visualize_cells_sequence(cells)
 
@@ -36,6 +38,7 @@ class CellsPlotter:
         self.fig_mcells_seq = fig_mcells
 
     def visualize_cells(self, cells: list[PCell]):
+        """ Visualize cells obtained from segmentation. """
         fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
         ng = len(cells)
@@ -58,6 +61,7 @@ class CellsPlotter:
         return fig, ax
 
     def visualize_sequence(self, cells: list[PCell], ax):
+        """ Visualize the sequencing path on the cells figure. """
         for i, cell in enumerate(cells):
             # text = f"g{i}-({cell.opt_id})"
             x1, y1 = cell.cxy
@@ -72,6 +76,7 @@ class CellsPlotter:
             ax.plot([x1, x2], [y1, y2], color="gray", linewidth=1, linestyle='--')
 
     def save_figs(self):
+        """ Save the plotted figures to files. """
         self.fig_mcells.savefig(self.segmentation_dir + "/cells.png", format="png", dpi=self.dcfg.dpi)
         if self.fig_mcells_seq:
             self.fig_mcells_seq.savefig(self.method_results_dir + "/sequence.png", format="png", dpi=self.dcfg.dpi)

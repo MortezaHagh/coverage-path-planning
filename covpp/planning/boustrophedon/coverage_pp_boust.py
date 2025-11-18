@@ -1,7 +1,7 @@
 """Boustrophedon (back-and-forth) coverage path planning implementation."""
 import numpy as np
 from covpp.base.logger import MyLogger
-from covpp.base.base_utils import MyPath, MyPoint
+from covpp.base.geometry import MyPath, MyPoint
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
 from covpp.segmentation.map_polygons import MapPolygons
@@ -63,6 +63,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         Orchestrates the complete planning process from decomposition to
         connected path generation.
         """
+
         if not self.cell.do_planning:
             self.lg.warn(f"cell {self.cell.id} does not require planning.")
             return

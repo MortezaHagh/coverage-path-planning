@@ -16,7 +16,7 @@ from covpp.sequence.connect_paths import ConnectPaths
 from covpp.sequence.sequence_optimizers import BaseSeqOpt
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig, PlanningConfig
-from covpp.base.base_utils import MyPoint, MyPath
+from covpp.base.geometry import MyPoint, MyPath
 from covpp.base.base_utils import get_n_colors_cv, get_n_colors_plt
 
 
@@ -148,7 +148,7 @@ class SequenceHandler:
         2. Optimize sequence of cells based on distances.
         3. Store paths in sequence paths.
         """
-        self.lg.info1("Step: creating optimized cell sequence")
+        self.lg.info2("Creating optimized cell sequence")
 
         # Initialize connections object with cells
         self.connections.initialize(self.cells)
@@ -185,6 +185,7 @@ class SequenceHandler:
         """ Connect the paths based on the created sequence.
             connect end-start points of paths.
         """
+        self.lg.info2("Connecting paths based on optimized sequence")
         self.connections.connect_paths(self.paths_px, self.seq_idxs)
         self.c_paths_px = self.connections.c_paths_px
         self.c_paths_m = [self.path_px_to_m(path_px) for path_px in self.c_paths_px]

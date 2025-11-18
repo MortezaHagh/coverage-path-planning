@@ -1,4 +1,5 @@
 import json
+from covpp.base.logger import MyLogger
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.sequence_handler import SequencePaths
 from covpp.base.configs import PipeLineConfig, PlanningConfig, RobotConfig
@@ -84,10 +85,16 @@ class ZoneStatsBase:
 
 
 class ZoneEvaluationBase:
-    """Zone evaluation Base class to evaluate zone statistics.
+    """Zone evaluation Base class to evaluate zone statistics. 
+
+    Inputs:
+        zmd (ZoneMapData): zone map data object
+        paths (SequencePaths): sequence paths object
     """
 
     def __init__(self, zmd: ZoneMapData, paths: SequencePaths):
+        self.lg = MyLogger("ZoneStatsBase")
+        # attributes
         self.zmd: ZoneMapData = zmd
         self.paths: SequencePaths = paths
         self.dcfg = PipeLineConfig()
@@ -105,3 +112,20 @@ class ZoneEvaluationBase:
         zone_stats = self.stats.get_data_dict()
         with open(self.zmd.result_file, 'wt') as f:
             json.dump(zone_stats, f, indent=4)
+
+    def validate_data(self, times: dict) -> bool:
+        """ check if data are valid for evaluation. """
+        is_valid = True
+
+        # check times
+        if times is None:
+            self.lg.error("times dictionary is None. Cannot calculate time statistics.")
+            is_valid = False
+
+        # paths: from sequence paths (full path in pixels)
+        if self.paths.f_path_px is None or len(self.paths.paths_m) == 0:
+            self.lg.error("full path is None or empty. Cannot add cleaned area to map.")
+            self.zmd.map_cleaned = self.zmd.map_cleaning.copy()
+            is_valid = False
+
+        return is_valid

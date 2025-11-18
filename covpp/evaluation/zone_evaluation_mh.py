@@ -1,34 +1,36 @@
 import cv2 as cv
 import numpy as np
 from covpp.base.logger import MyLogger
-from covpp.base.base_utils import MyPath
+from covpp.base.geometry import MyPath
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.sequence_handler import SequencePaths
 from covpp.evaluation.zone_evaluation_base import ZoneStatsBase, ZoneEvaluationBase
 
 
-class ZoneEvaluationSimple(ZoneEvaluationBase):
-    """Zone evaluation class to evaluate zone statistics.
-    """
+class ZoneEvaluation(ZoneEvaluationBase):
+    """Zone evaluation class to evaluate zone statistics. """
 
     def __init__(self, zmd: ZoneMapData, paths: SequencePaths):
         super().__init__(zmd, paths)
-        self.lg = MyLogger("ZoneEvaluationSimple")
+        self.lg = MyLogger("ZoneEvaluation")
 
     def evaluate(self, times: dict = None):
+        """ Compute zone coverage statistics based on map, generated paths, and timing information. """
         self.stats = ZoneStatsBase()
         self.stats.map_name = self.zmd.orig_map_data.name
         self.stats.method = self.dcfg.method
         self.stats.ind = self.zmd.ind
 
-        if not self.check_paths_validity():
+        # validate data
+        if not self.validate_data(times):
             self.save_result()
-            return
+            raise ValueError("Data not valid for evaluation. Evaluation aborted.")
 
+        # calculate statistics
         self.calculate_time_statistics(times)
         self.calculate_path_statistics()
         self.calculate_travel_times()
-        #
+        # calculate cleaned area statistics
         cleaned_acc = self.calculate_cleaned_accumulated_area()
         self.calculate_cleaning_area()
         self.calculate_cleaned_area_stats(cleaned_acc)
@@ -36,24 +38,15 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
 
         self.save_result()
 
-    def check_paths_validity(self) -> bool:
-        """ check if paths are valid for evaluation. """
-        # paths: from sequence paths (full path in pixels)
-        if self.paths.f_path_px is None:
-            self.lg.warn("fill path is None. Cannot add cleaned area to map.")
-            self.zmd.map_cleaned = self.zmd.map_cleaning.copy()
-            return False
-        return True
-
     def calculate_time_statistics(self, times: dict) -> None:
-        if times is None:
-            return
+        """ calculate time statistics from timing information. """
         self.stats.time_segmentation = times['segmentation'] - times['start']
         self.stats.time_coverage_planning = times['coverage_planning'] - times['segmentation']
         self.stats.time_sequencing = times['sequencing'] - times['coverage_planning']
         self.stats.time_total = times['sequencing'] - times['start']
 
     def calculate_path_statistics(self) -> None:
+        """ calculate path statistics: lengths and yaw changes. """
         full_path: MyPath = self.paths.f_path_m
 
         # full path length
@@ -93,10 +86,12 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
         self.stats.coverage_yaw_rad = yaw_changes
 
     def calculate_travel_times(self):
+        """ calculate estimated travel times based on path lengths and robot configurations. """
+        # full travel time
         t_lin = self.stats.full_length / self.robot_cfgs.v_lin_avg
         t_ang = self.stats.full_yaw_rad / self.robot_cfgs.v_ang_avg
         self.stats.full_trav_time = t_lin + t_ang
-        #
+        # coverage travel time
         t_lin = self.stats.coverage_length / self.robot_cfgs.v_lin_avg
         t_ang = self.stats.coverage_yaw_rad / self.robot_cfgs.v_ang_avg
         self.stats.coverage_trav_time = t_lin + t_ang
@@ -106,10 +101,12 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
     # ------------------------------------------------------------------------------------------------------------------
 
     def calculate_cleaning_area(self):
+        """ calculate area to be cleaned in pixels and meters. """
         self.stats.cleaning_area_px = np.sum(self.zmd.map_cleaning == 255)
         self.stats.cleaning_area_m = self.stats.cleaning_area_px * (self.zmd.resolution**2)
 
     def calculate_cleaned_area_stats(self, cleaned_acc: np.ndarray) -> None:
+        """ calculate cleaned area statistics from cleaned accumulated area. """
 
         cleaned_area_px = np.sum(cleaned_acc > 0)
         cleaned_area_m = cleaned_area_px * (self.zmd.resolution ** 2)
@@ -139,7 +136,7 @@ class ZoneEvaluationSimple(ZoneEvaluationBase):
 
         #
         map_cleaning = self.zmd.map_cleaning.copy()     # map of cleanable area, from zone map data (without any paths)
-        mask_free = (map_cleaning == 255)               # free space mask in map_cleaning
+        mask_free = map_cleaning == 255                 # free space mask in map_cleaning
 
         # paths: from sequence paths (full path in pixels)
         f_path = self.paths.f_path_px

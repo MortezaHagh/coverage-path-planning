@@ -4,7 +4,7 @@ from shapely import Polygon
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PlanningConfig, PipeLineConfig
 from covpp.segmentation.cell_base import CellBase
-from covpp.segmentation.voronoi_segmentation.common import Ring  # , CriticalPoint
+from covpp.segmentation.voronoi_segmentation.data_structures import Ring  # , CriticalPoint
 
 
 class Cell (CellBase):
@@ -15,8 +15,10 @@ class Cell (CellBase):
         Process the cell:
         - Removing points that are too close to critical points.
 
-    Inputs:
-        Rings (closed loops) containing critical points.
+    Args:
+        ind (int): Cell index.
+        ring (Ring): Rings (closed loops) containing critical points.
+        resolution (float): Map resolution (m/px).
     """
 
     def __init__(self, ind: int, ring: Ring, resolution: float = None) -> None:

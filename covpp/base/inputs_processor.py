@@ -19,10 +19,10 @@ class InputsProcessor:
         map_name: Name of the map to be processed (e.g., "Map1", "Map2").
 
     Attributes:
-        map_name: Name of the map being processed.
-        map_config: Map configuration object containing all map parameters.
-        orig_map: Original grayscale map image as numpy array.
-        paths: Dictionary of file and directory paths.
+        map_name (str): Name of the map being processed.
+        map_config (MapConfig): Map configuration object containing all map parameters.
+        orig_map (np.ndarray): Original grayscale map image as numpy array.
+        paths (dict): Dictionary of file and directory paths.
     """
 
     def __init__(self, map_name: str = "Map1"):
@@ -44,7 +44,7 @@ class InputsProcessor:
         self.set_paths()
 
         # check directories
-        self.check_directories()
+        self.validate_directories()
 
         # read yaml file, also write json file
         map_yaml_data = self.load_yaml_file(self.paths["yaml"])
@@ -53,7 +53,7 @@ class InputsProcessor:
         self.update_map_configs(map_yaml_data)
 
         # read map image file
-        self.__orig_map = cv.imread(self.paths["pgm"], cv.IMREAD_GRAYSCALE)
+        self.load_eval_map_image()
         # self.visualize_map(self.__orig_map)
 
     @property
@@ -73,7 +73,7 @@ class InputsProcessor:
         self.paths["json"] = os.path.join(self.paths["map"], "merge.json")
         self.paths["pgm"] = os.path.join(self.paths["map"], "merge.pgm")
 
-    def check_directories(self) -> None:
+    def validate_directories(self) -> None:
         """ check if directory and map files exist. """
         if not os.path.isdir(self.paths["map"]):
             self.lg.error(f"Directory {self.paths['map']} does not exist")
@@ -96,6 +96,13 @@ class InputsProcessor:
         self.mcfg.resolution = yaml_data["resolution"]
         self.mcfg.free_thresh = yaml_data["free_thresh"]
         self.mcfg.occupied_thresh = yaml_data["occupied_thresh"]
+
+    def load_eval_map_image(self):
+        """ load map image from pgm file and return as numpy array. """
+        map_image = cv.imread(self.paths["pgm"], cv.IMREAD_GRAYSCALE)
+        if map_image is None or map_image.size == 0:
+            raise FileNotFoundError("Failed to load PGM file.")
+        self.__orig_map = map_image
 
     def write_json(self, file_path: str, data: dict) -> None:
         with open(file_path, 'w') as file:

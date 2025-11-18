@@ -19,3 +19,4 @@ covpp.egg-info/
 # 
 !devcontainer.json
 !settings.json
+temp_code

@@ -3,8 +3,9 @@ from copy import deepcopy
 import numpy as np
 from shapely.geometry import Polygon
 from shapely import maximum_inscribed_circle
+from covpp.base.logger import MyLogger
 from covpp.base.configs import PlanningConfig
-from covpp.base.base_utils import MyPoint, MyPath
+from covpp.base.geometry import MyPoint, MyPath
 
 
 class CellBase:
@@ -12,9 +13,15 @@ class CellBase:
 
     This class provides the fundamental structure for cells created during
     space segmentation, storing geometric properties and adjacency information.
+
+    Args:
+        idx (int): Unique identifier for the cell.
+        poly (Polygon): Shapely polygon defining the cell boundary.
+        resolution (float): Map resolution in meters per pixel.
     """
 
     def __init__(self, idx: int, poly: Polygon, resolution: float = 0.05):
+        self.lg = MyLogger(f"CellBase-{idx}")
         self.id: int = idx                  # cell id
         self.opt_id: int = None             # optimized id after sequencing
         self.next_cell_id_seq: int = None   # next cell id in the sequence
@@ -100,7 +107,6 @@ class CellBase:
 
     def eval_cell_slimness(self) -> None:
         """ Evaluate cell slimness based on maximum inscribed circle. """
-        # maximum_inscribed_circle
         insc_circle_poly = maximum_inscribed_circle(self.poly)
         insc_circle_center, circle_insc_boundary = insc_circle_poly.coords
         insc_circle_radius = np.linalg.norm(np.array(insc_circle_center) - np.array(circle_insc_boundary))
@@ -137,3 +143,23 @@ class CellBase:
 
     def set_end_point(self, point: MyPoint):
         self.end_point = point
+
+    # --------------------------------------------------------------------------
+    # evaluat
+    # --------------------------------------------------------------------------
+
+    def validate_cell(self) -> bool:
+        """ Validate cell integrity. """
+        if self.area <= 0:
+            self.lg.warn(f"Cell has non-positive area: {self.area}")
+            return False
+        if not self.poly.is_valid:
+            self.lg.warn("Cell polygon is not valid.")
+            return False
+        if not self.poly.is_simple:
+            self.lg.warn("Cell polygon is not simple.")
+            return False
+        if len(self.points) < 3:
+            self.lg.warn("Cell polygon has less than 3 points.")
+            return False
+        return True

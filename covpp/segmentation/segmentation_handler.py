@@ -23,17 +23,17 @@ class SegmentationHandler:
     processed cells ready for coverage planning.
 
     Args:
-        zmd: Zone map data object.
+        zmd (ZoneMapData): Zone map data object.
 
     Attributes:
-        zmd: Zone map data object.
-        map_polygons: Polygon representation of the workspace.
-        segmentor: The actual segmentation algorithm instance.
-        bcells: Base cells from segmentation algorithm.
-        cells: Processed cells ready for planning.
-        s_cells: Sorted processed cells.
-        n_cells: Number of cells created.
-        dcfg: Pipeline configuration object.
+        zmd (ZoneMapData): Zone map data object.
+        map_polygons (MapPolygons): Polygon representation of the workspace.
+        segmentor (SegmentationBase): The actual segmentation algorithm instance.
+        bcells (list[CellBase]): Base cells from segmentation algorithm.
+        cells (list[PCell]): Processed cells ready for planning.
+        s_cells (list[PCell]): Sorted processed cells.
+        n_cells (int): Number of cells created.
+        dcfg (PipeLineConfig): Pipeline configuration object.
 
     Supported Methods:
         - "simple": Single cell covering entire zone
@@ -85,6 +85,13 @@ class SegmentationHandler:
         self.segmentor.run()
         # ======================================================================
 
+        # process and merge resulting cells into PCell objects
+        self.process_cells()
+
+        # validate created cells
+        self.validate_cells()
+
+    def process_cells(self) -> None:
         # resulting base cells from segmentor
         bcells = self.segmentor.cells
         n_bcells = self.segmentor.n_cells
@@ -103,7 +110,6 @@ class SegmentationHandler:
         # merge cells
         merger = MergeCells(bcells)
         self.bcells = merger.updated_cells
-        self.n_cells = len(self.bcells)
 
         # check if ids are unique
         cell_ids = [cell.id for cell in self.bcells]
@@ -112,3 +118,14 @@ class SegmentationHandler:
 
         # create processed cells
         self.cells = [PCell(cell, self.zmd) for cell in self.bcells]
+        self.n_cells = len(self.bcells)
+
+    def validate_cells(self) -> None:
+        """ Validate the created cells for planning readiness. """
+
+        if len(self.cells) == 0 or self.cells is None:
+            raise ValueError("No processed cells available for validation.")
+
+        cell_validity = [cell.validate_cell() for cell in self.cells]
+        if not all(cell_validity):
+            raise ValueError("One or more cells failed validation checks.")

@@ -21,6 +21,7 @@ class PCell(CellBase):
     Extends the base Cell class to include:
     - Binary map representation of the cell area
     - Rectangle-like property evaluation (circumscribed and inscribed)
+    - Main direction extraction using Hough Transform.
     """
 
     def __init__(self, cell: CellBase, zmd: ZoneMapData) -> None:

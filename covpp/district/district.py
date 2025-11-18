@@ -19,20 +19,20 @@ class DistrictData:
     coverage planning across all zones, and aggregates results.
 
     Args:
-        spa: SpaceAnalyzer object containing processed workspace data.
+        spa (SpaceAnalyzer): SpaceAnalyzer object containing processed workspace data.
 
     Attributes:
-        spa_obj: Reference to the SpaceAnalyzer object.
-        dmd: District map data (ZoneMapData object).
-        zone_datas: List of ZoneData objects representing subdivisions.
-        evaluator: Handler for district-level statistics evaluation.
-        stats: Aggregated district statistics object.
-        dcfg: Pipeline configuration object.
+        spa_obj (SpaceAnalyzer): Reference to the SpaceAnalyzer object.
+        dmd (ZoneMapData): District map data.
+        zone_datas (list[ZoneData]): List of ZoneData objects representing subdivisions.
+        district_evaluator (DistrictEvaluationHandler): Handler for district-level statistics evaluation.
+        district_stats (DistrictStatsBase): Aggregated district statistics object.
+        dcfg (PipeLineConfig): Pipeline configuration object.
 
     Example:
         >>> district = DistrictData(space_analyzer)
         >>> district.create_zones_hl()
-        >>> district.run_coverage_planning()
+        >>> district.run_planning_pipeline()
     """
 
     def __init__(self, spa: SpaceAnalyzer):
@@ -56,8 +56,8 @@ class DistrictData:
         self.zone_datas: list[ZoneData] = []  # zones
 
         # statistics
-        self.evaluator = DistrictEvaluationHandler(self.dmd.result_file)
-        self.stats = DistrictStatsBase()
+        self.district_evaluator = DistrictEvaluationHandler(self.dmd.result_file)
+        self.district_stats = DistrictStatsBase()
 
     def create_zones_hl(self) -> None:
         """Create all zones in the district and initialize high-level map planning.
@@ -67,29 +67,31 @@ class DistrictData:
         """
         self.create_zones()
         self.update_map_planning()
-        # self.save_map_planning()
 
-    def run_coverage_planning(self) -> None:
+    def run_planning_pipeline(self) -> None:
         """Execute coverage planning pipeline for all zones and aggregate statistics.
 
         This method runs the complete planning pipeline (segmentation, path planning,
-        sequencing, evaluation) for each zone, then aggregates district-level statistics
+        sequencing, evaluation) for each zone, then aggregates district-level performance statistics
         and updates the final planning visualization.
         """
+
+        self.lg.info1("Step: running coverage planning pipeline on all zones")
 
         zone_stats = []
         for zd in self.zone_datas:
             self.lg.info(" ------------------------------------------------ ")
             self.lg.info(f" ---------- Planning on Zone: {zd.ind} ------------- ")
             self.lg.info(" ------------------------------------------------ ")
-            zd.zone_planning_pipeline()
-            zone_stats.append(zd.stats)
+            zd.zone_planning_pipeline()  # run full planning pipeline on zone
+            zone_stats.append(zd.zone_stats)  # collect zone stats
 
         # stats
-        self.evaluator.evaluate(zone_stats)
-        self.stats = self.evaluator.stats
+        self.lg.info1("Step: evaluating district statistics from all zones")
+        self.district_evaluator.evaluate(zone_stats)
+        self.district_stats = self.district_evaluator.stats
 
-        #
+        # final map planning
         self.update_map_planning()
         self.save_map_planning()
 
@@ -135,29 +137,12 @@ class DistrictData:
         cv.imwrite(map_planning_path, self.dmd.map_planning, [cv.IMWRITE_PNG_COMPRESSION, 0])
 
     # ==================================================================================================================
+    # Zone Rectangle Creation Methods
+    # ==================================================================================================================
 
     def create_zone_rectangles_1(self) -> list[Rectangle]:
         """ create two zone rectangles by splitting the district rectangle into two halves. """
-        data = self.dmd.rect_data
-        h = data["h"]
-        w = data["w"]
-        rot = data["rot"]
-        dx1 = -np.sin(rot) * (h//4)
-        dy1 = np.cos(rot) * (h//4)
-        xc1 = int(data["xc"] + dx1)
-        yc1 = int(data["yc"] + dy1)
-        dx2 = np.sin(rot) * (h//4)
-        dy2 = -np.cos(rot) * (h//4)
-        xc2 = int(data["xc"] + dx2)
-        yc2 = int(data["yc"] + dy2)
-        data1 = {"xc": xc1, "yc": yc1, "rot": rot, "w": w, "h": h//2}
-        data2 = {"xc": xc2, "yc": yc2, "rot": rot, "w": w, "h": h//2}
-        rect1 = Rectangle(data1)
-        rect2 = Rectangle(data2)
-        return [rect1, rect2]
-
-    def create_zone_rectangles_2(self) -> list[Rectangle]:
-        """ create two zone rectangles by splitting the final district rectangle into two halves. """
+        # data = self.dmd.rect_data
         data = self.dmd.final_rect_data
         h = data["h"]
         w = data["w"]

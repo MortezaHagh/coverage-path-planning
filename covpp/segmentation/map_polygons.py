@@ -11,6 +11,11 @@ class MapPolygons:
 
     This class processes binary workspace maps to identify and create
     polygon representations of the coverage boundary and internal obstacles.
+
+    Args:
+        map_ws (np.ndarray): Binary map of the workspace (1: free, 0: occupied).
+        xy (np.ndarray): Starting coordinates (offset) in the global map.
+        dec_mid_dist (int): Minimum distance to keep contour points.
     """
 
     def __init__(self, map_ws: np.ndarray, xy: np.ndarray, dec_mid_dist: int = 10):

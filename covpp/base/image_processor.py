@@ -11,11 +11,11 @@ class MapImageProcessor:
     """Process grayscale map image and create structured MapData object.
 
     Args:
-        map_arr: Loaded grayscale map image array (2D numpy array).
-        map_config: Map configuration object with robot and workspace parameters.
+        map_arr (np.ndarray): Loaded grayscale map image array (2D numpy array).
+        map_config (MapConfig): Map configuration object with robot and workspace parameters.
 
     Attributes:
-        map_data: Processed MapData object containing binary maps and metadata.
+        map_data (MapData): Processed MapData object containing binary maps and metadata.
 
     Raises:
         ValueError: If image is not found, not grayscale, or format is unsupported.
@@ -30,7 +30,7 @@ class MapImageProcessor:
         # read configs and eval original map arr
         self.mcfg: MapConfig = map_config
         self.__orig_map: np.ndarray = map_arr
-        self.check_map(map_arr)
+        self.validate_map(map_arr)
 
         # set map data
         self.__map_data = MapData()
@@ -50,7 +50,7 @@ class MapImageProcessor:
     def map_data(self) -> MapData:
         return copy.deepcopy(self.__map_data)
 
-    def check_map(self, image: np.ndarray) -> None:
+    def validate_map(self, image: np.ndarray) -> None:
         """Validate that the map image is properly loaded and formatted.
 
         Args:
@@ -59,7 +59,7 @@ class MapImageProcessor:
         Raises:
             ValueError: If image is None or not grayscale.
         """
-        if image is None:
+        if image is None or image.size == 0:
             raise ValueError("Image not found or the format is not supported")
         if len(image.shape) > 2:
             raise ValueError("Image must be grayscale")

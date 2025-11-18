@@ -1,7 +1,7 @@
 """ Coverage Path Planning - Local Energy Minimization Module """
 import numpy as np
 from covpp.base.logger import MyLogger
-from covpp.base.base_utils import angle_diff, MyPoint, MyPath
+from covpp.base.geometry import angle_diff, MyPoint, MyPath
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.voronoi_segmentation.cell import Cell
 from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
@@ -11,8 +11,13 @@ from covpp.planning.local_energy_minimization.grid import PGrid, GridGenerator, 
 class CoveragePathPlanner(CoveragePathPlannerBase):
     """Coverage Path Planning - Local Energy Minimization Module
 
-    Implements a local energy minimization strategy for generating coverage paths
-    within a given cell.
+    Process:
+        1. Create grid representation of the cell.
+        2. Initialize starting position and heading.
+        3. Iteratively select next grid node to visit based on cost function
+           considering heading change and tracking cost.
+        4. Backtrace if no feasible next node is found.
+        5. Continue until all free grid nodes are visited.
 
     Result:
         Sets path_m and path_px attributes for the cell.
@@ -31,6 +36,11 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.coverage_planning()
 
     def coverage_planning(self):
+        """ Execute coverage path planning using local energy minimization. """
+
+        if not self.cell.do_planning:
+            self.lg.warn(f"cell {self.cell.id} does not require planning.")
+            return
 
         # create path in grid map
         path_px = self.create_path_in_grid_map()
@@ -44,6 +54,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.create_path_m()
 
     def create_path_in_grid_map(self) -> list[tuple]:
+        """ Create coverage path in the grid map using local energy minimization. """
         n_visited = 0
         path_nodes: list[GridNode] = []
         cur_node: GridNode = self.grid.current_node
@@ -123,6 +134,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         return (cost, move_heading)
 
     def cal_track_cost(self, node: GridNode) -> float:
+        """ Calculate tracking cost for a grid node based on visited adjacent nodes. """
         n_visited = 0
         for adj in node.adj_nodes:
             if adj.visited:

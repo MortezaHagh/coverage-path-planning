@@ -30,23 +30,24 @@ class MapData:
         self.up_c_w: int = None                         # updated center width
         self.up_c_h: int = None                         # updated center height
         self.origin_m: tuple[int, int] = None           # origin in meters
-        #
+        # window and zoom
         self.wind_hw: tuple[int, int] = (1080, 1920)    # window height and width
         self.wind_h: int = None                         # window height
         self.wind_w: int = None                         # window width
         self.wind_center: tuple[int, int] = None        # window center (height, width)
         self.zoom: float = None                         # zoom factor
-        #
+        # maps
         self.orig_map: np.ndarray = None                # original grayscale map
         self.orig_bin_map: np.ndarray = None            # original binary map
         self.up_map: np.ndarray = None                  # updated grayscale map
         self.up_rgb_map: np.ndarray = None              # updated rgb map
         self.up_bin_map: np.ndarray = None              # updated binary map
-        #
+        # resolutions
         self.resolution: float = None                   # original resolution
         self.up_resolution: float = None                # updated resolution
 
     def set_basic_configs(self, mcfg: MapConfig, name: str = None) -> None:
+        """ set basic map configurations: MapConfig object and map name. """
         if name:
             self.name = name
         self.mcfg = mcfg
@@ -55,17 +56,23 @@ class MapData:
         """ set origin in meters. """
         self.origin_m = origin_m
 
-    def set_resolution(self, res) -> None:
+    def set_resolution(self, res: float) -> None:
+        """ set map resolution and calculate updated resolution based on zoom. """
         self.resolution = res
         self.up_resolution = round(self.resolution / self.zoom, 4)
 
-    def set_bin_map(self, bin_map) -> None:
+    def set_bin_map(self, bin_map: np.ndarray) -> None:
+        """ set binary map data and update related attributes. """
+        if bin_map is None or bin_map.size == 0:
+            raise ValueError("Input binary map is None or empty.")
         self.orig_bin_map = bin_map
         self.up_bin_map = cv.resize(self.orig_bin_map, self.updated_wh, interpolation=cv.INTER_AREA)
 
-    def set_orig_map(self, map_data: np.ndarray) -> None:
-        """ set original map data and update related attributes. """
-        self.orig_map = map_data
+    def set_orig_map(self, map_image: np.ndarray) -> None:
+        """ set original map and update related attributes. """
+        if map_image is None or map_image.size == 0:
+            raise ValueError("Input map_image is None or empty.")
+        self.orig_map = map_image
         self.set_map_hw()
         self.resize_map()
         self.create_rgb_map()
@@ -73,16 +80,18 @@ class MapData:
         self.set_updated_center()
 
     def set_map_hw(self) -> None:
+        """ set original map height and width. """
         height, width = self.orig_map.shape[:2]
         self.orig_h = height
         self.orig_w = width
         self.lg.info2(f"Map size [w,h]: {width}x{height}")
 
     def resize_map(self) -> None:
+        """ resize original map based on window size. """
         self.set_wind_wh()
         self.up_map = cv.resize(self.orig_map, self.updated_wh, interpolation=cv.INTER_AREA)
 
-    def set_wind_wh(self, wind_hw=None) -> None:
+    def set_wind_wh(self, wind_hw: tuple[int, int] = None) -> None:
         """ set window height and width. calculate zoom and updated map size. """
         if self.should_resize:
             if wind_hw is None:
@@ -100,7 +109,8 @@ class MapData:
         self.zoom = zoom
         self.set_updated_map_wh(h=updated_h, w=updated_w)
 
-    def set_updated_map_wh(self, w, h) -> None:
+    def set_updated_map_wh(self, w: int, h: int) -> None:
+        """ set updated map width and height. """
         self.updated_h = h
         self.updated_w = w
         self.updated_wh = (w, h)

@@ -1,3 +1,4 @@
+""" Space Analyzer Module - Analyze space for creating free space maps and MapData based on robot and workspace configurations. """
 import copy
 import cv2 as cv
 import numpy as np
@@ -6,7 +7,7 @@ from covpp.base.map_data import MapData
 from covpp.gui.rectangle import Rectangle
 from covpp.base.configs import SpaceConfig
 from covpp.district.zone_map_data import ZoneMapData
-from covpp.spa.spa_utils import find_circumscribed_rectangle  # , find_inscribed_rotated_rectangle
+from covpp.spa.spa_rectangles import find_circumscribed_rectangle
 # from covpp.spa.inscribed_rectangle_histogram import find_inscribed_rotated_rectangle
 FREE_COST = 255
 OCCUPIED_COST = 0

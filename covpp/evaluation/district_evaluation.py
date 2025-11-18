@@ -56,7 +56,11 @@ class DistrictStatsBase:
 
 
 class DistrictEvaluationHandler:
-    """Handler for district-level evaluation and statistics aggregation."""
+    """Handler for district-level evaluation and statistics aggregation.
+
+    Inputs:
+        zone_stats (list[ZoneStatsBase]): List of zone-level statistics to aggregate.
+    """
 
     def __init__(self, result_file: str = None):
         self.stats = DistrictStatsBase()

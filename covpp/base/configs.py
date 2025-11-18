@@ -9,8 +9,7 @@ class MapConfig:
     """Container for occupancy grid metadata and map directory layout.
 
     Attributes capture the transform from pixel to metric space in addition to
-    the on-disk structure of a dataset (e.g. base, district folders). All
-    values default to ``None`` and are populated by the input loader at runtime.
+    the on-disk structure of a dataset (e.g. base, district folders).
     """
     # map configs
     origin_m = None         # origin x, y in meters
@@ -47,7 +46,7 @@ class PipeLineConfig:
 
     # Methods names for main modules: segmentation, coverage path planning, sequence
     segmentation_method = "voronoi"     # simple, voronoi
-    covpp_method = "contour"            # simple, boust, contour, grid_energy_min
+    covpp_method = "boust"            # simple, boust, contour, grid_energy_min
     sequence_method = "milp"            # simple, dfs, milp
 
     # complete method
@@ -71,7 +70,7 @@ class PipeLineConfig:
         cls.use_insc_ret = use_insc_ret
         cls.start_cell_ind = start_cell_idx
 
-        # main method
+        # update main method
         cls.method = cls.segmentation_method + '_' + cls.covpp_method + '_' + cls.sequence_method
 
         # voronoi method
@@ -92,10 +91,12 @@ class RobotConfig:
 @dataclasses.dataclass
 class SpaceConfig:
     """Workspace safety margins and derived robot clearances."""
-    select_free_space = False  # manually select free space area from image, otherwise use select biggest free space automatically
+
+    select_free_space = False   # manually select free space area from image, otherwise use select biggest free space automatically
+
     # robot configs
-    robot_radius = 0.5      # 0.5
-    robot_radius_ws = 0.5   # 0.5
+    robot_radius = 0.5          # 0.5
+    robot_radius_ws = 0.5       # 0.5
 
     # safety distance (robot footprint from obstacles)
     wf_safe_dist = 0.0  # 0.1                   # safety distance of robot during wall following from walls or obstacles

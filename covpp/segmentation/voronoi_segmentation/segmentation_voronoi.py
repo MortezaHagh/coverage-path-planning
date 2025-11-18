@@ -6,9 +6,9 @@ from scipy.spatial import Voronoi  # pylint: disable=no-name-in-module
 from covpp.base.logger import MyLogger
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.map_polygons import MapPolygons
-from covpp.segmentation.voronoi_segmentation.cell import Cell
 from covpp.segmentation.segmentation_base import SegmentationBase
-from covpp.segmentation.voronoi_segmentation.common import CriticalPoint, Ring
+from covpp.segmentation.voronoi_segmentation.cell import Cell
+from covpp.segmentation.voronoi_segmentation.data_structures import CriticalPoint, Ring
 from covpp.segmentation.voronoi_segmentation.voronoi_decomposition import VoronoiDecomposition
 
 
@@ -22,6 +22,10 @@ class Segmentation(SegmentationBase):
         1. Voronoi decomposition of workspace
         2. Identify critical points and create rings
         3. Generate cells from rings
+
+    Args:
+        zmd (ZoneMapData): Zone map data object.
+        map_polygons (MapPolygons): Polygon representation of the workspace.
     """
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):

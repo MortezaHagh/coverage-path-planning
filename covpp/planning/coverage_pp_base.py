@@ -7,7 +7,7 @@ import numpy as np
 from covpp.segmentation.cell_processed import PCell
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.base.logger import MyLogger
-from covpp.base.base_utils import MyPoint, MyPath
+from covpp.base.geometry import MyPoint, MyPath
 from covpp.base.configs import PlanningConfig, PipeLineConfig
 
 
@@ -19,18 +19,14 @@ class CoveragePathPlannerBase:
     of new planning methods without modifying the core pipeline.
 
     Args:
-        cell: Processed cell to plan coverage path for.
-        zmd: Zone map data object.
+        cell (PCell): Processed cell to plan coverage path for.
+        zmd (ZoneMapData): Zone map data object.
 
     Attributes:
-        cell: Target cell for path planning.
-        zmd: Zone map data object.
-        path_m: Generated path in meters (list of coordinate tuples).
-        path_px: Generated path in pixels (list of coordinate tuples).
-        resolution: Map resolution (meters per pixel).
-        dcfg: Pipeline configuration object.
-        pcfg: Planning configuration object.
-        lg: Logger instance.
+        cell (PCell): Target cell for path planning.
+        zmd (ZoneMapData): Zone map data object.
+        path_m (MyPath): Generated path in meters.
+        path_px (MyPath): Generated path in pixels.
 
     Result:
         Sets path_m and path_px attributes for the cell.
@@ -60,8 +56,8 @@ class CoveragePathPlannerBase:
         self.cell: PCell = cell
 
         # resulted paths
-        self.path_m: list[tuple[float, float]] = []   # path in meters
-        self.path_px: list[tuple[int, int]] = []      # path in pixels
+        self.path_m: MyPath = None      # path in meters
+        self.path_px: MyPath = None      # path in pixels
 
     def coverage_planning(self) -> None:
         """Generate coverage path for the cell.
@@ -75,8 +71,6 @@ class CoveragePathPlannerBase:
             2. Convert to meters using create_path_m()
             3. Handle any cell-specific constraints
 
-        Raises:
-            NotImplementedError: If not implemented in child class.
         """
         raise NotImplementedError("Coverage planning subclasses must implement coverage_planning() method")
 

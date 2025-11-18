@@ -3,7 +3,7 @@ import os
 import time
 import cv2 as cv
 from covpp.base.logger import MyLogger
-from covpp.base.base_utils import MyPath
+from covpp.base.geometry import MyPath
 from covpp.base.configs import PipeLineConfig, PlanningConfig
 from covpp.district.cells_plotter import CellsPlotter
 from covpp.district.zone_map_data import ZoneMapData
@@ -22,21 +22,20 @@ class ZoneData:
     coverage path planning, path sequencing, and performance evaluation.
 
     Args:
-        ind: Zone index identifier.
-        zmd: Zone map data object containing workspace and map information.
+        ind (int): Zone index identifier.
+        zmd (ZoneMapData): Zone map data object containing workspace and map information.
 
     Attributes:
-        ind: Zone index identifier.
-        zmd: Zone map data object.
-        segmentation_hl: Handler for space segmentation operations.
-        cells: List of processed cells from segmentation.
-        cov_path_planner: Handler for coverage path planning operations.
-        sequence: Handler for path sequencing and connection operations.
-        evaluator: Handler for zone performance evaluation.
-        complete_path: Complete connected path (future implementation).
-        stats: Zone-level statistics object.
-        dcfg: Pipeline configuration object.
-        pcfg: Planning configuration object.
+        ind (int): Zone index identifier.
+        zmd (ZoneMapData): Zone map data object.
+        segmentation_hl (SegmentationHandler): Handler for space segmentation operations.
+        cells (list[PCell]): List of processed cells from segmentation.
+        cov_path_planner (CoveragePPHandler): Handler for coverage path planning operations.
+        sequence_hl (SequenceHandler): Handler for path sequencing and connection operations.
+        zone_evaluator (ZoneEvaluationHandler): Handler for zone performance evaluation.
+        zone_stats (ZoneStatsBase): Zone-level statistics object.
+        dcfg (PipeLineConfig): Pipeline configuration object.
+        pcfg (PlanningConfig): Planning configuration object.
 
     Example:
         >>> zone = ZoneData(ind=0, zmd=zone_map_data)
@@ -65,7 +64,7 @@ class ZoneData:
         self.sequence_hl = SequenceHandler(self.zmd)
 
         # # # evaluator
-        self.evaluator = ZoneEvaluationHandler(self.zmd)
+        self.zone_evaluator = ZoneEvaluationHandler(self.zmd)
 
         # plotter
         self.cells_plotter = CellsPlotter(zmd.method_results_dir, zmd.segmentation_dir)
@@ -75,7 +74,7 @@ class ZoneData:
         self.complete_path_m: MyPath = None
 
         # statistics
-        self.stats: ZoneStatsBase = None
+        self.zone_stats: ZoneStatsBase = None
 
         # initialize
         self.initialize()
@@ -115,10 +114,11 @@ class ZoneData:
         self.lg.info1(f"Step: creating sequence and full path using method '{self.dcfg.sequence_method}'")
         self.sequence_hl.run(cells=self.cells, map_polygons=self.segmentation_hl.map_polygons)
         times['sequencing'] = time.time()
+        self.set_zone_complete_path()
 
         # ************ evaluate statistics
-        self.evaluator.evaluate(paths=self.sequence_hl.paths, times=times)
-        self.stats = self.evaluator.stats
+        self.zone_evaluator.evaluate(paths=self.sequence_hl.paths, times=times)
+        self.zone_stats = self.zone_evaluator.stats
 
         # ************
         self.lg.info1("Step: zone post planning")
@@ -132,11 +132,12 @@ class ZoneData:
         """
         self.cells_plotter.run(self.sequence_hl.cells)
         self.save_map_planning()
-        self.save_map_cleaning_data()
+        self.save_map_map_cleaned()
 
     # ==================================================================================================================
 
-    def zone_complete_path(self):
+    def set_zone_complete_path(self):
+        """ set the complete connected path for the zone from sequencing handler. """
         self.complete_path_px = self.sequence_hl.f_path_px
         self.complete_path_m = self.sequence_hl.f_path_m
 
@@ -163,7 +164,7 @@ class ZoneData:
         map_s_path = os.path.join(self.zmd.segmentation_dir, m_name_s)
         cv.imwrite(map_s_path, self.zmd.map_segmentation, png_params)
 
-    def save_map_cleaning_data(self):
+    def save_map_map_cleaned(self):
         """ save map showing cleaned area and uncleaned area. """
         if not self.dcfg.save_map_planning:
             return

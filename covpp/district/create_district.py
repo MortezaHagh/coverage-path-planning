@@ -10,7 +10,14 @@ from covpp.gui.rectangle import Rectangle
 
 
 class DistrictGen:
-    """ Create district for coverage path planning. GUI version: select rectangle area as district. """
+    """ Create district for coverage path planning. GUI version: select rectangle area as district. 
+
+    Args:
+        map_data (MapData): Map data object.
+
+    Attributes:
+        rectangle (Rectangle): Created district rectangle.
+    """
 
     def __init__(self, map_data: MapData):
         self.lg = MyLogger("DistrictEvent")
@@ -21,18 +28,38 @@ class DistrictGen:
         self.__md: MapData = map_data
         self.__cfg = PipeLineConfig()
 
-        # check if whole map is selected
+        # resulted rectangle data
+        self.rectangle: Rectangle = None
+
+        # check if whole map is selected or should use GUI
         if self.__cfg.whole_map:
             self.lg.info2("whole map is selected as district for CPP!")
+            self.create_district_whole()
             return None
-        self.lg.info2("Selecting district for CPP ... ")
 
+        self.lg.info2("Selecting district for CPP by GUI interaction!")
+        self.create_district_gui()
+
+        # # evaluate rectangle # later
+        # self.validate_district_rectangle()
+
+    def create_district_whole(self):
+        """ Get district rectangle based on map data."""
+        rot = 0
+        xc = self.__md.up_c_w
+        yc = self.__md.up_c_h
+        w = self.__md.updated_w
+        h = self.__md.updated_h
+        rect_data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        self.rectangle = Rectangle(rect_data)
+
+    def create_district_gui(self) -> Rectangle:
+        """ Create district rectangle via GUI interaction. """
         # init window
         self.init_wind()
 
         # init rectangle event handler
-        rec_ev_hl = RecEventHandler(map_data.up_rgb_map)
-        self.__rec_ev_hl: RecEventHandler = rec_ev_hl
+        rec_ev_hl = RecEventHandler(self.__md.up_rgb_map)
 
         #  set mouse callback
         cv.setMouseCallback(self.__wind_name, rec_ev_hl.mouse_handle)
@@ -52,6 +79,9 @@ class DistrictGen:
         listener_thread.join()
         cv.destroyAllWindows()
 
+        # get rectangle
+        self.rectangle = rec_ev_hl.get_main_obj().get_rect()
+
     def init_wind(self):
         cv.namedWindow(self.__wind_name, cv.WINDOW_GUI_NORMAL)
 
@@ -59,23 +89,6 @@ class DistrictGen:
         with Listener(on_press=handler.on_key_press, on_release=handler.on_key_release) as listener:
             listener.join()
 
-    # def get_district_vis(self) -> VisualRectangle:
-    #     if self.__cfg.whole_map:
-    #         self.lg.info(f"[{self.__ns}]: whole map is selected as district for CPP! There is no rec_ev_hl!")
-    #         return None
-    #     return self.__rec_ev_hl.get_main_obj()
-
     def get_district_rect(self) -> Rectangle:
-        """ Get district rectangle based on the selected rectangles in the GUI or whole map."""
-
-        if not self.__cfg.whole_map:
-            return self.__rec_ev_hl.get_main_obj().get_rect()
-
-        # create district based on map data
-        rot = 0
-        xc = self.__md.up_c_w
-        yc = self.__md.up_c_h
-        w = self.__md.updated_w
-        h = self.__md.updated_h
-        data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
-        return Rectangle(data)
+        """ Get the created district rectangle. """
+        return self.rectangle

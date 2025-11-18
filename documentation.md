@@ -220,7 +220,7 @@ Manages district and zone-level operations.
 - **Key Methods**:
   - `__init__(spa)`: Initialize with SpaceAnalyzer
   - `create_zones_hl()`: Create all zones
-  - `run_coverage_planning()`: Execute planning for all zones
+  - `run_planning_pipeline()`: Execute planning for all zones
   - `update_map_planning()`: Merge zone results
   - `save_map_planning()`: Save output maps
 - **Key Attributes**:
@@ -466,7 +466,7 @@ main.py
         └─> create_zones_hl()
         │     └─> Create ZoneData for each zone
         │
-        └─> run_coverage_planning()
+        └─> run_planning_pipeline()
               └─> For each ZoneData:
                     ├─> SegmentationHandler.run()
                     │     └─> Create cells (PCell)

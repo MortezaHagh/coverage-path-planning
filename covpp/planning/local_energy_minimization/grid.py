@@ -4,7 +4,7 @@ import numpy as np
 from shapely.geometry import Point
 from covpp.base.logger import MyLogger
 from covpp.base.configs import SpaceConfig
-from covpp.base.base_utils import angle_diff
+from covpp.base.geometry import angle_diff
 from covpp.segmentation.cell_processed import PCell
 from covpp.district.zone_map_data import ZoneMapData
 

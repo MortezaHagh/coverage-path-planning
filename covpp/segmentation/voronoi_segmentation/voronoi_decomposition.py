@@ -5,12 +5,12 @@ from matplotlib import pyplot as plt
 from shapely import Polygon, Point
 # from shapely.affinity import scale
 # from scipy import ndimage
+from scipy.spatial import Voronoi, voronoi_plot_2d  # pylint: disable=no-name-in-module
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PlanningConfig, PipeLineConfig
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.map_polygons import MapPolygons
-from covpp.segmentation.voronoi_segmentation.common import VPoint, CriticalPoint
-from scipy.spatial import Voronoi, voronoi_plot_2d  # pylint: disable=no-name-in-module
+from covpp.segmentation.voronoi_segmentation.data_structures import VPoint, CriticalPoint
 
 
 class VoronoiDecomposition:

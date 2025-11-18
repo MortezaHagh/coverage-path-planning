@@ -21,7 +21,17 @@ def convert_to_native(data: dict) -> dict:
 class ZoneMapData:
     """ZoneMapData class to store zone map data. values are in pixel by default.
 
-        All coordinates are stored with respect to the original map (global coordinates).
+    All coordinates are stored with respect to the original map (global coordinates).
+
+    Args:
+        ind (int): Zone index identifier.
+
+    Attributes:
+        ind, name, zone_dir, maps_dir, result_file, method_results_dir, segmentation_dir,
+        resolution, orig_map_data, orig_rectangle, rectangle, final_rectangle, rect_data, final_rect_data,
+        vertices, final_vertices, hw_bd, hw, global_xy,
+        map_orig, map_ws, map_sf_orig, map_cleaning,
+        map_planning, map_segmentation
     """
 
     def __init__(self, ind: int = 0):
@@ -50,6 +60,7 @@ class ZoneMapData:
         self.map_ws: np.ndarray = None                  # cropped work space selected free space filtered (map_7_c_ws_sf_f)
         self.map_sf_orig: np.ndarray = None             # cropped work space selected free space filtered original
         self.map_cleaning: np.ndarray = None            # c work space selected free space filtered cleaning (map_11_c_ws_sf_f_cleaning)
+        self.map_cleaned: np.ndarray = None             # map with cleaned area added
         # maps[updated during planning]
         self.map_planning: np.ndarray = None            # map visualization for planning (map_viz)
         self.map_segmentation: np.ndarray = None        # map segmentation visualization
@@ -176,3 +187,7 @@ class ZoneMapData:
             visualize_map_s(self.map_viz, f"zone_{self.ind}_{case}")
         else:
             visualize_map_s(self.map_orig, f"zone_{self.ind}_{'orig'}")
+
+    def validate_data(self):
+        # later
+        pass

@@ -19,13 +19,12 @@ class CoveragePPHandler:
     based on pipeline configuration and applies it to all cells in the zone.
 
     Args:
-        zone_map_data: Zone map data object.
+        zone_map_data (ZoneMapData): Zone map data object.
 
     Attributes:
-        zmd: Zone map data object.
-        cells: List of cells to plan paths for.
-        all_cell_covp_planners: List of planner instances for each cell.
-        lg: Logger instance.
+        zmd (ZoneMapData): Zone map data object.
+        cells (list[PCell]): List of cells to plan paths for.
+        all_cell_covp_planners (list[CoveragePathPlannerBase]): List of planner instances for each cell.
 
     Result:
         After planning, path_m and path_px are set for each cell.
@@ -45,8 +44,8 @@ class CoveragePPHandler:
         # input cells from segmentation
         self.cells: list[PCell] = []
 
-        # list of cell coverage planners for cells (loaded in the main planner)
-        self.all_cell_covp_planners: list[CoveragePathPlannerBase] = []
+        # # list of cell coverage planners for cells (loaded in the main planner)
+        # self.all_cell_covp_planners: list[CoveragePathPlannerBase] = []
 
     def plan(self, cells: list[PCell]):
         """Execute coverage path planning for all cells.
@@ -66,9 +65,6 @@ class CoveragePPHandler:
         This method loads the configured planning algorithm and creates a
         planner instance for each cell. Successfully planned paths are stored
         in the cell objects (path_m and path_px attributes).
-
-        Raises:
-            ValueError: If coverage planning method is not recognized.
         """
 
         self.lg.info2("start coverage path planning for cells")
@@ -85,11 +81,17 @@ class CoveragePPHandler:
         # plan for all cells
         cell: PCell
         for cell in self.cells:
+
+            if not cell.do_planning:
+                self.lg.info(f"Skipping cell {cell.id} as it is marked not for planning.")
+                continue
+
             cell_covp_planner = planner_cls(cell=cell, zmd=self.zmd)
-            self.all_cell_covp_planners.append(cell_covp_planner)
+            # self.all_cell_covp_planners.append(cell_covp_planner)
             if cell_covp_planner.path_m:
                 cell.set_path_m(cell_covp_planner.path_m)
                 cell.set_path_px(cell_covp_planner.path_px)
             else:
                 cell.do_planning = False
                 self.lg.warn(f"Cell {cell.id} has no path after coverage planning.")
+                self.lg.warn(f"Cell {cell.id} set do_planning to False.")

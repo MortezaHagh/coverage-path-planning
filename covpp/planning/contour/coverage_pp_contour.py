@@ -5,7 +5,7 @@ import numpy as np
 from shapely.geometry import MultiPolygon, Polygon
 from covpp.base.logger import MyLogger
 from covpp.base import planning_utils as pu
-from covpp.base.base_utils import MyPoint, MyPath
+from covpp.base.geometry import MyPoint, MyPath
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.voronoi_segmentation.cell import Cell
 from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
@@ -33,6 +33,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
     def coverage_planning(self) -> None:
         """Execute contour-following coverage planning for the cell."""
+
         if not self.cell.do_planning:
             self.lg.warn(f"cell {self.cell.id} does not require planning.")
             return

@@ -1,4 +1,3 @@
-
 """ Module to merge adjacent cells based on certain criteria. """
 # from shapely import coverage_union
 from shapely.ops import unary_union
@@ -8,7 +7,15 @@ from covpp.base.logger import MyLogger
 
 
 class MergeCells:
-    """ Class to merge adjacent cells based on certain criteria. """
+    """ Class to merge adjacent cells based on certain criteria.
+
+    Args:
+        cells (list[CellBase]): List of CellBase objects to be merged.
+
+    Attributes:
+        cells (list[CellBase]): Original list of cells.
+        updated_cells (list[CellBase]): List of cells after merging.
+    """
 
     def __init__(self, cells: list[CellBase]):
         self.lg = MyLogger("MergeCells")
@@ -24,6 +31,7 @@ class MergeCells:
         self.update_ids(groups_ids)
 
     def find_merge_groups(self, id_cell_map: dict[int, CellBase]) -> list[set[int]]:
+        """ Find groups of cells to be merged based on adjacency and criteria. """
         skip_indices: set[int] = set()
         merge_groups: list[set[int]] = []
 
@@ -90,6 +98,7 @@ class MergeCells:
         return merged_cells
 
     def update_ids(self, groups_ids: list[set[int]]) -> None:
+        """ Assign new sequential ids to merged cells and update adjacent ids accordingly. """
         # create a mapping from old id to new id
         old_new_id_map = {}
         for new_id, group in enumerate(groups_ids):
@@ -100,30 +109,6 @@ class MergeCells:
         for cell in self.updated_cells:
             cell.id = old_new_id_map[cell.id]
             cell.adjacent_ids = [old_new_id_map[adj_id] for adj_id in cell.adjacent_ids]
-
-    def merge_adjacent_cells(self) -> None:
-        """ Merge adjacent cells if they meet the merging criteria. """
-        merged_cells: list[CellBase] = []
-        skip_indices: set[int] = set()
-        id_cell_map = {cell.id: cell for cell in self.cells}
-
-        for cell in self.cells:
-            if cell.id in skip_indices:
-                continue
-            skip_indices.add(cell.id)
-
-            for j in cell.adjacent_ids:
-                other_cell = id_cell_map.get(j)
-                if other_cell.id in skip_indices:
-                    continue
-                if self.should_merge(cell, other_cell):
-                    self.lg.info(f"Merging cell {cell.id} with cell {other_cell.id}")
-                    cell = self.merge_two_cells(cell, other_cell)
-                    skip_indices.add(other_cell.id)
-                    break
-
-            merged_cells.append(cell)
-        return merged_cells
 
     def should_merge(self, cell1: CellBase, cell2: CellBase) -> bool:
         """ Determine if two cells should be merged based on criteria. """
@@ -157,6 +142,34 @@ class MergeCells:
         union_poly = unary_union([cell1.base_poly, cell2.base_poly])
         # union_poly = union_poly.convex_hull
         return union_poly.contains(line)
+
+    # --------------------------------------------------------------------------
+    # merging two cells only
+    # --------------------------------------------------------------------------
+
+    def merge_adjacent_cells(self) -> None:
+        """ Merge adjacent cells if they meet the merging criteria. """
+        merged_cells: list[CellBase] = []
+        skip_indices: set[int] = set()
+        id_cell_map = {cell.id: cell for cell in self.cells}
+
+        for cell in self.cells:
+            if cell.id in skip_indices:
+                continue
+            skip_indices.add(cell.id)
+
+            for j in cell.adjacent_ids:
+                other_cell = id_cell_map.get(j)
+                if other_cell.id in skip_indices:
+                    continue
+                if self.should_merge(cell, other_cell):
+                    self.lg.info(f"Merging cell {cell.id} with cell {other_cell.id}")
+                    cell = self.merge_two_cells(cell, other_cell)
+                    skip_indices.add(other_cell.id)
+                    break
+
+            merged_cells.append(cell)
+        return merged_cells
 
     def merge_two_cells(self, cell1: CellBase, cell2: CellBase) -> CellBase:
         """ Merge two cells into one, normalizing MultiPolygon to a single Polygon. """
