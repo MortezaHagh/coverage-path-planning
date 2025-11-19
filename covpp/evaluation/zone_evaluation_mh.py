@@ -115,9 +115,12 @@ class ZoneEvaluation(ZoneEvaluationBase):
         self.stats.cleaned_area_m = cleaned_area_m
 
         # overlaped_area
-        overlapped_area_px = np.sum(cleaned_acc > 1)
-        self.stats.overlaped_area_m = overlapped_area_px * (self.zmd.resolution ** 2)
-        self.stats.overlap_p = self.stats.overlaped_area_m / self.stats.cleaning_area_m * 100
+        # calculate cleaned area based on the length of the path and cleaning width
+        cleaning_width_m = 2 * self.pcfg.cleaning_r
+        total_cleaned_area_m = self.stats.coverage_length * cleaning_width_m  # full_length or coverage_length # imp
+        self.stats.overlaped_area_m = total_cleaned_area_m - self.stats.cleaned_area_m
+        overlap_p = self.stats.overlaped_area_m / self.stats.cleaning_area_m * 100
+        self.stats.overlap_p = max(0.0, overlap_p)  # avoid negative overlap due to rounding errors
 
         # uncleaned_area_m
         self.stats.uncleaned_area_m = self.stats.cleaning_area_m - self.stats.cleaned_area_m
@@ -138,21 +141,39 @@ class ZoneEvaluation(ZoneEvaluationBase):
         #
         map_cleaning = self.zmd.map_cleaning.copy()     # map of cleanable area, from zone map data (without any paths)
         mask_free = map_cleaning == 255                 # free space mask in map_cleaning
-
-        # paths: from sequence paths (full path in pixels)
-        f_path = self.paths.f_path_px
-
-        # create buffered area around path
-        # cap_style=1 gives flat ends
-        # cap_style=2 gives round ends
-        path_points = f_path.xy - g_xy
-        line = LineString(path_points)
-        buffered_poly = line.buffer(cleaning_r_px, cap_style=2)
-        buffered_poly = np.array(buffered_poly.exterior.coords).astype(int)
-
-        # Draw filled polygon onto image
         cleaned_acc = np.zeros_like(map_cleaning, dtype=np.uint8)
-        cleaned_acc = cv.fillPoly(cleaned_acc, [buffered_poly], color=2)
+
+        # ----------------------------------------------------------------------
+        # version 1: only coverage paths
+        paths = self.paths.paths_px
+        for path in paths:
+            # create buffered area around path
+            path_points = path.xy - g_xy
+            line = LineString(path_points)
+            buffered_poly = line.buffer(cleaning_r_px, cap_style=2)
+            buffered_poly = np.array(buffered_poly.exterior.coords).astype(int)
+
+            # Draw filled polygon onto image
+            cleaned_acc = cv.fillPoly(cleaned_acc, [buffered_poly], color=1)
+
+            # consider only free space pixels
+            cleaned_acc = cleaned_acc * mask_free
+
+        # # ----------------------------------------------------------------------
+        # # version 2: complete path at once
+        # # paths: from sequence paths (full path in pixels)
+        # f_path = self.paths.f_path_px
+
+        # # create buffered area around path
+        # # cap_style=1 gives flat ends
+        # # cap_style=2 gives round ends
+        # path_points = f_path.xy - g_xy
+        # line = LineString(path_points)
+        # buffered_poly = line.buffer(cleaning_r_px, cap_style=2)
+        # buffered_poly = np.array(buffered_poly.exterior.coords).astype(int)
+
+        # # Draw filled polygon onto image
+        # cleaned_acc = cv.fillPoly(cleaned_acc, [buffered_poly], color=2)
 
         # consider only free space pixels
         cleaned_acc = cleaned_acc * mask_free
