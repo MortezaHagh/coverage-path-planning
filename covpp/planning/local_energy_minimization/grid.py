@@ -75,7 +75,8 @@ class GridGenerator:
     def calculate_base_grid_size(self, resolution) -> float:
 
         cleaning_r_px = SpaceConfig.cleaning_r / resolution
-        grid_l = np.sqrt(2) * cleaning_r_px
+        # grid_l = np.sqrt(2) * cleaning_r_px
+        grid_l = 2 * cleaning_r_px
         return grid_l
 
     def create_grid_by_rectangle(self, grid_l: int) -> PGrid:
@@ -140,9 +141,11 @@ class GridGenerator:
                 x_m = points_map[i, j, 0]
                 y_m = points_map[i, j, 1]
                 if 0 <= y_m < max_map_y and 0 <= x_m < max_map_x:
-                    if self.cell.map[y_m, x_m] == 0:  # occupied
-                        g_map[i, j] = 0
-                        nodes[i, j].free = False
+                    pass
+                    # assume free if inside rectangle
+                    # if self.cell.map[y_m, x_m] == 0:  # occupied
+                    #     g_map[i, j] = 0
+                    #     nodes[i, j].free = False
                 else:
                     raise ValueError("Grid cell center is out of cell map bounds.")
 
@@ -155,7 +158,7 @@ class GridGenerator:
         """ Calculate grid specifications for rectangle-like cells. """
 
         # scale rectangle to avoid boundary issues
-        d_scale = -grid_l / 5
+        d_scale = -grid_l / 10
         scaled_rect = self.cell.rectangle_poly.buffer(d_scale, join_style=2, resolution=8)
 
         # start point of the rectangle

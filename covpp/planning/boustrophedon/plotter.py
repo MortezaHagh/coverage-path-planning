@@ -1,4 +1,5 @@
 """ Boustrophedon decomposition plotter """
+import os
 import matplotlib.pyplot as plt
 from covpp.base.configs import PipeLineConfig
 from covpp.planning.boustrophedon.cell import Cell, CellGroup
@@ -11,7 +12,7 @@ class BoustPlotter:
     Plots: boust cells and mcells.
     """
 
-    def __init__(self,):
+    def __init__(self):
         self.dcfg = PipeLineConfig()
         self.dec_obj: CellDecomposition = None
         self.results_dir: str = None
@@ -158,10 +159,12 @@ class BoustPlotter:
 
     def save_figs(self):
         ns = "/"
-        path = self.results_dir
+        cid = self.dec_obj.main_cell_id
+        path = os.path.join(self.results_dir, "decomposition")
+        os.makedirs(path, exist_ok=True)
         if self.viz_together:
-            self.fig_all.savefig(path + f"{ns}boust_decomposition.png", format="png", dpi=self.dcfg.dpi)
+            self.fig_all.savefig(path + f"{ns}bd_{cid}.png", format="png", dpi=self.dcfg.dpi)
         else:
-            self.fig_mcells.savefig(path + f"{ns}mcells.png", format="png", dpi=self.dcfg.dpi)
-            self.fig_cells_events.savefig(path + f"{ns}cells.png", format="png", dpi=self.dcfg.dpi)
+            self.fig_mcells.savefig(path + f"{ns}mcells_{cid}.png", format="png", dpi=self.dcfg.dpi)
+            self.fig_cells_events.savefig(path + f"{ns}cells_{cid}.png", format="png", dpi=self.dcfg.dpi)
         plt.close('all')

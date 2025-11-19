@@ -36,14 +36,14 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
     def __init__(self, cell: Cell, zmd: ZoneMapData):
         super().__init__(cell, zmd)
 
-        self.lg = MyLogger(f"CoveragePlannerBoust-Z{zmd.ind}-C{cell.id}")
+        self.lg = MyLogger(f"CovPPBoust-Z{zmd.ind}-C{cell.id}")
 
         # map polygons
         self.map_polygons: MapPolygons = None
         self.origin: np.ndarray = np.array([0.0, 0.0], dtype=np.float32)
 
         # cell decomposition
-        self.decomposer = CellDecomposition(zmd.resolution, zmd.method_results_dir)
+        self.decomposer = CellDecomposition(cell.id, zmd.resolution, zmd.method_results_dir)
         self.boust_plotter = BoustPlotter()
 
         # connect paths interface

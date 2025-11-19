@@ -1,5 +1,6 @@
 """Boustrophedon coverage path generation for decomposed trapezoidal cells."""
 import numpy as np
+from shapely.affinity import scale
 from shapely.geometry import Polygon, Point, LineString
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PlanningConfig
@@ -18,6 +19,9 @@ class CellCoveragePathPlanner:
         2. Find hitting points with cell boundary from top and bottom
         3. Connect hitting points in alternating boustrophedon pattern
         4. Convert final path to pixel coordinates
+
+    Args:
+        cell: The trapezoidal cell to plan coverage for (from decomposition).
     """
 
     def __init__(self, cell: Cell, zone_ind: int = 0, resolution: float = 0.05):
@@ -28,14 +32,15 @@ class CellCoveragePathPlanner:
         self.path_px: MyPath = None
         #
         self.poly_m: Polygon = None
-        self.xy_but: list[tuple[float, float]] = None
+        self.xy_bot: list[tuple[float, float]] = None
         self.xy_top: list[tuple[float, float]] = None
 
         # parameters and configurations
         self.pcfg = PlanningConfig()
         self.resolution: float = resolution
+        self.x_scale = 1.05
 
-        #
+        # run planning for the cell
         self.coverage_planning()
 
     def coverage_planning(self) -> None:
@@ -77,6 +82,9 @@ class CellCoveragePathPlanner:
             else:
                 self.cell.do_planning = False
                 return False
+
+        # scale poly_m in x direction slightly to avoid edge cases
+        self.poly_m = scale(self.poly_m, xfact=self.x_scale, yfact=1, origin='centroid')
 
         return True
 
@@ -135,28 +143,28 @@ class CellCoveragePathPlanner:
             xx.pop(-1)
 
         # find hitting points with the cell polygon
-        y_but = y_min - d_shift
-        y_hit_check = y_max + d_shift
-        xy_but = []
+        y_bot = y_min - 2*d_shift           # start well below the cell
+        y_top_check = y_max + 2*d_shift     # line above the cell
+        xy_bot = []
         xy_top = []
         for x in xx:
-            top_point = Point((x, y_but))
-            points = self.get_intersection_points(y_hit_check, top_point, self.poly_m)
+            bot_point = Point((x, y_bot))
+            points = self.get_intersection_points(y_top_check, bot_point, self.poly_m)
             if points:
                 p1, p2 = points
-                xy_but.append((p1.x, p1.y+d_shift))
+                xy_bot.append((p1.x, p1.y+d_shift))
                 xy_top.append((p2.x, p2.y-d_shift))
-        if len(xy_but) < 1:
+        if len(xy_bot) < 1:
             self.lg.warn("no hitting points")
             return False
-        self.xy_but = xy_but
+        self.xy_bot = xy_bot
         self.xy_top = xy_top
         return True
 
-    def get_intersection_points(self, y_check: float, top_point: Point, polygon: Polygon) -> tuple[Point, Point]:
-        """ get intersection points of a vertical line below the top_point with the polygon """
+    def get_intersection_points(self, y_top_check: float, bot_point: Point, polygon: Polygon) -> tuple[Point, Point]:
+        """ get intersection points of a vertical line below the bot_point with the polygon """
 
-        vertical_line = LineString([top_point, (top_point.x, y_check + 1)])
+        vertical_line = LineString([bot_point, (bot_point.x, y_top_check)])
 
         # Intersect that vertical line with the polygon
         intersection = vertical_line.intersection(polygon)
@@ -181,10 +189,27 @@ class CellCoveragePathPlanner:
         #
         p1 = Point(xx[0], yy[0])
         p2 = Point(xx[1], yy[1])
+
+        # # visualize for debugging
+        # import matplotlib.pyplot as plt
+        # # fix aspect ratio
+        # plt.gca().set_aspect('equal', adjustable='box')
+        # # plot polygon
+        # x_poly, y_poly = polygon.exterior.xy
+        # plt.plot(x_poly, y_poly, color='blue', label='Cell Polygon')
+        # # plot top_point
+        # plt.scatter([top_point.x], [y_check+1], color='orange', label='Point (top_point.x, y_check+1)')
+        # # plot vertical line
+        # plt.plot([top_point.x, top_point.x], [top_point.y, y_check+1], color='purple', label='Vertical Line')
+        # # plot intersection points
+        # plt.scatter([p1.x, p2.x], [p1.y, p2.y], color='red', label='Intersection Points')
+        # plt.legend()
+        # plt.show()
+
         return (p1, p2)
 
     def calculate_path(self) -> None:
-        points_d = self.xy_but
+        points_d = self.xy_bot
         points_u = self.xy_top
         points = [points_d.pop(0)]
         i_d, i_u = 0, 0

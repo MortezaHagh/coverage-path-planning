@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+from shapely.geometry import LineString
 from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPath
 from covpp.district.zone_map_data import ZoneMapData
@@ -141,15 +142,18 @@ class ZoneEvaluation(ZoneEvaluationBase):
         # paths: from sequence paths (full path in pixels)
         f_path = self.paths.f_path_px
 
+        # create buffered area around path
+        # cap_style=1 gives flat ends
+        # cap_style=2 gives round ends
+        path_points = f_path.xy - g_xy
+        line = LineString(path_points)
+        buffered_poly = line.buffer(cleaning_r_px, cap_style=2)
+        buffered_poly = np.array(buffered_poly.exterior.coords).astype(int)
+
+        # Draw filled polygon onto image
         cleaned_acc = np.zeros_like(map_cleaning, dtype=np.uint8)
-        color_p = 1
-        # for path in paths: draw cleaned path segments on cleaned_acc
-        for i in range(f_path.n - 1):
-            segment_mask = np.zeros_like(map_cleaning, dtype=np.uint8)
-            pt1 = tuple(map(int, [f_path.point(i).x-g_xy[0], f_path.point(i).y-g_xy[1]]))
-            pt2 = tuple(map(int, [f_path.point(i+1).x-g_xy[0], f_path.point(i+1).y-g_xy[1]]))
-            cv.line(segment_mask, pt1, pt2, color=color_p, thickness=2 * cleaning_r_px)
-            cleaned_acc = cv.add(cleaned_acc, segment_mask)
+        cleaned_acc = cv.fillPoly(cleaned_acc, [buffered_poly], color=2)
+
         # consider only free space pixels
         cleaned_acc = cleaned_acc * mask_free
         return cleaned_acc
@@ -160,27 +164,19 @@ class ZoneEvaluation(ZoneEvaluationBase):
         # [map_cleaned]: show uncleaned area and overlaps, only for visualization
         # uncleaned free pixels -> red, cleaned -> scaled green
 
-        # data
-        cleaning_r_px = int(self.pcfg.cleaning_r / self.zmd.resolution)  # cleaning radius in pixels
-        g_xy = self.zmd.global_xy  # global offset
-
-        #
         mask_free = self.zmd.map_cleaning == 255
         max_overlap = np.max(cleaned_acc)  # maximum overlap count among pixels
 
         d_c = int(np.floor(250 / max_overlap))
-        map_cleaned = cv.cvtColor(self.zmd.map_cleaning.copy(), cv.COLOR_GRAY2BGR)
-        mask_zero = mask_free & (cleaned_acc == 0)
-        mask_nonzero = mask_free & (cleaned_acc > 0)
-        map_cleaned[mask_zero] = (0, 0, 200)
+        map_cleaned = np.zeros((*self.zmd.map_cleaning.shape, 3), dtype=np.uint8)
+        mask_not_cleaned = mask_free & (cleaned_acc == 0)
+        mask_cleaned = mask_free & (cleaned_acc > 0)
+        map_cleaned[mask_not_cleaned] = (0, 0, 200)
 
-        if np.any(mask_nonzero):
+        if np.any(mask_cleaned):
             green = np.clip(d_c * cleaned_acc, 0, 255).astype(np.uint8)
-            map_cleaned[..., 1][mask_nonzero] = green[mask_nonzero]
-        # for path in paths: draw circles at path points
-        for p in self.paths.f_path_px.points[1:-1]:
-            pz = (p.x-g_xy[0], p.y-g_xy[1])
-            map_cleaned = cv.circle(map_cleaned, pz, cleaning_r_px, (0, d_c, 0), -1)
+            map_cleaned[..., 1][mask_cleaned] = green[mask_cleaned]
+
         self.zmd.map_cleaned = map_cleaned
 
         # --------------------------------------------------------------------------------------------------------------

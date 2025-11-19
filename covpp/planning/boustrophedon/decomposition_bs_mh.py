@@ -27,9 +27,10 @@ class CellDecomposition:
         8. Visualize decomposition results
     """
 
-    def __init__(self, resolution: float = 0.05, results_dir: str = None):
+    def __init__(self, main_cell_id, resolution: float = 0.05, results_dir: str = None):
         self.lg = MyLogger("CellDecompositionMH")
         #
+        self.main_cell_id: int = main_cell_id
         self.results_dir: str = results_dir
         self.resolution: float = resolution
         self.bcfgs = PlanningConfig()

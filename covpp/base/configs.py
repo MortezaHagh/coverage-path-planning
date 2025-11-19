@@ -53,7 +53,7 @@ class PipeLineConfig:
     method = segmentation_method + '_' + covpp_method + '_' + sequence_method
 
     # segmentation options
-    use_insc_ret = False  # find approx rectangles from initial segmentation cells
+    use_insc_ret = True  # find approx rectangles from initial segmentation cells
 
     # voronoi specific options
     if segmentation_method == "voronoi":

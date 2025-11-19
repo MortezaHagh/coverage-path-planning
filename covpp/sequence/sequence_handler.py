@@ -102,7 +102,7 @@ class SequenceHandler:
         self.sequencer: BaseSeqOpt = sequencers[sequencer_name].load()()
 
         # connect paths interface
-        self.connections: ConnectPaths = ConnectPaths(self.zmd)
+        self.connections: ConnectPaths = ConnectPaths(self.zmd, ns="Sequence")
 
         # # paths
         # final complete connected path
