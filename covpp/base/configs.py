@@ -39,9 +39,9 @@ class PipeLineConfig:
     start_cell_ind = 0  # index of starting cell for coverage path planning sequence
 
     # plots configs
-    save_map_planning = True
-    save_decomposition_plot = True
-    plot_decomposition = False
+    do_save_maps = True
+    do_save_decomposition_plot = True
+    do_plot_decomposition = False
     dpi = 300
 
     # Methods names for main modules: segmentation, coverage path planning, sequence

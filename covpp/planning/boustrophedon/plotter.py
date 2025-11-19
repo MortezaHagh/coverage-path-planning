@@ -31,17 +31,17 @@ class BoustPlotter:
         self.dec_obj = dec_obj
         self.results_dir = dec_obj.results_dir
 
-        if not (self.dcfg.save_decomposition_plot or self.dcfg.plot_decomposition):
+        if not (self.dcfg.do_save_decomposition_plot or self.dcfg.do_plot_decomposition):
             return
         if self.viz_together:
             self.visualize_together()
         else:
             self.visualize_seperate()
-        if self.dcfg.plot_decomposition:
+        if self.dcfg.do_plot_decomposition:
             plt.show()
 
         # save figures
-        if self.dcfg.save_decomposition_plot:
+        if self.dcfg.do_save_decomposition_plot:
             self.save_figs()
 
     def visualize_seperate(self):

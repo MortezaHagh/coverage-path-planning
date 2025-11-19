@@ -29,7 +29,6 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
     def __init__(self, cell: Cell, zmd: ZoneMapData):
         super().__init__(cell, zmd)
         self.lg = MyLogger(f"CovPPContour-Z{zmd.ind}-C{cell.id}")
-        self.coverage_planning()
 
     def coverage_planning(self) -> None:
         """Execute contour-following coverage planning for the cell."""
@@ -39,7 +38,6 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             return
         # self.calculate_path_by_poly_buffer()
         self.calculate_path_combinaiton()
-        self.create_path_m()
 
     def calculate_path_by_poly_buffer(self) -> None:
         """Calculate coverage path by iteratively shrinking the cell polygon.

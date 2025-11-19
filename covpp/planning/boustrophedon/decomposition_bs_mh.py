@@ -72,9 +72,6 @@ class CellDecomposition:
         # find if coverage pp in cell should be shifted based on boarder with adjacents
         eval_cells_path_shift(self.mcells)
 
-        # evaluate cells for planning
-        self.eval_mcells()
-
     def set_bounding_polygon(self, poly: Polygon):
         """Set the workspace boundary polygon."""
         self.b_poly = poly
@@ -530,10 +527,3 @@ class CellDecomposition:
             adjs = cellg.merged_cell.mid_parentlist.copy()
             adjs.extend(cellg.merged_cell.mid_adjlist)
             cellg.merged_cell.adjacent_ids = adjs
-
-    # ==================================================================================================================
-
-    def eval_mcells(self):
-        """check if area of the cell is enough for planning. """
-        for cell in self.mcells:
-            cell.eval_planning_area(self.resolution, self.bcfgs.cleaning_r)

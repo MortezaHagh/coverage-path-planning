@@ -2,6 +2,7 @@
 import numpy as np
 from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPath, MyPoint
+from covpp.base.map_graph import MapSearchGraph
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
 from covpp.segmentation.map_polygons import MapPolygons
@@ -54,9 +55,6 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.n_mcells: int = 0          # number of boustrophedon cells
         # self.smcells: list[Cell] = []   # sorted boustrophedon cells
 
-        # start coverage path planning for the input cell and map
-        self.coverage_planning()
-
     def coverage_planning(self) -> None:
         """Execute boustrophedon coverage planning for the cell.
 
@@ -79,6 +77,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         # self.rotate_back_cells()
         self.all_cells_coverage_pp()
         self.rotate_back_paths()
+        self.ensure_path_is_free()
         self.create_connected_path()
         # *******************************
 
@@ -161,7 +160,22 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
                 # translate back to original position
                 rot_path = MyPath([MyPoint(int(p.x + self.origin[0]), int(p.y + self.origin[1])) for p in rot_path.points])
                 cell.set_path_px(rot_path)
-                cell.set_path_m(self.path_px_to_m(rot_path))
+                # cell.set_path_m(self.path_px_to_m(rot_path))
+
+    def ensure_path_is_free(self) -> None:
+        """ Ensure all points in the full path are in free space. """
+        mg = MapSearchGraph(self.cell.map, free_value=255, ns=f"{self.lg.name}")
+        g_xy = self.cell.global_xy
+
+        for cell in self.mcells:
+            if cell.path_px:
+                new_points = []
+                xys = cell.path_px.xy - g_xy  # local cell coordinates
+                for xy in xys:
+                    free_p = mg.find_closest_free_cell((xy[0], xy[1]))
+                    new_points.append(MyPoint(free_p[0]+g_xy[0], free_p[1]+g_xy[1]))
+                cell.path_px = MyPath(new_points)
+                cell.path_m = self.path_px_to_m(cell.path_px)
 
     def create_connected_path(self) -> None:
         """ Create a connected path for all the boustrophedon cells.

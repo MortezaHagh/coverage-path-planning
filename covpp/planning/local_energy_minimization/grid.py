@@ -3,8 +3,8 @@ import cv2 as cv
 import numpy as np
 from shapely.geometry import Point
 from covpp.base.logger import MyLogger
-from covpp.base.configs import SpaceConfig
 from covpp.base.geometry import angle_diff
+from covpp.base.configs import SpaceConfig, PipeLineConfig
 from covpp.segmentation.cell_processed import PCell
 from covpp.district.zone_map_data import ZoneMapData
 
@@ -461,7 +461,8 @@ class GridGenerator:
         cv.line(viz_map, (int(node.x - gxy[0]), int(node.y - gxy[1])), (x_end, y_end), (255, 0, 0), 2)
 
         # write image
-        cv.imwrite(f"{path}/grid_map_{self.cell.id}.png", viz_map)
+        if PipeLineConfig.do_save_maps:
+            cv.imwrite(f"{path}/grid_map_{self.cell.id}.png", viz_map)
 
         # # show image
         # cv.namedWindow("grid_map", cv.WINDOW_NORMAL)

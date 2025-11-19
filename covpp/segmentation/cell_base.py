@@ -66,6 +66,7 @@ class CellBase:
         self.start_point: MyPoint = None
         self.end_point: MyPoint = None
 
+        # ----------------------------------------------------------------------
         # calculate cell specs
         self.calculate_cell_specs()
         self.evaluate_cell_area()
@@ -101,9 +102,13 @@ class CellBase:
 
     def evaluate_cell_area(self) -> None:
         """ Evaluate cell area and classify size. """
-        robot_area = np.pi * (self.robot_r_px ** 2)
-        if self.area < self.small_cell_thresh_c * robot_area:
+        robot_area_px = np.pi * (self.robot_r_px ** 2)
+        if self.area < self.small_cell_thresh_c * robot_area_px:
             self.size_type = "small"
+
+        if self.area < robot_area_px:
+            # print(f"[WARN] cell area is too small: {self.id}")
+            self.do_planning = False
 
     def eval_cell_slimness(self) -> None:
         """ Evaluate cell slimness based on maximum inscribed circle. """
@@ -145,7 +150,7 @@ class CellBase:
         self.end_point = point
 
     # --------------------------------------------------------------------------
-    # evaluat
+    # validation
     # --------------------------------------------------------------------------
 
     def validate_cell(self) -> bool:

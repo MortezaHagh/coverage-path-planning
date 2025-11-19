@@ -351,7 +351,7 @@ class VoronoiDecomposition:
     # ==========================================================================
 
     def plot_voronoi(self):
-        if not (self.dcfg.plot_decomposition or self.dcfg.save_decomposition_plot):
+        if not (self.dcfg.do_plot_decomposition or self.dcfg.do_save_decomposition_plot):
             self.lg.info("Skipping Voronoi plot.")
             return
 
@@ -422,7 +422,7 @@ class VoronoiDecomposition:
         #         ax.fill(*zip(*polygon), alpha=0.3, fc='blue', ec='black', label='Voronoi Region')
 
         #
-        if self.dcfg.save_decomposition_plot:
+        if self.dcfg.do_save_decomposition_plot:
             save_path = self.results_dir + "/voronoi.png"
             fig.savefig(save_path, dpi=self.dcfg.dpi)
             plt.close('all')

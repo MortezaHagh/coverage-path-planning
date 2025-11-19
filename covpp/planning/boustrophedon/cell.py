@@ -94,12 +94,6 @@ class Cell (CellBase):
             self.n_parent += 1
             self.add_adjacent_id(ci)
 
-    def eval_planning_area(self, resolution, cleaning_r):
-        min_area = 0.5 * 3.14 * cleaning_r**2
-        if (self.area*resolution**2) < min_area:
-            # print(f"[WARN] cell area is too small: {self.id}")
-            self.do_planning = False
-
     def set_shift_re(self, shift: bool):
         self.shift_r = shift
 

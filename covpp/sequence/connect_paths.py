@@ -1,7 +1,5 @@
 """Path connection module using A* pathfinding for cell transitions."""
-from collections import deque
 import numpy as np
-
 # # path finding libraries
 # # method 1
 import pyastar2d
@@ -16,9 +14,6 @@ from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPath, MyPoint
 from covpp.segmentation.cell_processed import PCell
 from covpp.district.zone_map_data import ZoneMapData
-
-FREE = 255
-OCCUPIED = 0
 
 
 class ConnectPaths:
@@ -131,8 +126,9 @@ class FindPathInMap:
         self.lg = MyLogger("FindPathInMap")
 
         # map - cost_map
-        occ_map: np.ndarray = zmd.map_ws
-        binary_map = (occ_map == FREE).astype(np.uint8)  # 1 = free, 0 = obstacle
+        self.free_cost = 1
+        self.occ_cost = 10
+        binary_map = (zmd.map_ws == 255).astype(np.uint8)  # 1 = free, 0 = obstacle
         self.cost_map = np.where(binary_map == 1, 1, 10).astype(np.float32)   # method 1 # 1 = free, 1000 = obstacle
         # self.cost_map = np.where(binary_map == 1, 1, 0)                       # method 2 # 1 = free, 0 = obstacle
         # self.grid = Grid(matrix=self.cost_map)     # method 3 # grid for pathfinding algorithm (function find_path_al_pathfinding)
@@ -162,9 +158,10 @@ class FindPathInMap:
         # shift to map coordinates
         start = (start.x - self.s_x, start.y - self.s_y)
         end = (end.x - self.s_x, end.y - self.s_y)
+
         # check if free, if not, find closest free cell
-        start = self.find_closest_free_cell(start)
-        end = self.find_closest_free_cell(end)
+        if self.cost_map[start[1], start[0]] != self.free_cost or self.cost_map[end[1], end[0]] != self.free_cost:
+            raise ValueError(f"Start {start} or end {end} point is not in free space.")
 
         # find path
         path_px = self.find_path_al_pya(start, end)
@@ -205,35 +202,3 @@ class FindPathInMap:
     #     path, _ = finder.find_path(start_n, end_n, self.grid)
     #     path_list = [(x, y) for x, y in path]
     #     return path_list
-
-    def find_closest_free_cell(self, point: tuple[int, int]) -> tuple[int, int]:
-        """ if point is in the free cell, return it, otherwise find the closest free cell. """
-
-        # check if point is free
-        x, y = point
-        if self.cost_map[y, x] == 1:  # FREE
-            return point
-        else:
-            self.lg.debug(f"Point {point} is not free, finding closest free cell")
-
-        # Use BFS to find the nearest free cell for efficiency
-
-        max_y, max_x = self.cost_map.shape
-        visited = set()
-        queue = deque()
-        queue.append((point[0], point[1]))
-        visited.add((point[0], point[1]))
-
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-
-        while queue:
-            x, y = queue.popleft()
-            if self.cost_map[y, x] == 1:  # FREE
-                return (x, y)
-            for dx, dy in directions:
-                nx, ny = x + dx, y + dy
-                if 0 <= ny < max_y and 0 <= nx < max_x and (nx, ny) not in visited:
-                    queue.append((nx, ny))
-                    visited.add((nx, ny))
-        self.lg.error(f"No free cell found near {point}")
-        raise ValueError(f"No free cell found near {point}")

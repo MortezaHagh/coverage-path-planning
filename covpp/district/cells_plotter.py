@@ -28,7 +28,7 @@ class CellsPlotter:
         self.visualize_cells_sequence(cells)
 
         # save figures
-        if self.dcfg.save_decomposition_plot:
+        if self.dcfg.do_save_decomposition_plot:
             self.save_figs()
 
     def visualize_cells_sequence(self, cells: list[PCell]):

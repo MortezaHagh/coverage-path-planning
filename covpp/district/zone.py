@@ -107,7 +107,7 @@ class ZoneData:
 
         # ************ coverage planning
         self.lg.info1(f"Step: running coverage path planning using method '{self.dcfg.covpp_method}'")
-        self.cov_path_planner.plan(cells=self.cells)
+        self.cov_path_planner.run(cells=self.cells)
         times['coverage_planning'] = time.time()
 
         # ************ sequence
@@ -151,7 +151,7 @@ class ZoneData:
 
     def save_map_planning(self):
         """ save zone map_planning and map_segmentation to files. """
-        if not self.dcfg.save_map_planning:
+        if not self.dcfg.do_save_maps:
             return
         # PNG parameters for lossless compression
         png_params = [cv.IMWRITE_PNG_COMPRESSION, 0]
@@ -166,7 +166,7 @@ class ZoneData:
 
     def save_map_map_cleaned(self):
         """ save map showing cleaned area and uncleaned area. """
-        if not self.dcfg.save_map_planning:
+        if not self.dcfg.do_save_maps:
             return
         # PNG parameters for lossless compression
         png_params = [cv.IMWRITE_PNG_COMPRESSION, 0]

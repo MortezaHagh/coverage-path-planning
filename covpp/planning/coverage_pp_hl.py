@@ -47,16 +47,13 @@ class CoveragePPHandler:
         # # list of cell coverage planners for cells (loaded in the main planner)
         # self.all_cell_covp_planners: list[CoveragePathPlannerBase] = []
 
-    def plan(self, cells: list[PCell]):
+    def run(self, cells: list[PCell]):
         """Execute coverage path planning for all cells.
 
         Args:
             cells: List of processed cells from segmentation.
         """
-
         self.cells = cells
-
-        # coverage path planning for all cells
         self.run_covpp_method()
 
     def run_covpp_method(self) -> None:
@@ -76,10 +73,12 @@ class CoveragePPHandler:
         planners = entry_points(group="planners")
         if covpp_method not in planners.names:
             raise ValueError(f"Coverage planning method '{covpp_method}' not recognized.")
-        planner_cls: CoveragePathPlannerBase = planners[covpp_method].load()
+        planner_cls = planners[covpp_method].load()
 
         # plan for all cells
         cell: PCell
+        cell_covp_planner: CoveragePathPlannerBase
+
         for cell in self.cells:
 
             if not cell.do_planning:
@@ -87,7 +86,7 @@ class CoveragePPHandler:
                 continue
 
             cell_covp_planner = planner_cls(cell=cell, zmd=self.zmd)
-            # self.all_cell_covp_planners.append(cell_covp_planner)
+            cell_covp_planner.run()
             if cell_covp_planner.path_m:
                 cell.set_path_m(cell_covp_planner.path_m)
                 cell.set_path_px(cell_covp_planner.path_px)

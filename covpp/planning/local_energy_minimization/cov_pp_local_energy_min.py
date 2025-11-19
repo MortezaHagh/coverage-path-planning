@@ -32,9 +32,6 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.grid: PGrid = GridGenerator(cell=self.cell, zmd=zmd).grid
         self.major_dir: float = (cell.major_direction + np.pi/2) % np.pi
 
-        # start coverage path planning for the input cell and map
-        self.coverage_planning()
-
     def coverage_planning(self):
         """ Execute coverage path planning using local energy minimization. """
 
@@ -51,7 +48,6 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         # set paths
         self.path_px = path_px
         self.path_px = MyPath(path_px)
-        self.create_path_m()
 
     def create_path_in_grid_map(self) -> list[tuple]:
         """ Create coverage path in the grid map using local energy minimization. """

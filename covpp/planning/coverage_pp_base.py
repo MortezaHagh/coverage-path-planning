@@ -8,6 +8,7 @@ from covpp.segmentation.cell_processed import PCell
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPoint, MyPath
+from covpp.base.map_graph import MapSearchGraph
 from covpp.base.configs import PlanningConfig, PipeLineConfig
 
 
@@ -17,6 +18,12 @@ class CoveragePathPlannerBase:
     All coverage planning implementations must inherit from this class and
     implement the coverage_planning() method. This design allows easy addition
     of new planning methods without modifying the core pipeline.
+
+    Process:
+        1. Initialize with a processed cell and zone map data.
+        2. Implement coverage_planning() to generate a complete coverage path.
+        3. Ensure paths are valid and within cell boundaries.
+        4. Final validation of generated paths.
 
     Args:
         cell (PCell): Processed cell to plan coverage path for.
@@ -38,7 +45,6 @@ class CoveragePathPlannerBase:
         ...     def coverage_planning(self):
         ...         # Implement your planning algorithm
         ...         self.path_px = [...]  # Generate path in pixels
-        ...         self.create_path_m()  # Convert to meters
     """
 
     def __init__(self, cell: PCell, zmd: ZoneMapData):
@@ -59,6 +65,12 @@ class CoveragePathPlannerBase:
         self.path_m: MyPath = None      # path in meters
         self.path_px: MyPath = None      # path in pixels
 
+    def run(self) -> None:
+        self.coverage_planning()  # perform coverage planning based on implemented method
+        self.ensure_path_is_free()
+        self.create_path_m()
+        self.validate_paths()
+
     def coverage_planning(self) -> None:
         """Generate coverage path for the cell.
 
@@ -74,6 +86,33 @@ class CoveragePathPlannerBase:
         """
         raise NotImplementedError("Coverage planning subclasses must implement coverage_planning() method")
 
+    # ==========================================================================
+
+    def ensure_path_is_free(self) -> None:
+        mg = MapSearchGraph(self.cell.map, free_value=255, ns=f"Cell_{self.cell.id}")
+        g_xy = self.cell.global_xy
+        new_points = []
+        xys = self.path_px.xy - g_xy  # local cell coordinates
+        for xy in xys:
+            free_p = mg.find_closest_free_cell((xy[0], xy[1]))
+            new_points.append(MyPoint(free_p[0]+g_xy[0], free_p[1]+g_xy[1]))
+        self.path_px = MyPath(new_points)
+
+    def validate_paths(self) -> bool:
+        """Validate generated paths for the cell. """
+
+        if not self.path_px or len(self.path_px.points) == 0:
+            self.lg.warn(f"Cell {self.cell.id} has no path_px after coverage planning.")
+            return False
+
+        if not self.path_m or len(self.path_m.points) == 0:
+            self.lg.warn(f"Cell {self.cell.id} has no path_m after coverage planning.")
+            return False
+
+        return True
+
+    # ==========================================================================
+    # Utility methods for path manipulation
     # ==========================================================================
 
     def create_path_m(self) -> None:

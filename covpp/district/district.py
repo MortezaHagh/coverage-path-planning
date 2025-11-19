@@ -130,7 +130,7 @@ class DistrictData:
 
     def save_map_planning(self) -> None:
         """ save district map_planning to file. """
-        if not self.dcfg.save_map_planning:
+        if not self.dcfg.do_save_maps:
             return
         m_name = f"/mp_{self.dcfg.method}.png"
         map_planning_path = self.dmd.zone_dir + m_name

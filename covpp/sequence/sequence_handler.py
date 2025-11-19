@@ -231,7 +231,7 @@ class SequenceHandler:
 
     def update_map_planning(self) -> None:
         """ update map_planning with paths and cells, save map_planning. """
-        if not self.dcfg.save_map_planning:
+        if not self.dcfg.do_save_maps:
             return
         n = self.n_cells
         self.colors = get_n_colors_cv(n)
@@ -383,7 +383,7 @@ class SequenceHandler:
 
     def plot_paths_px(self) -> None:
         """ Plot the calculated coverage paths (different colors) and connections between them. """
-        if not self.dcfg.save_map_planning:
+        if not self.dcfg.do_save_maps:
             return
         fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
