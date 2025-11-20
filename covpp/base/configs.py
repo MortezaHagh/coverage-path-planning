@@ -47,7 +47,7 @@ class PipeLineConfig:
 
     # Methods names for main modules: segmentation, coverage path planning, sequence
     segmentation_method = "voronoi"     # simple, voronoi
-    covpp_method = "boust"            # simple, boust, contour, grid_energy_min
+    covpp_method = "grid_energy_min"            # simple, boust, contour, grid_energy_min
     sequence_method = "milp"            # simple, dfs, milp
 
     # complete method
@@ -130,3 +130,4 @@ class PlanningConfig:
     margin = 0.05                                       # margin from cell boundaries for coverage planning
     cleaning_r_ov = cleaning_r - min_path_overlap/2     # effective cleaning radius considering path overlap
     min_wp_dist = cleaning_r_ov/2                       # minimum distance between waypoints in coverage path
+    max_wp_dist = 4 * cleaning_r_ov                       # maximum distance between waypoints in coverage path

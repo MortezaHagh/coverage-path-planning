@@ -7,6 +7,7 @@ from shapely.geometry import Point
 from shapely.affinity import scale
 from shapely import maximum_inscribed_circle
 from covpp.base import planning_utils as pu
+from covpp.base.geometry import find_longest_edge_poly
 
 
 class EvalRectangles:
@@ -336,20 +337,14 @@ class EvalRectangles:
         min_step = step / 3
 
         # find biggest edge of the self.poly
-        coords = np.array(self.poly.exterior.coords)
-        edges = np.diff(coords, axis=0)
-        edge_lengths = np.linalg.norm(edges, axis=1)
-        max_edge_idx = np.argmax(edge_lengths)
-
-        # twp edge points
-        p1 = coords[max_edge_idx]
-        p2 = coords[(max_edge_idx + 1) % len(coords)]
-
-        # calculate the angle of the edge p1->p2
-        theta = np.arctan2(p2[1] - p1[1], p2[0] - p1[0])
+        edge_prop = find_longest_edge_poly(self.poly)
+        p1 = edge_prop['p1']
+        p2 = edge_prop['p2']
+        theta = edge_prop['angle']
+        edge_length = edge_prop['length']
 
         #  move p1 and p2 in the direction of the center of the edge
-        l_edge = max_edge_idx / 4
+        l_edge = edge_length / 4
         s_p1 = (p1[0] + l_edge * np.cos(theta),
                 p1[1] + l_edge * np.sin(theta))
         s_p2 = (p2[0] + l_edge * np.cos(-theta),

@@ -1,6 +1,7 @@
 """ Utility classes and functions for geometric primitives."""
 import dataclasses
 import numpy as np
+from shapely import Polygon
 
 
 @dataclasses.dataclass
@@ -92,3 +93,29 @@ def angle_diff(a, b):
     """
     diff = (a - b + np.pi) % (2 * np.pi) - np.pi
     return diff
+
+
+def find_longest_edge_poly(polygon: Polygon) -> dict:
+    """ Find the longest edge of a polygon and return its properties."""
+    # find biggest edge of the polygon
+    coords = np.array(polygon.exterior.coords)
+    edges = np.diff(coords, axis=0)
+    edge_lengths = np.linalg.norm(edges, axis=1)
+    max_edge_idx = np.argmax(edge_lengths)
+    edge_length = edge_lengths[max_edge_idx]
+
+    # two edge points
+    p1 = coords[max_edge_idx]
+    p2 = coords[(max_edge_idx + 1) % len(coords)]
+
+    # calculate the angle of the edge p1->p2
+    theta = np.arctan2(p2[1] - p1[1], p2[0] - p1[0])
+
+    # return results
+    result = {
+        'p1': p1,
+        'p2': p2,
+        'angle': theta,
+        'length': edge_length
+    }
+    return result

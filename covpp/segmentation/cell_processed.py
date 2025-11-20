@@ -5,6 +5,7 @@ from shapely import Polygon
 from covpp.gui.rectangle import Rectangle
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig
+from covpp.base.geometry import find_longest_edge_poly
 from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.eval_rectangles import EvalRectangles
 from covpp.district.zone_map_data import ZoneMapData
@@ -127,22 +128,8 @@ class PCell(CellBase):
     def main_direction_by_cell_rectangle(self) -> float:
         """ Get main direction from cell rectangle orientation. """
 
-        # Extract coordinates (last point == first point, so we skip last)
-        rect = self.rectangle_poly
-        coords = list(rect.exterior.coords)
-
-        longest_length = 0
-        longest_angle = None
-
-        for i, (x1, y1) in enumerate(coords):
-            x2, y2 = coords[(i+1) % len(coords)]
-            dx, dy = (x2 - x1, y2 - y1)
-            length = np.hypot(dx, dy)
-
-            if length > longest_length:
-                longest_length = length
-                # Angle in radians relative to +X axis
-                longest_angle = np.arctan2(dy, dx)
+        edge_prop = find_longest_edge_poly(self.rectangle_poly)
+        longest_angle = edge_prop['angle']
         return (longest_angle + np.pi/2) % np.pi
 
     def cell_main_direction(self) -> float:
