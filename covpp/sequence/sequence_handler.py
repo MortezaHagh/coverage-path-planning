@@ -7,8 +7,8 @@ from importlib.metadata import entry_points
 import os
 import cv2 as cv
 import numpy as np
+from matplotlib import animation
 from matplotlib import pyplot as plt
-import matplotlib.animation as animation
 from covpp.segmentation.cell_processed import PCell
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
@@ -18,6 +18,7 @@ from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig, PlanningConfig
 from covpp.base.geometry import MyPoint, MyPath
 from covpp.base.base_utils import get_n_colors_cv, get_n_colors_plt
+from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
 
 
 class SequencePaths:
@@ -291,59 +292,15 @@ class SequenceHandler:
     def apply_distance_filter_all_paths(self) -> None:
         """ Filter all paths based on the minimum distance between waypoints. """
 
-        # pixel paths
-        new_paths_px = []
-        for path_px in self.paths_px:
-            new_path_px = self.apply_distance_filter_path(path_px)
-            new_paths_px.append(new_path_px)
-        self.paths_px = new_paths_px
-
         # connection paths pixel
         new_c_paths_px = []
         for c_path_px in self.c_paths_px:
-            new_c_path_px = self.apply_distance_filter_path(c_path_px)
+            new_c_path_px = CoveragePathPlannerBase.apply_distance_filter_path(c_path_px, self.resolution)
             new_c_paths_px.append(new_c_path_px)
         self.c_paths_px = new_c_paths_px
 
-        # meter paths
-        self.paths_m = [self.path_px_to_m(path_px) for path_px in self.paths_px]
-
         # connection paths meter
         self.c_paths_m = [self.path_px_to_m(c_path_px) for c_path_px in self.c_paths_px]
-
-    def apply_distance_filter_path(self, path: MyPath) -> MyPath:
-        """ Filter the full path based on the minimum distance between waypoints. """
-        min_wp_dist_px = self.pcfg.min_wp_dist / self.resolution  # convert to px
-        new_points = []
-        prev_point = path.point(0)
-        new_points.append(prev_point)
-        for i in range(1, path.n):
-            point = path.point(i)
-            dist = np.sqrt((point.x - prev_point.x) ** 2 + (point.y - prev_point.y) ** 2)
-            if dist >= min_wp_dist_px:
-                new_points.append(point)
-                prev_point = point
-
-        # if distance between points is bigger than max_wp_dist_px, add as many points as needed
-        max_wp_dist_px = self.pcfg.max_wp_dist / self.resolution  # convert to px
-        final_points = []
-        prev_point = new_points[0]
-        final_points.append(prev_point)
-        for i in range(1, len(new_points)):
-            point = new_points[i]
-            dx = point.x - prev_point.x
-            dy = point.y - prev_point.y
-            dist = np.sqrt((dx) ** 2 + (dy) ** 2)
-            if dist > max_wp_dist_px:
-                n_points = int(np.ceil(dist / max_wp_dist_px))
-                for j in range(1, n_points):
-                    new_x = prev_point.x + dx * j / n_points
-                    new_y = prev_point.y + dy * j / n_points
-                    final_points.append(MyPoint(new_x, new_y))
-            final_points.append(point)
-            prev_point = point
-
-        return MyPath(final_points)
 
     # ==================================================================================================================
     # rotations and conversions

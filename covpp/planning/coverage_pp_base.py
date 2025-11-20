@@ -10,6 +10,7 @@ from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPoint, MyPath
 from covpp.base.map_graph import MapSearchGraph
 from covpp.base.configs import PlanningConfig, PipeLineConfig
+from covpp.sequence.pathfinding_in_map import FindPathInMap
 
 
 class CoveragePathPlannerBase:
@@ -55,7 +56,6 @@ class CoveragePathPlannerBase:
 
         # configurations
         self.dcfg = PipeLineConfig()
-        self.pcfg = PlanningConfig()
         self.resolution: float = zmd.resolution
 
         # cell
@@ -67,7 +67,9 @@ class CoveragePathPlannerBase:
 
     def run(self) -> None:
         self.coverage_planning()  # perform coverage planning based on implemented method
-        self.ensure_path_is_free()
+        self.make_path_points_free()
+        self.filter_path_by_distance()
+        self.evaluate_path_edges()
         self.create_path_m()
         self.validate_paths()
 
@@ -87,15 +89,55 @@ class CoveragePathPlannerBase:
         raise NotImplementedError("Coverage planning subclasses must implement coverage_planning() method")
 
     # ==========================================================================
+    # Path validation and adjustment
+    # ==========================================================================
 
-    def ensure_path_is_free(self) -> None:
+    def filter_path_by_distance(self) -> None:
+        """Filter the generated path based on minimum and maximum waypoint distances."""
+        if self.path_px:
+            self.path_px = self.apply_distance_filter_path(self.path_px, self.resolution)
+
+    def make_path_points_free(self) -> None:
+        """ Ensure all points in the path are in free space. """
         mg = MapSearchGraph(self.cell.map, free_value=255, ns=f"{self.lg.name}")
         g_xy = self.cell.global_xy
         new_points = []
         xys = self.path_px.xy - g_xy  # local cell coordinates
         for xy in xys:
-            free_p = mg.find_closest_free_cell((xy[0], xy[1]))
-            new_points.append(MyPoint(free_p[0]+g_xy[0], free_p[1]+g_xy[1]))
+            free_p = mg.find_closest_free_cell(xy) + g_xy
+            new_points.append(MyPoint(free_p[0], free_p[1]))
+        self.path_px = MyPath(new_points)
+
+    def evaluate_path_edges(self) -> None:
+        """ Make sure all path edges are in free space. If not, reconnect them by finding path in the map."""
+
+        # path finding in map object
+        fp = FindPathInMap(self.cell.map, self.cell.global_xy)
+
+        gxy = self.cell.global_xy
+        points = self.path_px.points
+        occupied = [self.cell.map[pt.y - gxy[1], pt.x - gxy[0]] != 255 for pt in points]
+
+        # first and last points should be free
+        if occupied[0] or occupied[-1]:
+            raise ValueError("Path endpoints are not in free space.")
+
+        # free indices
+        free_indices = [i for i, occ in enumerate(occupied) if not occ]
+        fi_1 = free_indices[:-1]
+        fi_2 = free_indices[1:]
+
+        # create new path
+        new_points = []
+        for i1, i2 in zip(fi_1, fi_2):
+            if i2 - i1 > 1:
+                # connect
+                cpath = fp.find_path(start=points[i1], end=points[i2])
+                cpath = self.apply_distance_filter_path(cpath, self.resolution)
+                new_points.extend(cpath.points)
+            else:
+                new_points.append(points[i1])
+                new_points.append(points[i2])
         self.path_px = MyPath(new_points)
 
     def validate_paths(self) -> bool:
@@ -114,6 +156,41 @@ class CoveragePathPlannerBase:
     # ==========================================================================
     # Utility methods for path manipulation
     # ==========================================================================
+
+    @staticmethod
+    def apply_distance_filter_path(path: MyPath, resolution: float) -> MyPath:
+        """ Filter the full path based on the minimum distance between waypoints. """
+        min_wp_dist_px = PlanningConfig.min_wp_dist / resolution  # convert to px
+        new_points = []
+        prev_point = path.point(0)
+        new_points.append(prev_point)
+        for i in range(1, path.n):
+            point = path.point(i)
+            dist = np.sqrt((point.x - prev_point.x) ** 2 + (point.y - prev_point.y) ** 2)
+            if dist >= min_wp_dist_px:
+                new_points.append(point)
+                prev_point = point
+
+        # if distance between points is bigger than max_wp_dist_px, add as many points as needed
+        max_wp_dist_px = PlanningConfig.max_wp_dist / resolution  # convert to px
+        final_points = []
+        prev_point = new_points[0]
+        final_points.append(prev_point)
+        for i in range(1, len(new_points)):
+            point = new_points[i]
+            dx = point.x - prev_point.x
+            dy = point.y - prev_point.y
+            dist = np.sqrt((dx) ** 2 + (dy) ** 2)
+            if dist > max_wp_dist_px:
+                n_points = int(np.ceil(dist / max_wp_dist_px))
+                for j in range(1, n_points):
+                    new_x = int(prev_point.x + dx * j / n_points)
+                    new_y = int(prev_point.y + dy * j / n_points)
+                    final_points.append(MyPoint(new_x, new_y))
+            final_points.append(point)
+            prev_point = point
+
+        return MyPath(final_points)
 
     def create_path_m(self) -> None:
         """Convert path from pixels to meters using map resolution."""

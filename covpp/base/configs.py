@@ -47,7 +47,7 @@ class PipeLineConfig:
 
     # Methods names for main modules: segmentation, coverage path planning, sequence
     segmentation_method = "voronoi"     # simple, voronoi
-    covpp_method = "grid_energy_min"            # simple, boust, contour, grid_energy_min
+    covpp_method = "boust"            # simple, boust, contour, grid_energy_min
     sequence_method = "milp"            # simple, dfs, milp
 
     # complete method

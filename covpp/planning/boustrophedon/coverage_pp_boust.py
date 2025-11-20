@@ -77,7 +77,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         # self.rotate_back_cells()
         self.all_cells_coverage_pp()
         self.rotate_back_paths()
-        self.ensure_path_is_free()
+        self.make_path_endpoints_free()
         self.create_connected_path()
         # *******************************
 
@@ -162,19 +162,18 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
                 cell.set_path_px(rot_path)
                 # cell.set_path_m(self.path_px_to_m(rot_path))
 
-    def ensure_path_is_free(self) -> None:
+    def make_path_endpoints_free(self) -> None:
         """ Ensure all points in the full path are in free space. """
         mg = MapSearchGraph(self.cell.map, free_value=255, ns=f"{self.lg.name}")
         g_xy = self.cell.global_xy
-
         for cell in self.mcells:
             if cell.path_px:
-                new_points = []
                 xys = cell.path_px.xy - g_xy  # local cell coordinates
-                for xy in xys:
-                    free_p = mg.find_closest_free_cell((xy[0], xy[1]))
-                    new_points.append(MyPoint(free_p[0]+g_xy[0], free_p[1]+g_xy[1]))
-                cell.path_px = MyPath(new_points)
+                p_f = g_xy + mg.find_closest_free_cell(xys[0])      # first point
+                p_l = g_xy + mg.find_closest_free_cell(xys[-1])     # last point
+                cell.path_px.points[0] = MyPoint(p_f[0], p_f[1])
+                cell.path_px.points[-1] = MyPoint(p_l[0], p_l[1])
+                cell.path_px.set_xys()
                 cell.path_m = self.path_px_to_m(cell.path_px)
 
     def create_connected_path(self) -> None:

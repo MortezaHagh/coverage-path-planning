@@ -14,13 +14,13 @@ class MapSearchGraph:
         self.cost_map = binary_map
         self.free = 1  # FREE cell value in cost map
 
-    def find_closest_free_cell(self, point: tuple[int, int]) -> tuple[int, int]:
+    def find_closest_free_cell(self, point: np.ndarray) -> np.ndarray:
         """ if point is in the free cell, return it, otherwise find the closest free cell. """
 
         # check if point is free
-        x, y = point
+        x, y = point[0], point[1]
         if self.cost_map[y, x] == self.free:
-            return point
+            return np.array([x, y], dtype=int)
         self.lg.debug(f"Point {point} is not free, finding closest free cell")
 
         # Use BFS to find the nearest free cell for efficiency
@@ -36,7 +36,7 @@ class MapSearchGraph:
         while queue:
             x, y = queue.popleft()
             if self.cost_map[y, x] == self.free:
-                return (x, y)
+                return np.array([x, y], dtype=int)
             for dx, dy in directions:
                 nx, ny = x + dx, y + dy
                 if 0 <= ny < max_y and 0 <= nx < max_x and (nx, ny) not in visited:
