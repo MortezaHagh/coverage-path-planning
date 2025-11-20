@@ -52,7 +52,7 @@ class GridGenerator:
     """ Creates a grid representation of the cell map for planning."""
 
     def __init__(self, cell: PCell, zmd: ZoneMapData):
-        self.lg = MyLogger(f"GridGenerator-C{cell.id}")
+        self.lg = MyLogger(f"GridGenerator-Z{zmd.ind}-C{cell.id}")
         self.lg.info2("Creating grid representation of the cell map.")
 
         # coverage cell

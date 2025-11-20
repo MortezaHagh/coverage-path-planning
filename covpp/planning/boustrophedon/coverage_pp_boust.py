@@ -5,6 +5,7 @@ from covpp.base.geometry import MyPath, MyPoint
 from covpp.base.map_graph import MapSearchGraph
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
+from covpp.segmentation.cell_processed import PCell
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
 from covpp.planning.boustrophedon.cell import Cell
@@ -34,9 +35,8 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         Sets path_m and path_px attributes for the cell.
     """
 
-    def __init__(self, cell: Cell, zmd: ZoneMapData):
+    def __init__(self, cell: PCell, zmd: ZoneMapData):
         super().__init__(cell, zmd)
-
         self.lg = MyLogger(f"CovPPBoust-Z{zmd.ind}-C{cell.id}")
 
         # map polygons
@@ -48,7 +48,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.boust_plotter = BoustPlotter()
 
         # connect paths interface
-        self.connections = ConnectPaths(zone_map_data=self.zmd, ns=f"C{cell.id}")
+        self.connections = ConnectPaths(map_ws=cell.map, g_xy=cell.global_xy, ns=f"Z{zmd.ind}-C{cell.id}")
 
         # resulting cells after decomposition
         self.mcells: list[Cell] = []    # boustrophedon cells within the given cell

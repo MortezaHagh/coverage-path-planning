@@ -3,8 +3,8 @@ import numpy as np
 from shapely.affinity import scale
 from shapely.geometry import Polygon, Point, LineString
 from covpp.base.logger import MyLogger
-from covpp.base.configs import PlanningConfig
 from covpp.base.geometry import MyPoint, MyPath
+from covpp.base.configs import PlanningConfig, PipeLineConfig
 from covpp.planning.boustrophedon.cell import Cell
 
 
@@ -38,7 +38,11 @@ class CellCoveragePathPlanner:
         # parameters and configurations
         self.pcfg = PlanningConfig()
         self.resolution: float = resolution
-        self.x_scale = 1.05
+        self.x_scale = 1.05             # scale factor in x direction to avoid edge cases
+        self.d_shift = resolution * 5   # shift for hitting points to avoid edge cases
+        self.add_line_thresh = 0.1      # threshold to add extra boust line
+        if PipeLineConfig.all_cleaned:
+            self.add_line_thresh = 0.01
 
         # run planning for the cell
         self.coverage_planning()
@@ -114,7 +118,7 @@ class CellCoveragePathPlanner:
         # width in meters
         w_m = cell.width * resolution
         # shift
-        d_shift = resolution * 5
+        d_shift = self.d_shift
 
         # find xx: the x coordinates of the vertical scan lines
         w_thresh_1 = cleaning_d / 3
@@ -126,13 +130,13 @@ class CellCoveragePathPlanner:
         elif w_m < w_thresh_2:
             xx = [x_min+d_shift, x_max-d_shift]
         else:
-            ww = w_m - cleaning_d
-            n_r = int(np.ceil(ww / (cleaning_d)))
-            d_c = w_m / (n_r+1)
-            #
+            ww = w_m + cleaning_d
+            n_r = ww / (cleaning_d)
+            f = np.floor(n_r)
+            n_r = int(f + ((n_r - f) > self.add_line_thresh))
             xl = x_min + d_shift
             xr = x_max - d_shift
-            xx = [x_min + d_c*i for i in range(1, n_r+1)]
+            xx = np.linspace(xl, xr, n_r).tolist()
             xx.insert(0, xl)
             xx.append(xr)
 

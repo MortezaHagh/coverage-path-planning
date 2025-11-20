@@ -8,9 +8,7 @@ class MapSearchGraph:
     """ Graph structure for map search operations."""
 
     def __init__(self, map_arr: np.ndarray, free_value: int = 255, ns=''):
-        if ns != '':
-            ns = '_' + ns
-        self.lg = MyLogger('MapSearchGraph' + ns)
+        self.lg = MyLogger('MapSearchGraph-' + ns)
 
         binary_map = np.where(map_arr == free_value, 1, 0).astype(np.uint8)
         self.cost_map = binary_map

@@ -91,7 +91,6 @@ class SequenceHandler:
         self.colors: list[tuple] = []
 
         # params
-        self.min_points_distance: float = self.pcfg.min_wp_dist
         self.resolution: float = zmd.resolution
 
         # sequence optimizer
@@ -102,7 +101,7 @@ class SequenceHandler:
         self.sequencer: BaseSeqOpt = sequencers[sequencer_name].load()()
 
         # connect paths interface
-        self.connections: ConnectPaths = ConnectPaths(self.zmd, ns="Sequence")
+        self.connections: ConnectPaths = ConnectPaths(map_ws=zmd.map_ws, g_xy=zmd.global_xy, ns=f"Z{zmd.ind}-seq")
 
         # # paths
         # final complete connected path
@@ -190,7 +189,9 @@ class SequenceHandler:
         self.c_paths_px = self.connections.c_paths_px
         self.c_paths_m = [self.path_px_to_m(path_px) for path_px in self.c_paths_px]
 
-# Post Planning ====================================================================================================
+    # ==================================================================================================================
+    # Post Planning
+    # ==================================================================================================================
 
     def post_planning(self) -> None:
         if len(self.paths_px) == 0 or len(self.paths_m) == 0:
@@ -227,7 +228,9 @@ class SequenceHandler:
         self.paths.f_path_m = self.f_path_m
         self.paths.n_paths = len(self.paths_px)
 
-    # update map planning ==============================================================================================
+    # ==================================================================================================================
+    # update map planning
+    # ==================================================================================================================
 
     def update_map_planning(self) -> None:
         """ update map_planning with paths and cells, save map_planning. """
@@ -281,23 +284,24 @@ class SequenceHandler:
                     cv.circle(map_planning, tuple(point), p_r, self.colors[i], -1)
         self.zmd.map_planning = map_planning
 
-    # filters ==========================================================================================================
+    # ==================================================================================================================
+    # filters and path processing
+    # ==================================================================================================================
 
     def apply_distance_filter_all_paths(self) -> None:
         """ Filter all paths based on the minimum distance between waypoints. """
-        min_wp_dist_px = self.min_points_distance / self.resolution  # convert to px
 
         # pixel paths
         new_paths_px = []
         for path_px in self.paths_px:
-            new_path_px = self.apply_distance_filter_path(path_px, min_wp_dist_px)
+            new_path_px = self.apply_distance_filter_path(path_px)
             new_paths_px.append(new_path_px)
         self.paths_px = new_paths_px
 
         # connection paths pixel
         new_c_paths_px = []
         for c_path_px in self.c_paths_px:
-            new_c_path_px = self.apply_distance_filter_path(c_path_px, min_wp_dist_px)
+            new_c_path_px = self.apply_distance_filter_path(c_path_px)
             new_c_paths_px.append(new_c_path_px)
         self.c_paths_px = new_c_paths_px
 
@@ -307,8 +311,9 @@ class SequenceHandler:
         # connection paths meter
         self.c_paths_m = [self.path_px_to_m(c_path_px) for c_path_px in self.c_paths_px]
 
-    def apply_distance_filter_path(self, path: MyPath, min_wp_dist_px: int) -> MyPath:
+    def apply_distance_filter_path(self, path: MyPath) -> MyPath:
         """ Filter the full path based on the minimum distance between waypoints. """
+        min_wp_dist_px = self.pcfg.min_wp_dist / self.resolution  # convert to px
         new_points = []
         prev_point = path.point(0)
         new_points.append(prev_point)
@@ -318,54 +323,31 @@ class SequenceHandler:
             if dist >= min_wp_dist_px:
                 new_points.append(point)
                 prev_point = point
-        return MyPath(new_points)
 
-    def process_full_path_distances(self) -> None:
-        """ Process the full path distances based on the minimum distance between waypoints.
-            If distance between points is less than min_points_distance, remove the point.
-            If distance between points is bigger than min_points_distance, add as many points as needed.
-        """
-
-        if self.f_path_px is None:
-            self.lg.error("Full path is empty or has less than 2 points. Cannot process distances.")
-            return
-
-        # if distance between points is less than min_points_distance, remove the point
-        min_wp_dist_px = self.min_points_distance / self.resolution  # convert to px
-        new_points = []
-        prev_point = self.f_path_px.point(0)
-        new_points.append(prev_point)
-        for i in range(1, self.f_path_px.n):
-            point = self.f_path_px.point(i)
-            dist = np.sqrt((point.x - prev_point.x) ** 2 + (point.y - prev_point.y) ** 2)
-            if dist >= min_wp_dist_px:
-                new_points.append(point)
-                prev_point = point
-        self.f_path_px = MyPath(new_points)
-
-        # if distance between points is bigger than min_points_distance, add as many points as needed
-        new_points = []
-        prev_point = self.f_path_px.point(0)
-        new_points.append(prev_point)
-        for i in range(1, self.f_path_px.n):
-            point = self.f_path_px.point(i)
+        # if distance between points is bigger than max_wp_dist_px, add as many points as needed
+        max_wp_dist_px = self.pcfg.max_wp_dist / self.resolution  # convert to px
+        final_points = []
+        prev_point = new_points[0]
+        final_points.append(prev_point)
+        for i in range(1, len(new_points)):
+            point = new_points[i]
             dx = point.x - prev_point.x
             dy = point.y - prev_point.y
             dist = np.sqrt((dx) ** 2 + (dy) ** 2)
-            if dist > 1.1*min_wp_dist_px:
-                n_points = int(np.ceil(dist / min_wp_dist_px))
+            if dist > max_wp_dist_px:
+                n_points = int(np.ceil(dist / max_wp_dist_px))
                 for j in range(1, n_points):
                     new_x = prev_point.x + dx * j / n_points
                     new_y = prev_point.y + dy * j / n_points
-                    new_points.append(MyPoint(new_x, new_y))
-            new_points.append(point)
+                    final_points.append(MyPoint(new_x, new_y))
+            final_points.append(point)
             prev_point = point
-        self.f_path_px = MyPath(new_points)
 
-        # create f_path_m
-        self.f_path_m = self.path_px_to_m(self.f_path_px)
+        return MyPath(final_points)
 
-    # rotations and conversions ========================================================================================
+    # ==================================================================================================================
+    # rotations and conversions
+    # ==================================================================================================================
 
     def path_m_to_px(self, path_m: MyPath) -> MyPath:
         return MyPath([self.point_m_to_px(p) for p in path_m.points])
@@ -379,7 +361,9 @@ class SequenceHandler:
     def point_px_to_m(self, p: MyPoint) -> MyPoint:
         return MyPoint(p.x * self.resolution, p.y * self.resolution)
 
-    # Plots ============================================================================================================
+    # ==================================================================================================================
+    # Plots
+    # ==================================================================================================================
 
     def plot_paths_px(self) -> None:
         """ Plot the calculated coverage paths (different colors) and connections between them. """
@@ -434,15 +418,15 @@ class SequenceHandler:
         _, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
         ax.set_title("paths_m")
-        #
         n = self.st.n_paths
         colors = get_n_colors_plt(n)
+        # coverage paths
         for i, path in enumerate(self.paths_m):
             if path is None:
                 continue
             pp = np.array(path.xy, dtype=np.float32)
             ax.plot(pp[:, 0], pp[:, 1], color=colors[i], linewidth=2, linestyle='-')
-        #
+        # connection paths
         for c_path in self.c_paths_m:
             if c_path is None:
                 continue

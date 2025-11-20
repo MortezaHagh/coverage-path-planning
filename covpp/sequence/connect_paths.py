@@ -13,7 +13,6 @@ import pyastar2d
 from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPath, MyPoint
 from covpp.segmentation.cell_processed import PCell
-from covpp.district.zone_map_data import ZoneMapData
 
 
 class ConnectPaths:
@@ -24,11 +23,12 @@ class ConnectPaths:
     next cell in the sequence.
     """
 
-    def __init__(self, zone_map_data: ZoneMapData, ns: str = ""):
-        self.lg = MyLogger(f"ConnectPaths-Z{zone_map_data.ind}-{ns}")
+    def __init__(self, map_ws: np.ndarray, g_xy: tuple[int, int], ns: str = ""):
+        self.lg = MyLogger(f"ConnectPaths-{ns}")
 
         # find path in map object
-        self.fp = FindPathInMap(zone_map_data)
+
+        self.fp = FindPathInMap(map_ws, g_xy)
 
         # all connections between cells
         self.all_connection_paths: np.ndarray = np.array([])    # 2D array of paths between cells
@@ -122,20 +122,20 @@ class ConnectPaths:
 class FindPathInMap:
     """ class for finding path between two points in map. """
 
-    def __init__(self, zmd: ZoneMapData):
+    def __init__(self, map_ws: np.ndarray, g_xy: tuple[int, int]):
         self.lg = MyLogger("FindPathInMap")
 
         # map - cost_map
         self.free_cost = 1
         self.occ_cost = 10
-        binary_map = (zmd.map_ws == 255).astype(np.uint8)  # 1 = free, 0 = obstacle
+        binary_map = (map_ws == 255).astype(np.uint8)  # 1 = free, 0 = obstacle
         self.cost_map = np.where(binary_map == 1, 1, 10).astype(np.float32)   # method 1 # 1 = free, 1000 = obstacle
         # self.cost_map = np.where(binary_map == 1, 1, 0)                       # method 2 # 1 = free, 0 = obstacle
         # self.grid = Grid(matrix=self.cost_map)     # method 3 # grid for pathfinding algorithm (function find_path_al_pathfinding)
 
         # start point (offset in global map)
-        self.s_x = zmd.global_xy[0]
-        self.s_y = zmd.global_xy[1]
+        self.s_x = g_xy[0]
+        self.s_y = g_xy[1]
 
     def distance_between_points(self, p1: MyPoint, p2: MyPoint) -> float:
         """ Calculate distance between two points in the map.

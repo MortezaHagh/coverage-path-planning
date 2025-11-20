@@ -7,7 +7,7 @@ from covpp.base.logger import MyLogger
 from covpp.base import planning_utils as pu
 from covpp.base.geometry import MyPoint, MyPath
 from covpp.district.zone_map_data import ZoneMapData
-from covpp.segmentation.voronoi_segmentation.cell import Cell
+from covpp.segmentation.cell_processed import PCell
 from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
 
 
@@ -26,7 +26,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         Sets path_m and path_px attributes for the cell.
     """
 
-    def __init__(self, cell: Cell, zmd: ZoneMapData):
+    def __init__(self, cell: PCell, zmd: ZoneMapData):
         super().__init__(cell, zmd)
         self.lg = MyLogger(f"CovPPContour-Z{zmd.ind}-C{cell.id}")
 
@@ -87,7 +87,8 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             return
 
         # initial scale of the polygon
-        scaled_poly = self.cell.poly.buffer(-1, join_style=2, resolution=8)
+        d_buffer = -2  # initial buffer distance to avoid edge cases
+        scaled_poly = self.cell.poly.buffer(d_buffer, join_style=2, resolution=8)
         if scaled_poly.is_empty or scaled_poly is None:
             raise ValueError(f"Cell {self.cell.id} has an empty scaled_poly.")
         if isinstance(scaled_poly, MultiPolygon):
@@ -117,7 +118,8 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         robot_d_px = int(robot_r_px * 2)
 
         # main rectangle
-        scaled_rect = rect.buffer(-4, join_style=2, resolution=8)
+        d_buffer = -2  # initial buffer distance to avoid edge cases
+        scaled_rect = rect.buffer(d_buffer, join_style=2, resolution=8)
         if scaled_rect.is_empty or scaled_rect is None:
             self.lg.error(f"Cell {self.cell.id} main_rectangle has issues.")
             return MyPath([])

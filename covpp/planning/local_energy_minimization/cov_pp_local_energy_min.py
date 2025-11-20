@@ -3,7 +3,7 @@ import numpy as np
 from covpp.base.logger import MyLogger
 from covpp.base.geometry import angle_diff, MyPoint, MyPath
 from covpp.district.zone_map_data import ZoneMapData
-from covpp.segmentation.voronoi_segmentation.cell import Cell
+from covpp.segmentation.cell_processed import PCell
 from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
 from covpp.planning.local_energy_minimization.grid import PGrid, GridGenerator, GridNode
 
@@ -23,9 +23,8 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         Sets path_m and path_px attributes for the cell.
     """
 
-    def __init__(self, cell: Cell, zmd: ZoneMapData):
+    def __init__(self, cell: PCell, zmd: ZoneMapData):
         super().__init__(cell, zmd)
-
         self.lg = MyLogger(f"CovPPLocalEnergyMin-Z{zmd.ind}-C{cell.id}")
 
         # attributes

@@ -48,7 +48,7 @@ class CoveragePathPlannerBase:
     """
 
     def __init__(self, cell: PCell, zmd: ZoneMapData):
-        self.lg = MyLogger("CoveragePlannerBase-Z" + str(zmd.ind))
+        self.lg = MyLogger("CoveragePlannerBase-Z" + str(zmd.ind) + f"-C{cell.id}")
 
         # zone map data
         self.zmd: ZoneMapData = zmd
@@ -89,7 +89,7 @@ class CoveragePathPlannerBase:
     # ==========================================================================
 
     def ensure_path_is_free(self) -> None:
-        mg = MapSearchGraph(self.cell.map, free_value=255, ns=f"Cell_{self.cell.id}")
+        mg = MapSearchGraph(self.cell.map, free_value=255, ns=f"{self.lg.name}")
         g_xy = self.cell.global_xy
         new_points = []
         xys = self.path_px.xy - g_xy  # local cell coordinates
