@@ -379,7 +379,7 @@ class EvalRectangles:
         p4 = (s_p1[0] + step * np.cos(th3),
               s_p1[1] + step * np.sin(th3))
         if not self.spoly.contains(Point(p4)):
-            self.lg.error("Cannot find a valid point p4 for the inscribed rectangle expansion.")
+            # self.lg.error("Cannot find a valid point p4 for the inscribed rectangle expansion.")
             return inscribed_rect_poly
             # raise ValueError("Cannot find a valid point p4 for the inscribed rectangle expansion.")
 

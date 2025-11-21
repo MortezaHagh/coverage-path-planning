@@ -9,7 +9,7 @@ class Cell (CellBase):
     """ Cell for boustrophedon decomposition. """
 
     def __init__(self, ind: int, poly: Polygon, event: Event, resolution: float = 0.05):
-        super().__init__(ind, poly, resolution)
+        super().__init__(ind, poly, resolution, simplify=False)
 
         #
         self.group_id: int = None

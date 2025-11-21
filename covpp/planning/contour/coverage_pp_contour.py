@@ -30,6 +30,11 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         super().__init__(cell, zmd)
         self.lg = MyLogger(f"CovPPContour-Z{zmd.ind}-C{cell.id}")
 
+        # settings
+        self.add_line_thresh = 0.2      # threshold to add extra boust line
+        if self.dcfg.all_cleaned:
+            self.add_line_thresh = 0.05
+
     def coverage_planning(self) -> None:
         """Execute contour-following coverage planning for the cell."""
 
@@ -137,15 +142,15 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         # case1
         n1 = ((min_edge / robot_d_px) - 1.0) / 2
         dd = n1 - n1 // 1
-        if dd > 0.1:
+        if dd > self.add_line_thresh:
             n1 = np.ceil(n1)
         else:
             n1 = int(n1)
         new_d_1 = min_edge / (2*n1 + 1.0)
-        # case2
+        # case2, # add a line at the center of the rectangle
         n2 = (min_edge / (2*robot_d_px)) - 1.0
         dd = n2 - n2 // 1
-        if dd > 0.1:
+        if dd > self.add_line_thresh:
             n2 = np.ceil(n2)
         else:
             n2 = int(n2)
@@ -213,7 +218,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         # calculate the number of lines ****
         n = (max_dist / robot_d_px) - 0.5
         dd = n - n//1
-        if dd > 0.1:
+        if dd > self.add_line_thresh:
             n = np.ceil(n)
         else:
             n = int(n)

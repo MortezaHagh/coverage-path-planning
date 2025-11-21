@@ -250,6 +250,7 @@ class Segmentation(SegmentationBase):
                     ring = ring[:found_cp_idx+1]
                     self.critical_points[idx_cp].skip = True
                     ring_cp_ring_idxs = ring_cp_ring_idxs[:idx]
+                    ring_cp_idxs = ring_cp_idxs[:idx]
                     # self.lg.warn(f"Critical point {idx_cp} already in the ring, skipping.")
                 else:
                     ring_cp_idxs.append(new_cp_idx)

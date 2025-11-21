@@ -56,6 +56,7 @@ class CoveragePathPlannerBase:
 
         # configurations
         self.dcfg = PipeLineConfig()
+        self.pcfg = PlanningConfig()
         self.resolution: float = zmd.resolution
 
         # cell

@@ -2,7 +2,7 @@
 from copy import deepcopy
 import numpy as np
 from shapely.geometry import Polygon
-from shapely import maximum_inscribed_circle
+from shapely import maximum_inscribed_circle  # , concave_hull
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PlanningConfig
 from covpp.base.geometry import MyPoint, MyPath
@@ -20,7 +20,7 @@ class CellBase:
         resolution (float): Map resolution in meters per pixel.
     """
 
-    def __init__(self, idx: int, poly: Polygon, resolution: float = 0.05):
+    def __init__(self, idx: int, poly: Polygon, resolution: float = 0.05, simplify: bool = True):
         self.lg = MyLogger(f"CellBase-{idx}")
         self.id: int = idx                  # cell id
         self.opt_id: int = None             # optimized id after sequencing
@@ -33,6 +33,8 @@ class CellBase:
         self.slim_cell_thresh_c = 2.0   # slim cell threshold coefficient
 
         # polygon and points
+        if simplify:
+            poly = self.simplify_cell_poly(poly)
         self.base_poly: Polygon = deepcopy(poly)                # original cell polygon before any modifications
         self.poly: Polygon = poly                               # cell polygon
         self.points: np.ndarray = np.array([], dtype=np.int32)  # cell polygon points
@@ -74,6 +76,18 @@ class CellBase:
 
         # create cell points
         self.create_cell_points()
+
+    # def eval_polygon(self, poly: Polygon) -> Polygon:
+    #     if poly.geom_type == "MultiPolygon":
+    #         self.lg.warn("MultiPolygon detected; using concave hull to create single polygon.")
+    #         poly = concave_hull(poly, ratio=0.1)
+    #     if not poly.is_valid:
+    #         raise ValueError("Invalid polygon provided.")
+    #     if poly.is_empty:
+    #         raise ValueError("Empty polygon provided.")
+    #     if not poly.is_simple:
+    #         raise ValueError("Polygon is not simple.")
+    #     return poly
 
     def set_optim_id(self, ind: int, next_cell_idx: int = None):
         """Set optimized sequence ID and next cell reference after sequencing."""
@@ -125,6 +139,12 @@ class CellBase:
             self.points = np.array(points, dtype=np.int32)
         else:
             self.points = []
+
+    def simplify_cell_poly(self, polygon: Polygon, tolerance: float = 1.0) -> Polygon:
+        """ Simplify cell polygon to reduce complexity. """
+        poly = polygon.simplify(tolerance, preserve_topology=True)
+        # check if result is polygon not multi-polygon
+        return poly
 
     # --------------------------------------------------------------------------
     # setters

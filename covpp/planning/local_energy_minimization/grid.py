@@ -3,8 +3,8 @@ import cv2 as cv
 import numpy as np
 from shapely.geometry import Point
 from covpp.base.logger import MyLogger
-from covpp.base.geometry import angle_diff
 from covpp.base.configs import SpaceConfig, PipeLineConfig
+from covpp.base.geometry import angle_diff, find_longest_edge_poly
 from covpp.segmentation.cell_processed import PCell
 from covpp.district.zone_map_data import ZoneMapData
 
@@ -60,6 +60,11 @@ class GridGenerator:
 
         # attributes
         self.grid: PGrid = None
+
+        # settings
+        self.add_line_thresh = 0.2      # threshold to add extra boust line
+        if PipeLineConfig.all_cleaned:
+            self.add_line_thresh = 0.05
 
         # create grid ---------------------------------
         grid_l = self.calculate_base_grid_size(zmd.resolution)
@@ -188,10 +193,19 @@ class GridGenerator:
 
         # find number of rows and columns
         # calculate distance along each direction
-        n_rows = int(np.round(width / grid_l))
+        n_rows = width / grid_l
+        if n_rows % 1 > self.add_line_thresh:
+            n_rows = int(np.ceil(n_rows))
+        else:
+            n_rows = int(n_rows)
         l_row = int(np.ceil(width / n_rows))
         n_rows += 1
-        n_cols = int(np.round(length / grid_l))
+        #
+        n_cols = length / grid_l
+        if n_cols % 1 > self.add_line_thresh:
+            n_cols = int(np.ceil(n_cols))
+        else:
+            n_cols = int(n_cols)
         l_col = int(np.ceil(length / n_cols))
         n_cols += 1
 
@@ -220,7 +234,17 @@ class GridGenerator:
 
     def create_grid_m(self, grid_l: int) -> PGrid:
 
-        # create a meshgrid
+        # find biggest edge of polygon
+        poly = self.cell.poly
+        scaled_poly_in = poly.buffer(-2, join_style=2, resolution=8)
+        edge_props = find_longest_edge_poly(scaled_poly_in)
+        p1 = edge_props['p1'] - self.cell.global_xy
+
+        # scale rectangle to avoid boundary issues
+        d_scale = grid_l / 2
+        scaled_poly_out = poly.buffer(d_scale, join_style=2, resolution=8)
+
+        # create a meshgrid centered at zero so 0 is guaranteed to be included
         n_h, n_w = self.cell.map.shape
         l_square = np.linalg.norm([n_h, n_w]) / np.sqrt(2)
         xs = np.arange(-l_square, l_square, grid_l)
@@ -235,7 +259,16 @@ class GridGenerator:
         theta = (self.cell.major_direction + np.pi / 2) % (2 * np.pi)
         rot_matrix = np.array([[np.cos(theta), -np.sin(theta)],
                                [np.sin(theta),  np.cos(theta)]])
+
+        # translate and rotate
         points_rotated = (rot_matrix @ points_px.T).T + np.array([n_w / 2, n_h / 2])
+
+        # find closest point to p1 to align grid
+        dists = np.linalg.norm(points_rotated - p1, axis=1)
+        min_idx = np.argmin(dists)
+        points_rotated = points_rotated - points_rotated[min_idx, :] + p1
+
+        # Translate to global coordinates
         points_global = points_rotated + self.cell.global_xy
         points_map = points_rotated.astype(int)
         points_global = points_global.astype(int)
@@ -243,11 +276,6 @@ class GridGenerator:
         # reshape back to grid
         points_map = points_map.reshape((n_y, n_x, 2))
         points_global = points_global.reshape((n_y, n_x, 2))
-
-        # scale rectangle to avoid boundary issues
-        d_scale = grid_l / 3
-        poly = self.cell.poly
-        scaled_poly = poly.buffer(d_scale, join_style=2, resolution=8)
 
         # create empty grid map and nodes
         nodes: np.ndarray = np.empty((n_y, n_x), dtype=object)
@@ -265,7 +293,7 @@ class GridGenerator:
                     if self.cell.map[y_m, x_m] == 0:  # occupied
                         # check if point is between the scaled rectangle and original rectangle (boundary area)
                         point = Point(points_global[i, j, 0], points_global[i, j, 1])
-                        if scaled_poly.contains(point) and not poly.contains(point):
+                        if scaled_poly_out.contains(point) and not scaled_poly_in.contains(point):
                             # between boundary area, consider free
                             pass
                         else:
@@ -469,6 +497,7 @@ class GridGenerator:
         # cv.imshow("grid_map", viz_map)
         # cv.waitKey(0)
 
+        # # plot using matplotlib
         # from matplotlib import pyplot as plt
         # fig, ax = plt.subplots(figsize=(8, 8))
         # ax.set_aspect('equal', adjustable='box')
@@ -493,5 +522,6 @@ class GridGenerator:
         # y_end = node.y + 50 * np.sin(head) - gxy[1]
         # ax.plot([node.x - gxy[0], x_end], [node.y - gxy[1], y_end], 'b-')
         # ax.set_title(f"Grid Map - Cell {self.cell.id}")
-        # fig.savefig(f"{path}/grid_map_{self.cell.id}.png")
+        # # fig.savefig(f"{path}/grid_map_{self.cell.id}.png")
+        # plt.show()
         # plt.close(fig)

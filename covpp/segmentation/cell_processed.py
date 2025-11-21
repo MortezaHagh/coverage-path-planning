@@ -73,7 +73,7 @@ class PCell(CellBase):
         y_min = int(self.y_min_p - zone_rectangle.y_min)
         x_max = int(self.x_max_p - zone_rectangle.x_min)
         y_max = int(self.y_max_p - zone_rectangle.y_min)
-        n = 5
+        n = 5 + 2*self.robot_r_px  # margin
         x_min = max(x_min-n, 0)
         y_min = max(y_min-n, 0)
         x_max = min(x_max+n, zone_rectangle.x_max)

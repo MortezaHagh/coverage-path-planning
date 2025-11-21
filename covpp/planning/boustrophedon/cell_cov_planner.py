@@ -39,10 +39,10 @@ class CellCoveragePathPlanner:
         self.pcfg = PlanningConfig()
         self.resolution: float = resolution
         self.x_scale = 1.05             # scale factor in x direction to avoid edge cases
-        self.d_shift = resolution * 5   # shift for hitting points to avoid edge cases
-        self.add_line_thresh = 0.1      # threshold to add extra boust line
+        self.d_shift = resolution * 4   # shift for hitting points to avoid edge cases
+        self.add_line_thresh = 0.2      # threshold to add extra boust line
         if PipeLineConfig.all_cleaned:
-            self.add_line_thresh = 0.01
+            self.add_line_thresh = 0.05
 
         # run planning for the cell
         self.coverage_planning()
