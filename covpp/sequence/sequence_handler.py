@@ -93,6 +93,8 @@ class SequenceHandler:
 
         # params
         self.resolution: float = zmd.resolution
+        self.plot_scale_px: float = min(zmd.hw)/500
+        self.plot_scale_m: float = min(zmd.hw)*zmd.resolution/10
 
         # sequence optimizer
         sequencer_name = self.dcfg.sequence_method
@@ -215,8 +217,8 @@ class SequenceHandler:
         self.f_path_m = self.path_px_to_m(self.f_path_px)
 
     def plot_paths(self):
-        self.plot_paths_px()
-        self.plot_final_path_m()
+        self.plot_paths_px()        # paths.png svg
+        self.plot_final_path_m()    # final_path.svg
         if self.pcfg.animation:
             self.animate_robot_paths()
 
@@ -335,23 +337,26 @@ class SequenceHandler:
     def plot_coverage_paths(self, ax):
         n = self.paths.n_paths
         colors = get_n_colors_plt(n)
-        # fig, ax = plt.subplots(1, 1)
+        scale = self.plot_scale_px
+
+        # plot polygons
         x, y = self.map_polygons.b_poly.exterior.xy
         ax.plot(x, y, color="black", linewidth=1)
         for obs in self.map_polygons.obs_polys:
             x, y = obs.exterior.xy
             ax.plot(x, y, color="black", linewidth=1)
 
+        # coverage paths
         for i, path in enumerate(self.paths_px):
             if path is None:
                 continue
             pp = np.array(path.xy, dtype=np.int32)
-            ax.plot(pp[:, 0], pp[:, 1], color=colors[i], linewidth=2, linestyle='-')
+            ax.plot(pp[:, 0], pp[:, 1], color=colors[i], linewidth=2/scale, linestyle='-')
             # start and end points
-            ax.plot(pp[0, 0], pp[0, 1], 'o', color=colors[i], markersize=6)
-            ax.text(pp[0, 0], pp[0, 1], f'S{i}', fontsize=9, color='k')
-            ax.plot(pp[-1, 0], pp[-1, 1], 's', color=colors[i], markersize=6)
-            ax.text(pp[-1, 0], pp[-1, 1], f'E{i}', fontsize=9, color='k')
+            ax.plot(pp[0, 0], pp[0, 1], 'o', color=colors[i], markersize=6/scale)
+            ax.text(pp[0, 0], pp[0, 1], f'S{i}', fontsize=12/scale, color='k')
+            ax.plot(pp[-1, 0], pp[-1, 1], 's', color=colors[i], markersize=6/scale)
+            ax.text(pp[-1, 0], pp[-1, 1], f'E{i}', fontsize=12/scale, color='k')
 
     def plot_connection_paths(self, ax):
         for c_path in self.c_paths_px:
@@ -364,8 +369,8 @@ class SequenceHandler:
 
     def save_path_fig(self, fig, is_anim=False):
         if not is_anim:
-            fig_path = os.path.join(self.zmd.method_results_dir, "paths.png")
-            fig.savefig(fig_path, format="png", dpi=self.dcfg.dpi)
+            fig_path = os.path.join(self.zmd.method_results_dir, "paths.svg")
+            fig.savefig(fig_path, format="svg", dpi=self.dcfg.dpi)
         else:
             self.lg.info(f"saving animation ... n_frames: {self.f_path_px.n}")
             fig_path = os.path.join(self.zmd.method_results_dir, "anim_paths.gif")
@@ -396,12 +401,12 @@ class SequenceHandler:
         fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
         ax.set_title("Final Path")
-        scale = min(self.zmd.hw)*self.zmd.resolution/10
+        scale = self.plot_scale_m
+        # final path
         if self.f_path_m is not None:
             pp = np.array(self.f_path_m.xy, dtype=np.float32)
             ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2/scale, linestyle='-', markersize=3/scale)
         fig_path = os.path.join(self.zmd.method_results_dir, "final_path")
-        # fig.savefig(fig_path+'.png', format="png", dpi=self.dcfg.dpi)
         fig.savefig(fig_path+'.svg', format="svg", dpi=self.dcfg.dpi)
         plt.close('all')
 

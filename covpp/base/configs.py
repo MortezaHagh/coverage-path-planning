@@ -96,12 +96,12 @@ class SpaceConfig:
     select_free_space = False   # manually select free space area from image, otherwise use select biggest free space automatically
 
     # robot configs
-    robot_radius = 0.5          # 0.5
-    robot_radius_ws = 0.5       # 0.5
+    robot_radius = 0.2          # 0.5
+    robot_radius_ws = 0.2       # 0.5
 
     # safety distance (robot footprint from obstacles)
     wf_safe_dist = 0.0  # 0.1                   # safety distance of robot during wall following from walls or obstacles
-    os_safe_dist = 0.1  # 0.2                   # safe distance of robot during open space from obstacles
+    os_safe_dist = 0.01  # 0.2                   # safe distance of robot during open space from obstacles
     ws_dist = max(wf_safe_dist, os_safe_dist)   # workspace safety distance: max required distance of robot from obstacles
 
     # safety distances (robot center from obstacles)
