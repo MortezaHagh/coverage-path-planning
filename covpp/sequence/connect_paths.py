@@ -3,7 +3,7 @@ import numpy as np
 from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPath, MyPoint
 from covpp.segmentation.cell_planning import PCell
-from covpp.sequence.pathfinding_in_map import FindPathInMap
+from covpp.path_planning.path_in_map import FindPathInMap
 
 
 class ConnectPaths:
@@ -19,7 +19,7 @@ class ConnectPaths:
 
         # find path in map object
 
-        self.fp = FindPathInMap(map_ws, g_xy)
+        self.fp = FindPathInMap(map_ws, g_xy).pp
 
         # all connections between cells
         self.all_connection_paths: np.ndarray = np.array([])    # 2D array of paths between cells

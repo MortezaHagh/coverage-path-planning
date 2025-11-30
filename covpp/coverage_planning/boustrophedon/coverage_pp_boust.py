@@ -1,6 +1,5 @@
 """Boustrophedon (back-and-forth) coverage path planning implementation."""
 import numpy as np
-from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPath, MyPoint
 from covpp.base.map_graph import MapSearchGraph
 from covpp.district.zone_map_data import ZoneMapData
@@ -37,7 +36,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
     def __init__(self, cell: PCell, zmd: ZoneMapData):
         super().__init__(cell, zmd)
-        self.lg = MyLogger(f"CovPPBoust-Z{zmd.ind}-C{cell.id}")
+        self.lg.update_name(f"CovPPBoust-Z{zmd.ind}-C{cell.id}")
 
         # map polygons
         self.map_polygons: MapPolygons = None

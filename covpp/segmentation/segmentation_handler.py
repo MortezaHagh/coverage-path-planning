@@ -79,6 +79,7 @@ class SegmentationHandler:
         if segmentation_method not in segmentors.names:
             raise ValueError(f"Segmentation method '{segmentation_method}' not recognized.")
         self.segmentor: SegmentationBase = segmentors[segmentation_method].load()(self.zmd, self.map_polygons)
+        # ----------------------------------------------------------------------
 
         # run segmentation =====================================================
         self.segmentor.run()

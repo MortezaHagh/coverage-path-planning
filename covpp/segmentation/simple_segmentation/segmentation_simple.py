@@ -1,5 +1,4 @@
 """Simple segmentation method creating a single cell for the entire zone."""
-from covpp.base.logger import MyLogger
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.map_polygons import MapPolygons
@@ -16,7 +15,7 @@ class Segmentation(SegmentationBase):
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
         super().__init__(zmd, map_polygons)
-        self.lg = MyLogger("SegmentationSimple")
+        self.lg.update_name("SegmentationSimple")
 
     def run(self) -> None:
         """Execute simple segmentation by creating a single cell."""

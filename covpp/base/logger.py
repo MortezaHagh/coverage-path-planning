@@ -14,6 +14,10 @@ class MyLogger:
     def __init__(self, name="mh"):
         self.name: str = name
 
+    def update_name(self, name: str) -> None:
+        """ Update the logger name. """
+        self.name = name
+
     def info1(self, message: str) -> None:
         print(f"{Fore.WHITE} ======================================================================= {Style.RESET_ALL}")
         print(f"{Fore.CYAN}[{self.name}]: {message}{Style.RESET_ALL}")

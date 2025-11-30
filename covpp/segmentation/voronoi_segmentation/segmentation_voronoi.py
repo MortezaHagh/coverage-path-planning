@@ -3,7 +3,6 @@ import numpy as np
 from shapely import Polygon
 from matplotlib import pyplot as plt
 from scipy.spatial import Voronoi  # pylint: disable=no-name-in-module
-from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.map_polygons import MapPolygons
@@ -31,7 +30,7 @@ class Segmentation(SegmentationBase):
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
         super().__init__(zmd, map_polygons)
-        self.lg = MyLogger("SegmentationVoronoi")
+        self.lg.update_name("SegmentationVoronoi")
 
         # voronoi decomposition object
         self.vor: Voronoi = None

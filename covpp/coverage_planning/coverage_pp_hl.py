@@ -74,6 +74,7 @@ class CoveragePPHandler:
         if covpp_method not in planners.names:
             raise ValueError(f"Coverage planning method '{covpp_method}' not recognized.")
         planner_cls = planners[covpp_method].load()
+        # ----------------------------------------------------------------------
 
         # plan for all cells
         cell: PCell

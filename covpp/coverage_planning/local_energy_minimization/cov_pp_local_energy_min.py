@@ -1,6 +1,5 @@
 """ Coverage Path Planning - Local Energy Minimization Module """
 import numpy as np
-from covpp.base.logger import MyLogger
 from covpp.base.geometry import angle_diff, MyPoint, MyPath
 from covpp.segmentation.cell_planning import PCell
 from covpp.district.zone_map_data import ZoneMapData
@@ -25,7 +24,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
     def __init__(self, cell: PCell, zmd: ZoneMapData):
         super().__init__(cell, zmd)
-        self.lg = MyLogger(f"CovPPLocalEnergyMin-Z{zmd.ind}-C{cell.id}")
+        self.lg.update_name(f"CovPPLocalEnergyMin-Z{zmd.ind}-C{cell.id}")
 
         # attributes
         self.grid: PGrid = GridGenerator(cell=self.cell, zmd=zmd).grid

@@ -1,106 +1,61 @@
-"""Path connection module. """
+""" Base class for path planners. """
 import numpy as np
 from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPath, MyPoint
-from covpp.segmentation.cell_planning import PCell
-from covpp.sequence.pathfinding_in_map import FindPathInMap
 
 
-class ConnectPaths:
-    """Generate transition paths between consecutive coverage cells.
+class PathPlannerBase:
+    """ Base class for path planners. """
 
-    Uses A* pathfinding algorithm to find collision-free paths connecting
-    the end point of one cell's coverage path to the start point of the
-    next cell in the sequence.
-    """
+    def __init__(self, map_ws: np.ndarray, g_xy: tuple[int, int]):
+        self.lg = MyLogger("PathPlannerBase")
 
-    def __init__(self, map_ws: np.ndarray, g_xy: tuple[int, int], ns: str = ""):
-        self.lg = MyLogger(f"ConnectPaths-{ns}")
+        # map - cost_map
+        self.free_cost = 1
+        self.occ_cost = 10
+        binary_map = (map_ws == 255).astype(np.uint8)  # 1 = free, 0 = obstacle
+        self.cost_map = np.where(binary_map == 1, 1, 10).astype(np.float32)
 
-        # find path in map object
+        # start point (offset in global map)
+        self.s_x = g_xy[0]
+        self.s_y = g_xy[1]
 
-        self.fp = FindPathInMap(map_ws, g_xy)
+    def plan_path(self, start: MyPoint, end: MyPoint) -> MyPath:
+        """ Plan path in map from start to end. """
+        raise NotImplementedError("This method should be overridden by subclasses.")
 
-        # all connections between cells
-        self.all_connection_paths: np.ndarray = np.array([])    # 2D array of paths between cells
-        self.all_distances: np.ndarray | None = None            # 2D array of distances between cells
-        self.c_paths_px: list[MyPath] = []                      # list of connection paths for a given sequence
-        self.n_cells: int = None                                # number of cells
-
-    def initialize(self, cells: list[PCell]):
-        """ Initialize connection paths and distances matrices based on the number of cells.
-            - i, j are cell indexes in the cells list
+    def distance_between_points(self, p1: MyPoint, p2: MyPoint) -> float:
+        """ Calculate distance between two points in the map.
+            First find path, then calculate its length.
         """
-        # cell_ids = [cell.id for cell in cells]
-        # n = max(cell_ids)
-        n = len(cells)
-        self.n_cells = n
-        self.all_connection_paths = np.full((n, n), None, dtype=object)
-        self.all_distances = np.full((n, n), np.inf, dtype=float)
 
-    def find_all_connections(self, cells: list[PCell]):
-        """ Find all connection paths between cells (based on their coverage paths endpoints) and store them in a matrix. """
-        self.lg.info2("find all connections paths")
-        n = self.n_cells
-        all_connections = np.full((n, n), None, dtype=object)
+        # get path
+        path: MyPath = self.find_path(p1, p2)
+        if path is None or len(path.points) == 0:
+            return float('inf')
 
-        for i in range(n):
-            for j in range(i + 1, n):
-                if cells[i].end_point is None or cells[j].start_point is None:
-                    all_connections[i, j] = None
-                    all_connections[j, i] = None
-                else:
-                    all_connections[i, j] = self.find_path(cells[i].end_point, cells[j].start_point)
-                    all_connections[j, i] = self.find_path(cells[j].end_point, cells[i].start_point)
-        self.all_connection_paths = all_connections
-
-    def find_all_distances(self):
-        """ Calculate distances based on connection paths and store them in a matrix. """
-        self.lg.info2("find all distances")
-        n = self.n_cells
-        all_distances = np.full((n, n), np.inf, dtype=float)
-        for i in range(n):
-            for j in range(n):
-                path: MyPath = self.all_connection_paths[i, j]
-                if path is None:
-                    continue
-                all_distances[i, j] = np.sum(np.linalg.norm(np.diff(path.xy, axis=0), axis=1))
-        self.all_distances = all_distances
-
-    def connect_paths(self, paths_px: list[MyPath], seq_idxs: list[int] = None) -> list[MyPath]:
-        """ Connect paths based on the given sequence of cell indices.
-            - If seq_idxs is None, connect paths in the given order.
-            - If path between two cells is not found, create it.
-        """
-        c_paths = []  # list of connection paths
-
-        # check if seq_idxs (sequence) is given
-        if not seq_idxs:
-            for ip in range(len(paths_px) - 1):
-                p0 = paths_px[ip].points[-1]
-                p1 = paths_px[ip+1].points[0]
-                c_paths.append(self.find_path(start=p0, end=p1))
-        else:
-            for ip, idx in enumerate(seq_idxs[:-1]):
-                path = self.all_connection_paths[idx, seq_idxs[ip+1]]
-                if path is None:
-                    p0 = paths_px[ip].points[-1]    # end of current path
-                    p1 = paths_px[ip+1].points[0]   # start of next path
-                    path = self.find_path(start=p0, end=p1)
-                c_paths.append(path)
-        self.c_paths_px = c_paths
+        # calculate path length
+        length = np.sum(np.linalg.norm(np.diff(np.array(path.xy), axis=1), axis=1))
+        return length
 
     def find_path(self, start: MyPoint, end: MyPoint) -> MyPath:
-        """ Find path between two points using the FindPathInMap class. """
-        return self.fp.find_path(start, end)
+        """ Find path in map from start to end. """
 
-    def update_connection_2_cells(self, start_idx: int, end_idx: int, start: MyPoint, end: MyPoint) -> MyPath:
-        """ Update (recalculate) connection path and distance between two cells."""
-        if start is None or end is None:
-            self.lg.warn("Start or end index is None.")
-            return float('inf')
-        path = self.fp.find_path(start, end)
-        self.all_connection_paths[start_idx, end_idx] = path
-        length = np.sum(np.linalg.norm(np.diff(path.xy, axis=0), axis=1))
-        self.all_distances[start_idx, end_idx] = length
-        return length
+        # start - end
+        # shift to map coordinates
+        start = (start.x - self.s_x, start.y - self.s_y)
+        end = (end.x - self.s_x, end.y - self.s_y)
+
+        # check if free, if not, find closest free cell
+        if self.cost_map[start[1], start[0]] != self.free_cost or self.cost_map[end[1], end[0]] != self.free_cost:
+            raise ValueError(f"Start {start} or end {end} point is not in free space.")
+
+        # find path
+        path_px = self.plan_path(start, end)
+        if path_px is None or len(path_px) == 0:
+            self.lg.error(f"No path found from {start} to {end}")
+            raise ValueError(f"No path found from {start} to {end}")
+
+        # shift paths based on the zone map rectangle
+        path_px = MyPath([MyPoint(p[0]+self.s_x, p[1]+self.s_y) for p in path_px])
+        return path_px

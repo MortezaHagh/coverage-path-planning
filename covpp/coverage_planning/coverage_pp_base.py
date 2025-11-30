@@ -10,7 +10,7 @@ from covpp.base.geometry import MyPoint, MyPath
 from covpp.base.map_graph import MapSearchGraph
 from covpp.segmentation.cell_planning import PCell
 from covpp.district.zone_map_data import ZoneMapData
-from covpp.sequence.pathfinding_in_map import FindPathInMap
+from covpp.path_planning.path_in_map import FindPathInMap
 
 
 class CoveragePathPlannerBase:
@@ -105,7 +105,7 @@ class CoveragePathPlannerBase:
         """ Make sure all path edges are in free space. If not, reconnect them by finding path in the map."""
 
         # path finding in map object
-        fp = FindPathInMap(self.cell.map, self.cell.global_xy)
+        fp = FindPathInMap(self.cell.map, self.cell.global_xy).pp
 
         gxy = self.cell.global_xy
         points = self.path_px.points

@@ -13,7 +13,7 @@ from covpp.segmentation.cell_planning import PCell
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
-from covpp.sequence.sequence_optimizers import BaseSeqOpt
+from covpp.sequence.sequence_optimizer_base import SeqOptimizerBase
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig, PlanningConfig
 from covpp.base.geometry import MyPoint, MyPath
@@ -101,7 +101,8 @@ class SequenceHandler:
         sequencers = entry_points(group="sequencers")
         if sequencer_name not in sequencers.names:
             raise ValueError(f"Sequence optimizer '{sequencer_name}' not recognized.")
-        self.sequencer: BaseSeqOpt = sequencers[sequencer_name].load()()
+        self.sequencer: SeqOptimizerBase = sequencers[sequencer_name].load()()
+        # ----------------------------------------------------------------------
 
         # connect paths interface
         self.connections: ConnectPaths = ConnectPaths(map_ws=zmd.map_ws, g_xy=zmd.global_xy, ns=f"Z{zmd.ind}-seq")

@@ -3,7 +3,6 @@ import cv2 as cv
 import numpy as np
 # from shapely.affinity import scale
 from shapely.geometry import MultiPolygon, Polygon
-from covpp.base.logger import MyLogger
 from covpp.base import planning_utils as pu
 from covpp.base.geometry import MyPoint, MyPath
 from covpp.base.configs import PipeLineConfig, PlanningConfig
@@ -29,7 +28,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
     def __init__(self, cell: PCell, zmd: ZoneMapData):
         super().__init__(cell, zmd)
-        self.lg = MyLogger(f"CovPPContour-Z{zmd.ind}-C{cell.id}")
+        self.lg.update_name(f"CovPPContour-Z{zmd.ind}-C{cell.id}")
 
         # settings
         self.add_line_thresh = 0.2      # threshold to add extra boust line
