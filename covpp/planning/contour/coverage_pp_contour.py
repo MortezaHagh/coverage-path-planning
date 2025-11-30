@@ -6,6 +6,7 @@ from shapely.geometry import MultiPolygon, Polygon
 from covpp.base.logger import MyLogger
 from covpp.base import planning_utils as pu
 from covpp.base.geometry import MyPoint, MyPath
+from covpp.base.configs import PipeLineConfig, PlanningConfig
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.cell_processed import PCell
 from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
@@ -32,7 +33,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
         # settings
         self.add_line_thresh = 0.2      # threshold to add extra boust line
-        if self.dcfg.all_cleaned:
+        if PipeLineConfig.all_cleaned:
             self.add_line_thresh = 0.05
 
     def coverage_planning(self) -> None:
@@ -53,7 +54,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         poly = self.cell.poly
         # scale the polygon to smaller size
 
-        robot_r_px = self.pcfg.cleaning_r_ov / self.resolution
+        robot_r_px = PlanningConfig.cleaning_r_ov / self.resolution
         robot_d_px = robot_r_px * 2
 
         scaled_polys = []
@@ -83,7 +84,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
     def calculate_path_combinaiton(self) -> None:
         """ Calculate the coverage path by distance transform and inscribed rectangle if available. """
 
-        robot_r_px = int(self.pcfg.cleaning_r_ov / self.resolution)
+        robot_r_px = int(PlanningConfig.cleaning_r_ov / self.resolution)
         points = []
 
         # plan by inscribed rectangle if available

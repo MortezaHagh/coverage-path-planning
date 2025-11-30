@@ -4,7 +4,6 @@ This module defines the abstract interface that all segmentation methods
 must implement, enabling a plugin-based architecture.
 """
 from covpp.base.logger import MyLogger
-from covpp.base.configs import PipeLineConfig
 from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
@@ -36,9 +35,6 @@ class SegmentationBase:
 
         # map polygons
         self.map_polygons: MapPolygons = map_polygons
-
-        # configs
-        self.dcfg = PipeLineConfig()
 
         # cells
         self.cells: list[CellBase] = []

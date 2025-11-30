@@ -17,12 +17,12 @@ class MapConfig:
     free_thresh = None      # [not used] Maximum occupancy probability below which a cell is considered free
     occupied_thresh = None  # [not used] Minimum occupancy probability above which a cell is considered occupied
     # directories and paths
-    data_dir = None         # base directory for maps ./results/
-    map_name = None         # name of the main map folder
-    base_folder = "AMain"   # inside each map folder, contains main map files
+    data_dir = "./results"          # base directory for maps ./results/
+    map_name = None                 # name of the main map folder
+    base_folder = "AMain"           # inside each map folder, contains main map files
+    map_dir = None                  # path to main map folder: ./results/<map_name>/AMain
     district_folder = "District"
-    map_dir = None          # path to main map folder: ./results/<map_name>/AMain
-    district_dir = None     # path to district folder: ./results/<map_name>/District
+    district_dir = None             # path to district folder: ./results/<map_name>/District
 
 
 @dataclasses.dataclass
@@ -43,6 +43,7 @@ class PipeLineConfig:
     do_save_maps = True
     do_save_decomposition_plot = True
     do_plot_decomposition = False
+    do_animate = False                         # animate final coverage path in sequence planning
     dpi = 300
 
     # Methods names for main modules: segmentation, coverage path planning, sequence
@@ -96,18 +97,17 @@ class SpaceConfig:
     select_free_space = False   # manually select free space area from image, otherwise use select biggest free space automatically
 
     # robot configs
-    robot_radius = 0.2          # 0.5
-    robot_radius_ws = 0.2       # 0.5
+    robot_radius = RobotConfig.radius
 
     # safety distance (robot footprint from obstacles)
     wf_safe_dist = 0.0  # 0.1                   # safety distance of robot during wall following from walls or obstacles
-    os_safe_dist = 0.01  # 0.2                   # safe distance of robot during open space from obstacles
+    os_safe_dist = 0.1  # 0.2                   # safe distance of robot during open space from obstacles
     ws_dist = max(wf_safe_dist, os_safe_dist)   # workspace safety distance: max required distance of robot from obstacles
 
     # safety distances (robot center from obstacles)
-    wf_r_dist = robot_radius_ws + wf_safe_dist  # safety distance of robot wall following path from walls and obstacles
-    os_r_dist = robot_radius_ws + os_safe_dist  # safety distance of robot open space path from obstacles
-    ws_r_dist = ws_dist + robot_radius_ws       # workspace safety distance: max required distance of robot center from obstacles
+    wf_r_dist = robot_radius + wf_safe_dist  # safety distance of robot wall following path from walls and obstacles
+    os_r_dist = robot_radius + os_safe_dist  # safety distance of robot open space path from obstacles
+    ws_r_dist = ws_dist + robot_radius       # workspace safety distance: max required distance of robot center from obstacles
 
     # cleaning radius
     cleaning_c = 1.0                            # effective cleaning coefficient
@@ -123,11 +123,9 @@ class SpaceConfig:
 @dataclasses.dataclass
 class PlanningConfig:
     """Aggregated planning parameters derived from space analysis inputs."""
-    spa = SpaceConfig()
-    animation = False                                   # animate final coverage path in sequence planning
-    cleaning_r = spa.cleaning_r                         # effective cleaning radius
-    min_path_overlap = 0.0                              # minimum overlap required between adjacent cleaning paths
+    cleaning_r = SpaceConfig.cleaning_r                 # effective cleaning radius
     margin = 0.05                                       # margin from cell boundaries for coverage planning
+    min_path_overlap = 0.0                              # minimum overlap required between adjacent cleaning paths
     cleaning_r_ov = cleaning_r - min_path_overlap/2     # effective cleaning radius considering path overlap
     min_wp_dist = cleaning_r_ov/2                       # minimum distance between waypoints in coverage path
-    max_wp_dist = 2 * cleaning_r_ov                       # maximum distance between waypoints in coverage path
+    max_wp_dist = 2 * cleaning_r_ov                     # maximum distance between waypoints in coverage path

@@ -38,7 +38,6 @@ class InputsProcessor:
 
         # paths (directories and files)
         self.paths: dict = {}
-        self.paths["data"] = "./results"  # base data directory [hardcoded]
 
         # create required directories
         self.set_paths()
@@ -66,6 +65,7 @@ class InputsProcessor:
 
     def set_paths(self) -> None:
         """ create required directories. """
+        self.paths["data"] = self.mcfg.data_dir  # base data directory [hardcoded]
         map_folder_dir = os.path.join(self.paths["data"],  self.map_name)
         self.paths["map"] = os.path.join(map_folder_dir,  self.mcfg.base_folder)
         self.paths["district"] = os.path.join(map_folder_dir, self.mcfg.district_folder)
@@ -89,7 +89,6 @@ class InputsProcessor:
     def update_map_configs(self, yaml_data: dict) -> None:
         """ update map config object based on yaml data. """
         self.mcfg.map_name = self.map_name
-        self.mcfg.data_dir = self.paths["data"]
         self.mcfg.district_dir = self.paths["district"]
         self.mcfg.map_dir = self.paths["map"]
         self.mcfg.origin_m = yaml_data["origin"]

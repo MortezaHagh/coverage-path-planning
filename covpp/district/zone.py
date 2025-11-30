@@ -4,7 +4,7 @@ import time
 import cv2 as cv
 from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPath
-from covpp.base.configs import PipeLineConfig, PlanningConfig
+from covpp.base.configs import PipeLineConfig
 from covpp.district.cells_plotter import CellsPlotter
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.sequence_handler import SequenceHandler
@@ -34,8 +34,6 @@ class ZoneData:
         sequence_hl (SequenceHandler): Handler for path sequencing and connection operations.
         zone_evaluator (ZoneEvaluationHandler): Handler for zone performance evaluation.
         zone_stats (ZoneStatsBase): Zone-level statistics object.
-        dcfg (PipeLineConfig): Pipeline configuration object.
-        pcfg (PlanningConfig): Planning configuration object.
 
     Example:
         >>> zone = ZoneData(ind=0, zmd=zone_map_data)
@@ -48,10 +46,6 @@ class ZoneData:
         # attributes
         self.ind: int = ind
         self.zmd: ZoneMapData = zmd
-
-        # # # configs
-        self.dcfg = PipeLineConfig()
-        self.pcfg = PlanningConfig()
 
         # # # segmentation
         self.segmentation_hl = SegmentationHandler(self.zmd)
@@ -100,18 +94,18 @@ class ZoneData:
         times['start'] = time.time()
 
         # ************ segmentation
-        self.lg.info1(f"Step: running segmentation using method '{self.dcfg.segmentation_method}'")
+        self.lg.info1(f"Step: running segmentation using method '{PipeLineConfig.segmentation_method}'")
         self.segmentation_hl.run()
         self.cells = self.segmentation_hl.cells
         times['segmentation'] = time.time()
 
         # ************ coverage planning
-        self.lg.info1(f"Step: running coverage path planning using method '{self.dcfg.covpp_method}'")
+        self.lg.info1(f"Step: running coverage path planning using method '{PipeLineConfig.covpp_method}'")
         self.cov_path_planner.run(cells=self.cells)
         times['coverage_planning'] = time.time()
 
         # ************ sequence
-        self.lg.info1(f"Step: creating sequence and full path using method '{self.dcfg.sequence_method}'")
+        self.lg.info1(f"Step: creating sequence and full path using method '{PipeLineConfig.sequence_method}'")
         self.sequence_hl.run(cells=self.cells, map_polygons=self.segmentation_hl.map_polygons)
         times['sequencing'] = time.time()
         self.set_zone_complete_path()
@@ -151,7 +145,7 @@ class ZoneData:
 
     def save_map_planning(self):
         """ save zone map_planning and map_segmentation to files. """
-        if not self.dcfg.do_save_maps:
+        if not PipeLineConfig.do_save_maps:
             return
         # PNG parameters for lossless compression
         png_params = [cv.IMWRITE_PNG_COMPRESSION, 0]
@@ -166,7 +160,7 @@ class ZoneData:
 
     def save_map_map_cleaned(self):
         """ save map showing cleaned area and uncleaned area. """
-        if not self.dcfg.do_save_maps:
+        if not PipeLineConfig.do_save_maps:
             return
         # PNG parameters for lossless compression
         png_params = [cv.IMWRITE_PNG_COMPRESSION, 0]

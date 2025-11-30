@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 from shapely.geometry import LineString
 from covpp.base.logger import MyLogger
+from covpp.base.configs import PipeLineConfig, PlanningConfig, RobotConfig
 from covpp.base.geometry import MyPath
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.sequence_handler import SequencePaths
@@ -19,7 +20,7 @@ class ZoneEvaluation(ZoneEvaluationBase):
         """ Compute zone coverage statistics based on map, generated paths, and timing information. """
         self.stats = ZoneStatsBase()
         self.stats.map_name = self.zmd.orig_map_data.name
-        self.stats.method = self.dcfg.method
+        self.stats.method = PipeLineConfig.method
         self.stats.ind = self.zmd.ind
 
         # validate data
@@ -89,12 +90,12 @@ class ZoneEvaluation(ZoneEvaluationBase):
     def calculate_travel_times(self):
         """ calculate estimated travel times based on path lengths and robot configurations. """
         # full travel time
-        t_lin = self.stats.full_length / self.robot_cfgs.v_lin_avg
-        t_ang = self.stats.full_yaw_rad / self.robot_cfgs.v_ang_avg
+        t_lin = self.stats.full_length / RobotConfig.v_lin_avg
+        t_ang = self.stats.full_yaw_rad / RobotConfig.v_ang_avg
         self.stats.full_trav_time = t_lin + t_ang
         # coverage travel time
-        t_lin = self.stats.coverage_length / self.robot_cfgs.v_lin_avg
-        t_ang = self.stats.coverage_yaw_rad / self.robot_cfgs.v_ang_avg
+        t_lin = self.stats.coverage_length / RobotConfig.v_lin_avg
+        t_ang = self.stats.coverage_yaw_rad / RobotConfig.v_ang_avg
         self.stats.coverage_trav_time = t_lin + t_ang
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -116,7 +117,7 @@ class ZoneEvaluation(ZoneEvaluationBase):
 
         # overlaped_area
         # calculate cleaned area based on the length of the path and cleaning width
-        cleaning_width_m = 2 * self.pcfg.cleaning_r
+        cleaning_width_m = 2 * PlanningConfig.cleaning_r
         total_cleaned_area_m = self.stats.coverage_length * cleaning_width_m  # full_length or coverage_length # imp
         self.stats.overlaped_area_m = total_cleaned_area_m - self.stats.cleaned_area_m
         overlap_p = self.stats.overlaped_area_m / self.stats.cleaning_area_m * 100
@@ -135,7 +136,7 @@ class ZoneEvaluation(ZoneEvaluationBase):
         # for covered area calculation
 
         # data
-        cleaning_r_px = int(self.pcfg.cleaning_r / self.zmd.resolution)  # cleaning radius in pixels
+        cleaning_r_px = int(PlanningConfig.cleaning_r / self.zmd.resolution)  # cleaning radius in pixels
         g_xy = self.zmd.global_xy  # global offset
 
         #

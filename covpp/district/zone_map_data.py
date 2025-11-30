@@ -81,16 +81,15 @@ class ZoneMapData:
     def set_result_path(self):
         """ set zone result paths based on zone name and original map data. """
 
-        dcfg = PipeLineConfig()
         if self.name == 'District':
             self.zone_dir = self.orig_map_data.mcfg.district_dir
-            self.result_file = self.zone_dir + f"/result_{dcfg.method}.json"
+            self.result_file = self.zone_dir + f"/result_{PipeLineConfig.method}.json"
         else:
             self.zone_dir = os.path.join(self.orig_map_data.mcfg.district_dir, self.name)
-            self.result_file = self.zone_dir + f"/{dcfg.method}/result.json"
+            self.result_file = self.zone_dir + f"/{PipeLineConfig.method}/result.json"
             self.segmentation_dir = os.path.join(self.zone_dir, "segmentation")
             os.makedirs(self.segmentation_dir, exist_ok=True)
-            self.method_results_dir = os.path.join(self.zone_dir, dcfg.method)
+            self.method_results_dir = os.path.join(self.zone_dir, PipeLineConfig.method)
             os.makedirs(self.method_results_dir, exist_ok=True)
 
         # create zone maps directory

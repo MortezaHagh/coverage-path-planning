@@ -32,13 +32,11 @@ class VoronoiDecomposition:
         self.lg.info2("Voronoi decomposition.")
 
         # settings
-        self.pcfg = PlanningConfig()
-        self.dcfg = PipeLineConfig()
         # self.adj_dist_lb: float = 50.0            # distance threshold for adjacent Voronoi vertices
         self.fixed_min_n_adj: int = 8               # fixed minimum number of adjacent Voronoi vertices
         self.fixed_max_n_adj: int = 15              # maximum number of adjacent Voronoi vertices
         self.d_clearance_thresh_p: float = 0.05     # percentage of the clearance difference in finding critical points
-        self.robot_r_px: int = self.pcfg.spa.robot_radius / zmd.resolution
+        self.robot_r_px: int = PlanningConfig.cleaning_r / zmd.resolution
         self.adj_dist_threshold = 2 * self.robot_r_px  # distance threshold for adjacent Voronoi vertices
         # updated later
         self.min_n_adjacents: int = None            # minimum number of adjacent Voronoi vertices
@@ -349,9 +347,12 @@ class VoronoiDecomposition:
         return new_poly
 
     # ==========================================================================
+    # plotting
+    # ==========================================================================
 
     def plot_voronoi(self):
-        if not (self.dcfg.do_plot_decomposition or self.dcfg.do_save_decomposition_plot):
+        """ Plot Voronoi diagram with relevant features. """
+        if not (PipeLineConfig.do_plot_decomposition or PipeLineConfig.do_save_decomposition_plot):
             self.lg.info("Skipping Voronoi plot.")
             return
 
@@ -422,17 +423,21 @@ class VoronoiDecomposition:
         #         ax.fill(*zip(*polygon), alpha=0.3, fc='blue', ec='black', label='Voronoi Region')
 
         #
-        if self.dcfg.do_save_decomposition_plot:
+        if PipeLineConfig.do_save_decomposition_plot:
             save_path = self.results_dir + "/voronoi.png"
-            fig.savefig(save_path, dpi=self.dcfg.dpi)
+            fig.savefig(save_path, dpi=PipeLineConfig.dpi)
             plt.close('all')
 
     # ==========================================================================
+    # debugging methods
+    # ==========================================================================
+
     # self.find_adjacents()
     # trees, troots = self.create_trees()
     # self.connect_trees(troots)
 
     def connect_trees(self, troots: list[list[int]]) -> None:
+        """ Connect disconnected trees in the Voronoi graph by adding edges between closest root vertices. """
         # create distance matrix between troots elements
         n_troots = len(troots)
         len_troots = [len(troot) for troot in troots]
@@ -450,7 +455,7 @@ class VoronoiDecomposition:
                         if dist < dist_matrix[i, j]:
                             dist_matrix[i, j] = dist
                             connection_matrix[i, j] = (idx_i, idx_j)
-        # connect troots
+        # connect trees
         connections = []
         comp = [bigest_tree_idx]
         while len(comp) < 2*len(troots):
@@ -477,6 +482,7 @@ class VoronoiDecomposition:
             self.v_points[idx_j].adjacent_vp_idxs.append(idx_i)
 
     def create_trees(self):
+        """ Create depth-first search trees from free Voronoi vertices. """
         visited = set()
         trees = []
         troots = []
@@ -492,6 +498,7 @@ class VoronoiDecomposition:
         return trees, troots
 
     def depth_first_search(self, start_vp: VPoint, tree: list, visited: set, troot: list):
+        """ Depth-first search main method. """
         tree.append(start_vp.idx)
         visited.add(start_vp.idx)
         is_last = True

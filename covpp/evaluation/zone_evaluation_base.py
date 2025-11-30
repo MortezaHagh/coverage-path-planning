@@ -1,8 +1,8 @@
+""" Zone evaluation base classes."""
 import json
 from covpp.base.logger import MyLogger
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.sequence_handler import SequencePaths
-from covpp.base.configs import PipeLineConfig, PlanningConfig, RobotConfig
 
 
 class ZoneStatsBase:
@@ -97,9 +97,6 @@ class ZoneEvaluationBase:
         # attributes
         self.zmd: ZoneMapData = zmd
         self.paths: SequencePaths = paths
-        self.dcfg = PipeLineConfig()
-        self.pcfg = PlanningConfig()
-        self.robot_cfgs = RobotConfig()
         # statistics
         self.stats: ZoneStatsBase = None
 

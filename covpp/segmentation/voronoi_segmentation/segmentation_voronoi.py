@@ -4,6 +4,7 @@ from shapely import Polygon
 from matplotlib import pyplot as plt
 from scipy.spatial import Voronoi  # pylint: disable=no-name-in-module
 from covpp.base.logger import MyLogger
+from covpp.base.configs import PipeLineConfig
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.segmentation.segmentation_base import SegmentationBase
@@ -324,7 +325,8 @@ class Segmentation(SegmentationBase):
     # ==================================================================================================================
 
     def plot_rings(self) -> None:
-        if not (self.dcfg.do_plot_decomposition or self.dcfg.do_save_decomposition_plot):
+        """ Plot the created rings for visualization. """
+        if not (PipeLineConfig.do_plot_decomposition or PipeLineConfig.do_save_decomposition_plot):
             return
         fig, ax = plt.subplots(figsize=(15, 10))
         ax.set_aspect('equal', adjustable='box')
@@ -337,11 +339,11 @@ class Segmentation(SegmentationBase):
             ax.plot(cp.vp.v[0], cp.vp.v[1], 'o', color='red', markersize=5)
             ax.annotate(f"{i}", (cp.vp.v[0], cp.vp.v[1]), fontsize=6, color='blue')
         #
-        if self.dcfg.do_save_decomposition_plot:
+        if PipeLineConfig.do_save_decomposition_plot:
             save_path = self.zmd.method_results_dir + "/rings.png"
-            fig.savefig(save_path, dpi=self.dcfg.dpi)
+            fig.savefig(save_path, dpi=PipeLineConfig.dpi)
 
         #
-        if self.dcfg.do_plot_decomposition:
+        if PipeLineConfig.do_plot_decomposition:
             plt.show()
         plt.close('all')

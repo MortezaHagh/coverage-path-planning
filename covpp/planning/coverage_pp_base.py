@@ -7,9 +7,9 @@ import numpy as np
 from covpp.segmentation.cell_processed import PCell
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.base.logger import MyLogger
+from covpp.base.configs import PlanningConfig
 from covpp.base.geometry import MyPoint, MyPath
 from covpp.base.map_graph import MapSearchGraph
-from covpp.base.configs import PlanningConfig, PipeLineConfig
 from covpp.sequence.pathfinding_in_map import FindPathInMap
 
 
@@ -55,8 +55,6 @@ class CoveragePathPlannerBase:
         self.zmd: ZoneMapData = zmd
 
         # configurations
-        self.dcfg = PipeLineConfig()
-        self.pcfg = PlanningConfig()
         self.resolution: float = zmd.resolution
 
         # cell

@@ -26,12 +26,14 @@
         "--max-line-length=140"
     ],
     "pylint.args": [
+        // "enable=false",
+        "--max-line-length=140",
+        "--disable=E1101", // disable no-member error
         // "--disable=C0114",
         // "--disable=C0301",
         // "--disable=C0115",
         // "--disable=C0116",
         // "--disable=W1514",
-        // "--disable=E1101",
         // "--disable=E1121"
     ],
     "github.copilot.editor.enableAutoCompletions": true,

@@ -69,8 +69,7 @@ class CoveragePPHandler:
         # ----------------------------------------------------------------------
         # create coverage path planner
         # coverage path planning method from configs
-        dcfg = PipeLineConfig()
-        covpp_method = dcfg.covpp_method
+        covpp_method = PipeLineConfig.covpp_method
         planners = entry_points(group="planners")
         if covpp_method not in planners.names:
             raise ValueError(f"Coverage planning method '{covpp_method}' not recognized.")

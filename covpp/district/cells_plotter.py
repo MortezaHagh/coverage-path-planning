@@ -16,7 +16,6 @@ class CellsPlotter:
     def __init__(self, method_results_dir: str, segmentation_dir: str):
         self.method_results_dir = method_results_dir
         self.segmentation_dir = segmentation_dir
-        self.dcfg = PipeLineConfig()
 
         # figures
         self.fig_mcells = None
@@ -28,7 +27,7 @@ class CellsPlotter:
         self.visualize_cells_sequence(cells)
 
         # save figures
-        if self.dcfg.do_save_decomposition_plot:
+        if PipeLineConfig.do_save_decomposition_plot:
             self.save_figs()
 
     def visualize_cells_sequence(self, cells: list[PCell]):
@@ -77,7 +76,7 @@ class CellsPlotter:
 
     def save_figs(self):
         """ Save the plotted figures to files. """
-        self.fig_mcells.savefig(self.segmentation_dir + "/cells.png", format="png", dpi=self.dcfg.dpi)
+        self.fig_mcells.savefig(self.segmentation_dir + "/cells.png", format="png", dpi=PipeLineConfig.dpi)
         if self.fig_mcells_seq:
-            self.fig_mcells_seq.savefig(self.method_results_dir + "/sequence.png", format="png", dpi=self.dcfg.dpi)
+            self.fig_mcells_seq.savefig(self.method_results_dir + "/sequence.png", format="png", dpi=PipeLineConfig.dpi)
         plt.close('all')

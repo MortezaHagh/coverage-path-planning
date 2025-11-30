@@ -64,8 +64,6 @@ class SequenceHandler:
         seq_idxs: Optimized sequence of cell indices.
         s_cells: Sorted cells according to optimized sequence.
         plotter: Visualization handler.
-        pcfg: Planning configuration.
-        dcfg: Pipeline configuration.
 
     Pipeline Steps:
         1. Optimize cell visit sequence
@@ -87,8 +85,6 @@ class SequenceHandler:
         self.n_cells: int = 0
 
         # configurations
-        self.pcfg: PlanningConfig = PlanningConfig()
-        self.dcfg: PipeLineConfig = PipeLineConfig()
         self.colors: list[tuple] = []
 
         # params
@@ -98,7 +94,7 @@ class SequenceHandler:
 
         # ----------------------------------------------------------------------
         # sequence optimizer
-        sequencer_name = self.dcfg.sequence_method
+        sequencer_name = PipeLineConfig.sequence_method
         sequencers = entry_points(group="sequencers")
         if sequencer_name not in sequencers.names:
             raise ValueError(f"Sequence optimizer '{sequencer_name}' not recognized.")
@@ -158,7 +154,7 @@ class SequenceHandler:
         distances = None
 
         # Initialize distances between cells (paths start and end points)
-        if self.dcfg.sequence_method == "milp":
+        if PipeLineConfig.sequence_method == "milp":
             # calculate all paths and calculate distances between cells entries (based on cell paths)
             self.connections.find_all_connections(self.cells)
             self.connections.find_all_distances()
@@ -174,13 +170,14 @@ class SequenceHandler:
         self.paths_px = [cell.path_px for cell in self.s_cells if cell.do_planning]
 
     def optimize(self, distances: np.ndarray = None) -> None:
+        """ Optimize cell visit sequence using the selected sequencer. """
         if len(self.cells) == 0:
             return
         elif len(self.cells) == 1:
             self.s_cells = self.cells
             return
         # run sequence optimizer
-        self.sequencer.run(cells=self.cells, distances=distances, start_idx=self.dcfg.start_cell_ind)
+        self.sequencer.run(cells=self.cells, distances=distances, start_idx=PipeLineConfig.start_cell_ind)
         self.seq_idxs = self.sequencer.tour_idxs
         self.s_cells = [self.cells[i] for i in self.seq_idxs]
 
@@ -198,6 +195,7 @@ class SequenceHandler:
     # ==================================================================================================================
 
     def post_planning(self) -> None:
+        """ Perform post-planning steps such as filtering and creating full path. """
         if len(self.paths_px) == 0 or len(self.paths_m) == 0:
             self.lg.error("No paths found. Cannot post_planning.")
             return
@@ -218,12 +216,14 @@ class SequenceHandler:
         self.f_path_m = self.path_px_to_m(self.f_path_px)
 
     def plot_paths(self):
+        """ Plot all paths: coverage, connection, and final path. """
         self.plot_paths_px()        # paths.png svg
         self.plot_final_path_m()    # final_path.svg
-        if self.pcfg.animation:
+        if PipeLineConfig.do_animate:
             self.animate_robot_paths()
 
     def set_sequence_paths(self) -> None:
+        """ Set sequence paths to paths object. """
         self.paths.paths_px = self.paths_px
         self.paths.paths_m = self.paths_m
         self.paths.c_paths_px = self.c_paths_px
@@ -238,7 +238,7 @@ class SequenceHandler:
 
     def update_map_planning(self) -> None:
         """ update map_planning with paths and cells, save map_planning. """
-        if not self.dcfg.do_save_maps:
+        if not PipeLineConfig.do_save_maps:
             return
         n = self.n_cells
         self.colors = get_n_colors_cv(n)
@@ -246,6 +246,7 @@ class SequenceHandler:
         self.add_cell_paths_to_map_planning()
 
     def add_cells_to_map_planning(self) -> None:
+        """ Add cells polygons to map_planning and map_segmentation. """
         for i, cell in enumerate(self.cells):
             pp = cell.points
             pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
@@ -270,8 +271,9 @@ class SequenceHandler:
                 self.zmd.map_segmentation = cv.polylines(self.zmd.map_segmentation, [rpoints], isClosed=True, color=(0, 0, 0), thickness=2)
 
     def add_cell_paths_to_map_planning(self) -> None:
+        """ Add cell coverage paths to map_planning. """
         map_planning = self.zmd.map_planning.copy()
-        robot_r_px = int(self.pcfg.cleaning_r_ov / self.resolution)
+        robot_r_px = int(PlanningConfig.cleaning_r_ov / self.resolution)
         robot_d_px = robot_r_px * 2
         p_r = 5  # int(robot_r_px/10)
         for i, path_px in enumerate(self.paths_px):
@@ -310,15 +312,19 @@ class SequenceHandler:
     # ==================================================================================================================
 
     def path_m_to_px(self, path_m: MyPath) -> MyPath:
+        """ Convert path from meters to pixels. """
         return MyPath([self.point_m_to_px(p) for p in path_m.points])
 
     def path_px_to_m(self, path_px: MyPath) -> MyPath:
+        """ Convert path from pixels to meters. """
         return MyPath([self.point_px_to_m(p) for p in path_px.points])
 
     def point_m_to_px(self, p: MyPoint) -> MyPoint:
+        """ Convert point from meters to pixels. """
         return MyPoint(int(p.x / self.resolution), int(p.y / self.resolution))
 
     def point_px_to_m(self, p: MyPoint) -> MyPoint:
+        """ Convert point from pixels to meters. """
         return MyPoint(p.x * self.resolution, p.y * self.resolution)
 
     # ==================================================================================================================
@@ -326,16 +332,17 @@ class SequenceHandler:
     # ==================================================================================================================
 
     def plot_paths_px(self) -> None:
-        """ Plot the calculated coverage paths (different colors) and connections between them. """
-        if not self.dcfg.do_save_maps:
+        """ Plot the calculated coverage paths(different colors) and connections between them. """
+        if not PipeLineConfig.do_save_maps:
             return
         fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
-        self.plot_coverage_paths(ax)
-        self.plot_connection_paths(ax)
-        self.save_path_fig(fig)
+        self.plot_coverage_paths_px(ax)
+        self.plot_connection_paths_px(ax)
+        self.save_path_fig_px(fig)
 
-    def plot_coverage_paths(self, ax):
+    def plot_coverage_paths_px(self, ax):
+        """ Plot the coverage paths in pixels(different colors). """
         n = self.paths.n_paths
         colors = get_n_colors_plt(n)
         scale = self.plot_scale_px
@@ -359,7 +366,8 @@ class SequenceHandler:
             ax.plot(pp[-1, 0], pp[-1, 1], 's', color=colors[i], markersize=6/scale)
             ax.text(pp[-1, 0], pp[-1, 1], f'E{i}', fontsize=12/scale, color='k')
 
-    def plot_connection_paths(self, ax):
+    def plot_connection_paths_px(self, ax):
+        """ Plot the connection paths between coverage paths. (gray dashed lines) """
         for c_path in self.c_paths_px:
             if len(c_path.xy) < 2:
                 continue
@@ -368,16 +376,18 @@ class SequenceHandler:
             ax.plot(pp[-1, 0], pp[-1, 1], "o", color='gray', markersize=3)
             ax.plot(pp[:, 0], pp[:, 1], color='gray', linestyle=':')
 
-    def save_path_fig(self, fig, is_anim=False):
+    def save_path_fig_px(self, fig, is_anim=False):
+        """ Save the path ( in pixels) figure. """
         if not is_anim:
             fig_path = os.path.join(self.zmd.method_results_dir, "paths.svg")
-            fig.savefig(fig_path, format="svg", dpi=self.dcfg.dpi)
+            fig.savefig(fig_path, format="svg", dpi=PipeLineConfig.dpi)
         else:
             self.lg.info(f"saving animation ... n_frames: {self.f_path_px.n}")
             fig_path = os.path.join(self.zmd.method_results_dir, "anim_paths.gif")
             self.anim.save(fig_path)
 
     def plot_paths_m(self):
+        """ Plot the calculated paths in meters(different colors). """
         _, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
         ax.set_title("paths_m")
@@ -408,12 +418,13 @@ class SequenceHandler:
             pp = np.array(self.f_path_m.xy, dtype=np.float32)
             ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2/scale, linestyle='-', markersize=3/scale)
         fig_path = os.path.join(self.zmd.method_results_dir, "final_path")
-        fig.savefig(fig_path+'.svg', format="svg", dpi=self.dcfg.dpi)
+        fig.savefig(fig_path+'.svg', format="svg", dpi=PipeLineConfig.dpi)
         plt.close('all')
 
     # Animate path =====================================================================================================
 
     def animate_robot_paths(self):
+        """ Animate the robot moving along the full path. """
         # colors = get_n_colors_plt(n)
         fig, ax = plt.subplots()
         ax.set_aspect('equal', adjustable='box')
@@ -441,15 +452,18 @@ class SequenceHandler:
         # plt.show()
 
     def animate(self, fig):
+        """ Create animation for robot full path. """
         self.anim = animation.FuncAnimation(fig, self.anim_update, init_func=self.init_anim,
                                             frames=self.f_path_px.n, repeat=False, interval=1, blit=True)
 
     def init_anim(self):
+        """ Initialize animation. """
         self.anim_line[0].set_data([0], [0])
         self.anim_line[1].set_data([0], [0])
         return self.anim_line
 
     def anim_update(self, i):
+        """ Update function for animation. """
         if i >= self.f_path_px.n:
             return self.anim_line
         xx = self.f_path_px.xy[:i, 0]

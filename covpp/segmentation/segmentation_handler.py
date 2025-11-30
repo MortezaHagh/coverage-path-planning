@@ -33,7 +33,6 @@ class SegmentationHandler:
         cells (list[PCell]): Processed cells ready for planning.
         s_cells (list[PCell]): Sorted processed cells.
         n_cells (int): Number of cells created.
-        dcfg (PipeLineConfig): Pipeline configuration object.
 
     Supported Methods:
         - "simple": Single cell covering entire zone
@@ -43,9 +42,6 @@ class SegmentationHandler:
 
     def __init__(self, zmd: ZoneMapData):
         self.lg = MyLogger("SegmentationHandler")
-
-        # configs
-        self.dcfg = PipeLineConfig()
 
         # zone data
         self.zmd: ZoneMapData = zmd
@@ -76,7 +72,7 @@ class SegmentationHandler:
 
         # ----------------------------------------------------------------------
         # create segmentor based on segmentation method
-        segmentation_method = self.dcfg.segmentation_method
+        segmentation_method = PipeLineConfig.segmentation_method
         segmentors = entry_points(group="segmentors")
         if segmentation_method not in segmentors.names:
             raise ValueError(f"Segmentation method '{segmentation_method}' not recognized.")

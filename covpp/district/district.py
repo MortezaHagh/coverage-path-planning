@@ -27,7 +27,6 @@ class DistrictData:
         zone_datas (list[ZoneData]): List of ZoneData objects representing subdivisions.
         district_evaluator (DistrictEvaluationHandler): Handler for district-level statistics evaluation.
         district_stats (DistrictStatsBase): Aggregated district statistics object.
-        dcfg (PipeLineConfig): Pipeline configuration object.
 
     Example:
         >>> district = DistrictData(space_analyzer)
@@ -38,9 +37,6 @@ class DistrictData:
     def __init__(self, spa: SpaceAnalyzer):
         self.lg = MyLogger("DistrictData")
         self.lg.info1("Step: creating district data")
-
-        # configs
-        self.dcfg = PipeLineConfig()
 
         # space_analyzer object
         self.spa_obj: SpaceAnalyzer = spa
@@ -130,9 +126,9 @@ class DistrictData:
 
     def save_map_planning(self) -> None:
         """ save district map_planning to file. """
-        if not self.dcfg.do_save_maps:
+        if not PipeLineConfig.do_save_maps:
             return
-        m_name = f"/mp_{self.dcfg.method}.png"
+        m_name = f"/mp_{PipeLineConfig.method}.png"
         map_planning_path = self.dmd.zone_dir + m_name
         cv.imwrite(map_planning_path, self.dmd.map_planning, [cv.IMWRITE_PNG_COMPRESSION, 0])
 

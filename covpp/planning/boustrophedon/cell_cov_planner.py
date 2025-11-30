@@ -36,7 +36,6 @@ class CellCoveragePathPlanner:
         self.xy_top: list[tuple[float, float]] = None
 
         # parameters and configurations
-        self.pcfg = PlanningConfig()
         self.resolution: float = resolution
         self.x_scale = 1.05             # scale factor in x direction to avoid edge cases
         self.d_shift = resolution * 4   # shift for hitting points to avoid edge cases
@@ -63,7 +62,7 @@ class CellCoveragePathPlanner:
         self.create_path_px()
 
     # def eval_cell(self):
-    #     min_area = 0.5 * np.pi * self.pcfg.cleaning_r**2
+    #     min_area = 0.5 * np.pi * PlanningConfig.cleaning_r**2
     #     if (self.cell.area*self.resolution**2) < min_area:
     #         self.lg.warn(f"cell area is too small: {self.cell.id}")
     #         return False
@@ -105,7 +104,7 @@ class CellCoveragePathPlanner:
         """
 
         # parameters and configurations
-        cleaning_d = 2*self.pcfg.cleaning_r_ov
+        cleaning_d = 2*PlanningConfig.cleaning_r_ov
         resolution = self.resolution
         cell = self.cell
 
