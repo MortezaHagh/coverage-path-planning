@@ -8,7 +8,7 @@ from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.cell_base import CellBase
-from covpp.segmentation.cell_processed import PCell
+from covpp.segmentation.cell_planning import PCell
 from covpp.segmentation.merge_cells import MergeCells
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.segmentation.segmentation_base import SegmentationBase
@@ -22,6 +22,9 @@ class SegmentationHandler:
     based on the pipeline configuration and converts raw cells into
     processed cells ready for coverage planning.
 
+    Result:
+        cells (list[PCell])
+
     Args:
         zmd (ZoneMapData): Zone map data object.
 
@@ -31,7 +34,6 @@ class SegmentationHandler:
         segmentor (SegmentationBase): The actual segmentation algorithm instance.
         bcells (list[CellBase]): Base cells from segmentation algorithm.
         cells (list[PCell]): Processed cells ready for planning.
-        s_cells (list[PCell]): Sorted processed cells.
         n_cells (int): Number of cells created.
 
     Supported Methods:
@@ -54,8 +56,7 @@ class SegmentationHandler:
 
         # attributes
         self.bcells: list[CellBase] = []        # base cells from segmentation
-        self.cells: list[PCell] = []            # processed cells
-        self.s_cells: list[PCell] = []          # sorted processed cells
+        self.cells: list[PCell] = []            # planning cells
         self.n_cells: int = 0                   # number of cells
 
     def run(self) -> None:
@@ -64,7 +65,8 @@ class SegmentationHandler:
         This method:
             1. Loads the segmentation algorithm based on configuration
             2. Executes the segmentation to create base cells
-            3. Converts base cells to processed cells (PCell objects)
+            3. Converts base cells to planning cells (PCell objects) by processing and merging
+            4. Validates the created cells for planning readiness
 
         Raises:
             ValueError: If segmentation method is not recognized.
@@ -89,6 +91,7 @@ class SegmentationHandler:
         self.validate_cells()
 
     def process_cells(self) -> None:
+        """ Convert base cells from segmentor into planning PCell objects. """
         # resulting base cells from segmentor
         bcells = self.segmentor.cells
         n_bcells = self.segmentor.n_cells

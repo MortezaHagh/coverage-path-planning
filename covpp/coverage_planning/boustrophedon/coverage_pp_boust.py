@@ -5,13 +5,13 @@ from covpp.base.geometry import MyPath, MyPoint
 from covpp.base.map_graph import MapSearchGraph
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
-from covpp.segmentation.cell_processed import PCell
+from covpp.segmentation.cell_planning import PCell
 from covpp.segmentation.map_polygons import MapPolygons
-from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
-from covpp.planning.boustrophedon.cell import Cell
-from covpp.planning.boustrophedon.plotter import BoustPlotter
-from covpp.planning.boustrophedon.decomposition_bs_mh import CellDecomposition
-from covpp.planning.boustrophedon.cell_cov_planner import CellCoveragePathPlanner
+from covpp.coverage_planning.coverage_pp_base import CoveragePathPlannerBase
+from covpp.coverage_planning.boustrophedon.cell import Cell
+from covpp.coverage_planning.boustrophedon.plotter import BoustPlotter
+from covpp.coverage_planning.boustrophedon.decomposition_bs_mh import CellDecomposition
+from covpp.coverage_planning.boustrophedon.cell_cov_planner import CellCoveragePathPlanner
 # from shapely import affinity  # , Point
 
 

@@ -5,7 +5,7 @@ from shapely.geometry import Polygon, Point, LineString
 from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPoint, MyPath
 from covpp.base.configs import PlanningConfig, PipeLineConfig
-from covpp.planning.boustrophedon.cell import Cell
+from covpp.coverage_planning.boustrophedon.cell import Cell
 
 
 class CellCoveragePathPlanner:

@@ -3,10 +3,10 @@ import math
 from shapely import Polygon
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PlanningConfig
-from covpp.planning.boustrophedon.events import Event
-from covpp.planning.boustrophedon.obstacles import Obstacle
-from covpp.planning.boustrophedon.cell import Cell, CellGroup
-from covpp.planning.boustrophedon.post_process_mcells import eval_cells_path_shift
+from covpp.coverage_planning.boustrophedon.events import Event
+from covpp.coverage_planning.boustrophedon.obstacles import Obstacle
+from covpp.coverage_planning.boustrophedon.cell import Cell, CellGroup
+from covpp.coverage_planning.boustrophedon.post_process_mcells import eval_cells_path_shift
 
 
 class CellDecomposition:

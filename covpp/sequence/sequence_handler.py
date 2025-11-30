@@ -9,7 +9,7 @@ import cv2 as cv
 import numpy as np
 from matplotlib import animation
 from matplotlib import pyplot as plt
-from covpp.segmentation.cell_processed import PCell
+from covpp.segmentation.cell_planning import PCell
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
@@ -18,7 +18,7 @@ from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig, PlanningConfig
 from covpp.base.geometry import MyPoint, MyPath
 from covpp.base.base_utils import get_n_colors_cv, get_n_colors_plt
-from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
+from covpp.coverage_planning.coverage_pp_base import CoveragePathPlannerBase
 
 
 class SequencePaths:
@@ -50,6 +50,9 @@ class SequenceHandler:
     This class handles the sequencing problem (determining optimal cell visit
     order) and path connection (creating transitions between cells) to generate
     a complete coverage path for the zone.
+
+    Result:
+        paths (SequencePaths)
 
     Args:
         zmd: Zone map data object.

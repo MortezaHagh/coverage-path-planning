@@ -7,9 +7,9 @@ from covpp.base.logger import MyLogger
 from covpp.base import planning_utils as pu
 from covpp.base.geometry import MyPoint, MyPath
 from covpp.base.configs import PipeLineConfig, PlanningConfig
+from covpp.segmentation.cell_planning import PCell
 from covpp.district.zone_map_data import ZoneMapData
-from covpp.segmentation.cell_processed import PCell
-from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
+from covpp.coverage_planning.coverage_pp_base import CoveragePathPlannerBase
 
 
 class CoveragePathPlanner(CoveragePathPlannerBase):

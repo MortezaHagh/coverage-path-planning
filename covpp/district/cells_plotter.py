@@ -1,7 +1,7 @@
 """ Plotting and saving figures of resulted cells. """
 import matplotlib.pyplot as plt
 from covpp.base.configs import PipeLineConfig
-from covpp.segmentation.cell_processed import PCell
+from covpp.segmentation.cell_planning import PCell
 
 
 class CellsPlotter:
@@ -68,7 +68,7 @@ class CellsPlotter:
             ax.text(x1, y1, text, color='black', fontsize=8)
 
             # connection line
-            next_ind = cell.next_cell_id_seq
+            next_ind = cell.next_cell_id
             if next_ind is None:
                 continue
             x2, y2 = cells[next_ind].cxy

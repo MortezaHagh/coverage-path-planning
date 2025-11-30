@@ -4,12 +4,12 @@ This module defines the abstract interface that all coverage planning methods
 must implement, enabling a plugin-based architecture.
 """
 import numpy as np
-from covpp.segmentation.cell_processed import PCell
-from covpp.district.zone_map_data import ZoneMapData
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PlanningConfig
 from covpp.base.geometry import MyPoint, MyPath
 from covpp.base.map_graph import MapSearchGraph
+from covpp.segmentation.cell_planning import PCell
+from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.pathfinding_in_map import FindPathInMap
 
 
@@ -39,13 +39,6 @@ class CoveragePathPlannerBase:
     Result:
         Sets path_m and path_px attributes for the cell.
 
-    Example:
-        To create a new coverage planning method:
-
-        >>> class MyPlanner(CoveragePathPlannerBase):
-        ...     def coverage_planning(self):
-        ...         # Implement your planning algorithm
-        ...         self.path_px = [...]  # Generate path in pixels
     """
 
     def __init__(self, cell: PCell, zmd: ZoneMapData):
@@ -65,6 +58,7 @@ class CoveragePathPlannerBase:
         self.path_px: MyPath = None      # path in pixels
 
     def run(self) -> None:
+        """ Execute coverage path planning for the cell."""
         self.coverage_planning()  # perform coverage planning based on implemented method
         self.make_path_points_free()
         self.filter_path_by_distance()

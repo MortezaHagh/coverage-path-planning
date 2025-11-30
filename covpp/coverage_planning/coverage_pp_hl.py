@@ -7,9 +7,9 @@ different coverage planning algorithms based on configuration.
 from importlib.metadata import entry_points
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig
-from covpp.segmentation.cell_processed import PCell
+from covpp.segmentation.cell_planning import PCell
 from covpp.district.zone_map_data import ZoneMapData
-from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
+from covpp.coverage_planning.coverage_pp_base import CoveragePathPlannerBase
 
 
 class CoveragePPHandler:
@@ -70,7 +70,7 @@ class CoveragePPHandler:
         # create coverage path planner
         # coverage path planning method from configs
         covpp_method = PipeLineConfig.covpp_method
-        planners = entry_points(group="planners")
+        planners = entry_points(group="coverage_planners")
         if covpp_method not in planners.names:
             raise ValueError(f"Coverage planning method '{covpp_method}' not recognized.")
         planner_cls = planners[covpp_method].load()

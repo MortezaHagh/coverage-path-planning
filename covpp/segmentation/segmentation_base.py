@@ -10,7 +10,10 @@ from covpp.district.zone_map_data import ZoneMapData
 
 
 class SegmentationBase:
-    """Abstract base class for zone segmentation algorithms. Results in cells.
+    """Abstract base class for zone segmentation algorithms. 
+
+    Result:
+        cells (list[CellBase])
 
     All segmentation implementations must inherit from this class and
     implement the run() method. This design allows easy addition of
@@ -21,10 +24,10 @@ class SegmentationBase:
         map_polygons (MapPolygons): Polygon representation of workspace and obstacles.
 
     Attributes:
-        zmd (ZoneMapData): Zone map data object.
-        map_polygons (MapPolygons): Polygon representation of the workspace.
         cells (list[CellBase]): List of cells created by segmentation.
         n_cells (int): Number of cells created.
+        zmd (ZoneMapData): Zone map data object.
+        map_polygons (MapPolygons): Polygon representation of the workspace.
     """
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):

@@ -8,9 +8,9 @@ from covpp.base.configs import PipeLineConfig
 from covpp.district.cells_plotter import CellsPlotter
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.sequence_handler import SequenceHandler
-from covpp.segmentation.cell_processed import PCell
+from covpp.segmentation.cell_planning import PCell
 from covpp.segmentation.segmentation_handler import SegmentationHandler
-from covpp.planning.coverage_pp_hl import CoveragePPHandler
+from covpp.coverage_planning.coverage_pp_hl import CoveragePPHandler
 from covpp.evaluation.zone_evaluation_handler import ZoneEvaluationHandler
 from covpp.evaluation.zone_evaluation_base import ZoneStatsBase
 

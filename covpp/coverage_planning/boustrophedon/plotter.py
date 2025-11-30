@@ -2,8 +2,8 @@
 import os
 import matplotlib.pyplot as plt
 from covpp.base.configs import PipeLineConfig
-from covpp.planning.boustrophedon.cell import Cell, CellGroup
-from covpp.planning.boustrophedon.decomposition_bs_mh import CellDecomposition
+from covpp.coverage_planning.boustrophedon.cell import Cell, CellGroup
+from covpp.coverage_planning.boustrophedon.decomposition_bs_mh import CellDecomposition
 
 
 class BoustPlotter:

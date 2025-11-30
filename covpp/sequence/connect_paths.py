@@ -2,7 +2,7 @@
 import numpy as np
 from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPath, MyPoint
-from covpp.segmentation.cell_processed import PCell
+from covpp.segmentation.cell_planning import PCell
 from covpp.sequence.pathfinding_in_map import FindPathInMap
 
 

@@ -2,7 +2,7 @@
 import heapq
 import numpy as np
 from covpp.base.logger import MyLogger
-from covpp.segmentation.cell_processed import PCell
+from covpp.segmentation.cell_planning import PCell
 from covpp.sequence.connect_paths import ConnectPaths
 
 
@@ -25,6 +25,7 @@ class CellsGraph:
         self.find_all_distances()
 
     def create_distance_matrix_center_center(self):
+        """ Create distance matrix based on center-to-center distances of cells. """
         adj_inds = [[] for _ in range(self.n_cells)]
         dists = np.full((self.n_cells, self.n_cells), np.inf, dtype=float)
         for i in range(self.n_cells):
@@ -38,6 +39,7 @@ class CellsGraph:
         self.adj_inds = adj_inds
 
     def create_distance_matrix_by_path(self):
+        """ Create distance matrix based on path connections between cells. """
         adj_inds = [[] for _ in range(self.n_cells)]
         dists = np.full((self.n_cells, self.n_cells), np.inf, dtype=float)
 
@@ -78,10 +80,12 @@ class CellsGraph:
                     self.dists[i, j] = dist
 
     def get_distance(self, start_index, end_index):
+        """ Get the shortest distance between two cells using Dijkstra's algorithm. """
         path_len, _ = self.dijkstra(start_index, end_index)
         return path_len
 
     def dijkstra(self, start_index, end_index):
+        """ Dijkstra's algorithm to find the shortest path between two cells. """
         # Initialize distances with infinity
         distances = [float('inf')] * self.n_cells
         distances[start_index] = 0

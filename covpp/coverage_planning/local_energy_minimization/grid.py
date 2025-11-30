@@ -5,7 +5,7 @@ from shapely.geometry import Point
 from covpp.base.logger import MyLogger
 from covpp.base.configs import SpaceConfig, PipeLineConfig
 from covpp.base.geometry import angle_diff, find_longest_edge_poly
-from covpp.segmentation.cell_processed import PCell
+from covpp.segmentation.cell_planning import PCell
 from covpp.district.zone_map_data import ZoneMapData
 
 

@@ -18,19 +18,47 @@ class CellBase:
         idx (int): Unique identifier for the cell.
         poly (Polygon): Shapely polygon defining the cell boundary.
         resolution (float): Map resolution in meters per pixel.
+        simplify (bool): Whether to simplify the polygon upon creation.
+
+    Attributes:
+        id (int): Cell identifier.
+        opt_id (int): Optimized ID after sequencing.
+        next_cell_id (int): Next cell ID in the sequence.
+        resolution (float): Map resolution.
+        base_poly (Polygon): Original cell polygon before modifications.
+        poly (Polygon): Current cell polygon.
+        points (np.ndarray): Array of integer coordinate points of the cell boundary.
+        cxy (tuple[float, float]): Center coordinates of the cell.
+        x_min_p, x_max_p, y_min_p, y_max_p (float): Cell boundary extents.
+        x_mid_p, y_mid_p (float): Midpoint coordinates of the cell.
+        width (float): Width of the cell.
+        height (float): Height of the cell.
+        area (float): Area of the cell.
+        size_type (str): Size classification ("small", "normal", "large").
+        slim_type (str): Slimness classification ("slim", "normal").
+        major_direction (float): Main direction angle of the cell in radians.
+        do_planning (bool): Flag indicating if planning should be performed in this cell.
+        adjacent_ids (list[int]): List of adjacent cell IDs.
+        path_m (MyPath): Coverage path in meters.
+        path_px (MyPath): Coverage path in pixels.
+        start_point (MyPoint): Starting point of the cell path.
+        end_point (MyPoint): Ending point of the cell path.
+
     """
 
     def __init__(self, idx: int, poly: Polygon, resolution: float = 0.05, simplify: bool = True):
         self.lg = MyLogger(f"CellBase-{idx}")
-        self.id: int = idx                  # cell id
-        self.opt_id: int = None             # optimized id after sequencing
-        self.next_cell_id_seq: int = None   # next cell id in the sequence
+        self.id: int = idx
+
+        # optimization attributes
+        self.opt_id: int = None                 # optimized id after sequencing
+        self.next_cell_id: int = None       # next cell id in the sequence
 
         # settings
         self.resolution: float = resolution
         self.robot_r_px = int(PlanningConfig.cleaning_r_ov / resolution)
-        self.small_cell_thresh_c = 12.0      # small cell threshold coefficient
-        self.slim_cell_thresh_c = 2.0   # slim cell threshold coefficient
+        self.small_cell_thresh_c = 12.0         # small cell threshold coefficient
+        self.slim_cell_thresh_c = 2.0           # slim cell threshold coefficient
 
         # polygon and points
         if simplify:
@@ -50,8 +78,10 @@ class CellBase:
         self.width: float = None
         self.height: float = None
         self.area: float = None
-        self.size_type: str = "normal"    # small, normal, large
-        self.slim_type: str = "normal"    # slim, normal
+
+        # cell classification
+        self.size_type: str = "normal"      # small, normal, large
+        self.slim_type: str = "normal"      # slim, normal
 
         # cell specs
         self.major_direction: float = 0.0   # main direction angle of the cell (free space) - radians
@@ -61,8 +91,8 @@ class CellBase:
         self.adjacent_ids: list[int] = []   # adjacent cell ids
 
         # cell paths (to be set later)
-        self.path_m: MyPath = None      # path in meters
-        self.path_px: MyPath = None     # path in pixels
+        self.path_m: MyPath = None          # path in meters
+        self.path_px: MyPath = None         # path in pixels
 
         # start-end points (based on cell path)
         self.start_point: MyPoint = None
@@ -77,25 +107,13 @@ class CellBase:
         # create cell points
         self.create_cell_points()
 
-    # def eval_polygon(self, poly: Polygon) -> Polygon:
-    #     if poly.geom_type == "MultiPolygon":
-    #         self.lg.warn("MultiPolygon detected; using concave hull to create single polygon.")
-    #         poly = concave_hull(poly, ratio=0.1)
-    #     if not poly.is_valid:
-    #         raise ValueError("Invalid polygon provided.")
-    #     if poly.is_empty:
-    #         raise ValueError("Empty polygon provided.")
-    #     if not poly.is_simple:
-    #         raise ValueError("Polygon is not simple.")
-    #     return poly
-
     def set_optim_id(self, ind: int, next_cell_idx: int = None):
         """Set optimized sequence ID and next cell reference after sequencing."""
         self.opt_id = ind
         if next_cell_idx is not None:
-            self.next_cell_id_seq = next_cell_idx
+            self.next_cell_id = next_cell_idx
         else:
-            self.next_cell_id_seq = None
+            self.next_cell_id = None
 
     def calculate_cell_specs(self):
         """Calculate geometric properties: bounds, center, dimensions, and area."""
@@ -116,10 +134,12 @@ class CellBase:
 
     def evaluate_cell_area(self) -> None:
         """ Evaluate cell area and classify size. """
+        # classify small cells
         robot_area_px = np.pi * (self.robot_r_px ** 2)
         if self.area < self.small_cell_thresh_c * robot_area_px:
             self.size_type = "small"
 
+        # disable planning in very small cells
         if self.area < robot_area_px:
             # print(f"[WARN] cell area is too small: {self.id}")
             self.do_planning = False
@@ -143,7 +163,6 @@ class CellBase:
     def simplify_cell_poly(self, polygon: Polygon, tolerance: float = 1.0) -> Polygon:
         """ Simplify cell polygon to reduce complexity. """
         poly = polygon.simplify(tolerance, preserve_topology=True)
-        # check if result is polygon not multi-polygon
         return poly
 
     # --------------------------------------------------------------------------
@@ -151,6 +170,7 @@ class CellBase:
     # --------------------------------------------------------------------------
 
     def add_adjacent_id(self, ind: int):
+        """ Add an adjacent cell ID to the list. """
         self.adjacent_ids.append(ind)
 
     def set_path_m(self, path: MyPath):
@@ -164,9 +184,11 @@ class CellBase:
         self.set_end_point(path.points[-1])
 
     def set_start_point(self, point: MyPoint):
+        """ Set the starting point of the cell path. """
         self.start_point = point
 
     def set_end_point(self, point: MyPoint):
+        """ Set the ending point of the cell path. """
         self.end_point = point
 
     # --------------------------------------------------------------------------

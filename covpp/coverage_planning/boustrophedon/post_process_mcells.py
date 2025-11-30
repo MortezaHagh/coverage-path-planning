@@ -1,4 +1,4 @@
-from covpp.planning.boustrophedon.cell import Cell
+from covpp.coverage_planning.boustrophedon.cell import Cell
 
 
 def eval_cells_path_shift(cells: list[Cell]):

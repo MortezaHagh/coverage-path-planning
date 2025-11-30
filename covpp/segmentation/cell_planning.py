@@ -34,7 +34,6 @@ class PCell(CellBase):
         # cell map
         # map boundary is either original cell polygon or inscribed rectangle.
         self.map: np.ndarray = None                 # map of the cell area (free = 255, occupied = 0)
-        self.map_xy_bd: dict = {}                   # cell local map bounds
         self.global_xy = np.array([0, 0], dtype=np.int32)    # global map offset (x_offset, y_offset)
 
         # rectangle-like properties

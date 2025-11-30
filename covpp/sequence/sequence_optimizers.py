@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from ortools.linear_solver import pywraplp
 from covpp.base.logger import MyLogger
-from covpp.segmentation.cell_processed import PCell
+from covpp.segmentation.cell_planning import PCell
 
 
 class BaseSeqOpt:
@@ -27,6 +27,7 @@ class BaseSeqOpt:
         self.success = True
 
     def run(self, cells: list[PCell], start_idx: int = 0, distances: np.ndarray = None):
+        """ Run the sequence optimization. """
 
         self.cells = cells
         self.distances = distances
@@ -43,6 +44,7 @@ class BaseSeqOpt:
         self.set_cells_optim_ind()
 
     def create_tour(self):
+        """ Create the tour sequence. """
         raise NotImplementedError("This method should be overridden in subclasses.")
 
     def set_cells_optim_ind(self):
@@ -52,6 +54,7 @@ class BaseSeqOpt:
             self.cells[idx].set_optim_id(idx, next_idx)
 
     def plot(self):
+        """ Plot the optimized cell sequence. """
         _, ax = plt.subplots(1, 1)
         ax.set_title("Optimized Cells Sequence")
         ax.set_aspect('equal', adjustable='box')
@@ -70,6 +73,8 @@ class BaseSeqOpt:
 
 
 class SimpleSO(BaseSeqOpt):
+    """ Simple sequence optimization method that returns cells in given order. """
+
     def __init__(self):
         super().__init__()
         self.lg.info("using SimpleSO sequence optimization method.")
@@ -80,6 +85,8 @@ class SimpleSO(BaseSeqOpt):
 
 
 class DfsSO(BaseSeqOpt):
+    """ Depth-First Search based sequence optimization method. """
+
     def __init__(self):
         super().__init__()
         self.lg.info("using DfsSO sequence optimization method.")
@@ -94,6 +101,7 @@ class DfsSO(BaseSeqOpt):
         self.tour_idxs = [self.id_idx[i] for i in self.tour_ids]
 
     def dfs(self, c_id: int, level: int):
+        """ Depth-First Search, recursive. """
         self.visited_ids[c_id] = True
         self.tour_ids.append(c_id)
         idx = self.id_idx[c_id]
@@ -146,6 +154,7 @@ class MilpSO(BaseSeqOpt):
         self.tour_idxs = [self.id_idx[i] for i in self.tour_ids]
 
     def solve_tsp_milp(self) -> bool:
+        """ Solve TSP using MILP formulation. """
 
         # Create the MILP solver
         solver = pywraplp.Solver.CreateSolver("SCIP")  # Use "CBC" for open-source

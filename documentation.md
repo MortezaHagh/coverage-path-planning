@@ -351,10 +351,10 @@ Generates coverage paths for individual cells.
 
 Coverage planners are discovered via the `planners` entry point group:
 
-| Name      | Entry Point                                                          | Technique                                                    |
-| --------- | -------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `boust`   | `covpp.planning.boustrophedon.coverage_pp_boust:CoveragePathPlanner` | Boustrophedon (sweeping / trapezoids + back-and-forth lines) |
-| `contour` | `covpp.planning.contour.coverage_pp_contour:CoveragePathPlanner`     | Inward contour / distance transform / rectangle hybrid       |
+| Name      | Entry Point                                                                   | Technique                                                    |
+| --------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `boust`   | `covpp.coverage_planning.boustrophedon.coverage_pp_boust:CoveragePathPlanner` | Boustrophedon (sweeping / trapezoids + back-and-forth lines) |
+| `contour` | `covpp.coverage_planning.contour.coverage_pp_contour:CoveragePathPlanner`     | Inward contour / distance transform / rectangle hybrid       |
 
 Key boustrophedon submodules: `decomposition_bs_mh.py`, `cell_cov_planner.py`, `obstacles.py`, `events.py`, `plotter.py`.
 
@@ -713,7 +713,7 @@ scripts/planning/my_planner/
 **Step 2**: Inherit from `CoveragePathPlannerBase`:
 
 ```python
-from covpp.planning.coverage_pp_base import CoveragePathPlannerBase
+from covpp.coverage_planning.coverage_pp_base import CoveragePathPlannerBase
 
 class CoveragePathPlanner(CoveragePathPlannerBase):
     def __init__(self, cell, zmd):
@@ -731,7 +731,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
 ```toml
 [project.entry-points.planners]
-my_planner = "covpp.planning.my_planner.coverage_pp_my_planner:CoveragePathPlanner"
+my_planner = "covpp.coverage_planning.my_planner.coverage_pp_my_planner:CoveragePathPlanner"
 ```
 
 **Step 4**: Set configuration:

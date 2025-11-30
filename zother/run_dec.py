@@ -1,5 +1,5 @@
 from shapely import Polygon
-from covpp.planning.boustrophedon_base.decomposition_bs_mh import MHDecomposition
+from covpp.coverage_planning.boustrophedon_base.decomposition_bs_mh import MHDecomposition
 # from covpp.decomposition.decomposition_2_bs_mh_f import BoustraphedonDecomposition
 
 # example
