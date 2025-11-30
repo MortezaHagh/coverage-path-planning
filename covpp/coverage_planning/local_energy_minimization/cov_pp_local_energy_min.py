@@ -31,7 +31,11 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.major_dir: float = (cell.major_direction + np.pi/2) % np.pi
 
     def coverage_planning(self):
-        """ Execute coverage path planning using local energy minimization. """
+        """Execute coverage path planning using local energy minimization.
+
+        Result: ``self.path_px``/``self.path_m`` trace the grid-based coverage
+        order derived from the local energy heuristic.
+        """
 
         if not self.cell.do_planning:
             self.lg.warn(f"cell {self.cell.id} does not require planning.")

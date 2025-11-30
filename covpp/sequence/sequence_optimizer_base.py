@@ -6,18 +6,16 @@ from covpp.segmentation.cell_planning import PCell
 
 
 class SeqOptimizerBase:
-    """ Base class for sequence optimization of cells.
+    """Reusable scaffolding for sequencing plug-ins.
 
-    Args:
-        cells: List of cells to be sequenced.
-        start_idx: Index of the starting cell for the sequence.
-        distances: Distance matrix between cells.
+    Process:
+        1. ``run`` stores the planning cells plus any optional distance matrix.
+        2. ``create_tour`` (implemented by subclasses) computes the visiting order.
+        3. ``set_cells_optim_ind`` writes the sequence metadata back into each cell.
 
-    Results:
-        tour_idxs: List of cell indices in the optimized sequence.
-        tour_ids: List of cell ids in the optimized sequence.
-        success: Boolean indicating if optimization was successful.
-
+    Result:
+        Subclasses must populate ``tour_idxs`` and ``tour_ids`` to describe the visit
+        order. ``success`` indicates whether the optimizer produced a feasible tour.
     """
 
     def __init__(self):
@@ -38,7 +36,17 @@ class SeqOptimizerBase:
         self.success = True
 
     def run(self, cells: list[PCell], start_idx: int = 0, distances: np.ndarray = None):
-        """ Run the sequence optimization. """
+        """Bootstrap optimizer state and delegate to ``create_tour``.
+
+        Args:
+            cells: Planning cells that contain adjacency, paths, and metadata.
+            start_idx: Index of the seed cell in ``cells``.
+            distances: Optional matrix of pairwise costs (meters or pixels).
+
+        Result:
+            Sets ``tour_idxs``/``tour_ids`` and annotates every cell with
+            ``opt_id``/``next_cell_id`` so downstream handlers can connect paths.
+        """
 
         self.cells = cells
         self.distances = distances
@@ -55,7 +63,7 @@ class SeqOptimizerBase:
         self.set_cells_optim_ind()
 
     def create_tour(self):
-        """ Create the tour sequence. """
+        """Create ``tour_idxs`` and ``tour_ids`` for the sequencing strategy."""
         raise NotImplementedError("This method should be overridden in subclasses.")
 
     def set_cells_optim_ind(self):

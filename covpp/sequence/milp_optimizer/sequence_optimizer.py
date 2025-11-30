@@ -5,7 +5,17 @@ from covpp.sequence.sequence_optimizer_base import SeqOptimizerBase
 
 
 class SeqOptimizer(SeqOptimizerBase):
-    """ Linear programming approach for sequence optimization. """
+    """MILP-based TSP solver for sequencing coverage cells.
+
+    Process:
+        1. Build a reduced distance matrix that only considers planning cells.
+        2. Formulate a single-tour TSP using OR-Tools' MILP backend.
+        3. Decode solver output into ``tour_ids``/``tour_idxs``.
+
+    Result:
+        Ordered visit sequence that minimizes travel distance according to the
+        provided pairwise distance matrix.
+    """
 
     def __init__(self):
         super().__init__()
@@ -14,6 +24,7 @@ class SeqOptimizer(SeqOptimizerBase):
         self.tour: list[int] = None
 
     def create_tour(self):
+        """Assemble MILP inputs, solve the TSP, and translate the solution."""
         # planning cell indices
         p_idxs = [self.id_idx[id] for id in self.ids]
         self.tour = None
@@ -41,7 +52,7 @@ class SeqOptimizer(SeqOptimizerBase):
         self.tour_idxs = [self.id_idx[i] for i in self.tour_ids]
 
     def solve_tsp_milp(self) -> bool:
-        """ Solve TSP using MILP formulation. """
+        """Solve the reduced TSP via OR-Tools and update ``self.tour`` if optimal."""
 
         # Create the MILP solver
         solver = pywraplp.Solver.CreateSolver("SCIP")  # Use "CBC" for open-source

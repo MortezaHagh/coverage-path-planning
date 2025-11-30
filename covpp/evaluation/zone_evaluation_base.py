@@ -6,29 +6,15 @@ from covpp.sequence.sequence_handler import SequencePaths
 
 
 class ZoneStatsBase:
-    """Zone statistics Base class to store zone statistics.
-    Attributes:
-        map_name (str): map name
-        method (str): planning method
-        ind (int): zone index
-        full_trav_time (float): travel time in seconds
-        coverage_trav_time (float): travel time in seconds (coverage path)
-        time_segmentation (float): segmentation time in seconds
-        time_coverage_planning (float): coverage planning time in seconds
-        time_sequencing (float): sequencing time in seconds
-        time_total (float): total processing time in seconds
-        full_length (float): full path length in meters (coverage and connecting)
-        coverage_length (float): coverage path length in meters
-        full_yaw_rad (float): yaw changes in radians
-        coverage_yaw_rad (float): yaw changes in radians (coverage path)
-        cleaning_area_px (int): area to be cleaned in pixels
-        cleaning_area_m (float): area to be cleaned in square meters
-        cleaned_area_px (int): cleaned area in pixels
-        cleaned_area_m (float): cleaned area in square meters
-        uncleaned_area_m (float): uncleaned area in square meters
-        overlaped_area_m (float): overlapped area in square meters
-        coverage_p (float): coverage percentage
-        overlap_p (float): overlap percentage
+    """Lightweight DTO that captures zone-level KPIs.
+
+    Result:
+        Instances accumulate coverage/sequence/evaluation metrics that can be
+        serialized via :meth:`get_data_dict` and consumed by district aggregators.
+
+    Attributes mirror the JSON payload (map identifiers, timing, path metrics,
+    coverage ratios, and areas in px/m). All values default to ``None`` or ``0``
+    so evaluators can fill them progressively.
     """
 
     def __init__(self):
@@ -85,11 +71,16 @@ class ZoneStatsBase:
 
 
 class ZoneEvaluationBase:
-    """Zone evaluation Base class to evaluate zone statistics. 
+    """Base interface for computing zone statistics from generated paths.
 
-    Inputs:
-        zmd (ZoneMapData): zone map data object
-        paths (SequencePaths): sequence paths object
+    Process:
+        1. Hold references to ``ZoneMapData`` plus the ``SequencePaths`` bundle.
+        2. Implement :meth:`evaluate` to fill ``self.stats`` with KPI values.
+        3. Optionally persist results via :meth:`save_result`.
+
+    Result:
+        ``self.stats`` must be a populated ``ZoneStatsBase`` instance after
+        ``evaluate`` completes successfully.
     """
 
     def __init__(self, zmd: ZoneMapData, paths: SequencePaths):
@@ -107,7 +98,7 @@ class ZoneEvaluationBase:
     def save_result(self):
         """ save zone statistics and planner statistics of the zone to json file. """
         zone_stats = self.stats.get_data_dict()
-        with open(self.zmd.result_file, 'wt') as f:
+        with open(self.zmd.result_file, 'wt', encoding='utf-8') as f:
             json.dump(zone_stats, f, indent=4)
 
     def validate_data(self, times: dict) -> bool:

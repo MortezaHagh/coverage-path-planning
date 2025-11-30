@@ -59,6 +59,9 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
         Orchestrates the complete planning process from decomposition to
         connected path generation.
+
+        Result: ``self.path_px``/``self.path_m``
+        encode the full coverage tour for the original cell.
         """
 
         if not self.cell.do_planning:
@@ -189,6 +192,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.create_full_path(paths_px, c_paths_px)
 
     def create_full_path(self, paths_px: list[MyPath], c_paths_px: list[MyPath]) -> None:
+        """ Create full path by combining cell paths and connection paths. """
         f_path_px = []
         for i in range(len(paths_px)-1):
             f_path_px.extend(paths_px[i].points)

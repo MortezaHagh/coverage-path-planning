@@ -3,7 +3,15 @@ from covpp.sequence.sequence_optimizer_base import SeqOptimizerBase
 
 
 class SeqOptimizer(SeqOptimizerBase):
-    """ Depth-First Search based sequence optimization method. """
+    """Depth-first traversal plug-in for sequencing cells.
+
+    Process:
+        1. Explore the adjacency graph using DFS starting from the configured seed.
+        2. Record visit order in ``tour_ids`` and capture recursion depth metadata.
+
+    Result:
+        ``tour_idxs``/``tour_ids`` follow a DFS walk that respects adjacency.
+    """
 
     def __init__(self):
         super().__init__()
@@ -13,6 +21,7 @@ class SeqOptimizer(SeqOptimizerBase):
         self.ids_depth = {}
 
     def create_tour(self):
+        """Perform DFS to populate ``tour_ids`` then map to indexes."""
         self.visited_ids = {i: False for i in self.ids}
         self.ids_depth = {i: 0 for i in self.ids}
         start = self.start_id
@@ -20,7 +29,7 @@ class SeqOptimizer(SeqOptimizerBase):
         self.tour_idxs = [self.id_idx[i] for i in self.tour_ids]
 
     def dfs(self, c_id: int, level: int):
-        """ Depth-First Search, recursive. """
+        """Recursive DFS that records traversal depth for tie-breaking."""
         self.visited_ids[c_id] = True
         self.tour_ids.append(c_id)
         idx = self.id_idx[c_id]

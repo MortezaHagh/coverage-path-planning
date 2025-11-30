@@ -4,7 +4,12 @@ from covpp.evaluation.zone_evaluation_base import ZoneStatsBase
 
 
 class DistrictStatsBase:
-    """Container for district-level aggregated statistics."""
+    """Container for aggregated district-level KPIs.
+
+    Result:
+        Holds the sums/ratios derived from all zone statistics so they can be
+        serialized once per planning run via :meth:`get_data_dict`.
+    """
 
     def __init__(self):
         self.map_name: str = None
@@ -56,10 +61,13 @@ class DistrictStatsBase:
 
 
 class DistrictEvaluationHandler:
-    """Handler for district-level evaluation and statistics aggregation.
+    """Aggregate zone metrics into a single district report.
 
-    Inputs:
-        zone_stats (list[ZoneStatsBase]): List of zone-level statistics to aggregate.
+    Process:
+        1. Accept a list of ``ZoneStatsBase`` objects after every zone finishes.
+        2. Sum compatible quantities, recompute ratios, and store them in
+           ``self.stats``.
+        3. Persist the aggregated report to ``result_file`` for later inspection.
     """
 
     def __init__(self, result_file: str = None):
@@ -99,5 +107,5 @@ class DistrictEvaluationHandler:
     def save_result(self):
         """ save district statistics to json file. """
         results = self.stats.get_data_dict()
-        with open(self.result_file, 'wt') as f:
+        with open(self.result_file, 'wt', encoding='utf-8') as f:
             json.dump(results, f, indent=4)

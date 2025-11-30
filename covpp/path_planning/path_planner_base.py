@@ -1,11 +1,21 @@
-""" Base class for path planners. """
+"""Base utilities for low-level path planners."""
 import numpy as np
 from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPath, MyPoint
 
 
 class PathPlannerBase:
-    """ Base class for path planners. """
+    """Shared functionality for path planners that operate on cost maps.
+
+    Process (implemented by subclasses):
+        1. Prepare a cost map representation of the workspace via ``plan_path``.
+        2. Convert global pixel coordinates into local planner coordinates.
+        3. Run the concrete planner to obtain a list of pixels for the route.
+        4. Lift the local result back into global coordinates and wrap it in ``MyPath``.
+
+    Result:
+        ``find_path`` returns a ``MyPath`` whose points live in the global map frame.
+    """
 
     def __init__(self, map_ws: np.ndarray, g_xy: tuple[int, int]):
         self.lg = MyLogger("PathPlannerBase")
@@ -21,12 +31,27 @@ class PathPlannerBase:
         self.s_y = g_xy[1]
 
     def plan_path(self, start: MyPoint, end: MyPoint) -> MyPath:
-        """ Plan path in map from start to end. """
+        """Plan a local-path solution between two free pixels.
+
+        Subclasses must replace this method with an algorithm that consumes the
+        prepared ``cost_map`` and returns an **ordered** iterable of (x, y) pixel
+        coordinates describing the path in the *local* frame.
+
+        Returns:
+            MyPath | list[tuple[int, int]]: Local-frame waypoints for the path.
+        """
         raise NotImplementedError("This method should be overridden by subclasses.")
 
     def distance_between_points(self, p1: MyPoint, p2: MyPoint) -> float:
-        """ Calculate distance between two points in the map.
-            First find path, then calculate its length.
+        """Return the travel distance by first computing the actual path.
+
+        Process:
+            1. Invoke ``find_path`` which internally calls ``plan_path``.
+            2. Convert the resulting ``MyPath`` into consecutive segments.
+            3. Sum Euclidean segment lengths to obtain the travelled metric length.
+
+        Returns:
+            float: ``inf`` if no path exists, otherwise the polyline length in pixels.
         """
 
         # get path
@@ -39,7 +64,14 @@ class PathPlannerBase:
         return length
 
     def find_path(self, start: MyPoint, end: MyPoint) -> MyPath:
-        """ Find path in map from start to end. """
+        """Compute a global-frame path between two map points.
+
+        Returns:
+            MyPath: Path with absolute pixel coordinates, ready for downstream consumers.
+
+        Raises:
+            ValueError: If start/end are not in free space or if ``plan_path`` fails.
+        """
 
         # start - end
         # shift to map coordinates

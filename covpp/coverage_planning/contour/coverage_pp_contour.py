@@ -36,7 +36,11 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             self.add_line_thresh = 0.05
 
     def coverage_planning(self) -> None:
-        """Execute contour-following coverage planning for the cell."""
+        """Execute contour-following coverage planning for the cell.
+
+        Result: ``self.path_px`` and ``self.path_m`` become a continuous contour
+        sweep tailored to the zone cell.
+        """
 
         if not self.cell.do_planning:
             self.lg.warn(f"cell {self.cell.id} does not require planning.")

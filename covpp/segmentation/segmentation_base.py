@@ -10,14 +10,16 @@ from covpp.district.zone_map_data import ZoneMapData
 
 
 class SegmentationBase:
-    """Abstract base class for zone segmentation algorithms. 
+    """Abstract base class for zone segmentation algorithms.
+
+    Process expected from subclasses:
+        1. Inspect ``self.zmd`` and ``self.map_polygons`` to decide how to split the zone.
+        2. Populate ``self.cells`` with ``CellBase`` instances.
+        3. Set adjacency information and ``self.n_cells`` for downstream planners.
 
     Result:
-        cells (list[CellBase])
-
-    All segmentation implementations must inherit from this class and
-    implement the run() method. This design allows easy addition of
-    new segmentation methods without modifying the core pipeline.
+        ``cells`` (list[CellBase]) fully describing the decomposition ready to be
+        wrapped into ``PCell`` objects.
 
     Args:
         zmd (ZoneMapData): Zone map data object.

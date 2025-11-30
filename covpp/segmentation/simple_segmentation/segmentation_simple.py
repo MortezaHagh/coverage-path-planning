@@ -6,11 +6,14 @@ from covpp.segmentation.segmentation_base import SegmentationBase
 
 
 class Segmentation(SegmentationBase):
-    """Simple segmentation implementation creating one cell for entire zone. Creates a single cell.
+    """Single-cell segmentation plug-in.
 
-    This is the simplest segmentation strategy, treating the entire workspace
-    as a single cell without further decomposition. Useful for small or
-    convex workspaces.
+    Process:
+        1. Mirror the outer workspace polygon as the only cell boundary.
+        2. Skip adjacency creation because there is exactly one cell.
+
+    Result:
+        ``self.cells`` contains exactly one ``CellBase`` covering the full zone.
     """
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
@@ -22,11 +25,11 @@ class Segmentation(SegmentationBase):
         self.create_cells()
 
     def create_cells(self) -> list[CellBase]:
-        # create one cell for the whole area
+        """Instantiate a single ``CellBase`` for the whole zone polygon."""
         cell = CellBase(idx=0, poly=self.map_polygons.b_poly, resolution=self.zmd.resolution)
         self.cells.append(cell)
         self.n_cells = 1
 
     def set_cell_adjacents(self):
-        # no adjacents in simple segmentation
+        """No-op because a lone cell has no neighbours."""
         return

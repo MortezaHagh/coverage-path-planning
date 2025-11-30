@@ -23,6 +23,10 @@ class Segmentation(SegmentationBase):
         2. Identify critical points and create rings
         3. Generate cells from rings
 
+    Result:
+        ``self.cells`` populated with Voronoi-derived ``Cell`` objects plus
+        adjacency metadata; ``self.n_cells`` reflects the number of valid rings.
+
     Args:
         zmd (ZoneMapData): Zone map data object.
         map_polygons (MapPolygons): Polygon representation of the workspace.
