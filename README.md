@@ -32,14 +32,21 @@ Map + Data -> Space Analysis -> Generate District -> Create Zones -> Segmentatio
 
   - Boustrophedon (back-and-forth sweeping)
   - Contour-following coverage
+  - Grid / local-energy minimization sweeps for cluttered rooms
   - Plugin-based design for adding new planners
+
+- 🧭 **Path Planning & Connections**
+
+  - A\* (pyastar2d) based connectors keep cell endpoints feasible
+  - `path_planners` entry points make it easy to drop in custom graph searches
+  - Shared `PathPlannerBase` handles cost-map generation and coordinate transforms
 
 - 🔄 **Path Sequencing Optimization**
 
-  - Simple sequential ordering
-  - Depth-first search (DFS)
-  - Mixed-Integer Linear Programming (MILP)
-  - Easy integration of custom optimizers
+  - Depth-first search (`sequencers: dfs` → `covpp.sequence.dfs_optimizer`)
+  - MILP TSP solver (`sequencers: milp` → `covpp.sequence.milp_optimizer`)
+  - Optional simple ordering plugin (register `covpp.sequence.simple_optimizer` if needed)
+  - `sequencers` entry points make it straightforward to add custom optimizers
 
 - 📊 **Evaluation & Metrics**
   - Path length analysis
@@ -133,8 +140,8 @@ See [requirements.txt](requirements.txt) for the complete list.
 
 ## Plugin Architecture
 
-Segmentation, coverage path planning, and sequence optimization modules have base classes and few implemented methods.
-You can develop your own method based on base classes and virtual methods.
+Segmentation, coverage planning, low-level path planners, and sequence optimization modules expose abstract base classes plus entry-point registries (`segmentors`, `planners`, `path_planners`, `sequencers`).
+You can develop your own method by subclassing the relevant base class, registering it in `pyproject.toml`, and selecting it via `PipeLineConfig`.
 
 ## Results
 

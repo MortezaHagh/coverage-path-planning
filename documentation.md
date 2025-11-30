@@ -6,7 +6,7 @@ Last Updated: 2025-11-09
 
 ## Quick Summary
 
-`covpp` is a modular, plugin-driven coverage path planning pipeline for indoor (grid / occupancy) maps. Starting from a grayscale map + YAML, it selects a district, analyzes free space, segments into cells, plans per–cell coverage paths, sequences them, and evaluates performance. Algorithms for segmentation, coverage planning, and sequencing are loaded via Python entry points (`segmentors`, `planners`, `sequencers`) so you can add new methods without touching core code.
+`covpp` is a modular, plugin-driven coverage path planning pipeline for indoor (grid / occupancy) maps. Starting from a grayscale map + YAML, it selects a district, analyzes free space, segments into cells, plans per–cell coverage paths, sequences them, and evaluates performance. Algorithms for segmentation, coverage planning, low-level path finding, and sequencing are loaded via Python entry points (`segmentors`, `planners`, `path_planners`, `sequencers`) so you can add new methods without touching core code.
 
 ---
 
@@ -30,7 +30,6 @@ This is a comprehensive coverage path planning system that generates optimal pat
 - [Adding New Methods (Plugin Development)](#adding-new-methods-plugin-development)
 - [Benefits of the Plugin Architecture](#benefits-of-the-plugin-architecture)
 - [End-to-End Pattern](#end-to-end-pattern)
-- [Common Issues & Solutions](#common-issues--solutions)
 - [Dependencies](#dependencies)
 - [Usage Examples](#usage-examples)
 - [References](#references)
@@ -351,16 +350,44 @@ Generates coverage paths for individual cells.
 
 Coverage planners are discovered via the `planners` entry point group:
 
-| Name      | Entry Point                                                                   | Technique                                                    |
-| --------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `boust`   | `covpp.coverage_planning.boustrophedon.coverage_pp_boust:CoveragePathPlanner` | Boustrophedon (sweeping / trapezoids + back-and-forth lines) |
-| `contour` | `covpp.coverage_planning.contour.coverage_pp_contour:CoveragePathPlanner`     | Inward contour / distance transform / rectangle hybrid       |
+| Name              | Entry Point                                                                                     | Technique                                                    |
+| ----------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `boust`           | `covpp.coverage_planning.boustrophedon.coverage_pp_boust:CoveragePathPlanner`                   | Boustrophedon (sweeping / trapezoids + back-and-forth lines) |
+| `contour`         | `covpp.coverage_planning.contour.coverage_pp_contour:CoveragePathPlanner`                       | Inward contour / distance transform / rectangle hybrid       |
+| `grid_energy_min` | `covpp.coverage_planning.local_energy_minimization.cov_pp_local_energy_min:CoveragePathPlanner` | Grid-based coverage using local energy minimization          |
 
 Key boustrophedon submodules: `decomposition_bs_mh.py`, `cell_cov_planner.py`, `obstacles.py`, `events.py`, `plotter.py`.
 
 ---
 
-### 7. Sequencing Module (`covpp/sequence/`)
+### 7. Path Planning Module (`covpp/path_planning/`)
+
+Provides low-level graph search utilities used whenever two points inside a zone
+need to be connected (e.g., ConnectPaths, evaluation overlays).
+
+#### **PathPlannerBase** (path_planner_base.py)
+
+- **Purpose**: Shared logic for constructing cost maps, validating endpoints, and converting between global/local indices.
+- **Process**:
+  1. Build a float cost map from the workspace slice (free vs. occupied values).
+  2. Convert global pixel coordinates into the planner’s local frame.
+  3. Delegate to the concrete planner implementation via `plan_path()`.
+  4. Lift the resulting local polyline back to global coordinates and wrap it in `MyPath`.
+- **Result**: `find_path()` returns a `MyPath` whose points live in the zone’s global pixel frame, ready for connection or distance measurements.
+
+#### **Path Planner Plugins** (entry-point group: `path_planners`)
+
+| Name    | Entry Point                                            | Technique / Use Case                                                                 |
+| ------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `astar` | `covpp.path_planning.path_planner_pyastar:PathPlanner` | Grid-based A\* search via `pyastar2d`, used by `ConnectPaths` to link cell endpoints |
+
+Adding new planners (e.g., D\* Lite, Jump Point Search) only requires inheriting
+`PathPlannerBase`, implementing `plan_path()`, and registering the class under
+the `path_planners` entry-point group in `pyproject.toml`.
+
+---
+
+### 8. Sequencing Module (`covpp/sequence/`)
 
 Optimizes cell visit order and connects paths.
 
@@ -386,13 +413,19 @@ Optimizes cell visit order and connects paths.
   - `connect(start, end)`: Create connection path
   - Uses pathfinding algorithms (A\*, Dijkstra)
 
-#### **Sequence Optimizers** (`sequence_optimizers.py` via `sequencers` entry point)
+#### **SeqOptimizerBase** (`sequence_optimizer_base.py`)
 
-| Name                | Class      | Approach                                     |
-| ------------------- | ---------- | -------------------------------------------- |
-| `dfs`               | `DfsSO`    | Depth-first traversal of adjacency graph     |
-| `milp`              | `MilpSO`   | Mixed Integer Linear Programming TSP variant |
-| (implicit) `simple` | `SimpleSO` | Original order / list order                  |
+- **Purpose**: Provide shared bookkeeping (cell indices, optional distance matrices, start cell) and utility helpers for all sequencing strategies.
+- **Result**: Subclasses implement `create_tour()` to populate `tour_ids` / `tour_idxs`, after which `SequenceHandler` writes `opt_id` / `next_cell_id` back into each `PCell`.
+
+#### **Sequence Optimizers** (`sequencers` entry point group)
+
+| Name   | Entry Point                                                     | Approach                                                 |
+| ------ | --------------------------------------------------------------- | -------------------------------------------------------- |
+| `dfs`  | `covpp.sequence.dfs_optimizer.sequence_optimizer:SeqOptimizer`  | Depth-first traversal of the cell adjacency graph        |
+| `milp` | `covpp.sequence.milp_optimizer.sequence_optimizer:SeqOptimizer` | Mixed Integer Linear Programming TSP solver via OR-Tools |
+
+> A simple pass-through optimizer exists in `covpp.sequence.simple_optimizer`, but it is not registered under `sequencers` by default. Add it to `pyproject.toml` if you need the original ordering as a selectable plugin.
 
 #### **SequencePaths** (sequence.py)
 
@@ -407,7 +440,7 @@ Optimizes cell visit order and connects paths.
 
 ---
 
-### 8. Evaluation Module (`covpp/evaluation/`)
+### 9. Evaluation Module (`covpp/evaluation/`)
 
 Computes performance metrics and statistics.
 
@@ -500,11 +533,17 @@ main.py
 
   - `boust`: Boustrophedon (back-and-forth)
   - `contour`: Contour-following
+  - `grid_energy_min`: Grid-based local-energy minimization
+
+- **Path Planner Methods**:
+
+  - `astar`: Grid A\* (pyastar2d)
+  - Custom planners registered under `path_planners`
 
 - **Sequence Optimization Methods**:
-  - `simple`: Sequential ordering
-  - `dfs`: Depth-first search
-  - `milp`: Mixed-integer linear programming
+  - `dfs`: Depth-first search (`covpp.sequence.dfs_optimizer`)
+  - `milp`: Mixed-integer linear programming (`covpp.sequence.milp_optimizer`)
+  - `simple`: Legacy order-preserving optimizer (register `covpp.sequence.simple_optimizer` under `sequencers` to enable)
 
 ### Robot Parameters (`RobotConfig` & parts of `SpaceConfig` / `PlanningConfig`)
 
@@ -573,7 +612,8 @@ The system is built on a **plugin-based architecture** that makes it highly exte
 Each critical component has a base class that defines the interface:
 
 - **`SegmentationBase`**: Interface for space decomposition algorithms
-- **`CoveragePathPlannerBase`**: Interface for path planning algorithms
+- **`CoveragePathPlannerBase`**: Interface for coverage generation inside a cell
+- **`PathPlannerBase`**: Interface for low-level graph search between two map points
 - **`EvaluationBase`**: Interface for performance evaluation methods
 - **`SequenceOptimizer`**: Interface for path sequencing algorithms
 
@@ -595,6 +635,12 @@ High-level handler classes dynamically load specific implementations based on co
   - Dynamically imports appropriate `CoveragePathPlanner` class (boust/contour/custom)
   - Applies planning to all cells using consistent interface
 
+- **`FindPathInMap` / `ConnectPaths`**:
+
+  - Read `pp_method` from config
+  - Dynamically load the appropriate low-level path planner (e.g., A\*)
+  - Provide reusable point-to-point connections for coverage validation and sequencing
+
 - **`ZoneEvaluationHandler`**:
 
   - Loads evaluation strategy based on requirements
@@ -613,6 +659,7 @@ All method selection is controlled through configuration files:
 class PipeLineConfig:
     segmentation_method: str = "voronoi"  # or "simple", "custom"
     covpp_method: str = "boust"           # or "contour", "custom"
+  pp_method: str = "astar"              # or any custom path-planner plugin name
     sequence_method: str = "simple"       # or "dfs", "milp", "custom"
 ```
 
@@ -740,7 +787,41 @@ my_planner = "covpp.coverage_planning.my_planner.coverage_pp_my_planner:Coverage
 covpp_method: "my_planner"
 ```
 
-### 3. **Adding a New Sequence Optimization Method** (Plugin)
+### 3. **Adding a New Path Planner** (Plugin)
+
+**Step 1**: Create implementation directory:
+
+```text
+scripts/path_planning/my_planner/
+  __init__.py
+  path_planner_my_planner.py
+```
+
+**Step 2**: Inherit from `PathPlannerBase`:
+
+```python
+from covpp.path_planning.path_planner_base import PathPlannerBase
+
+class PathPlanner(PathPlannerBase):
+  def plan_path(self, start, end):
+    """Implement your grid/graph search here and return local pixels."""
+    # return [(x0, y0), (x1, y1), ...]
+```
+
+**Step 3**: Register via entry point group `path_planners`:
+
+```toml
+[project.entry-points.path_planners]
+my_planner = "covpp.path_planning.my_planner.path_planner_my_planner:PathPlanner"
+```
+
+**Step 4**: Set configuration:
+
+```python
+pp_method: "my_planner"
+```
+
+### 4. **Adding a New Sequence Optimization Method** (Plugin)
 
 **Step 1**: Create optimizer class:
 
@@ -770,7 +851,7 @@ my_method = "covpp.sequence.optimize_my_method:MySeqOpt"
 sequence_method: "my_method"
 ```
 
-### 4. **Adding a New Evaluation Method**
+### 5. **Adding a New Evaluation Method**
 
 **Step 1**: Inherit from evaluation base:
 
@@ -830,25 +911,6 @@ Each stage:
 - Performs specific transformation
 - Produces standardized output
 - Can be tested independently
-
----
-
-## Common Issues & Solutions
-
-1. **Issue**: Empty paths generated
-
-   - **Solution**: Check robot radius and workspace erosion
-
-2. **Issue**: Disconnected regions
-
-   - **Solution**: Verify segmentation produces connected cells
-
-3. **Issue**: Long computation time
-
-   - **Solution**: Reduce map resolution or use simpler methods
-
-4. **Issue**: Coverage gaps
-   - **Solution**: Adjust tool radius and path overlap
 
 ---
 
