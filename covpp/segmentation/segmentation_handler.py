@@ -74,6 +74,7 @@ class SegmentationHandler:
             ValueError: If segmentation method is not recognized.
         """
 
+        # ----------------------------------------------------------------------
         # create segmentor based on segmentation method
         segmentation_method = self.dcfg.segmentation_method
         segmentors = entry_points(group="segmentors")

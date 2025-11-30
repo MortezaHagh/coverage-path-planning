@@ -52,7 +52,7 @@ Map + Data -> Space Analysis -> Generate District -> Create Zones -> Segmentatio
 ### Quick Install
 
 ```bash
-# From the repository root (the directory that contains setup.py),
+# From the repository root (the directory that contains pyproject.toml),
 # install in development mode
 pip install -e .
 ```

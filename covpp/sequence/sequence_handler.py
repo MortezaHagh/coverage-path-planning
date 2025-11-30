@@ -96,6 +96,7 @@ class SequenceHandler:
         self.plot_scale_px: float = min(zmd.hw)/500
         self.plot_scale_m: float = min(zmd.hw)*zmd.resolution/10
 
+        # ----------------------------------------------------------------------
         # sequence optimizer
         sequencer_name = self.dcfg.sequence_method
         sequencers = entry_points(group="sequencers")

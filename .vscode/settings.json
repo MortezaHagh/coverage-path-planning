@@ -5,11 +5,10 @@
     ],
     "files.exclude": {
         "**/*.pyc": true,
-        "**/LICENSE": false,
-        "**/*gitignore": false,
         "**/*pycache*": true,
         "venv": true,
-        "LICENSE": true
+        "covpp.egg-info": true,
+        "dist": true
     },
     // exclude from search
     "search.exclude": {
@@ -27,15 +26,13 @@
         "--max-line-length=140"
     ],
     "pylint.args": [
-        "--init-hook",
-        "import sys; sys.path.insert(0, './scripts')",
-        "--disable=C0114",
-        "--disable=C0301",
-        "--disable=C0115",
-        "--disable=C0116",
-        "--disable=W1514",
-        "--disable=E1101",
-        "--disable=E1121"
+        // "--disable=C0114",
+        // "--disable=C0301",
+        // "--disable=C0115",
+        // "--disable=C0116",
+        // "--disable=W1514",
+        // "--disable=E1101",
+        // "--disable=E1121"
     ],
     "github.copilot.editor.enableAutoCompletions": true,
     "python.pipenvPath": "/home/morteza/Documents/00-CovPP/covpp/venv",

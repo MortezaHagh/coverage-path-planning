@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "covpp"
+version = "0.1.0"
+description = "Coverage Path Planning system for robotic applications"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [
+    { name = "MortezaHagh" }
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Robotics",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "numpy>=1.20.0",
+    "matplotlib>=3.3.0",
+    "opencv-python>=4.5.0",
+    "shapely>=1.8.0",
+    "scipy>=1.7.0",
+    "ortools>=9.0.0",
+    "pyastar2d>=1.0.0",
+    "scikit-image>=0.18.0",
+    "colorama>=0.4.0",
+    "PyYAML>=5.4.0",
+    "pynput>=1.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=3.0.0",
+    "flake8>=4.0.0",
+    "mypy>=0.950",
+]
+docs = [
+    "sphinx>=4.5.0",
+    "sphinx-rtd-theme>=1.0.0",
+]
+
+[project.scripts]
+covpp = "covpp.main:main"
+
+[project.entry-points."segmentors"]
+simple = "covpp.segmentation.simple_segmentation.segmentation_simple:Segmentation"
+voronoi = "covpp.segmentation.voronoi_segmentation.segmentation_voronoi:Segmentation"
+
+[project.entry-points."planners"]
+boust = "covpp.planning.boustrophedon.coverage_pp_boust:CoveragePathPlanner"
+contour = "covpp.planning.contour.coverage_pp_contour:CoveragePathPlanner"
+grid_energy_min = "covpp.planning.local_energy_minimization.cov_pp_local_energy_min:CoveragePathPlanner"
+
+[project.entry-points."sequencers"]
+dfs = "covpp.sequence.sequence_optimizers:DfsSO"
+milp = "covpp.sequence.sequence_optimizers:MilpSO"
+
+[project.urls]
+Homepage = "https://github.com/MortezaHagh/coverage-path-planning"
+Repository = "https://github.com/MortezaHagh/coverage-path-planning"
+Issues = "https://github.com/MortezaHagh/coverage-path-planning/issues"
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.package-data]
+"covpp" = ["**/*.yml", "**/*.yaml", "**/*.json"]
+
+[tool.setuptools.exclude-package-data]
+"covpp" = ["**/__pycache__/*", "**/*.py[co]", "**/.DS_Store"]
+
+[tool.setuptools.data-files]
+"" = ["README.md", "LICENSE", "documentation.md", "requirements.txt"]
+
+[tool.setuptools.packages.find]
+include = ["covpp*"]
+exclude = ["tests", "tests.*", "*.tests", "*.tests.*"]

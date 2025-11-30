@@ -684,7 +684,7 @@ class Segmentation(SegmentationBase):
         self.n_cells = len(self.cells)
 ```
 
-**Step 3**: Register in `setup.py`/`pyproject.toml` entry points:
+**Step 3**: Register in `pyproject.toml` entry points:
 
 ```toml
 [project.entry-points.segmentors]

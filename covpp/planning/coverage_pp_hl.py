@@ -66,6 +66,7 @@ class CoveragePPHandler:
 
         self.lg.info2("start coverage path planning for cells")
 
+        # ----------------------------------------------------------------------
         # create coverage path planner
         # coverage path planning method from configs
         dcfg = PipeLineConfig()

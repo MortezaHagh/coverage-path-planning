@@ -8,6 +8,7 @@ results/Map3
 results/Map4
 venv/
 covpp.egg-info/
+dist/
 #*.png
 *.json
 *.pgm
