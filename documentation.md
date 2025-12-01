@@ -36,7 +36,7 @@ This is a comprehensive coverage path planning system that generates optimal pat
 
 ## Pipeline Architecture
 
-The system follows a **modular, plugin-based architecture** where new algorithms can be easily integrated by extending base classes. Each major component (Segmentation, Coverage Planning, Sequence Optimization, and Evaluation) is designed with abstract base classes that define the interface, allowing developers to add new methods without modifying the core pipeline.
+The system follows a **modular, plugin-based architecture** where new algorithms can be easily integrated by extending base classes. Each major component (Segmentation, Coverage Planning, Sequence Optimization, path planning, and Evaluation) is designed with abstract base classes that define the interface, allowing developers to add new methods without modifying the core pipeline.
 
 ```text
 PGM + YAML → Inputs → Image Processing → District & Space Analysis → Zone(s)

@@ -10,7 +10,7 @@ Welcome to covpp's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   scripts
+   covpp
 
 Indices and tables
 ==================

@@ -1,0 +1,281 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>covpp.path_planning &mdash; covpp 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2ed17a75"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="covpp.sequence" href="covpp.sequence.html" />
+    <link rel="prev" title="covpp.coverage_planning.contour" href="covpp.coverage_planning.contour.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            covpp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="covpp.html">covpp</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="covpp.html#modules">Modules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="covpp.base.html">covpp.base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.spa.html">covpp.spa</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.district.html">covpp.district</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.gui.html">covpp.gui</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.segmentation.html">covpp.segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.coverage_planning.html">covpp.coverage_planning</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">covpp.path_planning</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.path_planning.path_in_map">covpp.path_planning.path_in_map module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.path_planning.path_planner_base">covpp.path_planning.path_planner_base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.path_planning.path_planner_pyastar">covpp.path_planning.path_planner_pyastar module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.path_planning.path_planner_temp">covpp.path_planning.path_planner_temp module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.path_planning">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.sequence.html">covpp.sequence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.evaluation.html">covpp.evaluation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.html#module-covpp.main">covpp.main</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">covpp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="covpp.html">covpp</a></li>
+      <li class="breadcrumb-item active">covpp.path_planning</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/covpp.path_planning.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="covpp-path-planning">
+<h1>covpp.path_planning<a class="headerlink" href="#covpp-path-planning" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-covpp.path_planning.path_in_map">
+<span id="covpp-path-planning-path-in-map-module"></span><h2>covpp.path_planning.path_in_map module<a class="headerlink" href="#module-covpp.path_planning.path_in_map" title="Link to this heading"></a></h2>
+<p>Module for finding paths in a map using different path planning methods.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.path_planning.path_in_map.FindPathInMap">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FindPathInMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_ws</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_xy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.path_planning.path_in_map.FindPathInMap" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for finding path in a map using different path planning methods.</p>
+<dl class="simple">
+<dt>Supported Methods:</dt><dd><ul class="simple">
+<li><p>&quot;astar&quot;: A* algorithm using pyastar2d library</p></li>
+<li><p>Additional methods can be added by implementing PathPlannerBase subclasses</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-covpp.path_planning.path_planner_base">
+<span id="covpp-path-planning-path-planner-base-module"></span><h2>covpp.path_planning.path_planner_base module<a class="headerlink" href="#module-covpp.path_planning.path_planner_base" title="Link to this heading"></a></h2>
+<p>Base utilities for low-level path planners.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.path_planning.path_planner_base.PathPlannerBase">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PathPlannerBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_ws</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_xy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.path_planning.path_planner_base.PathPlannerBase" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Shared functionality for path planners that operate on cost maps.</p>
+<dl class="simple">
+<dt>Process (implemented by subclasses):</dt><dd><ol class="arabic simple">
+<li><p>Prepare a cost map representation of the workspace via <code class="docutils literal notranslate"><span class="pre">plan_path</span></code>.</p></li>
+<li><p>Convert global pixel coordinates into local planner coordinates.</p></li>
+<li><p>Run the concrete planner to obtain a list of pixels for the route.</p></li>
+<li><p>Lift the local result back into global coordinates and wrap it in <code class="docutils literal notranslate"><span class="pre">MyPath</span></code>.</p></li>
+</ol>
+</dd>
+<dt>Result:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">find_path</span></code> returns a <code class="docutils literal notranslate"><span class="pre">MyPath</span></code> whose points live in the global map frame.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.path_planning.path_planner_base.PathPlannerBase.plan_path">
+<span class="sig-name descname"><span class="pre">plan_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath"><span class="pre">MyPath</span></a></span></span><a class="headerlink" href="#covpp.path_planning.path_planner_base.PathPlannerBase.plan_path" title="Link to this definition"></a></dt>
+<dd><p>Plan a local-path solution between two free pixels.</p>
+<p>Subclasses must replace this method with an algorithm that consumes the
+prepared <code class="docutils literal notranslate"><span class="pre">cost_map</span></code> and returns an <strong>ordered</strong> iterable of (x, y) pixel
+coordinates describing the path in the <em>local</em> frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Local-frame waypoints for the path.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath">MyPath</a> | list[tuple[int, int]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.path_planning.path_planner_base.PathPlannerBase.distance_between_points">
+<span class="sig-name descname"><span class="pre">distance_between_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#covpp.path_planning.path_planner_base.PathPlannerBase.distance_between_points" title="Link to this definition"></a></dt>
+<dd><p>Return the travel distance by first computing the actual path.</p>
+<dl class="simple">
+<dt>Process:</dt><dd><ol class="arabic simple">
+<li><p>Invoke <code class="docutils literal notranslate"><span class="pre">find_path</span></code> which internally calls <code class="docutils literal notranslate"><span class="pre">plan_path</span></code>.</p></li>
+<li><p>Convert the resulting <code class="docutils literal notranslate"><span class="pre">MyPath</span></code> into consecutive segments.</p></li>
+<li><p>Sum Euclidean segment lengths to obtain the travelled metric length.</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">inf</span></code> if no path exists, otherwise the polyline length in pixels.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.path_planning.path_planner_base.PathPlannerBase.find_path">
+<span class="sig-name descname"><span class="pre">find_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath"><span class="pre">MyPath</span></a></span></span><a class="headerlink" href="#covpp.path_planning.path_planner_base.PathPlannerBase.find_path" title="Link to this definition"></a></dt>
+<dd><p>Compute a global-frame path between two map points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path with absolute pixel coordinates, ready for downstream consumers.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath">MyPath</a></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> -- If start/end are not in free space or if <code class="docutils literal notranslate"><span class="pre">plan_path</span></code> fails.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.path_planning.path_planner_pyastar">
+<span id="covpp-path-planning-path-planner-pyastar-module"></span><h2>covpp.path_planning.path_planner_pyastar module<a class="headerlink" href="#module-covpp.path_planning.path_planner_pyastar" title="Link to this heading"></a></h2>
+<p>A*-based path planner plug-in backed by <code class="docutils literal notranslate"><span class="pre">pyastar2d</span></code>.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.path_planning.path_planner_pyastar.PathPlanner">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PathPlanner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_ws</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_xy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.path_planning.path_planner_pyastar.PathPlanner" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#covpp.path_planning.path_planner_base.PathPlannerBase" title="covpp.path_planning.path_planner_base.PathPlannerBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathPlannerBase</span></code></a></p>
+<p>Concrete <code class="docutils literal notranslate"><span class="pre">PathPlannerBase</span></code> that delegates to <code class="docutils literal notranslate"><span class="pre">pyastar2d.astar_path</span></code>.</p>
+<dl class="simple">
+<dt>Process:</dt><dd><ol class="arabic simple">
+<li><p>Convert incoming (x, y) pixels into (row, col) pairs expected by
+<code class="docutils literal notranslate"><span class="pre">pyastar2d</span></code>.</p></li>
+<li><p>Run grid-based A* on the prepared <code class="docutils literal notranslate"><span class="pre">cost_map</span></code>.</p></li>
+<li><p>Convert the solver output back to the planner's coordinate frame.</p></li>
+</ol>
+</dd>
+<dt>Result:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">plan_path</span></code> returns a list of local pixel coordinates that <code class="docutils literal notranslate"><span class="pre">find_path</span></code>
+turns into a global <code class="docutils literal notranslate"><span class="pre">MyPath</span></code>.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.path_planning.path_planner_pyastar.PathPlanner.plan_path">
+<span class="sig-name descname"><span class="pre">plan_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#covpp.path_planning.path_planner_pyastar.PathPlanner.plan_path" title="Link to this definition"></a></dt>
+<dd><p>Compute a local path by invoking <code class="docutils literal notranslate"><span class="pre">pyastar2d.astar_path</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.path_planning.path_planner_temp">
+<span id="covpp-path-planning-path-planner-temp-module"></span><h2>covpp.path_planning.path_planner_temp module<a class="headerlink" href="#module-covpp.path_planning.path_planner_temp" title="Link to this heading"></a></h2>
+<p>path planner using pyastar2d library.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.path_planning.path_planner_temp.PathPlanner">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PathPlanner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_ws</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_xy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.path_planning.path_planner_temp.PathPlanner" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#covpp.path_planning.path_planner_base.PathPlannerBase" title="covpp.path_planning.path_planner_base.PathPlannerBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">PathPlannerBase</span></code></a></p>
+<p>class for finding path between two points in map.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.path_planning.path_planner_temp.PathPlanner.plan_path">
+<span class="sig-name descname"><span class="pre">plan_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#covpp.path_planning.path_planner_temp.PathPlanner.plan_path" title="Link to this definition"></a></dt>
+<dd><p>use pyastar2d library to find path.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.path_planning">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-covpp.path_planning" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="covpp.coverage_planning.contour.html" class="btn btn-neutral float-left" title="covpp.coverage_planning.contour" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="covpp.sequence.html" class="btn btn-neutral float-right" title="covpp.sequence" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MortezaH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

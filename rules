@@ -1,2 +1,0 @@
-docstrings:
-  - don't add args, attributes, or return types if they are not in the current docstring

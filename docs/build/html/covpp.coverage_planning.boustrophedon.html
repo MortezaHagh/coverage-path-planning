@@ -1,0 +1,809 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>covpp.coverage_planning.boustrophedon &mdash; covpp 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2ed17a75"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="covpp.coverage_planning.contour" href="covpp.coverage_planning.contour.html" />
+    <link rel="prev" title="covpp.coverage_planning" href="covpp.coverage_planning.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            covpp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="covpp.html">covpp</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="covpp.html#modules">Modules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="covpp.base.html">covpp.base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.spa.html">covpp.spa</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.district.html">covpp.district</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.gui.html">covpp.gui</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.segmentation.html">covpp.segmentation</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="covpp.coverage_planning.html">covpp.coverage_planning</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="covpp.coverage_planning.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.html#module-covpp.coverage_planning.coverage_pp_base">covpp.coverage_planning.coverage_pp_base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.html#module-covpp.coverage_planning.coverage_pp_hl">covpp.coverage_planning.coverage_pp_hl module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.html#module-covpp.coverage_planning">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.path_planning.html">covpp.path_planning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.sequence.html">covpp.sequence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.evaluation.html">covpp.evaluation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.html#module-covpp.main">covpp.main</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">covpp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="covpp.html">covpp</a></li>
+          <li class="breadcrumb-item"><a href="covpp.coverage_planning.html">covpp.coverage_planning</a></li>
+      <li class="breadcrumb-item active">covpp.coverage_planning.boustrophedon</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/covpp.coverage_planning.boustrophedon.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="covpp-coverage-planning-boustrophedon">
+<h1>covpp.coverage_planning.boustrophedon<a class="headerlink" href="#covpp-coverage-planning-boustrophedon" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-covpp.coverage_planning.boustrophedon.cell">
+<span id="covpp-coverage-planning-boustrophedon-cell-module"></span><h2>covpp.coverage_planning.boustrophedon.cell module<a class="headerlink" href="#module-covpp.coverage_planning.boustrophedon.cell" title="Link to this heading"></a></h2>
+<p>Cell and CellGroup classes for boustrophedon decomposition.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.Cell">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.Cell" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="covpp.segmentation.html#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">CellBase</span></code></a></p>
+<p>Cell for boustrophedon decomposition.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.Cell.set_group_id">
+<span class="sig-name descname"><span class="pre">set_group_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.Cell.set_group_id" title="Link to this definition"></a></dt>
+<dd><p>Set the group ID for the cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.Cell.find_corner">
+<span class="sig-name descname"><span class="pre">find_corner</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.Cell.find_corner" title="Link to this definition"></a></dt>
+<dd><p>Find the corner points of the cell polygon.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.Cell.set_up_adj_ci">
+<span class="sig-name descname"><span class="pre">set_up_adj_ci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.Cell.set_up_adj_ci" title="Link to this definition"></a></dt>
+<dd><p>Set the upper adjacent cell index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.Cell.set_down_adj_ci">
+<span class="sig-name descname"><span class="pre">set_down_adj_ci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.Cell.set_down_adj_ci" title="Link to this definition"></a></dt>
+<dd><p>Set the lower adjacent cell index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.Cell.add_mid_adjlist">
+<span class="sig-name descname"><span class="pre">add_mid_adjlist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.Cell.add_mid_adjlist" title="Link to this definition"></a></dt>
+<dd><p>Add a cell index to the mid adjacent list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.Cell.set_parent_up_ci">
+<span class="sig-name descname"><span class="pre">set_parent_up_ci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.Cell.set_parent_up_ci" title="Link to this definition"></a></dt>
+<dd><p>Set the upper parent cell index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.Cell.set_parent_down_ci">
+<span class="sig-name descname"><span class="pre">set_parent_down_ci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.Cell.set_parent_down_ci" title="Link to this definition"></a></dt>
+<dd><p>Set the lower parent cell index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.Cell.add_mid_parentlist">
+<span class="sig-name descname"><span class="pre">add_mid_parentlist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.Cell.add_mid_parentlist" title="Link to this definition"></a></dt>
+<dd><p>Add a cell index to the mid parent list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.Cell.set_shift_re">
+<span class="sig-name descname"><span class="pre">set_shift_re</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.Cell.set_shift_re" title="Link to this definition"></a></dt>
+<dd><p>Set the shift right flag.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.Cell.set_shift_le">
+<span class="sig-name descname"><span class="pre">set_shift_le</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.Cell.set_shift_le" title="Link to this definition"></a></dt>
+<dd><p>Set the shift left flag.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.CellGroup">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CellGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first_cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.cell.Cell" title="covpp.coverage_planning.boustrophedon.cell.Cell"><span class="pre">Cell</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.CellGroup" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Group of adjacent cells for boustrophedon decomposition.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.CellGroup.add_cell">
+<span class="sig-name descname"><span class="pre">add_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.cell.Cell" title="covpp.coverage_planning.boustrophedon.cell.Cell"><span class="pre">Cell</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.CellGroup.add_cell" title="Link to this definition"></a></dt>
+<dd><p>Add a cell to the group.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.CellGroup.set_first_cell">
+<span class="sig-name descname"><span class="pre">set_first_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.cell.Cell" title="covpp.coverage_planning.boustrophedon.cell.Cell"><span class="pre">Cell</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.CellGroup.set_first_cell" title="Link to this definition"></a></dt>
+<dd><p>Set the first cell in the group.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.CellGroup.set_last_cell">
+<span class="sig-name descname"><span class="pre">set_last_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.cell.Cell" title="covpp.coverage_planning.boustrophedon.cell.Cell"><span class="pre">Cell</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.CellGroup.set_last_cell" title="Link to this definition"></a></dt>
+<dd><p>Set the last cell in the group.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.CellGroup.update_group">
+<span class="sig-name descname"><span class="pre">update_group</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.CellGroup.update_group" title="Link to this definition"></a></dt>
+<dd><p>Update the group by setting the last cell and merging cells.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell.CellGroup.merge_cells">
+<span class="sig-name descname"><span class="pre">merge_cells</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell.CellGroup.merge_cells" title="Link to this definition"></a></dt>
+<dd><p>Merge all cells in the group into a single cell.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.coverage_planning.boustrophedon.cell_cov_planner">
+<span id="covpp-coverage-planning-boustrophedon-cell-cov-planner-module"></span><h2>covpp.coverage_planning.boustrophedon.cell_cov_planner module<a class="headerlink" href="#module-covpp.coverage_planning.boustrophedon.cell_cov_planner" title="Link to this heading"></a></h2>
+<p>Boustrophedon coverage path generation for decomposed trapezoidal cells.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CellCoveragePathPlanner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.cell.Cell" title="covpp.coverage_planning.boustrophedon.cell.Cell"><span class="pre">Cell</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">zone_ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Generate sweeping coverage paths for individual trapezoidal cells.</p>
+<p>Creates alternating back-and-forth coverage paths within a decomposed cell
+by finding intersection points with horizontal scan lines.</p>
+<dl class="simple">
+<dt>Planning Process:</dt><dd><ol class="arabic simple">
+<li><p>Convert cell polygon to meter coordinates</p></li>
+<li><p>Find hitting points with cell boundary from top and bottom</p></li>
+<li><p>Connect hitting points in alternating boustrophedon pattern</p></li>
+<li><p>Convert final path to pixel coordinates</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cell</strong> -- The trapezoidal cell to plan coverage for (from decomposition).</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.coverage_planning">
+<span class="sig-name descname"><span class="pre">coverage_planning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.coverage_planning" title="Link to this definition"></a></dt>
+<dd><p>Execute boustrophedon path planning for the trapezoidal cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.create_cell_polygon_in_meter">
+<span class="sig-name descname"><span class="pre">create_cell_polygon_in_meter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.create_cell_polygon_in_meter" title="Link to this definition"></a></dt>
+<dd><p>Convert cell polygon from pixel to meter coordinates and validate.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.find_top_but_hit_points">
+<span class="sig-name descname"><span class="pre">find_top_but_hit_points</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.find_top_but_hit_points" title="Link to this definition"></a></dt>
+<dd><p>Find hitting points with the cell polygon from top and bottom.</p>
+<dl class="simple">
+<dt>Process:</dt><dd><ol class="arabic simple">
+<li><p>Determine x-coordinates of vertical scan lines based on cell width
+and cleaning distance, adjusting for any shifts.</p></li>
+<li><p>For each x-coordinate, create a vertical line from above the cell
+downwards and find intersection points with the cell polygon.</p></li>
+<li><p>Store the bottom and top intersection points for path generation.</p></li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.get_intersection_points">
+<span class="sig-name descname"><span class="pre">get_intersection_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_top_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bot_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polygon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Polygon</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Point</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Point</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.get_intersection_points" title="Link to this definition"></a></dt>
+<dd><p>get intersection points of a vertical line below the bot_point with the polygon</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.calculate_path">
+<span class="sig-name descname"><span class="pre">calculate_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.calculate_path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.create_path_px">
+<span class="sig-name descname"><span class="pre">create_path_px</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.create_path_px" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.point_m_to_px">
+<span class="sig-name descname"><span class="pre">point_m_to_px</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.point_m_to_px" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.coverage_planning.boustrophedon.coverage_pp_boust">
+<span id="covpp-coverage-planning-boustrophedon-coverage-pp-boust-module"></span><h2>covpp.coverage_planning.boustrophedon.coverage_pp_boust module<a class="headerlink" href="#module-covpp.coverage_planning.boustrophedon.coverage_pp_boust" title="Link to this heading"></a></h2>
+<p>Boustrophedon (back-and-forth) coverage path planning implementation.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CoveragePathPlanner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.segmentation.html#covpp.segmentation.cell_planning.PCell" title="covpp.segmentation.cell_planning.PCell"><span class="pre">PCell</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData"><span class="pre">ZoneMapData</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="covpp.coverage_planning.html#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase" title="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoveragePathPlannerBase</span></code></a></p>
+<p>Coverage path planner using boustrophedon (back-and-forth) decomposition.</p>
+<p>Basic input data for the planner is MapPolygons object created from <strong>cell.map</strong>.
+cell.map boundary is either original cell polygon or inscribed rectangle.</p>
+<p>This planner creates parallel sweeping paths by decomposing the cell into
+trapezoidal regions and generating alternating scan lines.</p>
+<dl class="simple">
+<dt>Pipeline Steps:</dt><dd><ol class="arabic simple">
+<li><p>Create map polygons for cell workspace</p></li>
+<li><p>Decompose cell into boustrophedon sub-cells</p></li>
+<li><p>Plan coverage path for each sub-cell</p></li>
+<li><p>Rotate paths back to original orientation</p></li>
+<li><p>Connect all sub-cell paths into complete coverage</p></li>
+</ol>
+</dd>
+<dt>Result:</dt><dd><p>Sets path_m and path_px attributes for the cell.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.coverage_planning">
+<span class="sig-name descname"><span class="pre">coverage_planning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.coverage_planning" title="Link to this definition"></a></dt>
+<dd><p>Execute boustrophedon coverage planning for the cell.</p>
+<p>Orchestrates the complete planning process from decomposition to
+connected path generation.</p>
+<p>Result: <code class="docutils literal notranslate"><span class="pre">self.path_px</span></code>/<code class="docutils literal notranslate"><span class="pre">self.path_m</span></code>
+encode the full coverage tour for the original cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.create_polygons">
+<span class="sig-name descname"><span class="pre">create_polygons</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.create_polygons" title="Link to this definition"></a></dt>
+<dd><p>Create MapPolygons object for the cell area in the map</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.decompose">
+<span class="sig-name descname"><span class="pre">decompose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.decompose" title="Link to this definition"></a></dt>
+<dd><p>Decompose the cell area into boustrophedon cells.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.all_cells_coverage_pp">
+<span class="sig-name descname"><span class="pre">all_cells_coverage_pp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.all_cells_coverage_pp" title="Link to this definition"></a></dt>
+<dd><p>Perform coverage path planning for all the boustrophedon cells.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.create_connected_path_simple">
+<span class="sig-name descname"><span class="pre">create_connected_path_simple</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.create_connected_path_simple" title="Link to this definition"></a></dt>
+<dd><p>Create a connected path for all the boustrophedon cells.
+Simple approach: concatenate the paths of all cells in order.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.rotate_back_paths">
+<span class="sig-name descname"><span class="pre">rotate_back_paths</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.rotate_back_paths" title="Link to this definition"></a></dt>
+<dd><p>Rotate back all the paths (cell paths and full path) to original orientation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.make_path_endpoints_free">
+<span class="sig-name descname"><span class="pre">make_path_endpoints_free</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.make_path_endpoints_free" title="Link to this definition"></a></dt>
+<dd><p>Ensure all points in the full path are in free space.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.create_connected_path">
+<span class="sig-name descname"><span class="pre">create_connected_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.create_connected_path" title="Link to this definition"></a></dt>
+<dd><p>Create a connected path for all the boustrophedon cells.
+Using ConnectPaths class to find optimal connections between cell paths.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.create_full_path">
+<span class="sig-name descname"><span class="pre">create_full_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths_px</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath"><span class="pre">MyPath</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_paths_px</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath"><span class="pre">MyPath</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.create_full_path" title="Link to this definition"></a></dt>
+<dd><p>Create full path by combining cell paths and connection paths.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.visualize_boust_cells">
+<span class="sig-name descname"><span class="pre">visualize_boust_cells</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.visualize_boust_cells" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.coverage_planning.boustrophedon.decomposition_bs_mh">
+<span id="covpp-coverage-planning-boustrophedon-decomposition-bs-mh-module"></span><h2>covpp.coverage_planning.boustrophedon.decomposition_bs_mh module<a class="headerlink" href="#module-covpp.coverage_planning.boustrophedon.decomposition_bs_mh" title="Link to this heading"></a></h2>
+<p>New Trapezoidal decomposition module for boustrophedon cell generation.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CellDecomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">main_cell_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Perform new trapezoidal decomposition for boustrophedon path planning.</p>
+<p>This class decomposes a workspace into trapezoidal cells suitable for
+parallel sweeping coverage patterns, handles cell adjacency, and merges
+compatible cells for efficient coverage.</p>
+<dl class="simple">
+<dt>Decomposition Pipeline:</dt><dd><ol class="arabic simple">
+<li><p>Create obstacles and events</p></li>
+<li><p>Decompose into trapezoidal cells</p></li>
+<li><p>Find adjacent cells</p></li>
+<li><p>Complete adjacency relationships</p></li>
+<li><p>Create cell groups and merge compatible cells</p></li>
+<li><p>Set merged cell adjacency</p></li>
+<li><p>Evaluate cells for planning requirements</p></li>
+<li><p>Visualize decomposition results</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.initiate">
+<span class="sig-name descname"><span class="pre">initiate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.initiate" title="Link to this definition"></a></dt>
+<dd><p>Execute complete decomposition pipeline.</p>
+<p>Runs all steps from obstacle creation through visualization of the
+final decomposed cells.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.set_bounding_polygon">
+<span class="sig-name descname"><span class="pre">set_bounding_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Polygon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.set_bounding_polygon" title="Link to this definition"></a></dt>
+<dd><p>Set the workspace boundary polygon.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.set_obstacle_polygons">
+<span class="sig-name descname"><span class="pre">set_obstacle_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polygons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Polygon</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.set_obstacle_polygons" title="Link to this definition"></a></dt>
+<dd><p>Set the list of obstacle polygons within the workspace.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.create_obstacles">
+<span class="sig-name descname"><span class="pre">create_obstacles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.create_obstacles" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.create_events">
+<span class="sig-name descname"><span class="pre">create_events</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.create_events" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.add_cell">
+<span class="sig-name descname"><span class="pre">add_cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.add_cell" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.decompose_all">
+<span class="sig-name descname"><span class="pre">decompose_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.decompose_all" title="Link to this definition"></a></dt>
+<dd><p>Decompose all the events to create trapezoidal cells.</p>
+<dl class="simple">
+<dt>Steps:</dt><dd><p>1- Iterate over all events (skip skip_sweep and done events).
+2- For each event, find hits by sweeping line (up and down) (sweep_up_down).
+3- Evaluate done status of hit events (eval_done_status).
+4- Create trapezoids based on event type and hits (create_trapezoid).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.sweep_up_down">
+<span class="sig-name descname"><span class="pre">sweep_up_down</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.sweep_up_down" title="Link to this definition"></a></dt>
+<dd><p>Sweep line from the base event to find hit events.</p>
+<dl class="simple">
+<dt>Method:</dt><dd><p>1- Iterate over events after the base event.
+2- For each event, evaluate if it can be hit (eval_event_up and eval_event_down).
+3- Update hit variables if successful.
+4- Return hit results.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.eval_event_up">
+<span class="sig-name descname"><span class="pre">eval_event_up</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_hit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.eval_event_up" title="Link to this definition"></a></dt>
+<dd><p>Evaluate if event e can be hit when sweeping up from base_e.</p>
+<p>Method:
+1- Check if e is of type 'up'
+2- Check if e is not hit from outside of polygon
+3- Check for higher 'updown' events with same x coordinate
+4- Evaluate if sweep line hits the edge formed by e and its previous event based on coordinates
+5- Return success status and new hit y-coordinate if successful</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.eval_event_down">
+<span class="sig-name descname"><span class="pre">eval_event_down</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_hit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.eval_event_down" title="Link to this definition"></a></dt>
+<dd><p>Evaluate if event e can be hit when sweeping down from base_e.</p>
+<p>Method:
+1- Check if e is of type 'down'
+2- Evaluate if sweep line hits the edge formed by e and its next event based on coordinates
+3- Return success status and new hit y-coordinate if successful</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.eval_done_status">
+<span class="sig-name descname"><span class="pre">eval_done_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">hit_up_event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">hit_down_event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.eval_done_status" title="Link to this definition"></a></dt>
+<dd><p>Evaluate done status of hit events.</p>
+<p>Method:
+1- Evaluate events on the same x coordinate between base_e and hit_up_event
+2- Update done status of the hit events</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.create_trapezoid">
+<span class="sig-name descname"><span class="pre">create_trapezoid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">hit_up_event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">hit_down_event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.create_trapezoid" title="Link to this definition"></a></dt>
+<dd><p>Create trapezoids based on event type and hits.</p>
+<p>Method:
+1- Handle direct trap case.
+2- Handle not hit events case.
+3- Create trapezoids based on event type (updown, up, down).
+4- Add cell number and update endpoints of hit events.
+5- Create cell(s) and add to the list.</p>
+<p>Trapezoid vertex are: base_e, base_e_hit (up or down), hit_event endpoint, base_e endpoint</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.find_adjacents_cells">
+<span class="sig-name descname"><span class="pre">find_adjacents_cells</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.find_adjacents_cells" title="Link to this definition"></a></dt>
+<dd><p>Find adjacent cells based on hit events.</p>
+<p>Method:
+1- Iterate over all events.
+2- Find adjacents based on hit_up_event and hit_down_event.
+3- Update adjacent and parent cell indices for the involved cells.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.complete_adjacency">
+<span class="sig-name descname"><span class="pre">complete_adjacency</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.complete_adjacency" title="Link to this definition"></a></dt>
+<dd><p>Complete adjacency by checking geometric conditions.</p>
+<p>Method:
+1- Iterate over all cells.
+2- For each cell, check for potential adjacent cells on the right side.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Compare x_max of the current cell with x_min of the next cell.</p></li>
+<li><p>Check y-overlap conditions.</p></li>
+</ul>
+</div></blockquote>
+<p>3- If conditions are met, add adjacent and parent relationships.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.create_cell_groups">
+<span class="sig-name descname"><span class="pre">create_cell_groups</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.create_cell_groups" title="Link to this definition"></a></dt>
+<dd><p>Create cell groups and merged cells.
+Procedure:</p>
+<blockquote>
+<div><p>1- Iterate over all cells.
+2- For each ungrouped cell, create a new group.
+3- If the base cell has multiple adjacents, only add it to the group (no adjacents added).
+4- If the base cell has a single adjacent, traverse through adjacents</p>
+<blockquote>
+<div><p>and add them to the group until a cell with multiple adjacents or a grouped cell is reached.</p>
+</div></blockquote>
+<p>5- After forming the group, update group properties (first and last cell) and store the merged cell.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.set_merged_cells_adjacents">
+<span class="sig-name descname"><span class="pre">set_merged_cells_adjacents</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.set_merged_cells_adjacents" title="Link to this definition"></a></dt>
+<dd><p>Set merged cells adjacents based on cell groups (first and last cell).</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.coverage_planning.boustrophedon.events">
+<span id="covpp-coverage-planning-boustrophedon-events-module"></span><h2>covpp.coverage_planning.boustrophedon.events module<a class="headerlink" href="#module-covpp.coverage_planning.boustrophedon.events" title="Link to this heading"></a></h2>
+<p>Event class for decomposition</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.events.Event">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obst_ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.events.Event" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Event class for decomposition.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.events.Event.set_sorted_ind">
+<span class="sig-name descname"><span class="pre">set_sorted_ind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.events.Event.set_sorted_ind" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.events.Event.set_decomp_sorted_ind">
+<span class="sig-name descname"><span class="pre">set_decomp_sorted_ind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.events.Event.set_decomp_sorted_ind" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.events.Event.set_prev_e">
+<span class="sig-name descname"><span class="pre">set_prev_e</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.events.Event.set_prev_e" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.events.Event.set_next_e">
+<span class="sig-name descname"><span class="pre">set_next_e</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.events.Event.set_next_e" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.events.Event.set_endpoint_up_edge">
+<span class="sig-name descname"><span class="pre">set_endpoint_up_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.events.Event.set_endpoint_up_edge" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.events.Event.set_endpoint_down_edge">
+<span class="sig-name descname"><span class="pre">set_endpoint_down_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.events.Event.set_endpoint_down_edge" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.events.Event.set_base_ci_up">
+<span class="sig-name descname"><span class="pre">set_base_ci_up</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.events.Event.set_base_ci_up" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.events.Event.set_base_ci_down">
+<span class="sig-name descname"><span class="pre">set_base_ci_down</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.events.Event.set_base_ci_down" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.events.Event.add_up_ci_d">
+<span class="sig-name descname"><span class="pre">add_up_ci_d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.events.Event.add_up_ci_d" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.events.Event.add_down_ci_d">
+<span class="sig-name descname"><span class="pre">add_down_ci_d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.events.Event.add_down_ci_d" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.events.Event.update_name">
+<span class="sig-name descname"><span class="pre">update_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.events.Event.update_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.coverage_planning.boustrophedon.obstacles">
+<span id="covpp-coverage-planning-boustrophedon-obstacles-module"></span><h2>covpp.coverage_planning.boustrophedon.obstacles module<a class="headerlink" href="#module-covpp.coverage_planning.boustrophedon.obstacles" title="Link to this heading"></a></h2>
+<p>obstacles class for decomposition</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Obstacle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Polygon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Encapsulate a polygonal obstacle and its decomposition events.</p>
+<p>Each obstacle generates a sequence of sweep-line events that drive the
+trapezoidal decomposition. The class pre-processes vertices, injects fake
+events for vertical edges, and evaluates event types (up/down/in/out) used
+by <code class="xref py py-class docutils literal notranslate"><span class="pre">CellDecomposition</span></code>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle.create_events">
+<span class="sig-name descname"><span class="pre">create_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filtered_vertices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.create_events" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle.eval_vertices_line">
+<span class="sig-name descname"><span class="pre">eval_vertices_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.eval_vertices_line" title="Link to this definition"></a></dt>
+<dd><p>Remove vertices that are on the same vertical line between two other vertices, then create events.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle.create_fake_events">
+<span class="sig-name descname"><span class="pre">create_fake_events</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.create_fake_events" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle.create_sorted_events">
+<span class="sig-name descname"><span class="pre">create_sorted_events</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.create_sorted_events" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle.eval_concave">
+<span class="sig-name descname"><span class="pre">eval_concave</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.eval_concave" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_events_bounding">
+<span class="sig-name descname"><span class="pre">process_events_bounding</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_events_bounding" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_events">
+<span class="sig-name descname"><span class="pre">process_events</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_events" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_events">
+<span class="sig-name descname"><span class="pre">process_fake_events</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_events" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_in_events_b">
+<span class="sig-name descname"><span class="pre">process_fake_in_events_b</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_in_events_b" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_out_events_b">
+<span class="sig-name descname"><span class="pre">process_fake_out_events_b</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_out_events_b" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_in_events">
+<span class="sig-name descname"><span class="pre">process_fake_in_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_in_events" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_out_events">
+<span class="sig-name descname"><span class="pre">process_fake_out_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.events.Event" title="covpp.coverage_planning.boustrophedon.events.Event"><span class="pre">Event</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_out_events" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.obstacles.Obstacle.print_events">
+<span class="sig-name descname"><span class="pre">print_events</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.print_events" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.coverage_planning.boustrophedon.plotter">
+<span id="covpp-coverage-planning-boustrophedon-plotter-module"></span><h2>covpp.coverage_planning.boustrophedon.plotter module<a class="headerlink" href="#module-covpp.coverage_planning.boustrophedon.plotter" title="Link to this heading"></a></h2>
+<p>Boustrophedon decomposition plotter</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.plotter.BoustPlotter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BoustPlotter</span></span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Boustrophedon decomposition plotter.
+Plots: boust cells and mcells.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize">
+<span class="sig-name descname"><span class="pre">visualize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dec_obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition" title="covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition"><span class="pre">CellDecomposition</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize_seperate">
+<span class="sig-name descname"><span class="pre">visualize_seperate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize_seperate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize_together">
+<span class="sig-name descname"><span class="pre">visualize_together</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize_together" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.vizualize_cells_events">
+<span class="sig-name descname"><span class="pre">vizualize_cells_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.vizualize_cells_events" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize_events">
+<span class="sig-name descname"><span class="pre">visualize_events</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize_events" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.plot_contours">
+<span class="sig-name descname"><span class="pre">plot_contours</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.plot_contours" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize_cells_groups">
+<span class="sig-name descname"><span class="pre">visualize_cells_groups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize_cells_groups" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.plot_adj_gcells">
+<span class="sig-name descname"><span class="pre">plot_adj_gcells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.cell.Cell" title="covpp.coverage_planning.boustrophedon.cell.Cell"><span class="pre">Cell</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_g_cell_ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'red'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.plot_adj_gcells" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.save_figs">
+<span class="sig-name descname"><span class="pre">save_figs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.save_figs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.coverage_planning.boustrophedon.post_process_mcells">
+<span id="covpp-coverage-planning-boustrophedon-post-process-mcells-module"></span><h2>covpp.coverage_planning.boustrophedon.post_process_mcells module<a class="headerlink" href="#module-covpp.coverage_planning.boustrophedon.post_process_mcells" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.coverage_planning.boustrophedon.post_process_mcells.eval_cells_path_shift">
+<span class="sig-name descname"><span class="pre">eval_cells_path_shift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cells</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#covpp.coverage_planning.boustrophedon.cell.Cell" title="covpp.coverage_planning.boustrophedon.cell.Cell"><span class="pre">Cell</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.boustrophedon.post_process_mcells.eval_cells_path_shift" title="Link to this definition"></a></dt>
+<dd><p>Evaluate if cells need to shift their paths to avoid gaps or overlaps between adjacent cells.</p>
+</dd></dl>
+
+</section>
+<section id="module-covpp.coverage_planning.boustrophedon">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-covpp.coverage_planning.boustrophedon" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="covpp.coverage_planning.html" class="btn btn-neutral float-left" title="covpp.coverage_planning" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="covpp.coverage_planning.contour.html" class="btn btn-neutral float-right" title="covpp.coverage_planning.contour" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MortezaH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

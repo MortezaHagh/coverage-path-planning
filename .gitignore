@@ -9,6 +9,7 @@ results/Map4
 venv/
 covpp.egg-info/
 dist/
+paper/
 #*.png
 *.json
 *.pgm

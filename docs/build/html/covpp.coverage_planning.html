@@ -1,0 +1,585 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>covpp.coverage_planning &mdash; covpp 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2ed17a75"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="covpp.coverage_planning.boustrophedon" href="covpp.coverage_planning.boustrophedon.html" />
+    <link rel="prev" title="covpp.segmentation.voronoi_segmentation" href="covpp.segmentation.voronoi_segmentation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            covpp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="covpp.html">covpp</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="covpp.html#modules">Modules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="covpp.base.html">covpp.base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.spa.html">covpp.spa</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.district.html">covpp.district</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.gui.html">covpp.gui</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.segmentation.html">covpp.segmentation</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">covpp.coverage_planning</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.coverage_planning.coverage_pp_base">covpp.coverage_planning.coverage_pp_base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.coverage_planning.coverage_pp_hl">covpp.coverage_planning.coverage_pp_hl module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.coverage_planning">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.path_planning.html">covpp.path_planning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.sequence.html">covpp.sequence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.evaluation.html">covpp.evaluation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.html#module-covpp.main">covpp.main</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">covpp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="covpp.html">covpp</a></li>
+      <li class="breadcrumb-item active">covpp.coverage_planning</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/covpp.coverage_planning.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="covpp-coverage-planning">
+<h1>covpp.coverage_planning<a class="headerlink" href="#covpp-coverage-planning" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html">covpp.coverage_planning.boustrophedon</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#module-covpp.coverage_planning.boustrophedon.cell">covpp.coverage_planning.boustrophedon.cell module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.Cell"><code class="docutils literal notranslate"><span class="pre">Cell</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.Cell.set_group_id"><code class="docutils literal notranslate"><span class="pre">Cell.set_group_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.Cell.find_corner"><code class="docutils literal notranslate"><span class="pre">Cell.find_corner()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.Cell.set_up_adj_ci"><code class="docutils literal notranslate"><span class="pre">Cell.set_up_adj_ci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.Cell.set_down_adj_ci"><code class="docutils literal notranslate"><span class="pre">Cell.set_down_adj_ci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.Cell.add_mid_adjlist"><code class="docutils literal notranslate"><span class="pre">Cell.add_mid_adjlist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.Cell.set_parent_up_ci"><code class="docutils literal notranslate"><span class="pre">Cell.set_parent_up_ci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.Cell.set_parent_down_ci"><code class="docutils literal notranslate"><span class="pre">Cell.set_parent_down_ci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.Cell.add_mid_parentlist"><code class="docutils literal notranslate"><span class="pre">Cell.add_mid_parentlist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.Cell.set_shift_re"><code class="docutils literal notranslate"><span class="pre">Cell.set_shift_re()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.Cell.set_shift_le"><code class="docutils literal notranslate"><span class="pre">Cell.set_shift_le()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.CellGroup"><code class="docutils literal notranslate"><span class="pre">CellGroup</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.CellGroup.add_cell"><code class="docutils literal notranslate"><span class="pre">CellGroup.add_cell()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.CellGroup.set_first_cell"><code class="docutils literal notranslate"><span class="pre">CellGroup.set_first_cell()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.CellGroup.set_last_cell"><code class="docutils literal notranslate"><span class="pre">CellGroup.set_last_cell()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.CellGroup.update_group"><code class="docutils literal notranslate"><span class="pre">CellGroup.update_group()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell.CellGroup.merge_cells"><code class="docutils literal notranslate"><span class="pre">CellGroup.merge_cells()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#module-covpp.coverage_planning.boustrophedon.cell_cov_planner">covpp.coverage_planning.boustrophedon.cell_cov_planner module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner"><code class="docutils literal notranslate"><span class="pre">CellCoveragePathPlanner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.coverage_planning"><code class="docutils literal notranslate"><span class="pre">CellCoveragePathPlanner.coverage_planning()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.create_cell_polygon_in_meter"><code class="docutils literal notranslate"><span class="pre">CellCoveragePathPlanner.create_cell_polygon_in_meter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.find_top_but_hit_points"><code class="docutils literal notranslate"><span class="pre">CellCoveragePathPlanner.find_top_but_hit_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.get_intersection_points"><code class="docutils literal notranslate"><span class="pre">CellCoveragePathPlanner.get_intersection_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.calculate_path"><code class="docutils literal notranslate"><span class="pre">CellCoveragePathPlanner.calculate_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.create_path_px"><code class="docutils literal notranslate"><span class="pre">CellCoveragePathPlanner.create_path_px()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.cell_cov_planner.CellCoveragePathPlanner.point_m_to_px"><code class="docutils literal notranslate"><span class="pre">CellCoveragePathPlanner.point_m_to_px()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#module-covpp.coverage_planning.boustrophedon.coverage_pp_boust">covpp.coverage_planning.boustrophedon.coverage_pp_boust module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.coverage_planning"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.coverage_planning()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.create_polygons"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.create_polygons()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.decompose"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.decompose()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.all_cells_coverage_pp"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.all_cells_coverage_pp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.create_connected_path_simple"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.create_connected_path_simple()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.rotate_back_paths"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.rotate_back_paths()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.make_path_endpoints_free"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.make_path_endpoints_free()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.create_connected_path"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.create_connected_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.create_full_path"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.create_full_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.coverage_pp_boust.CoveragePathPlanner.visualize_boust_cells"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.visualize_boust_cells()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#module-covpp.coverage_planning.boustrophedon.decomposition_bs_mh">covpp.coverage_planning.boustrophedon.decomposition_bs_mh module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition"><code class="docutils literal notranslate"><span class="pre">CellDecomposition</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.initiate"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.initiate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.set_bounding_polygon"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.set_bounding_polygon()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.set_obstacle_polygons"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.set_obstacle_polygons()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.create_obstacles"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.create_obstacles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.create_events"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.create_events()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.add_cell"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.add_cell()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.decompose_all"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.decompose_all()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.sweep_up_down"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.sweep_up_down()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.eval_event_up"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.eval_event_up()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.eval_event_down"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.eval_event_down()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.eval_done_status"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.eval_done_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.create_trapezoid"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.create_trapezoid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.find_adjacents_cells"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.find_adjacents_cells()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.complete_adjacency"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.complete_adjacency()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.create_cell_groups"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.create_cell_groups()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.decomposition_bs_mh.CellDecomposition.set_merged_cells_adjacents"><code class="docutils literal notranslate"><span class="pre">CellDecomposition.set_merged_cells_adjacents()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#module-covpp.coverage_planning.boustrophedon.events">covpp.coverage_planning.boustrophedon.events module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.events.Event"><code class="docutils literal notranslate"><span class="pre">Event</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.events.Event.set_sorted_ind"><code class="docutils literal notranslate"><span class="pre">Event.set_sorted_ind()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.events.Event.set_decomp_sorted_ind"><code class="docutils literal notranslate"><span class="pre">Event.set_decomp_sorted_ind()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.events.Event.set_prev_e"><code class="docutils literal notranslate"><span class="pre">Event.set_prev_e()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.events.Event.set_next_e"><code class="docutils literal notranslate"><span class="pre">Event.set_next_e()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.events.Event.set_endpoint_up_edge"><code class="docutils literal notranslate"><span class="pre">Event.set_endpoint_up_edge()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.events.Event.set_endpoint_down_edge"><code class="docutils literal notranslate"><span class="pre">Event.set_endpoint_down_edge()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.events.Event.set_base_ci_up"><code class="docutils literal notranslate"><span class="pre">Event.set_base_ci_up()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.events.Event.set_base_ci_down"><code class="docutils literal notranslate"><span class="pre">Event.set_base_ci_down()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.events.Event.add_up_ci_d"><code class="docutils literal notranslate"><span class="pre">Event.add_up_ci_d()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.events.Event.add_down_ci_d"><code class="docutils literal notranslate"><span class="pre">Event.add_down_ci_d()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.events.Event.update_name"><code class="docutils literal notranslate"><span class="pre">Event.update_name()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#module-covpp.coverage_planning.boustrophedon.obstacles">covpp.coverage_planning.boustrophedon.obstacles module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle"><code class="docutils literal notranslate"><span class="pre">Obstacle</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.create_events"><code class="docutils literal notranslate"><span class="pre">Obstacle.create_events()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.eval_vertices_line"><code class="docutils literal notranslate"><span class="pre">Obstacle.eval_vertices_line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.create_fake_events"><code class="docutils literal notranslate"><span class="pre">Obstacle.create_fake_events()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.create_sorted_events"><code class="docutils literal notranslate"><span class="pre">Obstacle.create_sorted_events()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.eval_concave"><code class="docutils literal notranslate"><span class="pre">Obstacle.eval_concave()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_events_bounding"><code class="docutils literal notranslate"><span class="pre">Obstacle.process_events_bounding()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_events"><code class="docutils literal notranslate"><span class="pre">Obstacle.process_events()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_events"><code class="docutils literal notranslate"><span class="pre">Obstacle.process_fake_events()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_in_events_b"><code class="docutils literal notranslate"><span class="pre">Obstacle.process_fake_in_events_b()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_out_events_b"><code class="docutils literal notranslate"><span class="pre">Obstacle.process_fake_out_events_b()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_in_events"><code class="docutils literal notranslate"><span class="pre">Obstacle.process_fake_in_events()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.process_fake_out_events"><code class="docutils literal notranslate"><span class="pre">Obstacle.process_fake_out_events()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.obstacles.Obstacle.print_events"><code class="docutils literal notranslate"><span class="pre">Obstacle.print_events()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#module-covpp.coverage_planning.boustrophedon.plotter">covpp.coverage_planning.boustrophedon.plotter module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter"><code class="docutils literal notranslate"><span class="pre">BoustPlotter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize"><code class="docutils literal notranslate"><span class="pre">BoustPlotter.visualize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize_seperate"><code class="docutils literal notranslate"><span class="pre">BoustPlotter.visualize_seperate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize_together"><code class="docutils literal notranslate"><span class="pre">BoustPlotter.visualize_together()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.vizualize_cells_events"><code class="docutils literal notranslate"><span class="pre">BoustPlotter.vizualize_cells_events()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize_events"><code class="docutils literal notranslate"><span class="pre">BoustPlotter.visualize_events()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.plot_contours"><code class="docutils literal notranslate"><span class="pre">BoustPlotter.plot_contours()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.visualize_cells_groups"><code class="docutils literal notranslate"><span class="pre">BoustPlotter.visualize_cells_groups()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.plot_adj_gcells"><code class="docutils literal notranslate"><span class="pre">BoustPlotter.plot_adj_gcells()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.plotter.BoustPlotter.save_figs"><code class="docutils literal notranslate"><span class="pre">BoustPlotter.save_figs()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#module-covpp.coverage_planning.boustrophedon.post_process_mcells">covpp.coverage_planning.boustrophedon.post_process_mcells module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#covpp.coverage_planning.boustrophedon.post_process_mcells.eval_cells_path_shift"><code class="docutils literal notranslate"><span class="pre">eval_cells_path_shift()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.boustrophedon.html#module-covpp.coverage_planning.boustrophedon">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="covpp.coverage_planning.contour.html">covpp.coverage_planning.contour</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.contour.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.contour.html#module-covpp.coverage_planning.contour.coverage_pp_contour">covpp.coverage_planning.contour.coverage_pp_contour module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.coverage_planning.contour.html#covpp.coverage_planning.contour.coverage_pp_contour.CoveragePathPlanner"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.contour.html#covpp.coverage_planning.contour.coverage_pp_contour.CoveragePathPlanner.coverage_planning"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.coverage_planning()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.contour.html#covpp.coverage_planning.contour.coverage_pp_contour.CoveragePathPlanner.calculate_path_by_poly_buffer"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.calculate_path_by_poly_buffer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.contour.html#covpp.coverage_planning.contour.coverage_pp_contour.CoveragePathPlanner.calculate_path_combinaiton"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.calculate_path_combinaiton()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.contour.html#covpp.coverage_planning.contour.coverage_pp_contour.CoveragePathPlanner.complete_path_by_rectangle"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.complete_path_by_rectangle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.contour.html#covpp.coverage_planning.contour.coverage_pp_contour.CoveragePathPlanner.complete_path_by_distance_transform"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.complete_path_by_distance_transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.contour.html#covpp.coverage_planning.contour.coverage_pp_contour.CoveragePathPlanner.find_poly_by_dist"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.find_poly_by_dist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.coverage_planning.contour.html#covpp.coverage_planning.contour.coverage_pp_contour.CoveragePathPlanner.rearrange_polys_by_area"><code class="docutils literal notranslate"><span class="pre">CoveragePathPlanner.rearrange_polys_by_area()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.contour.html#module-covpp.coverage_planning.contour">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-covpp.coverage_planning.coverage_pp_base">
+<span id="covpp-coverage-planning-coverage-pp-base-module"></span><h2>covpp.coverage_planning.coverage_pp_base module<a class="headerlink" href="#module-covpp.coverage_planning.coverage_pp_base" title="Link to this heading"></a></h2>
+<p>Base class for coverage path planning algorithms.</p>
+<p>This module defines the abstract interface that all coverage planning methods
+must implement, enabling a plugin-based architecture.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CoveragePathPlannerBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.segmentation.html#covpp.segmentation.cell_planning.PCell" title="covpp.segmentation.cell_planning.PCell"><span class="pre">PCell</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData"><span class="pre">ZoneMapData</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract base class for cell-level coverage path planning algorithms.</p>
+<p>All coverage planning implementations must inherit from this class and
+implement the coverage_planning() method. This design allows easy addition
+of new planning methods without modifying the core pipeline.</p>
+<dl class="simple">
+<dt>Process:</dt><dd><ol class="arabic simple">
+<li><p>Initialize with a processed cell and zone map data.</p></li>
+<li><p>Implement coverage_planning() to generate a complete coverage path.</p></li>
+<li><p>Ensure paths are valid and within cell boundaries.</p></li>
+<li><p>Final validation of generated paths.</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cell</strong> (<a class="reference internal" href="covpp.segmentation.html#covpp.segmentation.cell_planning.PCell" title="covpp.segmentation.cell_planning.PCell"><em>PCell</em></a>) -- Processed cell to plan coverage path for.</p></li>
+<li><p><strong>zmd</strong> (<a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData"><em>ZoneMapData</em></a>) -- Zone map data object.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.cell">
+<span class="sig-name descname"><span class="pre">cell</span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.cell" title="Link to this definition"></a></dt>
+<dd><p>Target cell for path planning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.segmentation.html#covpp.segmentation.cell_planning.PCell" title="covpp.segmentation.cell_planning.PCell">PCell</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.zmd">
+<span class="sig-name descname"><span class="pre">zmd</span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.zmd" title="Link to this definition"></a></dt>
+<dd><p>Zone map data object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData">ZoneMapData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.path_m">
+<span class="sig-name descname"><span class="pre">path_m</span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.path_m" title="Link to this definition"></a></dt>
+<dd><p>Generated path in meters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath">MyPath</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.path_px">
+<span class="sig-name descname"><span class="pre">path_px</span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.path_px" title="Link to this definition"></a></dt>
+<dd><p>Generated path in pixels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath">MyPath</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="simple">
+<dt>Result:</dt><dd><p>Sets path_m and path_px attributes for the cell.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.run" title="Link to this definition"></a></dt>
+<dd><p>Execute coverage path planning for the cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.coverage_planning">
+<span class="sig-name descname"><span class="pre">coverage_planning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.coverage_planning" title="Link to this definition"></a></dt>
+<dd><p>Generate coverage path for the cell.</p>
+<p>This method must be implemented by all child classes. It should
+generate a complete coverage path for the cell and populate the
+path_px and path_m attributes.</p>
+<dl class="simple">
+<dt>The implementation should:</dt><dd><ol class="arabic simple">
+<li><p>Generate path in pixels (path_px)</p></li>
+<li><p>Convert to meters using create_path_m()</p></li>
+<li><p>Handle any cell-specific constraints</p></li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.filter_path_by_distance">
+<span class="sig-name descname"><span class="pre">filter_path_by_distance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.filter_path_by_distance" title="Link to this definition"></a></dt>
+<dd><p>Filter the generated path based on minimum and maximum waypoint distances.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.make_path_points_free">
+<span class="sig-name descname"><span class="pre">make_path_points_free</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.make_path_points_free" title="Link to this definition"></a></dt>
+<dd><p>Ensure all points in the path are in free space.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.evaluate_path_edges">
+<span class="sig-name descname"><span class="pre">evaluate_path_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.evaluate_path_edges" title="Link to this definition"></a></dt>
+<dd><p>Make sure all path edges are in free space. If not, reconnect them by finding path in the map.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.validate_paths">
+<span class="sig-name descname"><span class="pre">validate_paths</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.validate_paths" title="Link to this definition"></a></dt>
+<dd><p>Validate generated paths for the cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.apply_distance_filter_path">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">apply_distance_filter_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath"><span class="pre">MyPath</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath"><span class="pre">MyPath</span></a></span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.apply_distance_filter_path" title="Link to this definition"></a></dt>
+<dd><p>Filter the full path based on the minimum distance between waypoints.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.create_path_m">
+<span class="sig-name descname"><span class="pre">create_path_m</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.create_path_m" title="Link to this definition"></a></dt>
+<dd><p>Convert path from pixels to meters using map resolution.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.path_px_to_m">
+<span class="sig-name descname"><span class="pre">path_px_to_m</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_px</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath"><span class="pre">MyPath</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath"><span class="pre">MyPath</span></a></span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.path_px_to_m" title="Link to this definition"></a></dt>
+<dd><p>Convert entire path from pixel coordinates to meters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path_px</strong> -- Path in pixel coordinates.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path in meter coordinates.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.point_px_to_m">
+<span class="sig-name descname"><span class="pre">point_px_to_m</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.point_px_to_m" title="Link to this definition"></a></dt>
+<dd><p>Convert single point from pixel coordinates to meters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>p</strong> -- Point in pixel coordinates.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Point in meter coordinates.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.rotate_path">
+<span class="sig-name descname"><span class="pre">rotate_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath"><span class="pre">MyPath</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.rotate_path" title="Link to this definition"></a></dt>
+<dd><p>Rotate entire path around an origin point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> -- Path to rotate.</p></li>
+<li><p><strong>angle</strong> -- Rotation angle in degrees.</p></li>
+<li><p><strong>origin</strong> -- Center point for rotation (x, y tuple).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Rotated path.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.rotate_point">
+<span class="sig-name descname"><span class="pre">rotate_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase.rotate_point" title="Link to this definition"></a></dt>
+<dd><p>Rotate single point around an origin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> -- Point to rotate.</p></li>
+<li><p><strong>angle</strong> -- Rotation angle in radians.</p></li>
+<li><p><strong>origin</strong> -- Center point for rotation (x, y tuple).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Rotated point with integer coordinates.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.coverage_planning.coverage_pp_hl">
+<span id="covpp-coverage-planning-coverage-pp-hl-module"></span><h2>covpp.coverage_planning.coverage_pp_hl module<a class="headerlink" href="#module-covpp.coverage_planning.coverage_pp_hl" title="Link to this heading"></a></h2>
+<p>Coverage path planning handler module for managing cell-level path generation.</p>
+<p>This module implements the Handler pattern to dynamically load and execute
+different coverage planning algorithms based on configuration.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CoveragePPHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zone_map_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData"><span class="pre">ZoneMapData</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>High-level interface for coverage path planning across all zone cells.</p>
+<p>This handler dynamically loads the appropriate coverage planning algorithm
+based on pipeline configuration and applies it to all cells in the zone.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>zone_map_data</strong> (<a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData"><em>ZoneMapData</em></a>) -- Zone map data object.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler.zmd">
+<span class="sig-name descname"><span class="pre">zmd</span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler.zmd" title="Link to this definition"></a></dt>
+<dd><p>Zone map data object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData">ZoneMapData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler.cells">
+<span class="sig-name descname"><span class="pre">cells</span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler.cells" title="Link to this definition"></a></dt>
+<dd><p>List of cells to plan paths for.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="covpp.segmentation.html#covpp.segmentation.cell_planning.PCell" title="covpp.segmentation.cell_planning.PCell">PCell</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler.all_cell_covp_planners">
+<span class="sig-name descname"><span class="pre">all_cell_covp_planners</span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler.all_cell_covp_planners" title="Link to this definition"></a></dt>
+<dd><p>List of planner instances for each cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase" title="covpp.coverage_planning.coverage_pp_base.CoveragePathPlannerBase">CoveragePathPlannerBase</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="simple">
+<dt>Result:</dt><dd><p>After planning, path_m and path_px are set for each cell.</p>
+</dd>
+<dt>Supported Methods:</dt><dd><ul class="simple">
+<li><p>&quot;boust&quot;: Boustrophedon (back-and-forth) coverage</p></li>
+<li><p>&quot;contour&quot;: Contour-following coverage</p></li>
+<li><p>Custom methods can be added by extending CoveragePathPlannerBase</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cells</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="covpp.segmentation.html#covpp.segmentation.cell_planning.PCell" title="covpp.segmentation.cell_planning.PCell"><span class="pre">PCell</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler.run" title="Link to this definition"></a></dt>
+<dd><p>Execute coverage path planning for all cells.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cells</strong> -- List of processed cells from segmentation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler.run_covpp_method">
+<span class="sig-name descname"><span class="pre">run_covpp_method</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler.run_covpp_method" title="Link to this definition"></a></dt>
+<dd><p>Apply coverage path planning algorithm to all cells in the zone.</p>
+<p>This method loads the configured planning algorithm and creates a
+planner instance for each cell. Successfully planned paths are stored
+in the cell objects (path_m and path_px attributes).</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.coverage_planning">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-covpp.coverage_planning" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="covpp.segmentation.voronoi_segmentation.html" class="btn btn-neutral float-left" title="covpp.segmentation.voronoi_segmentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="covpp.coverage_planning.boustrophedon.html" class="btn btn-neutral float-right" title="covpp.coverage_planning.boustrophedon" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MortezaH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

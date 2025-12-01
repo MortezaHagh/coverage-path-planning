@@ -36,7 +36,6 @@
         // "--disable=W1514",
         // "--disable=E1121"
     ],
-    "github.copilot.editor.enableAutoCompletions": true,
     "python.pipenvPath": "/home/morteza/Documents/00-CovPP/covpp/venv",
     "python.autoComplete.extraPaths": [
         "/home/morteza/mo_ws/devel/lib/python3/dist-packages",
@@ -47,5 +46,18 @@
         "/home/morteza/mo_ws/devel/lib/python3/dist-packages",
         "/home/morteza/catkin_ws/devel/lib/python3/dist-packages",
         "/opt/ros/noetic/lib/python3/dist-packages"
-    ]
+    ],
+    "latex-workshop.bibtex-fields.sort.enabled": true,
+    "latex-workshop.bibtex-format.sort.enabled": true,
+    "latex-workshop.formatting.latex": "latexindent",
+    "latex-workshop.formatting.latexindent.args": [
+        "-c",
+        "%DIR%/",
+        "%TMPFILE%",
+        "-y=defaultIndent: '%INDENT%'",
+        "-m",
+        "-l"
+    ],
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    "latex-workshop.view.pdf.viewer": "tab"
 }

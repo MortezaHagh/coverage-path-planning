@@ -1,0 +1,1065 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>covpp.segmentation &mdash; covpp 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2ed17a75"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="covpp.segmentation.simple_segmentation" href="covpp.segmentation.simple_segmentation.html" />
+    <link rel="prev" title="covpp.gui" href="covpp.gui.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            covpp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="covpp.html">covpp</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="covpp.html#modules">Modules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="covpp.base.html">covpp.base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.spa.html">covpp.spa</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.district.html">covpp.district</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.gui.html">covpp.gui</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">covpp.segmentation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.segmentation.cell_base">covpp.segmentation.cell_base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.segmentation.cell_planning">covpp.segmentation.cell_planning module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.segmentation.eval_rectangles">covpp.segmentation.eval_rectangles module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.segmentation.map_polygons">covpp.segmentation.map_polygons module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.segmentation.merge_cells">covpp.segmentation.merge_cells module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.segmentation.segmentation_base">covpp.segmentation.segmentation_base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.segmentation.segmentation_handler">covpp.segmentation.segmentation_handler module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.segmentation">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.coverage_planning.html">covpp.coverage_planning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.path_planning.html">covpp.path_planning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.sequence.html">covpp.sequence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.evaluation.html">covpp.evaluation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.html#module-covpp.main">covpp.main</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">covpp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="covpp.html">covpp</a></li>
+      <li class="breadcrumb-item active">covpp.segmentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/covpp.segmentation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="covpp-segmentation">
+<h1>covpp.segmentation<a class="headerlink" href="#covpp-segmentation" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="covpp.segmentation.simple_segmentation.html">covpp.segmentation.simple_segmentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.simple_segmentation.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.simple_segmentation.html#module-covpp.segmentation.simple_segmentation.segmentation_simple">covpp.segmentation.simple_segmentation.segmentation_simple module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.segmentation.simple_segmentation.html#covpp.segmentation.simple_segmentation.segmentation_simple.Segmentation"><code class="docutils literal notranslate"><span class="pre">Segmentation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.simple_segmentation.html#covpp.segmentation.simple_segmentation.segmentation_simple.Segmentation.run"><code class="docutils literal notranslate"><span class="pre">Segmentation.run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.simple_segmentation.html#covpp.segmentation.simple_segmentation.segmentation_simple.Segmentation.create_cells"><code class="docutils literal notranslate"><span class="pre">Segmentation.create_cells()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.simple_segmentation.html#covpp.segmentation.simple_segmentation.segmentation_simple.Segmentation.set_cell_adjacents"><code class="docutils literal notranslate"><span class="pre">Segmentation.set_cell_adjacents()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.simple_segmentation.html#module-covpp.segmentation.simple_segmentation">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html">covpp.segmentation.voronoi_segmentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#module-covpp.segmentation.voronoi_segmentation.cell">covpp.segmentation.voronoi_segmentation.cell module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.cell.Cell"><code class="docutils literal notranslate"><span class="pre">Cell</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.cell.Cell.find_min_clearance"><code class="docutils literal notranslate"><span class="pre">Cell.find_min_clearance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.cell.Cell.process_cell"><code class="docutils literal notranslate"><span class="pre">Cell.process_cell()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.cell.Cell.modify_cell"><code class="docutils literal notranslate"><span class="pre">Cell.modify_cell()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#module-covpp.segmentation.voronoi_segmentation.data_structures">covpp.segmentation.voronoi_segmentation.data_structures module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.data_structures.VPoint"><code class="docutils literal notranslate"><span class="pre">VPoint</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.data_structures.VPoint.set_basis_points"><code class="docutils literal notranslate"><span class="pre">VPoint.set_basis_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.data_structures.VPoint.set_basis_dists"><code class="docutils literal notranslate"><span class="pre">VPoint.set_basis_dists()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.data_structures.VPoint.set_adjacent_vp_idxs"><code class="docutils literal notranslate"><span class="pre">VPoint.set_adjacent_vp_idxs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.data_structures.VPoint.set_adjacents_vp_dists"><code class="docutils literal notranslate"><span class="pre">VPoint.set_adjacents_vp_dists()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.data_structures.CriticalPoint"><code class="docutils literal notranslate"><span class="pre">CriticalPoint</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.data_structures.CriticalPoint.set_basis_idxs"><code class="docutils literal notranslate"><span class="pre">CriticalPoint.set_basis_idxs()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.data_structures.Ring"><code class="docutils literal notranslate"><span class="pre">Ring</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.data_structures.Ring.is_valid"><code class="docutils literal notranslate"><span class="pre">Ring.is_valid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.data_structures.Ring.set_critical_points"><code class="docutils literal notranslate"><span class="pre">Ring.set_critical_points()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#module-covpp.segmentation.voronoi_segmentation.segmentation_voronoi">covpp.segmentation.voronoi_segmentation.segmentation_voronoi module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.segmentation_voronoi.Segmentation"><code class="docutils literal notranslate"><span class="pre">Segmentation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.segmentation_voronoi.Segmentation.run"><code class="docutils literal notranslate"><span class="pre">Segmentation.run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.segmentation_voronoi.Segmentation.main_segmentation"><code class="docutils literal notranslate"><span class="pre">Segmentation.main_segmentation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.segmentation_voronoi.Segmentation.check_critical_points"><code class="docutils literal notranslate"><span class="pre">Segmentation.check_critical_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.segmentation_voronoi.Segmentation.create_poly_points_start_ends"><code class="docutils literal notranslate"><span class="pre">Segmentation.create_poly_points_start_ends()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.segmentation_voronoi.Segmentation.create_cp_bases_idxs"><code class="docutils literal notranslate"><span class="pre">Segmentation.create_cp_bases_idxs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.segmentation_voronoi.Segmentation.find_skip_cps"><code class="docutils literal notranslate"><span class="pre">Segmentation.find_skip_cps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.segmentation_voronoi.Segmentation.create_all_segments"><code class="docutils literal notranslate"><span class="pre">Segmentation.create_all_segments()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.segmentation_voronoi.Segmentation.create_cp_segment"><code class="docutils literal notranslate"><span class="pre">Segmentation.create_cp_segment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.segmentation_voronoi.Segmentation.create_cells"><code class="docutils literal notranslate"><span class="pre">Segmentation.create_cells()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.segmentation_voronoi.Segmentation.set_cell_adjacents"><code class="docutils literal notranslate"><span class="pre">Segmentation.set_cell_adjacents()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.segmentation_voronoi.Segmentation.process_cells"><code class="docutils literal notranslate"><span class="pre">Segmentation.process_cells()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.segmentation_voronoi.Segmentation.plot_rings"><code class="docutils literal notranslate"><span class="pre">Segmentation.plot_rings()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#module-covpp.segmentation.voronoi_segmentation.voronoi_decomposition">covpp.segmentation.voronoi_segmentation.voronoi_decomposition module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.voronoi_decomposition"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.voronoi_decomposition()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.process_polygons"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.process_polygons()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.find_voronoi"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.find_voronoi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.evaluate_vertices"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.evaluate_vertices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.find_ridge_vpoints"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.find_ridge_vpoints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.set_basis_points_and_feasibility"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.set_basis_points_and_feasibility()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.find_min_n_adjacents"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.find_min_n_adjacents()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.find_adjacents_by_distance"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.find_adjacents_by_distance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.find_critical_points"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.find_critical_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.create_critical_points_list"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.create_critical_points_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.process_polygon"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.process_polygon()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.process_polygon_1"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.process_polygon_1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.process_polygon_2"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.process_polygon_2()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.plot_voronoi"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.plot_voronoi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.connect_trees"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.connect_trees()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.create_trees"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.create_trees()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp.segmentation.voronoi_segmentation.voronoi_decomposition.VoronoiDecomposition.depth_first_search"><code class="docutils literal notranslate"><span class="pre">VoronoiDecomposition.depth_first_search()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#module-covpp.segmentation.voronoi_segmentation">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-covpp.segmentation.cell_base">
+<span id="covpp-segmentation-cell-base-module"></span><h2>covpp.segmentation.cell_base module<a class="headerlink" href="#module-covpp.segmentation.cell_base" title="Link to this heading"></a></h2>
+<p>Base cell class for segmentation and coverage path planning.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CellBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simplify</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base cell representation for decomposed workspace regions.</p>
+<p>This class provides the fundamental structure for cells created during
+space segmentation, storing geometric properties and adjacency information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idx</strong> (<em>int</em>) -- Unique identifier for the cell.</p></li>
+<li><p><strong>poly</strong> (<em>Polygon</em>) -- Shapely polygon defining the cell boundary.</p></li>
+<li><p><strong>resolution</strong> (<em>float</em>) -- Map resolution in meters per pixel.</p></li>
+<li><p><strong>simplify</strong> (<em>bool</em>) -- Whether to simplify the polygon upon creation.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.id" title="Link to this definition"></a></dt>
+<dd><p>Cell identifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.opt_id">
+<span class="sig-name descname"><span class="pre">opt_id</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.opt_id" title="Link to this definition"></a></dt>
+<dd><p>Optimized ID after sequencing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.next_cell_id">
+<span class="sig-name descname"><span class="pre">next_cell_id</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.next_cell_id" title="Link to this definition"></a></dt>
+<dd><p>Next cell ID in the sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.resolution">
+<span class="sig-name descname"><span class="pre">resolution</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.resolution" title="Link to this definition"></a></dt>
+<dd><p>Map resolution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.base_poly">
+<span class="sig-name descname"><span class="pre">base_poly</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.base_poly" title="Link to this definition"></a></dt>
+<dd><p>Original cell polygon before modifications.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Polygon</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.poly">
+<span class="sig-name descname"><span class="pre">poly</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.poly" title="Link to this definition"></a></dt>
+<dd><p>Current cell polygon.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Polygon</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.points">
+<span class="sig-name descname"><span class="pre">points</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.points" title="Link to this definition"></a></dt>
+<dd><p>Array of integer coordinate points of the cell boundary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.cxy">
+<span class="sig-name descname"><span class="pre">cxy</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.cxy" title="Link to this definition"></a></dt>
+<dd><p>Center coordinates of the cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[float, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">x_min_p,</span> <span class="pre">x_max_p,</span> <span class="pre">y_min_p,</span> <span class="pre">y_max_p</span></span></dt>
+<dd><p>Cell boundary extents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">x_mid_p,</span> <span class="pre">y_mid_p</span></span></dt>
+<dd><p>Midpoint coordinates of the cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.width">
+<span class="sig-name descname"><span class="pre">width</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.width" title="Link to this definition"></a></dt>
+<dd><p>Width of the cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.height">
+<span class="sig-name descname"><span class="pre">height</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.height" title="Link to this definition"></a></dt>
+<dd><p>Height of the cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.area">
+<span class="sig-name descname"><span class="pre">area</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.area" title="Link to this definition"></a></dt>
+<dd><p>Area of the cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.size_type">
+<span class="sig-name descname"><span class="pre">size_type</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.size_type" title="Link to this definition"></a></dt>
+<dd><p>Size classification (&quot;small&quot;, &quot;normal&quot;, &quot;large&quot;).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.slim_type">
+<span class="sig-name descname"><span class="pre">slim_type</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.slim_type" title="Link to this definition"></a></dt>
+<dd><p>Slimness classification (&quot;slim&quot;, &quot;normal&quot;).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.major_direction">
+<span class="sig-name descname"><span class="pre">major_direction</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.major_direction" title="Link to this definition"></a></dt>
+<dd><p>Main direction angle of the cell in radians.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.do_planning">
+<span class="sig-name descname"><span class="pre">do_planning</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.do_planning" title="Link to this definition"></a></dt>
+<dd><p>Flag indicating if planning should be performed in this cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.adjacent_ids">
+<span class="sig-name descname"><span class="pre">adjacent_ids</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.adjacent_ids" title="Link to this definition"></a></dt>
+<dd><p>List of adjacent cell IDs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.path_m">
+<span class="sig-name descname"><span class="pre">path_m</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.path_m" title="Link to this definition"></a></dt>
+<dd><p>Coverage path in meters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath">MyPath</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.path_px">
+<span class="sig-name descname"><span class="pre">path_px</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.path_px" title="Link to this definition"></a></dt>
+<dd><p>Coverage path in pixels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath">MyPath</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.start_point">
+<span class="sig-name descname"><span class="pre">start_point</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.start_point" title="Link to this definition"></a></dt>
+<dd><p>Starting point of the cell path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint">MyPoint</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.end_point">
+<span class="sig-name descname"><span class="pre">end_point</span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.end_point" title="Link to this definition"></a></dt>
+<dd><p>Ending point of the cell path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint">MyPoint</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.set_optim_id">
+<span class="sig-name descname"><span class="pre">set_optim_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_cell_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.set_optim_id" title="Link to this definition"></a></dt>
+<dd><p>Set optimized sequence ID and next cell reference after sequencing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.calculate_cell_specs">
+<span class="sig-name descname"><span class="pre">calculate_cell_specs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.calculate_cell_specs" title="Link to this definition"></a></dt>
+<dd><p>Calculate geometric properties: bounds, center, dimensions, and area.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.evaluate_cell_area">
+<span class="sig-name descname"><span class="pre">evaluate_cell_area</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.evaluate_cell_area" title="Link to this definition"></a></dt>
+<dd><p>Evaluate cell area and classify size.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.eval_cell_slimness">
+<span class="sig-name descname"><span class="pre">eval_cell_slimness</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.eval_cell_slimness" title="Link to this definition"></a></dt>
+<dd><p>Evaluate cell slimness based on maximum inscribed circle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.create_cell_points">
+<span class="sig-name descname"><span class="pre">create_cell_points</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.create_cell_points" title="Link to this definition"></a></dt>
+<dd><p>Extract integer coordinate points from cell polygon boundary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.simplify_cell_poly">
+<span class="sig-name descname"><span class="pre">simplify_cell_poly</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polygon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.simplify_cell_poly" title="Link to this definition"></a></dt>
+<dd><p>Simplify cell polygon to reduce complexity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.add_adjacent_id">
+<span class="sig-name descname"><span class="pre">add_adjacent_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.add_adjacent_id" title="Link to this definition"></a></dt>
+<dd><p>Add an adjacent cell ID to the list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.set_path_m">
+<span class="sig-name descname"><span class="pre">set_path_m</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath"><span class="pre">MyPath</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.set_path_m" title="Link to this definition"></a></dt>
+<dd><p>set cell path in meters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.set_path_px">
+<span class="sig-name descname"><span class="pre">set_path_px</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPath" title="covpp.base.geometry.MyPath"><span class="pre">MyPath</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.set_path_px" title="Link to this definition"></a></dt>
+<dd><p>set cell path in pixels.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.set_start_point">
+<span class="sig-name descname"><span class="pre">set_start_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.set_start_point" title="Link to this definition"></a></dt>
+<dd><p>Set the starting point of the cell path.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.set_end_point">
+<span class="sig-name descname"><span class="pre">set_end_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.set_end_point" title="Link to this definition"></a></dt>
+<dd><p>Set the ending point of the cell path.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_base.CellBase.validate_cell">
+<span class="sig-name descname"><span class="pre">validate_cell</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#covpp.segmentation.cell_base.CellBase.validate_cell" title="Link to this definition"></a></dt>
+<dd><p>Validate cell integrity.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.segmentation.cell_planning">
+<span id="covpp-segmentation-cell-planning-module"></span><h2>covpp.segmentation.cell_planning module<a class="headerlink" href="#module-covpp.segmentation.cell_planning" title="Link to this heading"></a></h2>
+<p>Processed cell class with advanced geometric analysis for coverage planning.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_planning.PCell">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PCell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><span class="pre">CellBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData"><span class="pre">ZoneMapData</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.cell_planning.PCell" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">CellBase</span></code></a></p>
+<p>Enhanced cell with geometric analysis for optimal coverage planning.</p>
+<p>Extends the base Cell class to include:
+- Binary map representation of the cell area
+- Rectangle-like property evaluation (circumscribed and inscribed)
+- Main direction extraction using Hough Transform.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_planning.PCell.eval_cell_rectangles">
+<span class="sig-name descname"><span class="pre">eval_cell_rectangles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.cell_planning.PCell.eval_cell_rectangles" title="Link to this definition"></a></dt>
+<dd><p>Evaluate cell for rectangle-like properties to optimize planning.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_planning.PCell.create_cell_map">
+<span class="sig-name descname"><span class="pre">create_cell_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zone_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zone_rectangle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.gui.html#covpp.gui.rectangle.Rectangle" title="covpp.gui.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.cell_planning.PCell.create_cell_map" title="Link to this definition"></a></dt>
+<dd><p>Create binary map for the given cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_planning.PCell.find_cell_main_direction">
+<span class="sig-name descname"><span class="pre">find_cell_main_direction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.cell_planning.PCell.find_cell_main_direction" title="Link to this definition"></a></dt>
+<dd><p>Find main directions of each cell using Hough Transform.
+to be implemented in child classes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_planning.PCell.main_direction_by_cell_rectangle">
+<span class="sig-name descname"><span class="pre">main_direction_by_cell_rectangle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#covpp.segmentation.cell_planning.PCell.main_direction_by_cell_rectangle" title="Link to this definition"></a></dt>
+<dd><p>Get main direction from cell rectangle orientation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.cell_planning.PCell.cell_main_direction">
+<span class="sig-name descname"><span class="pre">cell_main_direction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#covpp.segmentation.cell_planning.PCell.cell_main_direction" title="Link to this definition"></a></dt>
+<dd><p>Find main direction of the cell using Hough Transform.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.segmentation.eval_rectangles">
+<span id="covpp-segmentation-eval-rectangles-module"></span><h2>covpp.segmentation.eval_rectangles module<a class="headerlink" href="#module-covpp.segmentation.eval_rectangles" title="Link to this heading"></a></h2>
+<p>Module for evaluating rectangle-like properties of polygons for planning optimization.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">EvalRectangles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_px</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Evaluate cell for rectangle-like properties to optimize planning.</p>
+<dl class="simple">
+<dt>Pipeline Steps:</dt><dd><ol class="arabic simple">
+<li><p>Evaluate based on circumscribed rectangle (minimum_rotated_rectangle)</p></li>
+<li><p>Create base inscribed rectangle from maximum inscribed circle</p></li>
+<li><p>Expand inscribed rectangle in multiple directions</p></li>
+<li><p>Set rectangle-like property based on evaluation results</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.eval_cell_rectangles">
+<span class="sig-name descname"><span class="pre">eval_cell_rectangles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.eval_cell_rectangles" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.simplify_polygon">
+<span class="sig-name descname"><span class="pre">simplify_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.simplify_polygon" title="Link to this definition"></a></dt>
+<dd><p>Simplify the cell polygon to reduce number of vertices.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.eval_by_circumscribed_rect">
+<span class="sig-name descname"><span class="pre">eval_by_circumscribed_rect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circum_rect_area</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.eval_by_circumscribed_rect" title="Link to this definition"></a></dt>
+<dd><p>Evaluate if the cell is rectangle-like based on the area ratio of the cell and the circumscribed rectangle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.create_base_inscribed_rectangle">
+<span class="sig-name descname"><span class="pre">create_base_inscribed_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circum_rect_poly</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insc_circle_center</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insc_circle_radius</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.create_base_inscribed_rectangle" title="Link to this definition"></a></dt>
+<dd><p>Create an inscribed rectangle inside the circumscribed rectangle of the cell based on the inscribed circle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.eval_by_expand_inscribed_rectangle">
+<span class="sig-name descname"><span class="pre">eval_by_expand_inscribed_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_inscribed_rect_poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insc_circle_center</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.eval_by_expand_inscribed_rectangle" title="Link to this definition"></a></dt>
+<dd><p>Evaluate the inscribed rectangle by comparing it three expanded inscribed rectangles.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.expand_inscribed_rectangle_1">
+<span class="sig-name descname"><span class="pre">expand_inscribed_rectangle_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inscribed_rect_poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insc_circle_center</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.expand_inscribed_rectangle_1" title="Link to this definition"></a></dt>
+<dd><p>Expand the base inscribed rectangle.
+Keep expanding in each direction till collision, then move to next direction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.expand_inscribed_rectangle_2">
+<span class="sig-name descname"><span class="pre">expand_inscribed_rectangle_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inscribed_rect_poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insc_circle_center</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.expand_inscribed_rectangle_2" title="Link to this definition"></a></dt>
+<dd><p>Expand the base inscribed rectangle.
+First find the main direction of expansion buy expanding in each direction separately till collision,
+then expand in that direction and then in the other directions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.expand_inscribed_rectangle_3">
+<span class="sig-name descname"><span class="pre">expand_inscribed_rectangle_3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inscribed_rect_poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Polygon</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.expand_inscribed_rectangle_3" title="Link to this definition"></a></dt>
+<dd><p>Expand the base inscribed rectangle.
+Expand based on the biggest edge of the base rectangle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.expand_2_points_eval">
+<span class="sig-name descname"><span class="pre">expand_2_points_eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.expand_2_points_eval" title="Link to this definition"></a></dt>
+<dd><p>expand two points p1 and p2 in the direction of angle theta by step and check if the new points are inside the polygon.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.plot_cell_evaluation">
+<span class="sig-name descname"><span class="pre">plot_cell_evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">insc_circle_center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insc_circle_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">circle_circum_poly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">circum_rect_poly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inscribed_rect_poly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_inscribed_rectangle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.plot_cell_evaluation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.segmentation.map_polygons">
+<span id="covpp-segmentation-map-polygons-module"></span><h2>covpp.segmentation.map_polygons module<a class="headerlink" href="#module-covpp.segmentation.map_polygons" title="Link to this heading"></a></h2>
+<p>Polygon extraction module for workspace boundaries and obstacles.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.segmentation.map_polygons.MapPolygons">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MapPolygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_ws</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec_mid_dist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.map_polygons.MapPolygons" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Extract and represent workspace boundary and obstacle polygons.</p>
+<p>This class processes binary workspace maps to identify and create
+polygon representations of the coverage boundary and internal obstacles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>map_ws</strong> (<em>np.ndarray</em>) -- Binary map of the workspace (1: free, 0: occupied).</p></li>
+<li><p><strong>xy</strong> (<em>np.ndarray</em>) -- Starting coordinates (offset) in the global map.</p></li>
+<li><p><strong>dec_mid_dist</strong> (<em>int</em>) -- Minimum distance to keep contour points.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.map_polygons.MapPolygons.create_bounding">
+<span class="sig-name descname"><span class="pre">create_bounding</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#covpp.segmentation.map_polygons.MapPolygons.create_bounding" title="Link to this definition"></a></dt>
+<dd><p>Extract workspace boundary polygon from binary map.</p>
+<p>Uses contour detection to find the largest contour representing
+the workspace boundary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.map_polygons.MapPolygons.create_obstacle_polygons">
+<span class="sig-name descname"><span class="pre">create_obstacle_polygons</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.map_polygons.MapPolygons.create_obstacle_polygons" title="Link to this definition"></a></dt>
+<dd><p>Extract obstacle polygons from binary map using contour detection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.map_polygons.MapPolygons.filter_contour_points">
+<span class="sig-name descname"><span class="pre">filter_contour_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.map_polygons.MapPolygons.filter_contour_points" title="Link to this definition"></a></dt>
+<dd><p>Filter contour points by minimum distance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.map_polygons.MapPolygons.rotate_all_polygons">
+<span class="sig-name descname"><span class="pre">rotate_all_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.map_polygons.MapPolygons.rotate_all_polygons" title="Link to this definition"></a></dt>
+<dd><p>Rotate all polygons (bounding and obstacles) by the given angle around their centroid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.map_polygons.MapPolygons.rotate_polygon">
+<span class="sig-name descname"><span class="pre">rotate_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.map_polygons.MapPolygons.rotate_polygon" title="Link to this definition"></a></dt>
+<dd><p>Rotate the given polygon by the given angle around the given origin.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.segmentation.merge_cells">
+<span id="covpp-segmentation-merge-cells-module"></span><h2>covpp.segmentation.merge_cells module<a class="headerlink" href="#module-covpp.segmentation.merge_cells" title="Link to this heading"></a></h2>
+<p>Module to merge adjacent cells based on certain criteria.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.segmentation.merge_cells.MergeCells">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MergeCells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cells</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><span class="pre">CellBase</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.merge_cells.MergeCells" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to merge adjacent cells based on certain criteria.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cells</strong> (<em>list</em><em>[</em><a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><em>CellBase</em></a><em>]</em>) -- List of CellBase objects to be merged.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.merge_cells.MergeCells.cells">
+<span class="sig-name descname"><span class="pre">cells</span></span><a class="headerlink" href="#covpp.segmentation.merge_cells.MergeCells.cells" title="Link to this definition"></a></dt>
+<dd><p>Original list of cells.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase">CellBase</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.merge_cells.MergeCells.updated_cells">
+<span class="sig-name descname"><span class="pre">updated_cells</span></span><a class="headerlink" href="#covpp.segmentation.merge_cells.MergeCells.updated_cells" title="Link to this definition"></a></dt>
+<dd><p>List of cells after merging.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase">CellBase</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.merge_cells.MergeCells.find_merge_groups">
+<span class="sig-name descname"><span class="pre">find_merge_groups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_cell_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><span class="pre">CellBase</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#covpp.segmentation.merge_cells.MergeCells.find_merge_groups" title="Link to this definition"></a></dt>
+<dd><p>Find groups of cells to be merged based on adjacency and criteria.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.merge_cells.MergeCells.merge_groups">
+<span class="sig-name descname"><span class="pre">merge_groups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">groups_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_cell_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><span class="pre">CellBase</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.merge_cells.MergeCells.merge_groups" title="Link to this definition"></a></dt>
+<dd><p>Merge cells in each group and update ids and adjacent ids.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.merge_cells.MergeCells.update_ids">
+<span class="sig-name descname"><span class="pre">update_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">groups_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.merge_cells.MergeCells.update_ids" title="Link to this definition"></a></dt>
+<dd><p>Assign new sequential ids to merged cells and update adjacent ids accordingly.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.merge_cells.MergeCells.should_merge">
+<span class="sig-name descname"><span class="pre">should_merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><span class="pre">CellBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><span class="pre">CellBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#covpp.segmentation.merge_cells.MergeCells.should_merge" title="Link to this definition"></a></dt>
+<dd><p>Determine if two cells should be merged based on criteria.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.merge_cells.MergeCells.check_line_within_union">
+<span class="sig-name descname"><span class="pre">check_line_within_union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><span class="pre">CellBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><span class="pre">CellBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#covpp.segmentation.merge_cells.MergeCells.check_line_within_union" title="Link to this definition"></a></dt>
+<dd><p>Check if the line connecting the centroids of two cells lies within their union polygon.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.merge_cells.MergeCells.merge_adjacent_cells">
+<span class="sig-name descname"><span class="pre">merge_adjacent_cells</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.merge_cells.MergeCells.merge_adjacent_cells" title="Link to this definition"></a></dt>
+<dd><p>Merge adjacent cells if they meet the merging criteria.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.merge_cells.MergeCells.merge_two_cells">
+<span class="sig-name descname"><span class="pre">merge_two_cells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><span class="pre">CellBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><span class="pre">CellBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase"><span class="pre">CellBase</span></a></span></span><a class="headerlink" href="#covpp.segmentation.merge_cells.MergeCells.merge_two_cells" title="Link to this definition"></a></dt>
+<dd><p>Merge two cells into one, normalizing MultiPolygon to a single Polygon.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.segmentation.segmentation_base">
+<span id="covpp-segmentation-segmentation-base-module"></span><h2>covpp.segmentation.segmentation_base module<a class="headerlink" href="#module-covpp.segmentation.segmentation_base" title="Link to this heading"></a></h2>
+<p>Base class for segmentation algorithms.</p>
+<p>This module defines the abstract interface that all segmentation methods
+must implement, enabling a plugin-based architecture.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_base.SegmentationBase">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SegmentationBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData"><span class="pre">ZoneMapData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_polygons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.segmentation.map_polygons.MapPolygons" title="covpp.segmentation.map_polygons.MapPolygons"><span class="pre">MapPolygons</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.segmentation_base.SegmentationBase" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract base class for zone segmentation algorithms.</p>
+<dl class="simple">
+<dt>Process expected from subclasses:</dt><dd><ol class="arabic simple">
+<li><p>Inspect <code class="docutils literal notranslate"><span class="pre">self.zmd</span></code> and <code class="docutils literal notranslate"><span class="pre">self.map_polygons</span></code> to decide how to split the zone.</p></li>
+<li><p>Populate <code class="docutils literal notranslate"><span class="pre">self.cells</span></code> with <code class="docutils literal notranslate"><span class="pre">CellBase</span></code> instances.</p></li>
+<li><p>Set adjacency information and <code class="docutils literal notranslate"><span class="pre">self.n_cells</span></code> for downstream planners.</p></li>
+</ol>
+</dd>
+<dt>Result:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">cells</span></code> (list[CellBase]) fully describing the decomposition ready to be
+wrapped into <code class="docutils literal notranslate"><span class="pre">PCell</span></code> objects.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zmd</strong> (<a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData"><em>ZoneMapData</em></a>) -- Zone map data object.</p></li>
+<li><p><strong>map_polygons</strong> (<a class="reference internal" href="#covpp.segmentation.map_polygons.MapPolygons" title="covpp.segmentation.map_polygons.MapPolygons"><em>MapPolygons</em></a>) -- Polygon representation of workspace and obstacles.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_base.SegmentationBase.cells">
+<span class="sig-name descname"><span class="pre">cells</span></span><a class="headerlink" href="#covpp.segmentation.segmentation_base.SegmentationBase.cells" title="Link to this definition"></a></dt>
+<dd><p>List of cells created by segmentation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase">CellBase</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_base.SegmentationBase.n_cells">
+<span class="sig-name descname"><span class="pre">n_cells</span></span><a class="headerlink" href="#covpp.segmentation.segmentation_base.SegmentationBase.n_cells" title="Link to this definition"></a></dt>
+<dd><p>Number of cells created.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_base.SegmentationBase.zmd">
+<span class="sig-name descname"><span class="pre">zmd</span></span><a class="headerlink" href="#covpp.segmentation.segmentation_base.SegmentationBase.zmd" title="Link to this definition"></a></dt>
+<dd><p>Zone map data object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData">ZoneMapData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_base.SegmentationBase.map_polygons">
+<span class="sig-name descname"><span class="pre">map_polygons</span></span><a class="headerlink" href="#covpp.segmentation.segmentation_base.SegmentationBase.map_polygons" title="Link to this definition"></a></dt>
+<dd><p>Polygon representation of the workspace.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#covpp.segmentation.map_polygons.MapPolygons" title="covpp.segmentation.map_polygons.MapPolygons">MapPolygons</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_base.SegmentationBase.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.segmentation_base.SegmentationBase.run" title="Link to this definition"></a></dt>
+<dd><p>Execute the segmentation algorithm.</p>
+<p>This method must be implemented by all child classes. It should
+decompose the zone workspace into cells and populate the cells
+and n_cells attributes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_base.SegmentationBase.create_cells">
+<span class="sig-name descname"><span class="pre">create_cells</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.segmentation_base.SegmentationBase.create_cells" title="Link to this definition"></a></dt>
+<dd><p>Create CellBase objects for each segmented cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_base.SegmentationBase.set_cell_adjacents">
+<span class="sig-name descname"><span class="pre">set_cell_adjacents</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.segmentation_base.SegmentationBase.set_cell_adjacents" title="Link to this definition"></a></dt>
+<dd><p>Set adjacent cells for each cell based on shared boundaries or other criteria.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.segmentation.segmentation_handler">
+<span id="covpp-segmentation-segmentation-handler-module"></span><h2>covpp.segmentation.segmentation_handler module<a class="headerlink" href="#module-covpp.segmentation.segmentation_handler" title="Link to this heading"></a></h2>
+<p>Segmentation handler module for managing zone decomposition into cells.</p>
+<p>This module implements the Handler pattern to dynamically load and execute
+different segmentation algorithms based on configuration.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_handler.SegmentationHandler">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SegmentationHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData"><span class="pre">ZoneMapData</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.segmentation_handler.SegmentationHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>High-level interface for zone segmentation into coverage cells.</p>
+<p>This handler dynamically loads the appropriate segmentation algorithm
+based on the pipeline configuration and converts raw cells into
+processed cells ready for coverage planning.</p>
+<dl class="simple">
+<dt>Result:</dt><dd><p>cells (list[PCell])</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>zmd</strong> (<a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData"><em>ZoneMapData</em></a>) -- Zone map data object.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_handler.SegmentationHandler.zmd">
+<span class="sig-name descname"><span class="pre">zmd</span></span><a class="headerlink" href="#covpp.segmentation.segmentation_handler.SegmentationHandler.zmd" title="Link to this definition"></a></dt>
+<dd><p>Zone map data object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.district.html#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData">ZoneMapData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_handler.SegmentationHandler.map_polygons">
+<span class="sig-name descname"><span class="pre">map_polygons</span></span><a class="headerlink" href="#covpp.segmentation.segmentation_handler.SegmentationHandler.map_polygons" title="Link to this definition"></a></dt>
+<dd><p>Polygon representation of the workspace.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#covpp.segmentation.map_polygons.MapPolygons" title="covpp.segmentation.map_polygons.MapPolygons">MapPolygons</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_handler.SegmentationHandler.segmentor">
+<span class="sig-name descname"><span class="pre">segmentor</span></span><a class="headerlink" href="#covpp.segmentation.segmentation_handler.SegmentationHandler.segmentor" title="Link to this definition"></a></dt>
+<dd><p>The actual segmentation algorithm instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#covpp.segmentation.segmentation_base.SegmentationBase" title="covpp.segmentation.segmentation_base.SegmentationBase">SegmentationBase</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_handler.SegmentationHandler.bcells">
+<span class="sig-name descname"><span class="pre">bcells</span></span><a class="headerlink" href="#covpp.segmentation.segmentation_handler.SegmentationHandler.bcells" title="Link to this definition"></a></dt>
+<dd><p>Base cells from segmentation algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#covpp.segmentation.cell_base.CellBase" title="covpp.segmentation.cell_base.CellBase">CellBase</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_handler.SegmentationHandler.cells">
+<span class="sig-name descname"><span class="pre">cells</span></span><a class="headerlink" href="#covpp.segmentation.segmentation_handler.SegmentationHandler.cells" title="Link to this definition"></a></dt>
+<dd><p>Processed cells ready for planning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#covpp.segmentation.cell_planning.PCell" title="covpp.segmentation.cell_planning.PCell">PCell</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_handler.SegmentationHandler.n_cells">
+<span class="sig-name descname"><span class="pre">n_cells</span></span><a class="headerlink" href="#covpp.segmentation.segmentation_handler.SegmentationHandler.n_cells" title="Link to this definition"></a></dt>
+<dd><p>Number of cells created.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="simple">
+<dt>Supported Methods:</dt><dd><ul class="simple">
+<li><p>&quot;simple&quot;: Single cell covering entire zone</p></li>
+<li><p>&quot;voronoi&quot;: Voronoi-based decomposition</p></li>
+<li><p>Custom methods can be added by extending SegmentationBase</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_handler.SegmentationHandler.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.segmentation_handler.SegmentationHandler.run" title="Link to this definition"></a></dt>
+<dd><p>Execute segmentation pipeline using configured method.</p>
+<dl class="simple">
+<dt>This method:</dt><dd><ol class="arabic simple">
+<li><p>Loads the segmentation algorithm based on configuration</p></li>
+<li><p>Executes the segmentation to create base cells</p></li>
+<li><p>Converts base cells to planning cells (PCell objects) by processing and merging</p></li>
+<li><p>Validates the created cells for planning readiness</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> -- If segmentation method is not recognized.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_handler.SegmentationHandler.process_cells">
+<span class="sig-name descname"><span class="pre">process_cells</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.segmentation_handler.SegmentationHandler.process_cells" title="Link to this definition"></a></dt>
+<dd><p>Convert base cells from segmentor into planning PCell objects.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.segmentation_handler.SegmentationHandler.validate_cells">
+<span class="sig-name descname"><span class="pre">validate_cells</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.segmentation_handler.SegmentationHandler.validate_cells" title="Link to this definition"></a></dt>
+<dd><p>Validate the created cells for planning readiness.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.segmentation">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-covpp.segmentation" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="covpp.gui.html" class="btn btn-neutral float-left" title="covpp.gui" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="covpp.segmentation.simple_segmentation.html" class="btn btn-neutral float-right" title="covpp.segmentation.simple_segmentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MortezaH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

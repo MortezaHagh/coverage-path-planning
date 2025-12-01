@@ -1,0 +1,686 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>covpp.district &mdash; covpp 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2ed17a75"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="covpp.gui" href="covpp.gui.html" />
+    <link rel="prev" title="covpp.spa" href="covpp.spa.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            covpp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="covpp.html">covpp</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="covpp.html#modules">Modules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="covpp.base.html">covpp.base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.spa.html">covpp.spa</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">covpp.district</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.district.cells_plotter">covpp.district.cells_plotter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.district.create_district">covpp.district.create_district module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.district.district">covpp.district.district module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.district.zone">covpp.district.zone module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.district.zone_map_data">covpp.district.zone_map_data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-covpp.district">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.gui.html">covpp.gui</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.segmentation.html">covpp.segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.coverage_planning.html">covpp.coverage_planning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.path_planning.html">covpp.path_planning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.sequence.html">covpp.sequence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="covpp.evaluation.html">covpp.evaluation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.html#module-covpp.main">covpp.main</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">covpp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="covpp.html">covpp</a></li>
+      <li class="breadcrumb-item active">covpp.district</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/covpp.district.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="covpp-district">
+<h1>covpp.district<a class="headerlink" href="#covpp-district" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-covpp.district.cells_plotter">
+<span id="covpp-district-cells-plotter-module"></span><h2>covpp.district.cells_plotter module<a class="headerlink" href="#module-covpp.district.cells_plotter" title="Link to this heading"></a></h2>
+<p>Plotting and saving figures of resulted cells.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.district.cells_plotter.CellsPlotter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CellsPlotter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method_results_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segmentation_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.cells_plotter.CellsPlotter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Plotting and saving figures of the resulted cells from segmentation and sequencing.</p>
+<dl class="simple">
+<dt>Includes:</dt><dd><ul class="simple">
+<li><p>visualize_cells</p></li>
+<li><p>visualize_sequence</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.cells_plotter.CellsPlotter.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cells</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="covpp.segmentation.html#covpp.segmentation.cell_planning.PCell" title="covpp.segmentation.cell_planning.PCell"><span class="pre">PCell</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.cells_plotter.CellsPlotter.run" title="Link to this definition"></a></dt>
+<dd><p>Main run function to plot and save figures based on the input cells.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.cells_plotter.CellsPlotter.visualize_cells_sequence">
+<span class="sig-name descname"><span class="pre">visualize_cells_sequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cells</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="covpp.segmentation.html#covpp.segmentation.cell_planning.PCell" title="covpp.segmentation.cell_planning.PCell"><span class="pre">PCell</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.cells_plotter.CellsPlotter.visualize_cells_sequence" title="Link to this definition"></a></dt>
+<dd><p>Visualize the sequence on cells figure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.cells_plotter.CellsPlotter.visualize_cells">
+<span class="sig-name descname"><span class="pre">visualize_cells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cells</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="covpp.segmentation.html#covpp.segmentation.cell_planning.PCell" title="covpp.segmentation.cell_planning.PCell"><span class="pre">PCell</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.cells_plotter.CellsPlotter.visualize_cells" title="Link to this definition"></a></dt>
+<dd><p>Visualize cells obtained from segmentation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.cells_plotter.CellsPlotter.visualize_sequence">
+<span class="sig-name descname"><span class="pre">visualize_sequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cells</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="covpp.segmentation.html#covpp.segmentation.cell_planning.PCell" title="covpp.segmentation.cell_planning.PCell"><span class="pre">PCell</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.cells_plotter.CellsPlotter.visualize_sequence" title="Link to this definition"></a></dt>
+<dd><p>Visualize the sequencing path on the cells figure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.cells_plotter.CellsPlotter.save_figs">
+<span class="sig-name descname"><span class="pre">save_figs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.cells_plotter.CellsPlotter.save_figs" title="Link to this definition"></a></dt>
+<dd><p>Save the plotted figures to files.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.district.create_district">
+<span id="covpp-district-create-district-module"></span><h2>covpp.district.create_district module<a class="headerlink" href="#module-covpp.district.create_district" title="Link to this heading"></a></h2>
+<p>Create district for coverage path planning. GUI version: select rectangle area as district.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.district.create_district.DistrictGen">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DistrictGen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.map_data.MapData" title="covpp.base.map_data.MapData"><span class="pre">MapData</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.create_district.DistrictGen" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Create district for coverage path planning. GUI version: select rectangle area as district.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>map_data</strong> (<a class="reference internal" href="covpp.base.html#covpp.base.map_data.MapData" title="covpp.base.map_data.MapData"><em>MapData</em></a>) -- Map data object.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.create_district.DistrictGen.rectangle">
+<span class="sig-name descname"><span class="pre">rectangle</span></span><a class="headerlink" href="#covpp.district.create_district.DistrictGen.rectangle" title="Link to this definition"></a></dt>
+<dd><p>Created district rectangle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.gui.html#covpp.gui.rectangle.Rectangle" title="covpp.gui.rectangle.Rectangle">Rectangle</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.create_district.DistrictGen.create_district_whole">
+<span class="sig-name descname"><span class="pre">create_district_whole</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.create_district.DistrictGen.create_district_whole" title="Link to this definition"></a></dt>
+<dd><p>Get district rectangle based on map data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.create_district.DistrictGen.create_district_gui">
+<span class="sig-name descname"><span class="pre">create_district_gui</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="covpp.gui.html#covpp.gui.rectangle.Rectangle" title="covpp.gui.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></span><a class="headerlink" href="#covpp.district.create_district.DistrictGen.create_district_gui" title="Link to this definition"></a></dt>
+<dd><p>Create district rectangle via GUI interaction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.create_district.DistrictGen.init_wind">
+<span class="sig-name descname"><span class="pre">init_wind</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.create_district.DistrictGen.init_wind" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.create_district.DistrictGen.key_listener">
+<span class="sig-name descname"><span class="pre">key_listener</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.gui.html#covpp.gui.rect_event_hl.RecEventHandler" title="covpp.gui.rect_event_hl.RecEventHandler"><span class="pre">RecEventHandler</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.create_district.DistrictGen.key_listener" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.create_district.DistrictGen.get_district_rect">
+<span class="sig-name descname"><span class="pre">get_district_rect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="covpp.gui.html#covpp.gui.rectangle.Rectangle" title="covpp.gui.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></span><a class="headerlink" href="#covpp.district.create_district.DistrictGen.get_district_rect" title="Link to this definition"></a></dt>
+<dd><p>Get the created district rectangle.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.district.district">
+<span id="covpp-district-district-module"></span><h2>covpp.district.district module<a class="headerlink" href="#module-covpp.district.district" title="Link to this heading"></a></h2>
+<p>District data management module for zone creation and coverage planning orchestration.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.district.district.DistrictData">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DistrictData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spa</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.spa.html#covpp.spa.space_analyzer.SpaceAnalyzer" title="covpp.spa.space_analyzer.SpaceAnalyzer"><span class="pre">SpaceAnalyzer</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.district.DistrictData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Manage district-level data, zones, and coordinate coverage planning operations.</p>
+<p>This class serves as the high-level orchestrator for the coverage planning
+pipeline at the district level. It creates and manages zones, coordinates
+coverage planning across all zones, and aggregates results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>spa</strong> (<a class="reference internal" href="covpp.spa.html#covpp.spa.space_analyzer.SpaceAnalyzer" title="covpp.spa.space_analyzer.SpaceAnalyzer"><em>SpaceAnalyzer</em></a>) -- SpaceAnalyzer object containing processed workspace data.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.district.DistrictData.spa_obj">
+<span class="sig-name descname"><span class="pre">spa_obj</span></span><a class="headerlink" href="#covpp.district.district.DistrictData.spa_obj" title="Link to this definition"></a></dt>
+<dd><p>Reference to the SpaceAnalyzer object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.spa.html#covpp.spa.space_analyzer.SpaceAnalyzer" title="covpp.spa.space_analyzer.SpaceAnalyzer">SpaceAnalyzer</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.district.DistrictData.dmd">
+<span class="sig-name descname"><span class="pre">dmd</span></span><a class="headerlink" href="#covpp.district.district.DistrictData.dmd" title="Link to this definition"></a></dt>
+<dd><p>District map data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData">ZoneMapData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.district.DistrictData.zone_datas">
+<span class="sig-name descname"><span class="pre">zone_datas</span></span><a class="headerlink" href="#covpp.district.district.DistrictData.zone_datas" title="Link to this definition"></a></dt>
+<dd><p>List of ZoneData objects representing subdivisions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#covpp.district.zone.ZoneData" title="covpp.district.zone.ZoneData">ZoneData</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.district.DistrictData.district_evaluator">
+<span class="sig-name descname"><span class="pre">district_evaluator</span></span><a class="headerlink" href="#covpp.district.district.DistrictData.district_evaluator" title="Link to this definition"></a></dt>
+<dd><p>Handler for district-level statistics evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.evaluation.html#covpp.evaluation.district_evaluation.DistrictEvaluationHandler" title="covpp.evaluation.district_evaluation.DistrictEvaluationHandler">DistrictEvaluationHandler</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.district.DistrictData.district_stats">
+<span class="sig-name descname"><span class="pre">district_stats</span></span><a class="headerlink" href="#covpp.district.district.DistrictData.district_stats" title="Link to this definition"></a></dt>
+<dd><p>Aggregated district statistics object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.evaluation.html#covpp.evaluation.district_evaluation.DistrictStatsBase" title="covpp.evaluation.district_evaluation.DistrictStatsBase">DistrictStatsBase</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">district</span> <span class="o">=</span> <span class="n">DistrictData</span><span class="p">(</span><span class="n">space_analyzer</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">district</span><span class="o">.</span><span class="n">create_zones_hl</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">district</span><span class="o">.</span><span class="n">run_planning_pipeline</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.district.DistrictData.create_zones_hl">
+<span class="sig-name descname"><span class="pre">create_zones_hl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.district.district.DistrictData.create_zones_hl" title="Link to this definition"></a></dt>
+<dd><p>Create all zones in the district and initialize high-level map planning.</p>
+<p>This method creates zone subdivisions and updates the district-level
+planning visualization map.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.district.DistrictData.run_planning_pipeline">
+<span class="sig-name descname"><span class="pre">run_planning_pipeline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.district.district.DistrictData.run_planning_pipeline" title="Link to this definition"></a></dt>
+<dd><p>Execute coverage planning pipeline for all zones and aggregate statistics.</p>
+<p>This method runs the complete planning pipeline (segmentation, path planning,
+sequencing, evaluation) for each zone, then aggregates district-level performance statistics
+and updates the final planning visualization.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.district.DistrictData.create_zones">
+<span class="sig-name descname"><span class="pre">create_zones</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.district.district.DistrictData.create_zones" title="Link to this definition"></a></dt>
+<dd><p>Create zones based on rectangle subdivision method.</p>
+<p>Generates zone rectangles, creates ZoneMapData for each zone,
+and initializes ZoneData objects.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.district.DistrictData.update_map_planning">
+<span class="sig-name descname"><span class="pre">update_map_planning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.district.district.DistrictData.update_map_planning" title="Link to this definition"></a></dt>
+<dd><p>update district map_planning based on all zones map_planning.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.district.DistrictData.save_map_planning">
+<span class="sig-name descname"><span class="pre">save_map_planning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.district.district.DistrictData.save_map_planning" title="Link to this definition"></a></dt>
+<dd><p>save district map_planning to file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.district.DistrictData.create_zone_rectangles_1">
+<span class="sig-name descname"><span class="pre">create_zone_rectangles_1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="covpp.gui.html#covpp.gui.rectangle.Rectangle" title="covpp.gui.rectangle.Rectangle"><span class="pre">Rectangle</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#covpp.district.district.DistrictData.create_zone_rectangles_1" title="Link to this definition"></a></dt>
+<dd><p>create two zone rectangles by splitting the district rectangle into two halves.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.district.DistrictData.create_one_zone_rectangle">
+<span class="sig-name descname"><span class="pre">create_one_zone_rectangle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="covpp.gui.html#covpp.gui.rectangle.Rectangle" title="covpp.gui.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></span><a class="headerlink" href="#covpp.district.district.DistrictData.create_one_zone_rectangle" title="Link to this definition"></a></dt>
+<dd><p>create one zone rectangle covering the whole district.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.district.zone">
+<span id="covpp-district-zone-module"></span><h2>covpp.district.zone module<a class="headerlink" href="#module-covpp.district.zone" title="Link to this heading"></a></h2>
+<p>Zone data management module for zone-level coverage planning operations.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ZoneData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData"><span class="pre">ZoneMapData</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone.ZoneData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Manage zone-level data and execute complete coverage planning pipeline.</p>
+<p>This class coordinates all zone-level operations including segmentation,
+coverage path planning, path sequencing, and performance evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ind</strong> (<em>int</em>) -- Zone index identifier.</p></li>
+<li><p><strong>zmd</strong> (<a class="reference internal" href="#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData"><em>ZoneMapData</em></a>) -- Zone map data object containing workspace and map information.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.ind">
+<span class="sig-name descname"><span class="pre">ind</span></span><a class="headerlink" href="#covpp.district.zone.ZoneData.ind" title="Link to this definition"></a></dt>
+<dd><p>Zone index identifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.zmd">
+<span class="sig-name descname"><span class="pre">zmd</span></span><a class="headerlink" href="#covpp.district.zone.ZoneData.zmd" title="Link to this definition"></a></dt>
+<dd><p>Zone map data object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#covpp.district.zone_map_data.ZoneMapData" title="covpp.district.zone_map_data.ZoneMapData">ZoneMapData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.segmentation_hl">
+<span class="sig-name descname"><span class="pre">segmentation_hl</span></span><a class="headerlink" href="#covpp.district.zone.ZoneData.segmentation_hl" title="Link to this definition"></a></dt>
+<dd><p>Handler for space segmentation operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.segmentation.html#covpp.segmentation.segmentation_handler.SegmentationHandler" title="covpp.segmentation.segmentation_handler.SegmentationHandler">SegmentationHandler</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.cells">
+<span class="sig-name descname"><span class="pre">cells</span></span><a class="headerlink" href="#covpp.district.zone.ZoneData.cells" title="Link to this definition"></a></dt>
+<dd><p>List of processed cells from segmentation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="covpp.segmentation.html#covpp.segmentation.cell_planning.PCell" title="covpp.segmentation.cell_planning.PCell">PCell</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.cov_path_planner">
+<span class="sig-name descname"><span class="pre">cov_path_planner</span></span><a class="headerlink" href="#covpp.district.zone.ZoneData.cov_path_planner" title="Link to this definition"></a></dt>
+<dd><p>Handler for coverage path planning operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.coverage_planning.html#covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler" title="covpp.coverage_planning.coverage_pp_hl.CoveragePPHandler">CoveragePPHandler</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.sequence_hl">
+<span class="sig-name descname"><span class="pre">sequence_hl</span></span><a class="headerlink" href="#covpp.district.zone.ZoneData.sequence_hl" title="Link to this definition"></a></dt>
+<dd><p>Handler for path sequencing and connection operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.sequence.html#covpp.sequence.sequence_handler.SequenceHandler" title="covpp.sequence.sequence_handler.SequenceHandler">SequenceHandler</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.zone_evaluator">
+<span class="sig-name descname"><span class="pre">zone_evaluator</span></span><a class="headerlink" href="#covpp.district.zone.ZoneData.zone_evaluator" title="Link to this definition"></a></dt>
+<dd><p>Handler for zone performance evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.evaluation.html#covpp.evaluation.zone_evaluation_handler.ZoneEvaluationHandler" title="covpp.evaluation.zone_evaluation_handler.ZoneEvaluationHandler">ZoneEvaluationHandler</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.zone_stats">
+<span class="sig-name descname"><span class="pre">zone_stats</span></span><a class="headerlink" href="#covpp.district.zone.ZoneData.zone_stats" title="Link to this definition"></a></dt>
+<dd><p>Zone-level statistics object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="covpp.evaluation.html#covpp.evaluation.zone_evaluation_base.ZoneStatsBase" title="covpp.evaluation.zone_evaluation_base.ZoneStatsBase">ZoneStatsBase</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">zone</span> <span class="o">=</span> <span class="n">ZoneData</span><span class="p">(</span><span class="n">ind</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">zmd</span><span class="o">=</span><span class="n">zone_map_data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">zone</span><span class="o">.</span><span class="n">zone_planning_pipeline</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone.ZoneData.initialize" title="Link to this definition"></a></dt>
+<dd><p>Initialize zone data by saving map data and creating initial planning map.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.zone_planning_pipeline">
+<span class="sig-name descname"><span class="pre">zone_planning_pipeline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone.ZoneData.zone_planning_pipeline" title="Link to this definition"></a></dt>
+<dd><p>Execute complete coverage planning pipeline for the zone.</p>
+<dl class="simple">
+<dt>Pipeline Steps:</dt><dd><ol class="arabic simple">
+<li><p>Segmentation: Divide zone into cells</p></li>
+<li><p>Coverage Planning: Generate paths for each cell</p></li>
+<li><p>Sequencing: Optimize cell order and connect paths</p></li>
+<li><p>Evaluation: Compute performance statistics</p></li>
+<li><p>Post-processing: Update visualization maps</p></li>
+</ol>
+</dd>
+</dl>
+<p>This method orchestrates all planning operations and measures execution time.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.post_planning">
+<span class="sig-name descname"><span class="pre">post_planning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone.ZoneData.post_planning" title="Link to this definition"></a></dt>
+<dd><p>post planning operations:
+1. update map_planning with coverage path and sequence.
+2. save map_planning.
+3. save map showing cleaned area and uncleaned area.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.set_zone_complete_path">
+<span class="sig-name descname"><span class="pre">set_zone_complete_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone.ZoneData.set_zone_complete_path" title="Link to this definition"></a></dt>
+<dd><p>set the complete connected path for the zone from sequencing handler.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.create_map_planning">
+<span class="sig-name descname"><span class="pre">create_map_planning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone.ZoneData.create_map_planning" title="Link to this definition"></a></dt>
+<dd><p>create initial map_planning with zone boundary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.save_map_planning">
+<span class="sig-name descname"><span class="pre">save_map_planning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone.ZoneData.save_map_planning" title="Link to this definition"></a></dt>
+<dd><p>save zone map_planning and map_segmentation to files.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone.ZoneData.save_map_map_cleaned">
+<span class="sig-name descname"><span class="pre">save_map_map_cleaned</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone.ZoneData.save_map_map_cleaned" title="Link to this definition"></a></dt>
+<dd><p>save map showing cleaned area and uncleaned area.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.district.zone_map_data">
+<span id="covpp-district-zone-map-data-module"></span><h2>covpp.district.zone_map_data module<a class="headerlink" href="#module-covpp.district.zone_map_data" title="Link to this heading"></a></h2>
+<p>ZoneMapData class to store zone map data.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.convert_to_native">
+<span class="sig-name descname"><span class="pre">convert_to_native</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#covpp.district.zone_map_data.convert_to_native" title="Link to this definition"></a></dt>
+<dd><p>Convert numpy types to native python types for json serialization.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ZoneMapData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>ZoneMapData class to store zone map data. values are in pixel by default.</p>
+<p>All coordinates are stored with respect to the original map (global coordinates).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ind</strong> (<em>int</em>) -- Zone index identifier.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">ind,</span> <span class="pre">name,</span> <span class="pre">zone_dir,</span> <span class="pre">maps_dir,</span> <span class="pre">result_file,</span> <span class="pre">method_results_dir,</span> <span class="pre">segmentation_dir,</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">resolution,</span> <span class="pre">orig_map_data,</span> <span class="pre">orig_rectangle,</span> <span class="pre">rectangle,</span> <span class="pre">final_rectangle,</span> <span class="pre">rect_data,</span> <span class="pre">final_rect_data,</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">vertices,</span> <span class="pre">final_vertices,</span> <span class="pre">hw_bd,</span> <span class="pre">hw,</span> <span class="pre">global_xy,</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">map_orig,</span> <span class="pre">map_ws,</span> <span class="pre">map_sf_orig,</span> <span class="pre">map_cleaning,</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">map_planning,</span> <span class="pre">map_segmentation</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.final_rect_data">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">final_rect_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.final_rect_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_name">
+<span class="sig-name descname"><span class="pre">set_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_ind">
+<span class="sig-name descname"><span class="pre">set_ind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_ind" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_result_path">
+<span class="sig-name descname"><span class="pre">set_result_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_result_path" title="Link to this definition"></a></dt>
+<dd><p>set zone result paths based on zone name and original map data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_orig_map_data">
+<span class="sig-name descname"><span class="pre">set_orig_map_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.base.html#covpp.base.map_data.MapData" title="covpp.base.map_data.MapData"><span class="pre">MapData</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_orig_map_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_orig_rectangle">
+<span class="sig-name descname"><span class="pre">set_orig_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rectangle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.gui.html#covpp.gui.rectangle.Rectangle" title="covpp.gui.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_orig_rectangle" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_rectangle">
+<span class="sig-name descname"><span class="pre">set_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rectangle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="covpp.gui.html#covpp.gui.rectangle.Rectangle" title="covpp.gui.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_rectangle" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_rect_data">
+<span class="sig-name descname"><span class="pre">set_rect_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rect_data_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_rect_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_final_rect_data">
+<span class="sig-name descname"><span class="pre">set_final_rect_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rect_data_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_final_rect_data" title="Link to this definition"></a></dt>
+<dd><p>set final rectangle data and final vertices.
+final rectangle is the free space bounding box.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_map_orig">
+<span class="sig-name descname"><span class="pre">set_map_orig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_orig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_map_orig" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_map_ws">
+<span class="sig-name descname"><span class="pre">set_map_ws</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_ws</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_map_ws" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_map_sf_orig">
+<span class="sig-name descname"><span class="pre">set_map_sf_orig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_sf_orig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_map_sf_orig" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_map_cleaning">
+<span class="sig-name descname"><span class="pre">set_map_cleaning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_cleaning</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_map_cleaning" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_map_viz">
+<span class="sig-name descname"><span class="pre">set_map_viz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_viz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_map_viz" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.set_hw_bd_px">
+<span class="sig-name descname"><span class="pre">set_hw_bd_px</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hw_bd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.set_hw_bd_px" title="Link to this definition"></a></dt>
+<dd><p>set map boundary in pixels.
+dict with keys = {&quot;h_min&quot;, &quot;w_min&quot;, &quot;h_max&quot;, &quot;w_max&quot;}</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.save_data">
+<span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.save_data" title="Link to this definition"></a></dt>
+<dd><p>save zone map data to files. maps, local_map.json.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.visualize">
+<span class="sig-name descname"><span class="pre">visualize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">case</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cleaning'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.visualize" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.district.zone_map_data.ZoneMapData.validate_data">
+<span class="sig-name descname"><span class="pre">validate_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.district.zone_map_data.ZoneMapData.validate_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-covpp.district">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-covpp.district" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="covpp.spa.html" class="btn btn-neutral float-left" title="covpp.spa" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="covpp.gui.html" class="btn btn-neutral float-right" title="covpp.gui" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MortezaH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

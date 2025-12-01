@@ -26,7 +26,7 @@ copyright = '2025, MortezaH'
 author = 'MortezaH'
 
 # The short X.Y version
-version = '3.11'
+version = '3.12'
 # The full version, including alpha/beta/rc tags
 release = '0.1'
 
