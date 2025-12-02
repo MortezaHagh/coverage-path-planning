@@ -64,12 +64,6 @@ Map + Data -> Space Analysis -> Generate District -> Create Zones -> Segmentatio
 pip install -e .
 ```
 
-### Automated Installation
-
-```bash
-./install.sh
-```
-
 ### With Development Tools
 
 ```bash

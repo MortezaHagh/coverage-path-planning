@@ -4,7 +4,7 @@ covpp.spa
 Submodules
 ----------
 
-covpp.spa.inscribed\_rectangle\_histogram module
+covpp.spa.inscribed\_rectangle\_histogram
 ------------------------------------------------
 
 .. automodule:: covpp.spa.inscribed_rectangle_histogram
@@ -12,7 +12,7 @@ covpp.spa.inscribed\_rectangle\_histogram module
    :undoc-members:
    :show-inheritance:
 
-covpp.spa.spa\_rectangles module
+covpp.spa.spa\_rectangles
 --------------------------------
 
 .. automodule:: covpp.spa.spa_rectangles
@@ -20,7 +20,7 @@ covpp.spa.spa\_rectangles module
    :undoc-members:
    :show-inheritance:
 
-covpp.spa.space\_analyzer module
+covpp.spa.space\_analyzer
 --------------------------------
 
 .. automodule:: covpp.spa.space_analyzer

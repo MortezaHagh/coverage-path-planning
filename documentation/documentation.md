@@ -306,30 +306,6 @@ These DTOs allow different implementations to communicate seamlessly.
 
 For detailed instructions on how to add new methods, please refer to [Plugin Development](plugin_development.md).
 
-## Benefits of the Plugin Architecture
-
-### For Developers
-
-- **Minimal code changes**: Add new methods without touching existing code
-- **Clear interfaces**: Base classes define exactly what to implement
-- **Consistent integration**: All methods work with the same data structures
-- **Easy testing**: Test new methods in isolation
-- **Version control**: New methods in separate directories reduce conflicts
-
-### For Researchers
-
-- **Algorithm comparison**: Easily test different approaches
-- **Reproducibility**: Switch methods via config files
-- **Benchmarking**: Fair comparison using same pipeline
-- **Rapid prototyping**: Focus on algorithm, not integration
-
-### For Users
-
-- **Flexibility**: Choose best method for your scenario
-- **No recompilation**: Change behavior via config
-- **Extensibility**: Add custom methods for specific needs
-- **Maintainability**: Updates to one method don't affect others
-
 ## End-to-End Pattern
 
 Sequential processing stages with well-defined interfaces:

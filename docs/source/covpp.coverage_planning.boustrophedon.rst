@@ -4,7 +4,7 @@ covpp.coverage\_planning.boustrophedon
 Submodules
 ----------
 
-covpp.coverage\_planning.boustrophedon.cell module
+covpp.coverage\_planning.boustrophedon.cell
 --------------------------------------------------
 
 .. automodule:: covpp.coverage_planning.boustrophedon.cell
@@ -12,7 +12,7 @@ covpp.coverage\_planning.boustrophedon.cell module
    :undoc-members:
    :show-inheritance:
 
-covpp.coverage\_planning.boustrophedon.cell\_cov\_planner module
+covpp.coverage\_planning.boustrophedon.cell\_cov\_planner
 ----------------------------------------------------------------
 
 .. automodule:: covpp.coverage_planning.boustrophedon.cell_cov_planner
@@ -20,7 +20,7 @@ covpp.coverage\_planning.boustrophedon.cell\_cov\_planner module
    :undoc-members:
    :show-inheritance:
 
-covpp.coverage\_planning.boustrophedon.coverage\_pp\_boust module
+covpp.coverage\_planning.boustrophedon.coverage\_pp\_boust
 -----------------------------------------------------------------
 
 .. automodule:: covpp.coverage_planning.boustrophedon.coverage_pp_boust
@@ -28,7 +28,7 @@ covpp.coverage\_planning.boustrophedon.coverage\_pp\_boust module
    :undoc-members:
    :show-inheritance:
 
-covpp.coverage\_planning.boustrophedon.decomposition\_bs\_mh module
+covpp.coverage\_planning.boustrophedon.decomposition\_bs\_mh
 -------------------------------------------------------------------
 
 .. automodule:: covpp.coverage_planning.boustrophedon.decomposition_bs_mh
@@ -36,7 +36,7 @@ covpp.coverage\_planning.boustrophedon.decomposition\_bs\_mh module
    :undoc-members:
    :show-inheritance:
 
-covpp.coverage\_planning.boustrophedon.events module
+covpp.coverage\_planning.boustrophedon.events
 ----------------------------------------------------
 
 .. automodule:: covpp.coverage_planning.boustrophedon.events
@@ -44,7 +44,7 @@ covpp.coverage\_planning.boustrophedon.events module
    :undoc-members:
    :show-inheritance:
 
-covpp.coverage\_planning.boustrophedon.obstacles module
+covpp.coverage\_planning.boustrophedon.obstacles
 -------------------------------------------------------
 
 .. automodule:: covpp.coverage_planning.boustrophedon.obstacles
@@ -52,7 +52,7 @@ covpp.coverage\_planning.boustrophedon.obstacles module
    :undoc-members:
    :show-inheritance:
 
-covpp.coverage\_planning.boustrophedon.plotter module
+covpp.coverage\_planning.boustrophedon.plotter
 -----------------------------------------------------
 
 .. automodule:: covpp.coverage_planning.boustrophedon.plotter
@@ -60,7 +60,7 @@ covpp.coverage\_planning.boustrophedon.plotter module
    :undoc-members:
    :show-inheritance:
 
-covpp.coverage\_planning.boustrophedon.post\_process\_mcells module
+covpp.coverage\_planning.boustrophedon.post\_process\_mcells
 -------------------------------------------------------------------
 
 .. automodule:: covpp.coverage_planning.boustrophedon.post_process_mcells

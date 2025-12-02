@@ -4,7 +4,7 @@ covpp.segmentation.voronoi\_segmentation
 Submodules
 ----------
 
-covpp.segmentation.voronoi\_segmentation.cell module
+covpp.segmentation.voronoi\_segmentation.cell
 ----------------------------------------------------
 
 .. automodule:: covpp.segmentation.voronoi_segmentation.cell
@@ -12,7 +12,7 @@ covpp.segmentation.voronoi\_segmentation.cell module
    :undoc-members:
    :show-inheritance:
 
-covpp.segmentation.voronoi\_segmentation.data\_structures module
+covpp.segmentation.voronoi\_segmentation.data\_structures
 ----------------------------------------------------------------
 
 .. automodule:: covpp.segmentation.voronoi_segmentation.data_structures
@@ -20,7 +20,7 @@ covpp.segmentation.voronoi\_segmentation.data\_structures module
    :undoc-members:
    :show-inheritance:
 
-covpp.segmentation.voronoi\_segmentation.segmentation\_voronoi module
+covpp.segmentation.voronoi\_segmentation.segmentation\_voronoi
 ---------------------------------------------------------------------
 
 .. automodule:: covpp.segmentation.voronoi_segmentation.segmentation_voronoi
@@ -28,7 +28,7 @@ covpp.segmentation.voronoi\_segmentation.segmentation\_voronoi module
    :undoc-members:
    :show-inheritance:
 
-covpp.segmentation.voronoi\_segmentation.voronoi\_decomposition module
+covpp.segmentation.voronoi\_segmentation.voronoi\_decomposition
 ----------------------------------------------------------------------
 
 .. automodule:: covpp.segmentation.voronoi_segmentation.voronoi_decomposition

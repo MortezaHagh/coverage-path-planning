@@ -5,7 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    covpp.sequence.dfs_optimizer
    covpp.sequence.milp_optimizer
@@ -14,7 +14,7 @@ Subpackages
 Submodules
 ----------
 
-covpp.sequence.cells\_graph\_1 module
+covpp.sequence.cells\_graph\_1
 -------------------------------------
 
 .. automodule:: covpp.sequence.cells_graph_1
@@ -22,7 +22,7 @@ covpp.sequence.cells\_graph\_1 module
    :undoc-members:
    :show-inheritance:
 
-covpp.sequence.connect\_paths module
+covpp.sequence.connect\_paths
 ------------------------------------
 
 .. automodule:: covpp.sequence.connect_paths
@@ -30,7 +30,7 @@ covpp.sequence.connect\_paths module
    :undoc-members:
    :show-inheritance:
 
-covpp.sequence.sequence\_handler module
+covpp.sequence.sequence\_handler
 ---------------------------------------
 
 .. automodule:: covpp.sequence.sequence_handler
@@ -38,7 +38,7 @@ covpp.sequence.sequence\_handler module
    :undoc-members:
    :show-inheritance:
 
-covpp.sequence.sequence\_optimizer\_base module
+covpp.sequence.sequence\_optimizer\_base
 -----------------------------------------------
 
 .. automodule:: covpp.sequence.sequence_optimizer_base

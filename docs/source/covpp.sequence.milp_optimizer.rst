@@ -4,7 +4,7 @@ covpp.sequence.milp\_optimizer
 Submodules
 ----------
 
-covpp.sequence.milp\_optimizer.sequence\_optimizer module
+covpp.sequence.milp\_optimizer.sequence\_optimizer
 ---------------------------------------------------------
 
 .. automodule:: covpp.sequence.milp_optimizer.sequence_optimizer

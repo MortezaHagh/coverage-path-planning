@@ -4,7 +4,7 @@ covpp.district
 Submodules
 ----------
 
-covpp.district.cells\_plotter module
+covpp.district.cells\_plotter
 ------------------------------------
 
 .. automodule:: covpp.district.cells_plotter
@@ -12,7 +12,7 @@ covpp.district.cells\_plotter module
    :undoc-members:
    :show-inheritance:
 
-covpp.district.create\_district module
+covpp.district.create\_district
 --------------------------------------
 
 .. automodule:: covpp.district.create_district
@@ -20,7 +20,7 @@ covpp.district.create\_district module
    :undoc-members:
    :show-inheritance:
 
-covpp.district.district module
+covpp.district.district
 ------------------------------
 
 .. automodule:: covpp.district.district
@@ -28,7 +28,7 @@ covpp.district.district module
    :undoc-members:
    :show-inheritance:
 
-covpp.district.zone module
+covpp.district.zone
 --------------------------
 
 .. automodule:: covpp.district.zone
@@ -36,7 +36,7 @@ covpp.district.zone module
    :undoc-members:
    :show-inheritance:
 
-covpp.district.zone\_map\_data module
+covpp.district.zone\_map\_data
 -------------------------------------
 
 .. automodule:: covpp.district.zone_map_data

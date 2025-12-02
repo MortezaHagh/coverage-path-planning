@@ -4,7 +4,7 @@ covpp.sequence.simple\_optimizer
 Submodules
 ----------
 
-covpp.sequence.simple\_optimizer.sequence\_optimizer module
+covpp.sequence.simple\_optimizer.sequence\_optimizer
 -----------------------------------------------------------
 
 .. automodule:: covpp.sequence.simple_optimizer.sequence_optimizer

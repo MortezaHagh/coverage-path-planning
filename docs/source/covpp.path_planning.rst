@@ -4,7 +4,7 @@ covpp.path\_planning
 Submodules
 ----------
 
-covpp.path\_planning.path\_in\_map module
+covpp.path\_planning.path\_in\_map
 -----------------------------------------
 
 .. automodule:: covpp.path_planning.path_in_map
@@ -12,7 +12,7 @@ covpp.path\_planning.path\_in\_map module
    :undoc-members:
    :show-inheritance:
 
-covpp.path\_planning.path\_planner\_base module
+covpp.path\_planning.path\_planner\_base
 -----------------------------------------------
 
 .. automodule:: covpp.path_planning.path_planner_base
@@ -20,7 +20,7 @@ covpp.path\_planning.path\_planner\_base module
    :undoc-members:
    :show-inheritance:
 
-covpp.path\_planning.path\_planner\_pyastar module
+covpp.path\_planning.path\_planner\_pyastar
 --------------------------------------------------
 
 .. automodule:: covpp.path_planning.path_planner_pyastar
@@ -28,7 +28,7 @@ covpp.path\_planning.path\_planner\_pyastar module
    :undoc-members:
    :show-inheritance:
 
-covpp.path\_planning.path\_planner\_temp module
+covpp.path\_planning.path\_planner\_temp
 -----------------------------------------------
 
 .. automodule:: covpp.path_planning.path_planner_temp

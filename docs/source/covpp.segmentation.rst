@@ -5,7 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    covpp.segmentation.simple_segmentation
    covpp.segmentation.voronoi_segmentation
@@ -13,7 +13,7 @@ Subpackages
 Submodules
 ----------
 
-covpp.segmentation.cell\_base module
+covpp.segmentation.cell\_base
 ------------------------------------
 
 .. automodule:: covpp.segmentation.cell_base
@@ -21,7 +21,7 @@ covpp.segmentation.cell\_base module
    :undoc-members:
    :show-inheritance:
 
-covpp.segmentation.cell\_planning module
+covpp.segmentation.cell\_planning
 ----------------------------------------
 
 .. automodule:: covpp.segmentation.cell_planning
@@ -29,7 +29,7 @@ covpp.segmentation.cell\_planning module
    :undoc-members:
    :show-inheritance:
 
-covpp.segmentation.eval\_rectangles module
+covpp.segmentation.eval\_rectangles
 ------------------------------------------
 
 .. automodule:: covpp.segmentation.eval_rectangles
@@ -37,7 +37,7 @@ covpp.segmentation.eval\_rectangles module
    :undoc-members:
    :show-inheritance:
 
-covpp.segmentation.map\_polygons module
+covpp.segmentation.map\_polygons
 ---------------------------------------
 
 .. automodule:: covpp.segmentation.map_polygons
@@ -45,7 +45,7 @@ covpp.segmentation.map\_polygons module
    :undoc-members:
    :show-inheritance:
 
-covpp.segmentation.merge\_cells module
+covpp.segmentation.merge\_cells
 --------------------------------------
 
 .. automodule:: covpp.segmentation.merge_cells
@@ -53,7 +53,7 @@ covpp.segmentation.merge\_cells module
    :undoc-members:
    :show-inheritance:
 
-covpp.segmentation.segmentation\_base module
+covpp.segmentation.segmentation\_base
 --------------------------------------------
 
 .. automodule:: covpp.segmentation.segmentation_base
@@ -61,7 +61,7 @@ covpp.segmentation.segmentation\_base module
    :undoc-members:
    :show-inheritance:
 
-covpp.segmentation.segmentation\_handler module
+covpp.segmentation.segmentation\_handler
 -----------------------------------------------
 
 .. automodule:: covpp.segmentation.segmentation_handler

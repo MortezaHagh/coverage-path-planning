@@ -4,7 +4,7 @@ covpp.gui
 Submodules
 ----------
 
-covpp.gui.rect\_event\_hl module
+covpp.gui.rect\_event\_hl
 --------------------------------
 
 .. automodule:: covpp.gui.rect_event_hl
@@ -12,7 +12,7 @@ covpp.gui.rect\_event\_hl module
    :undoc-members:
    :show-inheritance:
 
-covpp.gui.rectangle module
+covpp.gui.rectangle
 --------------------------
 
 .. automodule:: covpp.gui.rectangle
@@ -20,7 +20,7 @@ covpp.gui.rectangle module
    :undoc-members:
    :show-inheritance:
 
-covpp.gui.visual\_rectangle module
+covpp.gui.visual\_rectangle
 ----------------------------------
 
 .. automodule:: covpp.gui.visual_rectangle

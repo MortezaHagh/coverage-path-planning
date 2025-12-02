@@ -5,7 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    covpp.coverage_planning.boustrophedon
    covpp.coverage_planning.contour
@@ -13,7 +13,7 @@ Subpackages
 Submodules
 ----------
 
-covpp.coverage\_planning.coverage\_pp\_base module
+covpp.coverage\_planning.coverage\_pp\_base
 --------------------------------------------------
 
 .. automodule:: covpp.coverage_planning.coverage_pp_base
@@ -21,7 +21,7 @@ covpp.coverage\_planning.coverage\_pp\_base module
    :undoc-members:
    :show-inheritance:
 
-covpp.coverage\_planning.coverage\_pp\_hl module
+covpp.coverage\_planning.coverage\_pp\_hl
 ------------------------------------------------
 
 .. automodule:: covpp.coverage_planning.coverage_pp_hl

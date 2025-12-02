@@ -4,7 +4,7 @@ covpp.base
 Submodules
 ----------
 
-covpp.base.base\_utils module
+covpp.base.base\_utils
 -----------------------------
 
 .. automodule:: covpp.base.base_utils
@@ -12,7 +12,7 @@ covpp.base.base\_utils module
    :undoc-members:
    :show-inheritance:
 
-covpp.base.configs module
+covpp.base.configs
 -------------------------
 
 .. automodule:: covpp.base.configs
@@ -20,7 +20,7 @@ covpp.base.configs module
    :undoc-members:
    :show-inheritance:
 
-covpp.base.geometry module
+covpp.base.geometry
 --------------------------
 
 .. automodule:: covpp.base.geometry
@@ -28,7 +28,7 @@ covpp.base.geometry module
    :undoc-members:
    :show-inheritance:
 
-covpp.base.image\_processor module
+covpp.base.image\_processor
 ----------------------------------
 
 .. automodule:: covpp.base.image_processor
@@ -36,7 +36,7 @@ covpp.base.image\_processor module
    :undoc-members:
    :show-inheritance:
 
-covpp.base.inputs\_processor module
+covpp.base.inputs\_processor
 -----------------------------------
 
 .. automodule:: covpp.base.inputs_processor
@@ -44,7 +44,7 @@ covpp.base.inputs\_processor module
    :undoc-members:
    :show-inheritance:
 
-covpp.base.logger module
+covpp.base.logger
 ------------------------
 
 .. automodule:: covpp.base.logger
@@ -52,7 +52,7 @@ covpp.base.logger module
    :undoc-members:
    :show-inheritance:
 
-covpp.base.map\_data module
+covpp.base.map\_data
 ---------------------------
 
 .. automodule:: covpp.base.map_data
@@ -60,7 +60,7 @@ covpp.base.map\_data module
    :undoc-members:
    :show-inheritance:
 
-covpp.base.map\_graph module
+covpp.base.map\_graph
 ----------------------------
 
 .. automodule:: covpp.base.map_graph
@@ -68,7 +68,7 @@ covpp.base.map\_graph module
    :undoc-members:
    :show-inheritance:
 
-covpp.base.planning\_utils module
+covpp.base.planning\_utils
 ---------------------------------
 
 .. automodule:: covpp.base.planning_utils

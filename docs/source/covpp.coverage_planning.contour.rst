@@ -4,7 +4,7 @@ covpp.coverage\_planning.contour
 Submodules
 ----------
 
-covpp.coverage\_planning.contour.coverage\_pp\_contour module
+covpp.coverage\_planning.contour.coverage\_pp\_contour
 -------------------------------------------------------------
 
 .. automodule:: covpp.coverage_planning.contour.coverage_pp_contour

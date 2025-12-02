@@ -4,7 +4,7 @@ covpp.evaluation
 Submodules
 ----------
 
-covpp.evaluation.district\_evaluation module
+covpp.evaluation.district\_evaluation
 --------------------------------------------
 
 .. automodule:: covpp.evaluation.district_evaluation
@@ -12,7 +12,7 @@ covpp.evaluation.district\_evaluation module
    :undoc-members:
    :show-inheritance:
 
-covpp.evaluation.zone\_evaluation\_base module
+covpp.evaluation.zone\_evaluation\_base
 ----------------------------------------------
 
 .. automodule:: covpp.evaluation.zone_evaluation_base
@@ -20,7 +20,7 @@ covpp.evaluation.zone\_evaluation\_base module
    :undoc-members:
    :show-inheritance:
 
-covpp.evaluation.zone\_evaluation\_handler module
+covpp.evaluation.zone\_evaluation\_handler
 -------------------------------------------------
 
 .. automodule:: covpp.evaluation.zone_evaluation_handler
@@ -28,7 +28,7 @@ covpp.evaluation.zone\_evaluation\_handler module
    :undoc-members:
    :show-inheritance:
 
-covpp.evaluation.zone\_evaluation\_mh module
+covpp.evaluation.zone\_evaluation\_mh
 --------------------------------------------
 
 .. automodule:: covpp.evaluation.zone_evaluation_mh

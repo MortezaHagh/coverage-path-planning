@@ -4,7 +4,7 @@ covpp.segmentation.simple\_segmentation
 Submodules
 ----------
 
-covpp.segmentation.simple\_segmentation.segmentation\_simple module
+covpp.segmentation.simple\_segmentation.segmentation\_simple
 -------------------------------------------------------------------
 
 .. automodule:: covpp.segmentation.simple_segmentation.segmentation_simple
