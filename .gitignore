@@ -6,6 +6,7 @@ coverage_path_planning/
 __pycache__/
 results/Map3
 results/Map4
+docs/build/
 venv/
 covpp.egg-info/
 dist/

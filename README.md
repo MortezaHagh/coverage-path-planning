@@ -7,7 +7,7 @@ A comprehensive, plugin-based coverage path planning system for robotic applicat
 
 ## Documentation
 
-- **[Full Documentation](documentation.md)** - **Complete system documentation**
+- **[Full Documentation](documentation/documentation.md)** - **Complete system documentation**
 - **[API Documentation](docs/)** - Sphinx-generated API docs
 
 ## Pipeline

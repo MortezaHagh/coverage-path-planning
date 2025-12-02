@@ -12,6 +12,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+from sphinx_pyreverse.uml_generate_directive import UMLGenerateDirective
+from pathlib import Path
+import re
 from sphinx.ext import autodoc
 
 import os
@@ -42,10 +45,11 @@ release = '0.1'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.githubpages',
-    'sphinx.ext.napoleon',  # Optional: for Google/NumPy-style docstrings
-    'sphinx.ext.autosummary',
     'sphinx_rtd_theme',
+    'sphinx.ext.githubpages',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.napoleon',  # Optional: for Google/NumPy-style docstrings
+    'sphinx_pyreverse',
 
 ]
 
@@ -198,12 +202,68 @@ add_module_names = False
 autodoc_member_order = 'groupwise'
 autosummary_generate = True  # Generate autosummary automatically
 
-# # Original order
-# autodoc.Documenter.member_order = 0
-# autodoc.ExceptionDocumenter.member_order = 10
-# autodoc.ClassDocumenter.member_order = 20
-# autodoc.FunctionDocumenter.member_order = 30
-# autodoc.DataDocumenter.member_order = 40
-# autodoc.MethodDocumenter.member_order = 50
-# autodoc.AttributeDocumenter.member_order = 60
-# autodoc.PropertyDocumenter.member_order = 60
+
+class CachedUMLGenerateDirective(UMLGenerateDirective):
+    def run(self):
+        doc = self.state.document
+        env = doc.settings.env
+        base_dir = Path(env.srcdir).absolute()
+        uml_dir = base_dir.joinpath(self.DIR_NAME).absolute()
+        module_name = self.arguments[0]
+        config = env.config
+        ext = config.sphinx_pyreverse_output
+
+        needed_types = [arg.strip(":") for arg in self.arguments[1:]]
+
+        if needed_types:
+            all_exist = True
+            for img_type in needed_types:
+                filename = f"{img_type}_{module_name}.{ext}"
+                filepath = uml_dir / filename
+                if not filepath.exists():
+                    all_exist = False
+                    break
+
+            if all_exist:
+                if module_name not in self.generated_modules:
+                    self.generated_modules.append(module_name)
+                    print(f"Skipping pyreverse for {module_name} (files exist)")
+
+        return super().run()
+
+
+def setup(app):
+    app.connect('source-read', insert_uml_directive)
+    app.add_directive('uml', CachedUMLGenerateDirective, override=True)
+
+
+def insert_uml_directive(app, docname, source):
+    if not source:
+        return
+
+    lines = source[0].splitlines()
+    new_lines = []
+
+    for line in lines:
+        match = re.match(r'^(\s*)\.\.\s+automodule::\s+([a-zA-Z0-9_.]+)', line)
+        if match:
+            indent = match.group(1)
+            module_name = match.group(2)
+
+            # Check if uml directive already exists in recent lines
+            has_uml = False
+            # Look back a few lines (e.g. 10 lines)
+            start_check = max(0, len(new_lines) - 10)
+            for prev_line in new_lines[start_check:]:
+                if f".. uml:: {module_name}" in prev_line:
+                    has_uml = True
+                    break
+
+            if not has_uml:
+                new_lines.append(f"{indent}.. uml:: {module_name}")
+                new_lines.append(f"{indent}   :classes:")
+                new_lines.append("")
+
+        new_lines.append(line)
+
+    source[0] = '\n'.join(new_lines)

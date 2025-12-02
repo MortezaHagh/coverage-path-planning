@@ -23,4 +23,4 @@ Indices and tables
 License
 ==================
 
-.. include:: license.rst
+See the full license: :doc:`License <license>`.

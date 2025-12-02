@@ -1,7 +1,4 @@
-covpp
-=============
-
-Modules
+CovPP Modules
 -----------
 
 .. toctree::
