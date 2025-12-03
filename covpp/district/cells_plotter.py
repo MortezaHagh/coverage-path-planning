@@ -40,6 +40,7 @@ class CellsPlotter:
         """ Visualize cells obtained from segmentation. """
         fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
+        # ax.axis('off')  # dont show axis
         ng = len(cells)
         colors = plt.cm.get_cmap('tab20', 2*ng).colors
         for i, cell in enumerate(cells):

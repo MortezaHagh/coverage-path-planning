@@ -45,6 +45,7 @@ class EvalRectangles:
         self.eval_cell_rectangles()
 
     def eval_cell_rectangles(self) -> None:
+        """ Evaluate the cell for rectangle-like properties."""
 
         # circ: circumscribed
         # insc: inscribed
@@ -466,13 +467,18 @@ class EvalRectangles:
                              insc_circle_radius=None, circle_circum_poly=None,
                              circum_rect_poly=None, inscribed_rect_poly=None,
                              expand_inscribed_rectangle=None) -> None:
+        """ Plot the rectangle evaluation results. """
 
         # plotting
         _, ax = plt.subplots()
+        # dont show axis
+        ax.axis('off')
+        # fix aspect ratio
+        ax.set_aspect('equal', adjustable='box')
 
         # plot polygon
         x, y = self.spoly.exterior.xy
-        ax.plot(x, y, color='blue', label='Polygon')
+        ax.plot(x, y, color='blue', label='Cell Polygon', linewidth=2)
 
         # plot centroid
         cxy = self.poly.centroid.coords[0]
@@ -502,10 +508,12 @@ class EvalRectangles:
         # expand_inscribed_rectangle
         if expand_inscribed_rectangle is not None:
             expand_rect_x, expand_rect_y = expand_inscribed_rectangle.exterior.xy
-            ax.plot(expand_rect_x, expand_rect_y, color='magenta', label='Expanded Inscribed Rectangle')
+            ax.plot(expand_rect_x, expand_rect_y, color='magenta', label='Estimated Inscribed Rectangle', linewidth=2)
 
-        #
-        ax.set_aspect('equal', adjustable='box')
-        plt.legend()
+        # legend at outer upper right (outside the plot)
+        plt.legend(loc='lower right', bbox_to_anchor=(1.3, 1.0), fontsize=12)
         plt.title(f"Cell {self.id} Evaluation")
         plt.show()
+
+        # save_dir = "/home/morteza/Documents/00-CovPP/covpp/results/zOther/segmentation"
+        # fig.savefig(f"{save_dir}/cell_{self.id}_evaluation.pdf", bbox_inches='tight', format='pdf', dpi=600)

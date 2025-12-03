@@ -341,6 +341,7 @@ class SequenceHandler:
             return
         fig, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
+        ax.axis('off')
         self.plot_coverage_paths_px(ax)
         self.plot_connection_paths_px(ax)
         self.save_path_fig_px(fig)
@@ -366,9 +367,9 @@ class SequenceHandler:
             ax.plot(pp[:, 0], pp[:, 1], color=colors[i], linewidth=2/scale, linestyle='-')
             # start and end points
             ax.plot(pp[0, 0], pp[0, 1], 'o', color=colors[i], markersize=6/scale)
-            ax.text(pp[0, 0], pp[0, 1], f'S{i}', fontsize=12/scale, color='k')
+            ax.text(pp[0, 0], pp[0, 1], f'$S_{{{i}}}$', fontsize=16/scale, color='k')
             ax.plot(pp[-1, 0], pp[-1, 1], 's', color=colors[i], markersize=6/scale)
-            ax.text(pp[-1, 0], pp[-1, 1], f'E{i}', fontsize=12/scale, color='k')
+            ax.text(pp[-1, 0], pp[-1, 1], f'$E_{{{i}}}$', fontsize=16/scale, color='k')
 
     def plot_connection_paths_px(self, ax):
         """ Plot the connection paths between coverage paths. (gray dashed lines) """
@@ -378,13 +379,13 @@ class SequenceHandler:
             pp = np.array(c_path.xy, dtype=np.int32)
             ax.plot(pp[0, 0], pp[0, 1], "o", color='gray', markersize=3)
             ax.plot(pp[-1, 0], pp[-1, 1], "o", color='gray', markersize=3)
-            ax.plot(pp[:, 0], pp[:, 1], color='gray', linestyle=':')
+            ax.plot(pp[:, 0], pp[:, 1], color='gray', linestyle='--', linewidth=2)
 
     def save_path_fig_px(self, fig, is_anim=False):
         """ Save the path ( in pixels) figure. """
         if not is_anim:
             fig_path = os.path.join(self.zmd.method_results_dir, "paths.svg")
-            fig.savefig(fig_path, format="svg", dpi=PipeLineConfig.dpi)
+            fig.savefig(fig_path, format="svg", dpi=PipeLineConfig.dpi, bbox_inches='tight')
         else:
             self.lg.info(f"saving animation ... n_frames: {self.f_path_px.n}")
             fig_path = os.path.join(self.zmd.method_results_dir, "anim_paths.gif")

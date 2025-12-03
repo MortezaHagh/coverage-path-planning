@@ -9,7 +9,7 @@ map_names = [
     "map_fr52",]
 
 # map_names = ["map_fr52", "Map4"]
-# map_names = ["office_a"]
+# map_names = ["MapPaper"]
 
 if __name__ == "__main__":
 
@@ -34,8 +34,8 @@ if __name__ == "__main__":
                 # use_insc_ret
                 rects = [False]
                 if segm_method == "voronoi":
-                    rects = [True, False]
-                    # rects = [True]
+                    # rects = [True, False]
+                    rects = [True]
 
                 # run for all rects
                 for rect in rects:

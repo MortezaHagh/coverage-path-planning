@@ -133,6 +133,17 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             self.lg.error(f"Cell {self.cell.id} main_rectangle has issues.")
             return MyPath([])
         new_points = scaled_rect.exterior.coords
+        new_points = np.array(new_points)
+        # todo
+        # add one point between last two points to avoid sharp turn and overlap
+        p0, p1 = new_points[-1], new_points[-2]
+        d = np.linalg.norm(np.array(p0) - np.array(p1))
+        if d > robot_r_px:
+            c = (d - robot_r_px*0.2) / d
+            mid_point = np.array(p1 + (p0-p1) * c)
+            new_points = new_points[:-1]
+            new_points = np.append(new_points, [mid_point], axis=0)
+        #
         points.extend(list(new_points))
 
         # n scales
@@ -178,6 +189,16 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
                 break
             new_points = scaled_rect.exterior.coords
             new_points = pu.rearrange_points_by_point(points[-1], new_points)
+            # todo
+            # add one point between last two points to avoid sharp turn and overlap
+            p0, p1 = new_points[-2], new_points[-3]
+            d = np.linalg.norm(np.array(p0) - np.array(p1))
+            if d > robot_r_px:
+                c = (d - robot_r_px*0.2) / d
+                mid_point = np.array(p1 + (p0-p1) * c)
+                new_points = new_points[:-2]
+                new_points = np.append(new_points, [mid_point], axis=0)
+            #
             points.extend(list(new_points))
 
         # line like at the center of the rectangle
