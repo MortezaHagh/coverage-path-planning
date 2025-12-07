@@ -64,24 +64,25 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         encode the full coverage tour for the original cell.
         """
 
-        if not self.cell.do_planning:
-            self.lg.warn(f"cell {self.cell.id} does not require planning.")
-            return
-
-        # *******************************
         if not self.create_polygons():
             self.cell.do_planning = False
             return
+
         if not self.decompose():
             self.cell.do_planning = False
             return
+
         self.visualize_boust_cells()
         # self.rotate_back_cells()
-        self.all_cells_coverage_pp()
+
+        if not self.all_cells_coverage_pp():
+            self.lg.warn("Bouts Cell has no paths after coverage planning for all sub-cells.")
+            self.cell.do_planning = False
+            return
+
         self.rotate_back_paths()
         self.make_path_endpoints_free()
         self.create_connected_path()
-        # *******************************
 
     def create_polygons(self) -> bool:
         """ Create MapPolygons object for the cell area in the map"""
@@ -121,9 +122,10 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             return False
         return True
 
-    def all_cells_coverage_pp(self) -> None:
+    def all_cells_coverage_pp(self) -> bool:
         """ Perform coverage path planning for all the boustrophedon cells. """
 
+        any_apth = False
         for cell in self.mcells:
 
             if not cell.poly.is_valid:
@@ -134,9 +136,11 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             if cell_planner.path_m:
                 cell.set_path_m(cell_planner.path_m)
                 cell.set_path_px(cell_planner.path_px)
+                any_apth = True
             else:
                 cell.do_planning = False
                 # self.lg.warn(f" -- Bouts Cell {cell.id} has no path after coverage planning.")
+        return any_apth
 
     def create_connected_path_simple(self) -> None:
         """ Create a connected path for all the boustrophedon cells.
@@ -186,8 +190,14 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         for cell in self.mcells:
             if cell.path_px:
                 paths_px.append(cell.path_px)
-        self.connections.connect_paths(paths_px=paths_px)
-        c_paths_px = self.connections.c_paths_px
+        if len(paths_px) == 0:
+            raise ValueError("No paths to connect.")
+
+        # connect paths
+        c_paths_px = []
+        if len(paths_px) > 1:
+            self.connections.connect_paths(paths_px=paths_px)
+            c_paths_px = self.connections.c_paths_px
         # create full path
         self.create_full_path(paths_px, c_paths_px)
 
@@ -213,4 +223,5 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
     #     self.mcells = new_cells
 
     def visualize_boust_cells(self):
+        """ Visualize the boustrophedon cells after decomposition. """
         self.boust_plotter.visualize(self.decomposer)

@@ -37,10 +37,6 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         order derived from the local energy heuristic.
         """
 
-        if not self.cell.do_planning:
-            self.lg.warn(f"cell {self.cell.id} does not require planning.")
-            return
-
         # create path in grid map
         path_px = self.create_path_in_grid_map()
 

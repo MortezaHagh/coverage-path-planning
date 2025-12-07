@@ -59,7 +59,14 @@ class CoveragePathPlannerBase:
 
     def run(self) -> None:
         """ Execute coverage path planning for the cell."""
+        if not self.cell.do_planning:
+            self.lg.warn(f"cell {self.cell.id} does not require planning.")
+            return
+
         self.coverage_planning()  # perform coverage planning based on implemented method
+        if self.cell.do_planning is False:
+            self.lg.warn(f"cell {self.cell.id} planning was aborted during coverage planning.")
+            return
         self.make_path_points_free()
         self.filter_path_by_distance()
         self.evaluate_path_edges()

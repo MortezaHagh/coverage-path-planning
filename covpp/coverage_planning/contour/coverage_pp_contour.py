@@ -42,9 +42,6 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         sweep tailored to the zone cell.
         """
 
-        if not self.cell.do_planning:
-            self.lg.warn(f"cell {self.cell.id} does not require planning.")
-            return
         # self.calculate_path_by_poly_buffer()
         self.calculate_path_combinaiton()
 

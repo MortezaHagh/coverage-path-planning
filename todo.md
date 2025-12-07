@@ -1,11 +1,8 @@
 # CovPP
 
-## Intro
-
 ## Paper
 
 1. pipeline
-2. decomposition - Voronoi + rectangle evaluation
 
 <!-- ----------------------------------------------------------------------- -->
 
@@ -25,7 +22,7 @@
 
 ### contour method
 
-- voronoi decomposition params as optimization params
+- ...
 
 ### boustraphedon
 
@@ -33,10 +30,12 @@
 
 <!-- ----------------------------------------------------------------------- -->
 
-## todo now
+## ToDo Now
 
-- sequence opt methods
-- new planning method
+- segmentation method
+- merging condition (small, thin not based on robot size (...))
+- cell_planning as plugin (methods for merging and processing cells)
+- better or more stale main direction detection
+- in energy min method: add find last point in the obstacle and adjust l based on that
 - new boustraphedon
-- paper draft (pipeline, my boustraphedon)
 - add to inputs: positions of docking stations (later check in which cell they fell in to)

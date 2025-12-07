@@ -271,7 +271,7 @@ class CellDecomposition:
         if hit_up_event:
             up_ind = base_e.dec_s_ind+1
             up_e = self.events[up_ind]
-            while up_e.xy[0] == base_e.xy[0] and up_e.xy[1] < base_e.hit_up_y:
+            while up_e.xy[0] == base_e.xy[0] and up_e.xy[1] < base_e.hit_up_y and up_ind < self.n_events-1:
                 up_e.done = True
                 up_ind = up_ind + 1
                 up_e = self.events[up_ind]
