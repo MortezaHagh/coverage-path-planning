@@ -5,7 +5,7 @@ from covpp.sequence.sequence_optimizer_base import SeqOptimizerBase
 class SeqOptimizer(SeqOptimizerBase):
     """Pass-through sequencing strategy.
 
-    Process:
+    Steps:
         1. Keep the cell order as received from segmentation.
         2. Mirror that order into ``tour_ids``/``tour_idxs``.
 

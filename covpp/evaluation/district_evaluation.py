@@ -63,7 +63,7 @@ class DistrictStatsBase:
 class DistrictEvaluationHandler:
     """Aggregate zone metrics into a single district report.
 
-    Process:
+    Steps:
         1. Accept a list of ``ZoneStatsBase`` objects after every zone finishes.
         2. Sum compatible quantities, recompute ratios, and store them in
            ``self.stats``.

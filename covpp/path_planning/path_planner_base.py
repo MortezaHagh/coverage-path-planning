@@ -45,7 +45,7 @@ class PathPlannerBase:
     def distance_between_points(self, p1: MyPoint, p2: MyPoint) -> float:
         """Return the travel distance by first computing the actual path.
 
-        Process:
+        Steps:
             1. Invoke ``find_path`` which internally calls ``plan_path``.
             2. Convert the resulting ``MyPath`` into consecutive segments.
             3. Sum Euclidean segment lengths to obtain the travelled metric length.

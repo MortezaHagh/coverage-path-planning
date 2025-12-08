@@ -8,7 +8,7 @@ from covpp.segmentation.cell_planning import PCell
 class SeqOptimizerBase:
     """Reusable scaffolding for sequencing plug-ins.
 
-    Process:
+    Steps:
         1. ``run`` stores the planning cells plus any optional distance matrix.
         2. ``create_tour`` (implemented by subclasses) computes the visiting order.
         3. ``set_cells_optim_ind`` writes the sequence metadata back into each cell.

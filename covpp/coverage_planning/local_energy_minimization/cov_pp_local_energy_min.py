@@ -10,7 +10,7 @@ from covpp.map_topology.cell_grid import PGrid, GridGenerator, GridNode
 class CoveragePathPlanner(CoveragePathPlannerBase):
     """Coverage Path Planning - Local Energy Minimization Module
 
-    Process:
+    Steps:
         1. Create grid representation of the cell.
         2. Initialize starting position and heading.
         3. Iteratively select next grid node to visit based on cost function

@@ -7,7 +7,7 @@ from covpp.sequence.sequence_optimizer_base import SeqOptimizerBase
 class SeqOptimizer(SeqOptimizerBase):
     """MILP-based TSP solver for sequencing coverage cells.
 
-    Process:
+    Steps:
         1. Build a reduced distance matrix that only considers planning cells.
         2. Formulate a single-tour TSP using OR-Tools' MILP backend.
         3. Decode solver output into ``tour_ids``/``tour_idxs``.

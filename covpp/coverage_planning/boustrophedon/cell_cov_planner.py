@@ -14,7 +14,7 @@ class CellCoveragePathPlanner:
     Creates alternating back-and-forth coverage paths within a decomposed cell
     by finding intersection points with horizontal scan lines.
 
-    Planning Process:
+    Steps:
         1. Convert cell polygon to meter coordinates
         2. Find hitting points with cell boundary from top and bottom
         3. Connect hitting points in alternating boustrophedon pattern
@@ -95,7 +95,7 @@ class CellCoveragePathPlanner:
         """
         Find hitting points with the cell polygon from top and bottom.
 
-        Process:
+        Steps:
             1. Determine x-coordinates of vertical scan lines based on cell width
                and cleaning distance, adjusting for any shifts.
             2. For each x-coordinate, create a vertical line from above the cell

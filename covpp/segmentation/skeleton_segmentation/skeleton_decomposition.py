@@ -41,16 +41,10 @@ class SkeletonDecomposition:
         self.zmd = zmd
         self.map_polygons = map_polygons
 
-        # # attributes for segmentation
-        # self.poly_start_idxs: list[int] = []                # start indices of the polygons in self.vor.points
-        # self.poly_end_idxs: list[int] = []                  # end indices of the polygons in self.vor.points
-        # self.critical_points: list[CriticalPoint] = []      # list of critical points found in the Voronoi decomposition
-        # self.cp_base1_idxs: list[int] = []                  # indices of the first basis points in self.vor.points
-        # self.cp_base2_idxs: list[int] = []                  # indices of the second basis points in self.vor.points
-        # self.rings: list[Ring] = []                         # segments created from critical points
-
-        self.skelet: Skelet = None          # skeletonization data
-        self.branches: list[Branch] = []    # skeleton branches
+        self.skelet: Skelet = None                  # skeletonization data
+        self.branches: list[Branch] = []            # skeleton branches
+        self.critiacl_points: list[tuple[int, int]] = []     # local min distance points in branches
+        self.base_points = []                     # base points for critical points
 
     def skeleton_decomposition(self) -> None:
         """Run skeletonization-based segmentation pipeline."""
@@ -58,6 +52,8 @@ class SkeletonDecomposition:
         self.create_skeleton()
         self.find_endpoints_branchpoints()
         self.extract_special_branches()
+        self.find_critical_points()
+        self.find_base_points()
         self.visualize_skeleton()
         raise NotImplementedError("Skeletonization visualization complete.")
 
@@ -84,7 +80,7 @@ class SkeletonDecomposition:
 
         self.skelet = Skelet(
             skeleton=skeleton,
-            distance=distance,
+            distance=distance_normalized,
             distance_skeleton=distance_skeleton,
             endpoints=None,
             branchpoints=None,
@@ -118,7 +114,7 @@ class SkeletonDecomposition:
         # fildter endpoints with same distance as min_distance in skeleton
         distance_skeleton = self.skelet.distance_skeleton
         dists_sorted = np.sort(distance_skeleton[distance_skeleton > 0])
-        dists_sorted = dists_sorted[:len(endpoints)]
+        dists_sorted = dists_sorted[:np.sum(endpoints)]
         dist_thresh = dists_sorted[-1]
         print(f"Min distance in skeleton: {dists_sorted}")
         endpoints_filtered2 = np.where(distance_skeleton > dist_thresh, endpoints, 0).astype(np.uint8)
@@ -135,6 +131,62 @@ class SkeletonDecomposition:
         """ Extract branches from a skeleton as paths between endpoints/branchpoints. """
         graph, special = self.create_graph_and_specials()
         self.branches = self.extract_special_branches_from_graph(graph, special)
+
+    def find_critical_points(self):
+        """ Find local minimum distance points in each branch.
+        If there are multiple points (next to each other) in the branch with the same minimum distance, select the middle one.
+        """
+        local_points = []
+        for branch in self.branches:
+            branch_dists = self.skelet.distance[branch.points[:, 0], branch.points[:, 1]]
+            max_dist = branch_dists.max()
+            min_dist = branch_dists.min()
+            min_indices = np.where(branch_dists == min_dist)[0]
+            # # select middle index if multiple
+            # if len(min_indices) > 1:
+            #     mid_idx = min_indices[len(min_indices) // 2]
+            # else:
+            #     mid_idx = min_indices[0]
+
+            # only consider if min_dist is significantly less than max_dist
+            if min_dist > max_dist * 0.7:
+                continue
+
+            local_ps = branch.points[min_indices]
+            local_points.extend(local_ps)
+        self.critiacl_points = local_points
+
+    def find_base_points(self):
+        """
+        Find base points for critical points.
+        For each critical point, find the two base points which are the closest points on the occupied map space.
+
+        Steps:
+        - For each critical point, find direction perpendicular to the skeleton at that point.
+        - Move along that direction in both ways until hitting occupied space.
+        """
+
+        base_points_all = []
+        for cp in self.critiacl_points:
+            y_cp, x_cp = cp
+            dist_cp = self.skelet.distance[y_cp, x_cp]
+            # search in a circle around the critical point
+            angles = np.linspace(0, 2 * np.pi, num=36, endpoint=False)
+            base_pts_cp = []
+            for angle in angles:
+                for r in range(int(dist_cp), int(dist_cp * 3)):
+                    y_off = int(round(r * np.sin(angle)))
+                    x_off = int(round(r * np.cos(angle)))
+                    y_search = y_cp + y_off
+                    x_search = x_cp + x_off
+                    # check bounds
+                    if (0 <= y_search < self.zmd.map_ws.shape[0]) and (0 <= x_search < self.zmd.map_ws.shape[1]):
+                        # check if occupied
+                        if self.zmd.map_ws[y_search, x_search] == 0:
+                            base_pts_cp.append((y_search, x_search))
+                            break  # move to next angle after finding first occupied point
+            base_points_all.append(base_pts_cp)
+        self.base_points = base_points_all
 
     # ==========================================================================
     # Branch extraction method
@@ -255,6 +307,10 @@ class SkeletonDecomposition:
             prev, curr = curr, nxt2
         return path
 
+    # ==========================================================================
+    # visualization methods
+    # ==========================================================================
+
     def visualize_skeleton(self) -> None:
         """Visualize skeletonization results."""
 
@@ -278,10 +334,19 @@ class SkeletonDecomposition:
         ax.scatter(*np.where(endpoints == 1)[::-1], color='cyan', s=10, label='Endpoints')
         ax.scatter(*np.where(branchpoints == 1)[::-1], color='red', s=10, label='Branchpoints')
         ax.scatter(*np.where(endpoints_filtered == 1)[::-1], color='lime', s=20, label='Filtered Endpoints')
+        # branches
         for i, branch in enumerate(branches):
             yy, xx = branch.points[:, 0], branch.points[:, 1]
             color = 'orange' if branch.end_type == 'skip' else colors(i)
             plt.plot(xx, yy, color=color, linewidth=1)
+        # critical points
+        critiacl_points = np.array(self.critiacl_points)
+        ax.scatter(critiacl_points[:, 1], critiacl_points[:, 0], color='magenta', s=30, label='Local Min Dists')
+        # base points
+        for base_pts_cp in self.base_points:
+            base_pts_cp = np.array(base_pts_cp)
+            ax.scatter(base_pts_cp[:, 1], base_pts_cp[:, 0], color='yellow', s=10, label='Base Points')
+
         ax.set_title('Voronoi Skeletonization Results')
         ax.legend()
         ax.axis('off')

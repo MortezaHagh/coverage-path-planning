@@ -5,7 +5,7 @@ from covpp.sequence.sequence_optimizer_base import SeqOptimizerBase
 class SeqOptimizer(SeqOptimizerBase):
     """Depth-first traversal plug-in for sequencing cells.
 
-    Process:
+    Steps:
         1. Explore the adjacency graph using DFS starting from the configured seed.
         2. Record visit order in ``tour_ids`` and capture recursion depth metadata.
 

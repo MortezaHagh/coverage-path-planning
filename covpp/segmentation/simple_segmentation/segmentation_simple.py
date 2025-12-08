@@ -8,7 +8,7 @@ from covpp.segmentation.segmentation_base import SegmentationBase
 class Segmentation(SegmentationBase):
     """Single-cell segmentation plug-in.
 
-    Process:
+    Steps:
         1. Mirror the outer workspace polygon as the only cell boundary.
         2. Skip adjacency creation because there is exactly one cell.
 

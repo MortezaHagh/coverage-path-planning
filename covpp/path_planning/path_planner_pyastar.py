@@ -8,7 +8,7 @@ from covpp.path_planning.path_planner_base import PathPlannerBase
 class PathPlanner(PathPlannerBase):
     """Concrete ``PathPlannerBase`` that delegates to ``pyastar2d.astar_path``.
 
-    Process:
+    Steps:
         1. Convert incoming (x, y) pixels into (row, col) pairs expected by
            ``pyastar2d``.
         2. Run grid-based A* on the prepared ``cost_map``.

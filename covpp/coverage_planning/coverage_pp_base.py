@@ -20,7 +20,7 @@ class CoveragePathPlannerBase:
     implement the coverage_planning() method. This design allows easy addition
     of new planning methods without modifying the core pipeline.
 
-    Process:
+    Steps:
         1. Initialize with a processed cell and zone map data.
         2. Implement coverage_planning() to generate a complete coverage path.
         3. Ensure paths are valid and within cell boundaries.

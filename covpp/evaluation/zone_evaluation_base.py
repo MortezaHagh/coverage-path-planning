@@ -73,7 +73,7 @@ class ZoneStatsBase:
 class ZoneEvaluationBase:
     """Base interface for computing zone statistics from generated paths.
 
-    Process:
+    Steps:
         1. Hold references to ``ZoneMapData`` plus the ``SequencePaths`` bundle.
         2. Implement :meth:`evaluate` to fill ``self.stats`` with KPI values.
         3. Optionally persist results via :meth:`save_result`.
