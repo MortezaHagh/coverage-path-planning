@@ -33,7 +33,6 @@ class RecEventHandler:
     def mouse_handle(self, event, x, y, flags, param):
         # mx, my = self.md.point_to_map(x, y)
 
-        #
         if event == cv.EVENT_MOUSEMOVE:
             self.on_mouse_move(x, y, flags)
 

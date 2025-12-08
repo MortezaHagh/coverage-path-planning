@@ -7,7 +7,7 @@ from skimage.feature import peak_local_max
 
 # Load image from path
 # im_path = "/home/morteza/Documents/00-CovPP/covpp/results/map_fr52/AMain/merge.png"
-im_path = "/home/morteza/Documents/00-CovPP/covpp/results/Map2/District/District/maps/local_map_3_cleaning.png"
+im_path = "/home/morteza/Documents/00-CovPP/covpp/results/results_r_0.3/map_fr52/District/maps/local_map_3_cleaning.png"
 image = plt.imread(im_path)
 
 # make sure the image is binary

@@ -84,6 +84,7 @@ class SpaceAnalyzer:
 
     @property
     def zone_map_data(self) -> ZoneMapData:
+        """ Return zone map data object after space analysis. """
         return copy.deepcopy(self.__zone_map_data)
 
     # ==========================================================================
@@ -243,6 +244,7 @@ class SpaceAnalyzer:
     # ==========================================================================
 
     def distance_filter(self, map_full: np.ndarray) -> np.ndarray:
+        """ Detect free spaces considering distance from obstacles using distance transform."""
         return self.detect_free_spaces_dist_occ(map_full=map_full, dist_from_occ_m=self.scfg.ws_r_dist)
 
     def detect_free_spaces_dist_occ(self, map_full: np.ndarray, dist_from_occ_m: float = 0.0) -> np.ndarray:

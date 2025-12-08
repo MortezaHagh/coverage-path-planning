@@ -29,7 +29,7 @@ class VoronoiDecomposition:
 
     def __init__(self, zmd: ZoneMapData, map_polygs: MapPolygons):
         self.lg = MyLogger("VoronoiSegmentation")
-        self.lg.info2("Voronoi decomposition.")
+        self.lg.info2("Initializing Voronoi decomposition.")
 
         # settings
         # self.adj_dist_lb: float = 50.0            # distance threshold for adjacent Voronoi vertices
@@ -63,13 +63,15 @@ class VoronoiDecomposition:
         self.evaluate_vertices()
         self.find_ridge_vpoints()
         self.set_basis_points_and_feasibility()
+
         # adjacents
         self.find_min_n_adjacents()
         self.find_adjacents_by_distance(adj_dist_ub=self.adj_dist_threshold)
+
         # critical points
         self.find_critical_points()
         self.create_critical_points_list()
-        #
+
         self.plot_voronoi()
 
     def process_polygons(self):

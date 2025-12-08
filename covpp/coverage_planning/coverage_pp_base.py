@@ -7,9 +7,9 @@ import numpy as np
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PlanningConfig
 from covpp.base.geometry import MyPoint, MyPath
-from covpp.base.map_graph import MapSearchGraph
 from covpp.segmentation.cell_planning import PCell
 from covpp.district.zone_map_data import ZoneMapData
+from covpp.map_topology.map_graph import MapSearchGraph
 from covpp.path_planning.path_in_map import FindPathInMap
 
 

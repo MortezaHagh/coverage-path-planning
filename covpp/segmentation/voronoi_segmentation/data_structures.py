@@ -75,6 +75,7 @@ class CriticalPoint:
         self.set_basis_idxs()
 
     def set_basis_idxs(self):
+        """ Set the basis indices and basis points from the associated Voronoi point. """
         idx_1 = self.vp.basis_idxs[0]
         idx_2 = self.vp.basis_idxs[1]
         if idx_1 < idx_2:

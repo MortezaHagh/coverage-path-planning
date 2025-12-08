@@ -1,10 +1,10 @@
 """ Coverage Path Planning - Local Energy Minimization Module """
 import numpy as np
-from covpp.base.geometry import angle_diff, MyPoint, MyPath
 from covpp.segmentation.cell_planning import PCell
 from covpp.district.zone_map_data import ZoneMapData
+from covpp.base.geometry import angle_diff, MyPoint, MyPath
 from covpp.coverage_planning.coverage_pp_base import CoveragePathPlannerBase
-from covpp.coverage_planning.local_energy_minimization.grid import PGrid, GridGenerator, GridNode
+from covpp.map_topology.cell_grid import PGrid, GridGenerator, GridNode
 
 
 class CoveragePathPlanner(CoveragePathPlannerBase):

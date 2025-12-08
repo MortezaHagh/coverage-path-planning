@@ -117,24 +117,27 @@ class MapData:
         self.lg.info2(f"Updated Map size [w,h]: {w}x{h}")
 
     def create_rgb_map(self) -> None:
+        """ create updated rgb map from updated grayscale map. """
         self.up_rgb_map = cv.cvtColor(self.up_map, cv.COLOR_GRAY2BGR)
 
     def set_orig_center(self) -> None:
+        """ Set original map center coordinates. """
         self.orig_c_w = self.orig_w//2
         self.orig_c_h = self.orig_h//2
 
     def set_updated_center(self) -> None:
+        """ Set updated map center coordinates. """
         self.up_c_w = self.updated_w//2
         self.up_c_h = self.updated_h//2
 
-    def point_to_map(self, x, y) -> tuple[int, int]:
-        mx = (x - self.wind_w // 2) + self.up_c_w
-        my = (y - self.wind_h // 2) + self.up_c_h
-        # mx = (x - self.wind_w // 2) / self.zoom + self.orig_c_w
-        # my = (y - self.wind_h // 2) / self.zoom + self.orig_c_h
-        return (mx, my)
+    # def point_to_map(self, x, y) -> tuple[int, int]:
+    #     mx = (x - self.wind_w // 2) + self.up_c_w
+    #     my = (y - self.wind_h // 2) + self.up_c_h
+    #     # mx = (x - self.wind_w // 2) / self.zoom + self.orig_c_w
+    #     # my = (y - self.wind_h // 2) / self.zoom + self.orig_c_h
+    #     return (mx, my)
 
-    def point_to_up_map(self, x, y) -> tuple[int, int]:
-        mx = (x - self.up_c_w // 2) + self.orig_c_w
-        my = (y - self.up_c_h // 2) + self.orig_c_h
-        return (mx, my)
+    # def point_to_up_map(self, x, y) -> tuple[int, int]:
+    #     mx = (x - self.up_c_w // 2) + self.orig_c_w
+    #     my = (y - self.up_c_h // 2) + self.orig_c_h
+    #     return (mx, my)

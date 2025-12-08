@@ -1,9 +1,9 @@
 """Boustrophedon (back-and-forth) coverage path planning implementation."""
 import numpy as np
 from covpp.base.geometry import MyPath, MyPoint
-from covpp.base.map_graph import MapSearchGraph
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
+from covpp.map_topology.map_graph import MapSearchGraph
 from covpp.segmentation.cell_planning import PCell
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.coverage_planning.coverage_pp_base import CoveragePathPlannerBase

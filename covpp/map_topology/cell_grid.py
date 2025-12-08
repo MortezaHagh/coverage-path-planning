@@ -1,4 +1,4 @@
-""" Coverage Path Planning - Local Energy Minimization Module """
+""" Generate grid representation of the cell map."""
 import cv2 as cv
 import numpy as np
 from shapely.geometry import Point
@@ -10,6 +10,8 @@ from covpp.district.zone_map_data import ZoneMapData
 
 
 class GridNode:
+    """ Containor for grid node information. """
+
     def __init__(self, x, y, i_row: int = None):
         self.x = x
         self.y = y
@@ -21,6 +23,7 @@ class GridNode:
         self.visited = False        # has the node been visited(set during path planning)
 
     def add_adj_node(self, node: 'GridNode'):
+        """ add an adjacent node. """
         self.adj_nodes.append(node)
         self.n_adj += 1
         if node.free:
@@ -28,6 +31,8 @@ class GridNode:
 
 
 class PGrid:
+    """ Grid representation of the cell map for planning. """
+
     def __init__(self, l_row: int, l_col: int, g_map: np.ndarray):
         self.map: np.ndarray = g_map
         self.l_row: float = l_row                  # length of each row in pixels
@@ -44,6 +49,7 @@ class PGrid:
         self.n_free: int = self.n - self.n_occupied         # number of free nodes
 
     def set_n_occupied(self, n_occupied: int):
+        """ Set number of occupied nodes and update free nodes. """
         self.n_occupied = n_occupied
         self.n_free = self.n - n_occupied
 
@@ -78,6 +84,7 @@ class GridGenerator:
         self.plot_grid_map(zmd.segmentation_dir)
 
     def calculate_base_grid_size(self, resolution) -> float:
+        """ Calculate base grid size based on cleaning radius and map resolution. """
 
         cleaning_r_px = SpaceConfig.cleaning_r / resolution
         # grid_l = np.sqrt(2) * cleaning_r_px
@@ -233,6 +240,7 @@ class GridGenerator:
     # --------------------------------------------------------------------------
 
     def create_grid_m(self, grid_l: int) -> PGrid:
+        """ Create grid from cell map by generating a meshgrid and checking occupancy. """
 
         # find biggest edge of polygon
         poly = self.cell.poly

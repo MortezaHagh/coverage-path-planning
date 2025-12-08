@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 # blobs = data.binary_blobs(200, blob_size_fraction=0.2, volume_fraction=0.35, rng=1)
 
 # Load image from path
-im_path = "/home/morteza/Documents/00-Covpp/covpp/results/Map1/District/District/maps/local_map_3_cleaning.png"
+im_path = "/home/morteza/Documents/00-CovPP/covpp/results/results_r_0.3/map_fr52/District/maps/local_map_3_cleaning.png"
 blobs = plt.imread(im_path)
 
 # Compute the medial axis (skeleton) and the distance transform
