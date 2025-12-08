@@ -6,16 +6,19 @@ import networkx as nx
 from matplotlib import pyplot as plt
 from skimage.morphology import skeletonize  # , medial_axis
 from covpp.base.logger import MyLogger
+from covpp.base.configs import RobotConfig
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.map_polygons import MapPolygons
-# from covpp.base.configs import PipeLineConfig
+# from tsmoothie.smoother import LowessSmoother
 
 
 @dataclasses.dataclass
 class Skelet:
     """ Contains skeletonization results. """
+    contour_map: np.ndarray            # dtype=uint8 0, 255
     skeleton: np.ndarray               # dtype=bool
-    distance: np.ndarray               # dtype=float32
+    distance: np.ndarray               # dtype=uint8
+    distance_normalized: np.ndarray    # dtype=uint8 0-255
     distance_skeleton: np.ndarray      # dtype=uint8 0-255
     endpoints: np.ndarray              # dtype=uint8 0, 1
     branchpoints: np.ndarray           # dtype=uint8 0, 1
@@ -29,7 +32,9 @@ class Branch:
     start: tuple[int, int]            # (y, x)
     end: tuple[int, int]              # (y, x)
     end_type: str                     # 'endpoint' | 'branchpoint' | 'skip'
-    length: int
+    length: int                       # length of the branch (number of points)
+    cp_idxs: list[int] = dataclasses.field(default_factory=list)                # indices in critical points list
+    cp_coords: list[tuple[int, int]] = dataclasses.field(default_factory=list)  # list of critical point (y, x) coordinates in this branch
 
 
 class SkeletonDecomposition:
@@ -40,10 +45,12 @@ class SkeletonDecomposition:
         self.lg.info2("Initializing Skeleton Decomposition.")
         self.zmd = zmd
         self.map_polygons = map_polygons
+        self.map_ws = zmd.map_ws  # uint8 binary map (0, 255)
+        self.robot_radius_px = int(RobotConfig.radius / zmd.resolution)
 
         self.skelet: Skelet = None                  # skeletonization data
         self.branches: list[Branch] = []            # skeleton branches
-        self.critiacl_points: list[tuple[int, int]] = []     # local min distance points in branches
+        self.critical_points: list[tuple[int, int]] = []     # local min distance points in branches
         self.base_points = []                     # base points for critical points
 
     def skeleton_decomposition(self) -> None:
@@ -52,7 +59,9 @@ class SkeletonDecomposition:
         self.create_skeleton()
         self.find_endpoints_branchpoints()
         self.extract_special_branches()
+        self.lg.info2(f"Extracted {len(self.branches)} skeleton branches.")
         self.find_critical_points()
+        self.lg.info2(f"Found {len(self.critical_points)} critical points in skeleton branches.")
         self.find_base_points()
         self.visualize_skeleton()
         raise NotImplementedError("Skeletonization visualization complete.")
@@ -60,28 +69,33 @@ class SkeletonDecomposition:
     def create_skeleton(self) -> None:
         """Create skeleton of the workspace and find endpoints and branchpoints."""
 
-        # input map blobs
-        blobs = self.zmd.map_cleaning  # uint8 binary map
-
         # Compute medial axis (skeleton) and the distance transform
-        # skel, distance = medial_axis(blobs, return_distance=True)  # ske: dtype=bool, distance: dtype=float64
+        # skel, distance = medial_axis(self.map_ws, return_distance=True)  # ske: dtype=bool, distance: dtype=float64
 
         # distance transform and normalization
-        distance = cv.distanceTransform(blobs, distanceType=cv.DIST_L2, maskSize=5)  # dtype=float32
+        distance = cv.distanceTransform(self.map_ws, distanceType=cv.DIST_L2, maskSize=5)  # dtype=float32
+        distance = distance.astype(np.uint8)
         distance_normalized = (distance / distance.max() * 255).astype(np.uint8)
 
         # skeletonization
-        skeleton = skeletonize(blobs)  # dtype=bool
-        # skeleton_lee = skeletonize(blobs, method='lee')
+        skeleton = skeletonize(self.map_ws)  # dtype=bool
+        # skeleton_lee = skeletonize(self.map_ws, method='lee')
 
         # distance_normalized masked by skeleton
         distance_skeleton = np.zeros_like(distance_normalized)  # dtype=uint8
         distance_skeleton[skeleton] = distance_normalized[skeleton]
 
+        # create contour map (contours cells = 255 otherwise 0)
+        contours, _ = cv.findContours(self.map_ws, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+        contour_map = np.zeros_like(self.map_ws)
+        cv.drawContours(contour_map, contours, -1, 255, thickness=1)
+
         self.skelet = Skelet(
             skeleton=skeleton,
-            distance=distance_normalized,
+            distance=distance,
+            distance_normalized=distance_normalized,
             distance_skeleton=distance_skeleton,
+            contour_map=contour_map,
             endpoints=None,
             branchpoints=None,
             endpoints_filtered=None
@@ -106,7 +120,7 @@ class SkeletonDecomposition:
         mask = np.zeros_like(self.zmd.map_ws, dtype=np.uint8)
         branchpoint_coords = np.column_stack(np.where(branchpoints))
         for y, x in branchpoint_coords:
-            radius = 1.2 * self.skelet.distance[y, x]
+            radius = 1.2 * self.skelet.distance_normalized[y, x]
             cv.circle(mask, (x, y), int(radius), 1, thickness=-1)  # filled circle
         endpoints_filtered_1 = endpoints * (1 - mask)
 
@@ -116,7 +130,6 @@ class SkeletonDecomposition:
         dists_sorted = np.sort(distance_skeleton[distance_skeleton > 0])
         dists_sorted = dists_sorted[:np.sum(endpoints)]
         dist_thresh = dists_sorted[-1]
-        print(f"Min distance in skeleton: {dists_sorted}")
         endpoints_filtered2 = np.where(distance_skeleton > dist_thresh, endpoints, 0).astype(np.uint8)
 
         # combine both filtering methods (AND)
@@ -132,16 +145,32 @@ class SkeletonDecomposition:
         graph, special = self.create_graph_and_specials()
         self.branches = self.extract_special_branches_from_graph(graph, special)
 
+    # ==========================================================================
+    # find critical points and base points
+    # ==========================================================================
+
     def find_critical_points(self):
         """ Find local minimum distance points in each branch.
         If there are multiple points (next to each other) in the branch with the same minimum distance, select the middle one.
         """
-        local_points = []
+        cp_points = []  # list of (y, x) critical points
         for branch in self.branches:
-            branch_dists = self.skelet.distance[branch.points[:, 0], branch.points[:, 1]]
-            max_dist = branch_dists.max()
-            min_dist = branch_dists.min()
-            min_indices = np.where(branch_dists == min_dist)[0]
+            dists = self.skelet.distance_normalized[branch.points[:, 0], branch.points[:, 1]]
+            # smoother = LowessSmoother(smooth_fraction=0.2, iterations=1)
+            # smoother.smooth(dists.tolist())
+            # dists_smooth = np.array(smoother.smooth_data[0])
+
+            # evaluate distances from branch ends and overall min/max
+            min_end_dist = min(dists[0], dists[-1])
+            max_dist = dists.max()
+            min_dist = dists.min()
+            d_min_max = max_dist - min_dist
+            d_min_end = min_end_dist - min_dist
+            if d_min_end < 0.1 * d_min_max:
+                # skip if min distance is close to end distances
+                continue
+
+            min_indices = np.where(dists == min_dist)[0]
             # # select middle index if multiple
             # if len(min_indices) > 1:
             #     mid_idx = min_indices[len(min_indices) // 2]
@@ -152,40 +181,116 @@ class SkeletonDecomposition:
             if min_dist > max_dist * 0.7:
                 continue
 
+            # take the first one and last one (to avoid biasing to one end)
+            min_indices = np.array([min_indices[0], min_indices[-1]])
             local_ps = branch.points[min_indices]
-            local_points.extend(local_ps)
-        self.critiacl_points = local_points
+            cp_points.extend(local_ps)
+
+            # update branch info
+            branch.cp_coords = local_ps.tolist()
+            branch.cp_idxs = min_indices.tolist()
+
+        # update critical points list
+        self.critical_points = cp_points
 
     def find_base_points(self):
+        """ Find base points for critical points. """
+        self.find_base_points_perpendicular_lines()
+        # self.find_base_points_circle()
+
+    def find_base_points_perpendicular_lines(self):
+        """Find base points for critical points.
+
+        For each critical point, find two base points by extending lines
+        in both perpendicular directions to the tangent at the critical point until hitting contour or occupied space.
+        """
+        base_points_all = []
+
+        # find branch angle at critical points
+        for branch in self.branches:
+            for cp_idx, cp in zip(branch.cp_idxs, branch.cp_coords):
+                # estimate tangent using neighboring (d_idx) points
+                d_idx = 5  # param
+                if cp_idx == 0:
+                    p1 = branch.points[cp_idx]
+                    p2 = branch.points[cp_idx + d_idx]
+                elif cp_idx == branch.length - 1:
+                    p1 = branch.points[cp_idx - d_idx]
+                    p2 = branch.points[cp_idx]
+                else:
+                    idx1 = max(0, cp_idx - d_idx)
+                    idx2 = min(branch.length - 1, cp_idx + d_idx)
+                    p1 = branch.points[idx1]
+                    p2 = branch.points[idx2]
+
+                dy = p2[0] - p1[0]
+                dx = p2[1] - p1[1]
+                angle = np.arctan2(dy, dx)
+                # perpendicular angle
+                perp_angle = angle + np.pi / 2
+
+                # search line in both perpendicular directions till hitting contour or occupied space
+                height, width = self.map_ws.shape
+                dist_cp = int(self.skelet.distance[cp[0], cp[1]])
+                r = dist_cp
+                base_pts = []
+                for sign in [1, -1]:
+                    for dist in range(r-10, 2*r):
+                        y = cp[0] + int(round(sign * dist * np.sin(perp_angle)))
+                        x = cp[1] + int(round(sign * dist * np.cos(perp_angle)))
+                        if 0 <= y < height and 0 <= x < width:
+                            if self.skelet.contour_map[y, x] == 255 or self.map_ws[y, x] == 0:
+                                base_pts.append((y, x))
+                                break
+                if len(base_pts) == 0:
+                    self.lg.error(f"No base points found for critical point at {cp}.")
+                    continue
+                if len(base_pts) == 1:
+                    self.lg.error(f"Only one base point found for critical point at {cp}.")
+                base_points_all.append(np.array(base_pts, dtype=int))
+
+        self.base_points = base_points_all
+
+    def find_base_points_circle(self):
         """
         Find base points for critical points.
-        For each critical point, find the two base points which are the closest points on the occupied map space.
+        For each critical point, sample points on the circle of radius `dist_cp`
+        around the critical point and collect those lying on occupied/contour space.
 
-        Steps:
-        - For each critical point, find direction perpendicular to the skeleton at that point.
-        - Move along that direction in both ways until hitting occupied space.
+        Incomplete method: more than two base points may be found. 
+        (solution: create contours based on boundary and medial axis and create masks for each closed area)
         """
-
         base_points_all = []
-        for cp in self.critiacl_points:
+
+        height, width = self.map_ws.shape
+        for cp in self.critical_points:
             y_cp, x_cp = cp
             dist_cp = self.skelet.distance[y_cp, x_cp]
-            # search in a circle around the critical point
-            angles = np.linspace(0, 2 * np.pi, num=36, endpoint=False)
-            base_pts_cp = []
-            for angle in angles:
-                for r in range(int(dist_cp), int(dist_cp * 3)):
-                    y_off = int(round(r * np.sin(angle)))
-                    x_off = int(round(r * np.cos(angle)))
-                    y_search = y_cp + y_off
-                    x_search = x_cp + x_off
-                    # check bounds
-                    if (0 <= y_search < self.zmd.map_ws.shape[0]) and (0 <= x_search < self.zmd.map_ws.shape[1]):
-                        # check if occupied
-                        if self.zmd.map_ws[y_search, x_search] == 0:
-                            base_pts_cp.append((y_search, x_search))
-                            break  # move to next angle after finding first occupied point
-            base_points_all.append(base_pts_cp)
+            if dist_cp <= 0:
+                self.lg.error(f"Invalid distance at critical point {cp}.")
+                continue
+            # Sample points on circle around critical point
+            angles = np.linspace(0, 2 * np.pi, num=360, endpoint=False)
+            pts = []
+            r = dist_cp + 1
+            for ang in angles:
+                y = y_cp + int(round(r * np.sin(ang)))
+                x = x_cp + int(round(r * np.cos(ang)))
+                if 0 <= y < height and 0 <= x < width:
+                    if self.skelet.contour_map[y, x] == 255:
+                        pts.append((y, x))
+
+            # If none found on contour, fallback to occupied map border (value 0)
+            if not pts:
+                for ang in angles:
+                    y = y_cp + int(round(r * np.sin(ang)))
+                    x = x_cp + int(round(r * np.cos(ang)))
+                    if 0 <= y < height and 0 <= x < width:
+                        if self.map_ws[y, x] == 0:
+                            pts.append((y, x))
+            if pts:
+                base_points_all.append(np.array(pts, dtype=int))
+
         self.base_points = base_points_all
 
     # ==========================================================================
@@ -275,13 +380,18 @@ class SkeletonDecomposition:
                 # else:
                 #     end_type = 'dangling'
 
+                # check branch length
+                len_branch = len(points)
+                if len_branch < 4 * self.robot_radius_px:
+                    end_type = 'skip'
+
                 # collect branch info
                 if end_type != 'skip':
                     branches.append(Branch(points=points,
                                            start=start,
                                            end=end,
                                            end_type=end_type,
-                                           length=len(points),
+                                           length=len_branch,
                                            ))
         return branches
 
@@ -315,16 +425,17 @@ class SkeletonDecomposition:
         """Visualize skeletonization results."""
 
         # data
+        distance = self.skelet.distance
         endpoints = self.skelet.endpoints
         endpoints_filtered = self.skelet.endpoints_filtered
         distance_skeleton = self.skelet.distance_skeleton
         branchpoints = self.skelet.branchpoints
         branches = self.branches
 
-        # # # visualize using OpenCV
-        # cv.imshow("distance_skeleton", distance_skeleton)
-        # cv.waitKey(0)
-        # cv.destroyAllWindows()
+        # # visualize using OpenCV
+        cv.imshow("distance", distance)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
 
         # # visualization using matplotlib
         colors = plt.cm.get_cmap('hsv', len(branches))
@@ -340,12 +451,11 @@ class SkeletonDecomposition:
             color = 'orange' if branch.end_type == 'skip' else colors(i)
             plt.plot(xx, yy, color=color, linewidth=1)
         # critical points
-        critiacl_points = np.array(self.critiacl_points)
-        ax.scatter(critiacl_points[:, 1], critiacl_points[:, 0], color='magenta', s=30, label='Local Min Dists')
+        critical_points = np.array(self.critical_points)
+        ax.scatter(critical_points[:, 1], critical_points[:, 0], color='magenta', s=30, label='Local Min Dists')
         # base points
-        for base_pts_cp in self.base_points:
-            base_pts_cp = np.array(base_pts_cp)
-            ax.scatter(base_pts_cp[:, 1], base_pts_cp[:, 0], color='yellow', s=10, label='Base Points')
+        for base_pair in self.base_points:
+            ax.scatter(base_pair[:, 1], base_pair[:, 0], color='yellow', s=15)
 
         ax.set_title('Voronoi Skeletonization Results')
         ax.legend()
