@@ -339,12 +339,12 @@ class SequenceHandler:
         """ Plot the calculated coverage paths(different colors) and connections between them. """
         if not PipeLineConfig.do_save_maps:
             return
-        fig, ax = plt.subplots(1, 1)
+        fig_paths_px, ax = plt.subplots(1, 1)
         ax.set_aspect('equal', adjustable='box')
         ax.axis('off')
         self.plot_coverage_paths_px(ax)
         self.plot_connection_paths_px(ax)
-        self.save_path_fig_px(fig)
+        self.save_path_fig_px(fig_paths_px)
 
     def plot_coverage_paths_px(self, ax):
         """ Plot the coverage paths in pixels(different colors). """
@@ -422,7 +422,7 @@ class SequenceHandler:
         if self.f_path_m is not None:
             pp = np.array(self.f_path_m.xy, dtype=np.float32)
             ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2/scale, linestyle='-', markersize=3/scale)
-        fig_path = os.path.join(self.zmd.method_results_dir, "final_path")
+        fig_path = os.path.join(self.zmd.method_results_dir, "final_path_m")
         fig.savefig(fig_path+'.svg', format="svg", dpi=PipeLineConfig.dpi)
         plt.close('all')
 

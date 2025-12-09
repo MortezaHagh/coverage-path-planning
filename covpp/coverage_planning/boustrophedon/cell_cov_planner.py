@@ -212,6 +212,7 @@ class CellCoveragePathPlanner:
         return (p1, p2)
 
     def calculate_path(self) -> None:
+        """ Calculate the coverage path based on bottom and top intersection points """
         points_d = self.xy_bot
         points_u = self.xy_top
         points = [points_d.pop(0)]
@@ -237,7 +238,9 @@ class CellCoveragePathPlanner:
         # self.path_m = points
 
     def create_path_px(self) -> None:
+        """ Create coverage path in pixel coordinates from meter coordinates """
         self.path_px = MyPath([self.point_m_to_px(p) for p in self.path_m.points])
 
     def point_m_to_px(self, p: MyPoint) -> MyPoint:
+        """ Convert a point from meter to pixel coordinates """
         return MyPoint(int(p.x / self.resolution), int(p.y / self.resolution))

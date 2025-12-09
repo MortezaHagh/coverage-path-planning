@@ -26,6 +26,7 @@ class BoustPlotter:
         self.fig_all = None
 
     def visualize(self, dec_obj: CellDecomposition):
+        """ Visualize decomposition results """
 
         self.dec_obj = dec_obj
         self.results_dir = dec_obj.results_dir
@@ -44,10 +45,12 @@ class BoustPlotter:
             self.save_figs()
 
     def visualize_seperate(self):
+        """ Plot cells/events and mcells/groups separately """
         self.vizualize_cells_events()
         self.visualize_cells_groups()
 
     def visualize_together(self):
+        """ Plot both cells/events and mcells/groups together """
         fig, axs = plt.subplots(1, 2, constrained_layout=True, figsize=(15, 10))
         if self.set_aspect:
             axs[0].set_aspect('equal', adjustable='box')
@@ -57,6 +60,7 @@ class BoustPlotter:
         self.fig_all = fig
 
     def vizualize_cells_events(self, ax=None):
+        """ Plot cells and events """
         fig = None
         if ax is None:
             fig, ax = plt.subplots(1, 1)
@@ -98,11 +102,13 @@ class BoustPlotter:
             self.fig_cells_events = fig
 
     def visualize_events(self):
+        """ Plot events """
         for e in self.dec_obj.events:
             text1 = e.name
             self.ax_cell_event.text(e.xy[0], e.xy[1], text1, fontsize=10, color='blue')
 
     def plot_contours(self):
+        """ Plot obstacles contours """
         for obs in self.dec_obj.obstacles:
             if obs.ind == 0:
                 color = 'blue'
@@ -112,6 +118,7 @@ class BoustPlotter:
             self.ax_cell_event.plot(x, y, color=color, linewidth=1)
 
     def visualize_cells_groups(self, ax=None):
+        """ Plot merged cells and their groups """
         fig = None
         if ax is None:
             fig, ax = plt.subplots(1, 1)
@@ -152,11 +159,13 @@ class BoustPlotter:
             self.fig_mcells = fig
 
     def plot_adj_gcells(self, ax, cell: Cell, adj_g_cell_ind: int, color='red'):
+        """ Plot adjacency between two mcells """
         c = cell.poly.centroid
         adj_c = self.dec_obj.cells_groups[adj_g_cell_ind].merged_cell.poly.centroid
         ax.plot([c.x, adj_c.x], [c.y, adj_c.y], color=color, linewidth=1, linestyle='--')
 
     def save_figs(self):
+        """ save figures to results directory """
         ns = "/"
         cid = self.dec_obj.main_cell_id
         path = os.path.join(self.results_dir, "decomposition")
