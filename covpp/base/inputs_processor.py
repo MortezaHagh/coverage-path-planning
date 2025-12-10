@@ -57,10 +57,12 @@ class InputsProcessor:
 
     @property
     def map_config(self) -> MapConfig:
+        """ Return a copy of the map configuration object. """
         return copy.deepcopy(self.mcfg)
 
     @property
     def orig_map(self) -> np.ndarray:
+        """ Return a copy of the original map image as numpy array. """
         return copy.deepcopy(self.__orig_map)
 
     def set_paths(self) -> None:
@@ -68,7 +70,8 @@ class InputsProcessor:
         self.paths["data"] = self.mcfg.data_dir  # base data directory [hardcoded]
         map_folder_dir = os.path.join(self.paths["data"],  self.map_name)
         self.paths["map"] = os.path.join(map_folder_dir,  self.mcfg.base_folder)
-        self.paths["district"] = os.path.join(map_folder_dir, self.mcfg.district_folder)
+        self.paths["district"] = map_folder_dir
+        # self.paths["district"] = os.path.join(map_folder_dir, self.mcfg.district_folder)
         self.paths["yaml"] = os.path.join(self.paths["map"], "merge.yaml")
         self.paths["json"] = os.path.join(self.paths["map"], "merge.json")
         self.paths["pgm"] = os.path.join(self.paths["map"], "merge.pgm")
@@ -81,7 +84,7 @@ class InputsProcessor:
 
     def load_yaml_file(self, file_path: str) -> dict:
         """ read map yaml file and return data as dictionary. Also write json file. """
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             map_yaml_data = yaml.safe_load(file)
         self.write_json(self.paths["json"], map_yaml_data)
         return map_yaml_data
@@ -104,10 +107,12 @@ class InputsProcessor:
         self.__orig_map = map_image
 
     def write_json(self, file_path: str, data: dict) -> None:
-        with open(file_path, 'w') as file:
+        """ Write data to a JSON file. """
+        with open(file_path, 'w', encoding='utf-8') as file:
             json.dump(data, file, indent=4)
 
     def visualize_map(self, pgm_data: np.ndarray) -> None:
+        """ Visualize the loaded PGM map image using OpenCV. """
         self.lg.info("visualizing")
 
         # check if map is loaded

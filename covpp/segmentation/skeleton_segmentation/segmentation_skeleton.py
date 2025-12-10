@@ -27,5 +27,5 @@ class Segmentation(SegmentationBase):
     def run(self) -> None:
         """Run skeletonization-based segmentation pipeline."""
 
-        skelet_de = SkeletonDecomposition(self.zmd, self.map_polygons)
+        skelet_de = SkeletonDecomposition(self.zmd)
         skelet_de.skeleton_decomposition()

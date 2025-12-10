@@ -9,18 +9,20 @@ from skimage.morphology import medial_axis  # , skeletonize
 from covpp.base.logger import MyLogger
 from covpp.base.configs import RobotConfig, PipeLineConfig
 from covpp.district.zone_map_data import ZoneMapData
-from covpp.segmentation.map_polygons import MapPolygons
 # from tsmoothie.smoother import LowessSmoother
+
+OCCUPIED = 0
+FREE = 255
 
 
 @dataclasses.dataclass
 class Skelet:
     """ Contains skeletonization results. """
-    contour_map: np.ndarray                 # dtype=uint8 0, 255
     skeleton_map: np.ndarray                # dtype=bool
     distance_map: np.ndarray                # dtype=uint8
-    distance_norm_map: np.ndarray           # dtype=uint8 0-255
-    distance_skeleton_map: np.ndarray       # dtype=uint8 0-255
+    distance_norm_map: np.ndarray           # dtype=uint8 OCCUPIED-FREE
+    distance_skeleton_map: np.ndarray       # dtype=uint8 OCCUPIED-FREE
+    devision_map: np.ndarray                # dtype=uint8
     end_points: np.ndarray                  # dtype=uint8 (y, x)
     branch_points: np.ndarray               # dtype=uint8 (y, x)
     end_points_filtered: np.ndarray         # dtype=uint8 (y, x)
@@ -41,20 +43,30 @@ class Branch:
 class SkeletonDecomposition:
     """Skeletonization-based decomposition of the zone map."""
 
-    def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
+    def __init__(self, zmd: ZoneMapData):
         self.lg = MyLogger("SkeletonDecomposition")
         self.lg.info2("Initializing Skeleton Decomposition.")
-        self.zmd = zmd
-        self.map_polygons = map_polygons
-        self.map_ws = zmd.map_ws  # uint8 binary map (0, 255)
-        self.robot_radius_px = int(RobotConfig.radius / zmd.resolution)
 
+        # data
+        # self.map_polygons = map_polygons
+        self.zmd = zmd
+        self.robot_radius_px = int(RobotConfig.radius / zmd.resolution)
+        self.map_ws = zmd.map_ws   # uint8 binary map (OCCUPIED, FREE)
+
+        # settings
+        self.min_branch_length_px = 10              # minimum branch length to be considered
+        self.end_dist_threshold_ratio = 0.1         # threshold ratio for min distance from ends
+        self.max_critical_region_ratio = 0.6        # maximum ratio of critical region length to branch length
+        self.min_max_distance_ratio = 0.8           # minimum ratio of min distance to max distance in branch to consider critical point
+
+        # attributes
+        self.error_point = None                         # for debugging
         self.skelet: Skelet = None                      # skeletonization data
         self.branches: list[Branch] = []                # skeleton branches
         self.critical_points: list[np.ndarray] = []     # local min distance points in branches
         self.base_points: list[np.ndarray] = []         # base points for critical points
         self.side_points: list[np.ndarray] = []         # side points for critical points
-        self.base_paths: list[list[tuple]] = []    # expansion points during base point search
+        self.base_paths: list[list[tuple]] = []         # expansion points during base point search
 
     def skeleton_decomposition(self) -> None:
         """Run skeletonization-based segmentation pipeline."""
@@ -70,21 +82,21 @@ class SkeletonDecomposition:
         self.visualize_skeleton()
         raise NotImplementedError("Skeletonization visualization complete.")
 
+    # ==================================================================================================================
+    # skeletonization and special points extraction
+    # ==================================================================================================================
+
     def create_skeleton(self) -> None:
         """Create skeleton of the workspace and find end_points and branch_points."""
 
-        # create contour map (contours cells = 255 otherwise 0)
-        contours, _ = cv.findContours(self.map_ws, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-        contour_map = np.zeros_like(self.map_ws)
-        cv.drawContours(contour_map, contours, -1, 255, thickness=1)
-
         # Compute medial axis (skeleton) and the distance transform
-        skeleton_map, distance_map = medial_axis(self.map_ws, return_distance=True)  # ske: dtype=bool, distance: dtype=float64
+        medial_axis_map, distance_map = medial_axis(self.map_ws, return_distance=True)  # ske: dtype=bool, distance: dtype=float64
+        skeleton_map = medial_axis_map
 
         # distance transform and normalization
         # distance_map = cv.distanceTransform(self.map_ws, distanceType=cv.DIST_L2, maskSize=5)  # dtype=float32
         distance_map = distance_map.astype(np.uint8)
-        distance_norm_map = (distance_map / distance_map.max() * 255).astype(np.uint8)
+        distance_norm_map = (distance_map / distance_map.max() * FREE).astype(np.uint8)
 
         # # skeletonization
         # skeleton_map = skeletonize(self.map_ws)  # dtype=bool
@@ -95,12 +107,29 @@ class SkeletonDecomposition:
         # distance_skeleton_map[skeleton_map] = distance_norm_map[skeleton_map]
         distance_skeleton_map = distance_norm_map * skeleton_map
 
+        # ----------------------------------------------------------------------
+        # Division Map Creation
+        devide_map = self.map_ws.copy()             # start with workspace map
+        devide_map[skeleton_map] = OCCUPIED         # set skeleton pixels to OCCUPIED
+        devide_map = FREE - devide_map              # invert map, so skeleton contours are closed areas
+        # find contours and fill areas
+        contours2, _ = cv.findContours(devide_map, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+        # fill area with different gray value
+        if len(contours2) > 999:
+            self.lg.warning(f"Too many contours found: {len(contours2)}. Using modulo operation to assign colors.")
+        devide_map = devide_map.astype(np.uint16)  # use uint16 to support more contours
+        for i, cnt in enumerate(contours2):
+            cv.fillPoly(devide_map, pts=[cnt], color=(i+1))
+        devide_map[skeleton_map] = OCCUPIED         # make skeleton pixels OCCUPIED again
+        devide_map = devide_map.astype(np.uint8)   # convert back to uint8 with modulo wrapping if needed
+
+        # final skeletonization data
         self.skelet = Skelet(
-            contour_map=contour_map,
             skeleton_map=skeleton_map,
             distance_map=distance_map,
             distance_norm_map=distance_norm_map,
             distance_skeleton_map=distance_skeleton_map,
+            devision_map=devide_map,
             end_points=None,
             branch_points=None,
             end_points_filtered=None
@@ -171,20 +200,19 @@ class SkeletonDecomposition:
             # dists_smooth = np.array(smoother.smooth_data[0])
 
             # evaluate distances from branch ends and overall min/max
+            # skip if min distance is close to end distances
             min_end_dist = min(dists[0], dists[-1])
             max_dist = dists.max()
             min_dist = dists.min()
             d_min_max = max_dist - min_dist
             d_min_end = min_end_dist - min_dist
-            if d_min_end < 0.1 * d_min_max:  # param
-                # skip if min distance is close to end distances
+            if d_min_end < self.end_dist_threshold_ratio * d_min_max:
                 continue
 
             min_indices = np.where(dists == min_dist)[0]
 
             # evaluate length of min_indices
-            if len(min_indices)/branch.length > 0.6:  # param
-                # skip if too many min indices (flat area)
+            if len(min_indices)/branch.length > self.max_critical_region_ratio:
                 continue
 
             # # select middle index if multiple
@@ -194,7 +222,7 @@ class SkeletonDecomposition:
             #     mid_idx = min_indices[0]
 
             # only consider if min_dist is significantly less than max_dist
-            if min_dist > max_dist * 0.8:  # param
+            if min_dist > max_dist * self.min_max_distance_ratio:
                 continue
 
             # take the first one and last one (to avoid biasing to one end)
@@ -234,16 +262,22 @@ class SkeletonDecomposition:
         # find neighbors (8-connectivity) of cp
         dxy_8c = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1),  (1, 0),  (1, 1)]
         neighbor_points: list[np.ndarray] = []
+        divide_values = [0]
         for dy, dx in dxy_8c:
             y, x = cp
             y += dy
             x += dx
+            dv = self.skelet.devision_map[y, x]
             # ingore if on skeleton
-            if self.skelet.skeleton_map[y, x]:
+            # if self.skelet.skeleton_map[y, x]:
+            if dv in divide_values:
                 continue
+            divide_values.append(dv)
             neighbor_points.append(np.array((y, x), dtype=int))
         if len(neighbor_points) < 2:
             self.lg.error(f"Could not find two neighbor points for critical point at {cp}.")
+            self.error_point = cp
+            self.visualize_skeleton()
             return None
 
         # select two neighbors that are farthest apart
@@ -290,7 +324,7 @@ class SkeletonDecomposition:
                 base_path.append((cy, cx))
 
                 # check if hitting contour or occupied space
-                if self.skelet.contour_map[cy, cx] == 255 or self.map_ws[cy, cx] == 0:
+                if self.map_ws[cy, cx] == 0:
                     found_base = (cy, cx)
                     break
 
@@ -396,7 +430,7 @@ class SkeletonDecomposition:
 
                 # check branch length
                 len_branch = len(points)
-                if len_branch < 4 * self.robot_radius_px:
+                if len_branch < max(self.min_branch_length_px, 4 * self.robot_radius_px):
                     end_type = 'skip'
 
                 # collect branch info
@@ -438,10 +472,17 @@ class SkeletonDecomposition:
     def visualize_skeleton(self) -> None:
         """Visualize skeletonization results."""
 
-        def configure_ax(ax, title):
+        def configure_ax(ax, title, legend=True):
             ax.set_title(title)
             ax.set_aspect('equal', adjustable='box')
             ax.axis('off')
+            if legend:
+                ax.legend(bbox_to_anchor=(1, 1))
+        # data
+        branches = self.branches
+        end_points = self.skelet.end_points
+        branch_points = self.skelet.branch_points
+        end_points_filtered = self.skelet.end_points_filtered
 
         # professional styles
         # plt.rcParams['figure.constrained_layout.use'] = True
@@ -455,45 +496,31 @@ class SkeletonDecomposition:
         # plt.tight_layout()
 
         # scale_m: float = min(zmd.hw)*zmd.resolution/10
-        scale_px: float = min(self.zmd.hw)/500.0
-        marker_size = 10 / scale_px
         figsize = (15, 10)
-
-        # data
-        branches = self.branches
-        end_points = self.skelet.end_points
-        branch_points = self.skelet.branch_points
-        end_points_filtered = self.skelet.end_points_filtered
+        scale_px = min(self.zmd.hw)/500.0
+        marker_size = 10 / scale_px
+        colors = plt.cm.get_cmap('hsv', len(branches))
 
         # --------------------------------------------------------------------------------------------------------------
         # Figure 1: skeleton and endpoints/branchpoints
-        fig1, axs = plt.subplots(1, 2, figsize=figsize)
-
-        # ----------------------------------------------------------------------
-        # contour and skeleton
-        axs[0].contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=1.5/scale_px)
-        axs[0].imshow(255-self.skelet.distance_skeleton_map, cmap='bone', alpha=1.0)
-        configure_ax(axs[0], 'Skeleton')
+        fig1, ax = plt.subplots(1, 1, figsize=figsize)
 
         # ----------------------------------------------------------------------
         # plot skeleton (medial) axis - endpoints and branchpoints in same plot
-        axs[1].contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=1.5/scale_px)
-        axs[1].imshow(255-self.skelet.distance_skeleton_map, cmap='bone', alpha=1.0)
+        ax.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=1.5/scale_px)
+        ax.imshow(FREE-self.skelet.distance_skeleton_map, cmap='bone', alpha=1.0)
         # endpoints
-        axs[1].scatter(end_points[:, 1], end_points[:, 0], color='blue', s=marker_size, label='Endpoints')
+        ax.scatter(end_points[:, 1], end_points[:, 0], color='blue', s=marker_size, label='Endpoints')
         # branchpoints
-        axs[1].scatter(branch_points[:, 1], branch_points[:, 0], color='red', s=marker_size, label='Branchpoints')
+        ax.scatter(branch_points[:, 1], branch_points[:, 0], color='red', s=marker_size, label='Branchpoints')
         # filtered endpoints
-        axs[1].scatter(end_points_filtered[:, 1], end_points_filtered[:, 0], color='lime', s=marker_size, label='Filtered Endpoints')
-        configure_ax(axs[1], 'Skeleton with Endpoints and Branchpoints')
-        axs[1].legend()
+        ax.scatter(end_points_filtered[:, 1], end_points_filtered[:, 0], color='lime', s=marker_size, label='Filtered Endpoints')
+        configure_ax(ax, 'Skeleton with Endpoints and Branchpoints')
 
         # --------------------------------------------------------------------------------------------------------------
-        # Figure 2: branches with critical points and base points
-        fig2, ax = plt.subplots(1, 1, figsize=figsize)
-        colors = plt.cm.get_cmap('hsv', len(branches))
-        # contour
-        ax.contour(self.zmd.map_ws, levels=[0.5], colors='Black', linewidths=1.5)
+        # Figure 2: plot branches with critical points and base points
+        fig2, ax2 = plt.subplots(1, 1, figsize=figsize)
+        ax2.imshow(self.zmd.map_ws, cmap='gray', alpha=1.0)
         # branches
         for i, branch in enumerate(branches):
             label = "Branch" if i == 0 else None
@@ -502,24 +529,35 @@ class SkeletonDecomposition:
             plt.plot(xx, yy, color=color, linewidth=1/scale_px, label=label)
         # critical points
         critical_points = np.array(self.critical_points)
-        ax.scatter(critical_points[:, 1], critical_points[:, 0], color='magenta', s=marker_size, label='Critical Points')
+        ax2.scatter(critical_points[:, 1], critical_points[:, 0], color='magenta', s=marker_size, label='Critical Points')
         # base points
         if self.base_points:
             base_points = np.array(self.base_points)
-            ax.scatter(base_points[:, 1], base_points[:, 0], color='green', s=marker_size, label='Base Points')
+            ax2.scatter(base_points[:, 1], base_points[:, 0], color='green', s=marker_size, label='Base Points')
         # base paths
         for i, path in enumerate(self.base_paths):
             path = np.array(path)
             label = "Bases Connection" if i == 0 else None
-            ax.plot(path[:, 1], path[:, 0], color='gray', linewidth=1.5/scale_px, linestyle='--', label=label)
-        configure_ax(ax, 'Detected Branches with Critical and Base Points')
-        ax.legend()
+            ax2.plot(path[:, 1], path[:, 0], color='gray', linewidth=1.5/scale_px, linestyle='--', label=label)
+        # plot error point if any
+        if self.error_point:
+            ep = self.error_point
+            ax2.scatter(ep[1], ep[0], color='red', s=marker_size*3, label='Error Point')
+        # finalize
+        configure_ax(ax2, 'Detected Branches with Critical and Base Points')
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Figure 3: division map
+        _, ax3 = plt.subplots(1, 1, figsize=figsize)
+        ax3.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=1.5/scale_px)
+        ax3.imshow(self.skelet.devision_map, cmap='tab20', alpha=1.0)
+        configure_ax(ax3, 'Division Map based on Skeleton', legend=False)
 
         # save figures
         if PipeLineConfig.do_save_decomposition_plot:
             save_dir = self.zmd.segmentation_dir
-            fig1_path = save_dir + "skeleton_end_branch_points.svg"
-            fig2_path = save_dir + "skeleton_branches_criticals.svg"
+            fig1_path = save_dir + "/skeleton_end_branch_points.svg"
+            fig2_path = save_dir + "/skeleton_branches_criticals.svg"
             fig1.savefig(fig1_path, format='svg', dpi=PipeLineConfig.dpi)
             fig2.savefig(fig2_path, format='svg', dpi=PipeLineConfig.dpi)
 
@@ -527,6 +565,10 @@ class SkeletonDecomposition:
 
         # # # visualize using OpenCV
         # cv.imshow("distance", distance)
+        # cv.waitKey(0)
+        # cv.destroyAllWindows()
+
+        # cv.imshow("Division Map", self.skelet.devision_map)
         # cv.waitKey(0)
         # cv.destroyAllWindows()
 
@@ -598,7 +640,7 @@ class SkeletonDecomposition:
 #                     y = cp[0] + int(round(sign * dist * np.sin(perp_angle)))
 #                     x = cp[1] + int(round(sign * dist * np.cos(perp_angle)))
 #                     if 0 <= y < height and 0 <= x < width:
-#                         if self.skelet.contour_map[y, x] == 255 or self.map_ws[y, x] == 0:
+#                         if self.skelet.contour_map[y, x] == FREE or self.map_ws[y, x] == OCCUPIED:
 #                             base_pts.append((y, x))
 #                             break
 #             if len(base_pts) == 0:
@@ -636,7 +678,7 @@ class SkeletonDecomposition:
 #             y = y_cp + int(round(r * np.sin(ang)))
 #             x = x_cp + int(round(r * np.cos(ang)))
 #             if 0 <= y < height and 0 <= x < width:
-#                 if self.skelet.contour_map[y, x] == 255:
+#                 if self.skelet.contour_map[y, x] == FREE:
 #                     pts.append((y, x))
 
 #         # If none found on contour, fallback to occupied map border (value 0)
