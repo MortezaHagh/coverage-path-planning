@@ -184,7 +184,7 @@ class MergeCells:
 
         # # plot for debugging
         # import matplotlib.pyplot as plt
-        # fig, ax = plt.subplots()
+        # fig, ax = plt.subplots(1, 1, constrained_layout=True)
         # # fix aspect ratio
         # ax.set_aspect('equal', 'box')
         # x1, y1 = cell1.base_poly.exterior.xy

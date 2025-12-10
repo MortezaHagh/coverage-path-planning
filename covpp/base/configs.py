@@ -47,8 +47,8 @@ class PipeLineConfig:
     dpi = 300
 
     # Methods names for main modules: segmentation, coverage path planning, sequence
-    segmentation_method = "voronoi"     # simple, voronoi
-    covpp_method = "contour"    # simple, boust, contour, grid_energy_min
+    segmentation_method = "voronoi"    # simple, voronoi, skeleton
+    covpp_method = "boust"              # simple, boust, contour, grid_energy_min
     pp_method = "astar"                 # astar
     sequence_method = "milp"            # simple, dfs, milp
 
@@ -86,9 +86,9 @@ class PipeLineConfig:
 class RobotConfig:
     """Nominal robot characteristics used to estimate motion effort."""
 
-    radius = 0.4
-    v_lin_avg = 0.4  # average linear velocity in m/s
-    v_ang_avg = 0.6  # average angular velocity in rad/s
+    radius = 0.3
+    v_lin_avg = 0.5  # average linear velocity in m/s
+    v_ang_avg = 0.7  # average angular velocity in rad/s
 
 
 @dataclasses.dataclass

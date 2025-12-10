@@ -331,8 +331,11 @@ class Segmentation(SegmentationBase):
         """ Plot the created rings for visualization. """
         if not (PipeLineConfig.do_plot_decomposition or PipeLineConfig.do_save_decomposition_plot):
             return
-        fig, ax = plt.subplots(figsize=(15, 10))
+
+        fig, ax = plt.subplots(1, 1, figsize=(15, 10), constrained_layout=True)
         ax.set_aspect('equal', adjustable='box')
+        ax.axis('off')
+
         n_rings = len(self.rings)
         colors = plt.cm.viridis(np.linspace(0, 1, n_rings))
         for i, ring in enumerate(self.rings):
@@ -340,7 +343,7 @@ class Segmentation(SegmentationBase):
 
         for i, cp in enumerate(self.critical_points):
             ax.plot(cp.vp.v[0], cp.vp.v[1], 'o', color='red', markersize=5)
-            ax.annotate(f"{i}", (cp.vp.v[0], cp.vp.v[1]), fontsize=6, color='blue')
+            ax.annotate(f"${i}$", (cp.vp.v[0], cp.vp.v[1]), fontsize=6, color='blue')
         #
         if PipeLineConfig.do_save_decomposition_plot:
             save_path = self.zmd.method_results_dir + "/rings.png"

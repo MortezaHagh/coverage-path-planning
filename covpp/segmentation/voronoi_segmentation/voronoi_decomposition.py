@@ -359,15 +359,15 @@ class VoronoiDecomposition:
             return
 
         # figure setup
-        fig, ax = plt.subplots(figsize=(15, 10))
+        fig, ax = plt.subplots(1, 1, figsize=(15, 10), constrained_layout=True)
         ax.set_aspect('equal', adjustable='box')
+        ax.axis('off')
         x_min = self.b_poly.bounds[0]
         x_max = self.b_poly.bounds[2]
         y_min = self.b_poly.bounds[1]
         y_max = self.b_poly.bounds[3]
         ax.set_xlim(x_min - 10, x_max + 10)
         ax.set_ylim(y_min - 10, y_max + 10)
-        ax.set_title('Voronoi Diagram')
 
         # plot the bounding polygon
         x, y = self.b_poly.exterior.xy

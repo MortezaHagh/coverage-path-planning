@@ -62,6 +62,7 @@ def run_pipeline(map_name: str) -> None:
 
 
 def main():
+    """Main entry point for the coverage path planning pipeline."""
     ns = "main"
     lg = MyLogger(ns)
     if len(sys.argv) < 2:

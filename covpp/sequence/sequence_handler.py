@@ -339,7 +339,7 @@ class SequenceHandler:
         """ Plot the calculated coverage paths(different colors) and connections between them. """
         if not PipeLineConfig.do_save_maps:
             return
-        fig_paths_px, ax = plt.subplots(1, 1)
+        fig_paths_px, ax = plt.subplots(1, 1, figsize=(15, 10), constrained_layout=True)
         ax.set_aspect('equal', adjustable='box')
         ax.axis('off')
         self.plot_coverage_paths_px(ax)
@@ -393,32 +393,32 @@ class SequenceHandler:
 
     def plot_paths_m(self):
         """ Plot the calculated paths in meters(different colors). """
-        _, ax = plt.subplots(1, 1)
+        _, ax = plt.subplots(1, 1, constrained_layout=True)
         ax.set_aspect('equal', adjustable='box')
-        ax.set_title("paths_m")
         n = self.st.n_paths
         colors = get_n_colors_plt(n)
+
         # coverage paths
         for i, path in enumerate(self.paths_m):
             if path is None:
                 continue
             pp = np.array(path.xy, dtype=np.float32)
             ax.plot(pp[:, 0], pp[:, 1], color=colors[i], linewidth=2, linestyle='-')
+
         # connection paths
         for c_path in self.c_paths_m:
             if c_path is None:
                 continue
             pp = np.array(c_path.xy, dtype=np.float32)
             ax.plot(pp[:, 0], pp[:, 1], color='gray', linestyle=':')
-        # plt.show()
 
     def plot_final_path_m(self):
         """ Plot the final complete path in meters. """
-        fig, ax = plt.subplots(1, 1)
+        fig, ax = plt.subplots(1, 1, figsize=(15, 10), constrained_layout=True)
         ax.set_aspect('equal', adjustable='box')
-        ax.set_title("Final Path")
+        ax.axis('off')
         scale = self.plot_scale_m
-        # final path
+
         if self.f_path_m is not None:
             pp = np.array(self.f_path_m.xy, dtype=np.float32)
             ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2/scale, linestyle='-', markersize=3/scale)
@@ -431,9 +431,8 @@ class SequenceHandler:
     def animate_robot_paths(self):
         """ Animate the robot moving along the full path. """
         # colors = get_n_colors_plt(n)
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(constrained_layout=True)
         ax.set_aspect('equal', adjustable='box')
-        ax.set_title("Coverage Path Planning Animation")
 
         # plot polygons
         x, y = self.map_polygons.b_poly.exterior.xy

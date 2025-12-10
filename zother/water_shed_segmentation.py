@@ -1,14 +1,15 @@
+""" Watershed segmentation example."""
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage as ndi
 
 from skimage.segmentation import watershed
-from skimage.feature import peak_local_max
+from skimage.feature import peak_local_max  # pylint: disable=E0611
 
 # Load image from path
 # im_path = "/home/morteza/Documents/00-CovPP/covpp/results/map_fr52/AMain/merge.png"
-im_path = "/home/morteza/Documents/00-CovPP/covpp/results/results_r_0.3/map_fr52/District/maps/local_map_3_cleaning.png"
-image = plt.imread(im_path)
+IM_PATH = "/home/morteza/Documents/00-CovPP/covpp/results/results_r_0.3/map_fr52/District/maps/local_map_3_cleaning.png"
+image = plt.imread(IM_PATH)
 
 # make sure the image is binary
 if image.ndim == 3:
@@ -32,7 +33,7 @@ mask[tuple(coords.T)] = True
 markers, _ = ndi.label(mask)
 labels = watershed(-distance, markers, mask=image)
 
-fig, axes = plt.subplots(ncols=3, figsize=(9, 3), sharex=True, sharey=True)
+fig, axes = plt.subplots(ncols=3, figsize=(9, 3), sharex=True, sharey=True, constrained_layout=True)
 ax = axes.ravel()
 
 ax[0].imshow(image, cmap=plt.cm.gray)

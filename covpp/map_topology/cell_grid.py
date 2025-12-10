@@ -507,7 +507,7 @@ class GridGenerator:
 
         # # plot using matplotlib
         # from matplotlib import pyplot as plt
-        # fig, ax = plt.subplots(figsize=(8, 8))
+        # fig, ax = plt.subplots(1,1, figsize=(8, 8), constrained_layout=True)
         # ax.set_aspect('equal', adjustable='box')
 
         # # plot map

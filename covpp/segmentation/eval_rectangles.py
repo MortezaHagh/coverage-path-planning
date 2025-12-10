@@ -470,7 +470,7 @@ class EvalRectangles:
         """ Plot the rectangle evaluation results. """
 
         # plotting
-        _, ax = plt.subplots()
+        _, ax = plt.subplots(1, 1, constrained_layout=True)
         # dont show axis
         ax.axis('off')
         # fix aspect ratio

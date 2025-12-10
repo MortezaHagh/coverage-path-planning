@@ -17,3 +17,5 @@ pynput
 # virtualenv venv --python=python3.11
 # 
 tsmoothie
+# 
+SciencePlots

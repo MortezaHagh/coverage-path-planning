@@ -38,9 +38,11 @@ class CellsPlotter:
 
     def visualize_cells(self, cells: list[PCell]):
         """ Visualize cells obtained from segmentation. """
-        fig, ax = plt.subplots(1, 1)
+
+        fig, ax = plt.subplots(1, 1, constrained_layout=True)
         ax.set_aspect('equal', adjustable='box')
-        # ax.axis('off')  # dont show axis
+        ax.axis('off')
+
         ng = len(cells)
         colors = plt.cm.get_cmap('tab20', 2*ng).colors
         for i, cell in enumerate(cells):
@@ -52,9 +54,7 @@ class CellsPlotter:
             # merged cell
             x, y = cell.poly.exterior.xy
             cx, cy = cell.cxy
-            # text = f"g{i}-({cell.opt_id})"
-            text = f"{cell.id}"
-            ax.text(cx, cy, text, color='black', fontsize=8)
+            ax.text(cx, cy, f"${cell.id}$", color='black', fontsize=8)
             # ax.plot(cx, cy, 'o', color='purple', markersize=6)
             ax.plot(x, y, color=color, linewidth=4, linestyle='-')
             ax.fill(x, y, alpha=0.2, fc=color)
@@ -63,10 +63,8 @@ class CellsPlotter:
     def visualize_sequence(self, cells: list[PCell], ax):
         """ Visualize the sequencing path on the cells figure. """
         for i, cell in enumerate(cells):
-            # text = f"g{i}-({cell.opt_id})"
             x1, y1 = cell.cxy
-            text = f"{i}"
-            ax.text(x1, y1, text, color='black', fontsize=8)
+            ax.text(x1, y1, f"${i}$", color='black', fontsize=8)
 
             # connection line
             next_ind = cell.next_cell_id

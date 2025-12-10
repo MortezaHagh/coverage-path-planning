@@ -1,3 +1,4 @@
+""" Example of using medial_axis and skeletonize from skimage to compute the skeleton of a binary image. """
 from skimage.morphology import medial_axis, skeletonize
 from matplotlib import pyplot as plt
 
@@ -5,8 +6,8 @@ from matplotlib import pyplot as plt
 # blobs = data.binary_blobs(200, blob_size_fraction=0.2, volume_fraction=0.35, rng=1)
 
 # Load image from path
-im_path = "/home/morteza/Documents/00-CovPP/covpp/results/results_r_0.3/Map4/District/maps/local_map_3_cleaning.png"
-blobs = plt.imread(im_path)
+IM_PATH = "/home/morteza/Documents/00-CovPP/covpp/results/results_r_0.3/Map4/District/maps/local_map_3_cleaning.png"
+blobs = plt.imread(IM_PATH)
 
 # Compute the medial axis (skeleton) and the distance transform
 skel, distance = medial_axis(blobs, return_distance=True)
@@ -18,7 +19,7 @@ skeleton_lee = skeletonize(blobs, method='lee')
 # Distance to the background for pixels of the skeleton
 dist_on_skel = distance * skel
 
-fig, axes = plt.subplots(2, 2, figsize=(8, 8), sharex=True, sharey=True)
+fig, axes = plt.subplots(2, 2, figsize=(8, 8), sharex=True, sharey=True, constrained_layout=True)
 ax = axes.ravel()
 
 ax[0].imshow(blobs, cmap=plt.cm.gray)

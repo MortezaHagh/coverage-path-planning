@@ -12,7 +12,7 @@ def create_polygon(coords):
 
 
 def plot_polygon(poly):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(1, 1, constrained_layout=True)
     x, y = poly.exterior.xy
     ax.plot(x, y, color='blue', label='Polygon')
 

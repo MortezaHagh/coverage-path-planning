@@ -15,9 +15,9 @@ class BoustPlotter:
     def __init__(self):
         self.dec_obj: CellDecomposition = None
         self.results_dir: str = None
-        #
+
         self.viz_together = True
-        self.set_aspect = True
+
         #
         self.ax_cell_event = None
         self.fig_cells_events = None
@@ -52,9 +52,11 @@ class BoustPlotter:
     def visualize_together(self):
         """ Plot both cells/events and mcells/groups together """
         fig, axs = plt.subplots(1, 2, constrained_layout=True, figsize=(15, 10))
-        if self.set_aspect:
-            axs[0].set_aspect('equal', adjustable='box')
-            axs[1].set_aspect('equal', adjustable='box')
+        axs[0].set_aspect('equal', adjustable='box')
+        axs[1].set_aspect('equal', adjustable='box')
+        axs[0].axis('off')
+        axs[1].axis('off')
+
         self.vizualize_cells_events(axs[0])
         self.visualize_cells_groups(axs[1])
         self.fig_all = fig
@@ -63,9 +65,9 @@ class BoustPlotter:
         """ Plot cells and events """
         fig = None
         if ax is None:
-            fig, ax = plt.subplots(1, 1)
-            if self.set_aspect:
-                ax.set_aspect('equal', adjustable='box')
+            fig, ax = plt.subplots(1, 1, constrained_layout=True)
+            ax.axis('off')
+            ax.set_aspect('equal', adjustable='box')
         self.ax_cell_event = ax
 
         # # vizualize events
@@ -121,9 +123,9 @@ class BoustPlotter:
         """ Plot merged cells and their groups """
         fig = None
         if ax is None:
-            fig, ax = plt.subplots(1, 1)
-            if self.set_aspect:
-                ax.set_aspect('equal', adjustable='box')
+            fig, ax = plt.subplots(1, 1, constrained_layout=True)
+            ax.set_aspect('equal', adjustable='box')
+            ax.axis('off')
         ng = len(self.dec_obj.cells_groups)
         cg: CellGroup
         colors = plt.cm.get_cmap('tab20', 2*ng).colors

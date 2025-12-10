@@ -3,10 +3,12 @@ import dataclasses
 import heapq
 import cv2 as cv
 import numpy as np
+import scienceplots  # pylint: disable=unused-import
 from networkx import Graph
 from matplotlib import pyplot as plt
 from skimage.morphology import medial_axis  # , skeletonize
 from covpp.base.logger import MyLogger
+from covpp.base.plot_styles import set_plot_styles
 from covpp.base.configs import RobotConfig, PipeLineConfig
 from covpp.district.zone_map_data import ZoneMapData
 # from tsmoothie.smoother import LowessSmoother
@@ -117,11 +119,10 @@ class SkeletonDecomposition:
         # fill area with different gray value
         if len(contours2) > 999:
             self.lg.warning(f"Too many contours found: {len(contours2)}. Using modulo operation to assign colors.")
-        devide_map = devide_map.astype(np.uint16)  # use uint16 to support more contours
+        devide_map = devide_map.astype(np.uint16)   # use uint16 to support more contours
         for i, cnt in enumerate(contours2):
-            cv.fillPoly(devide_map, pts=[cnt], color=(i+1))
+            cv.fillPoly(devide_map, pts=[cnt], color=i+1)
         devide_map[skeleton_map] = OCCUPIED         # make skeleton pixels OCCUPIED again
-        devide_map = devide_map.astype(np.uint8)   # convert back to uint8 with modulo wrapping if needed
 
         # final skeletonization data
         self.skelet = Skelet(
@@ -472,12 +473,14 @@ class SkeletonDecomposition:
     def visualize_skeleton(self) -> None:
         """Visualize skeletonization results."""
 
-        def configure_ax(ax, title, legend=True):
-            ax.set_title(title)
+        def configure_ax(ax, title, show_legend=True, show_title=True):
             ax.set_aspect('equal', adjustable='box')
             ax.axis('off')
-            if legend:
-                ax.legend(bbox_to_anchor=(1, 1))
+            if show_title:
+                ax.set_title(title, fontsize='medium')
+            if show_legend:
+                ax.legend(frameon=True, edgecolor='black', fontsize='small', bbox_to_anchor=(1, 1))
+
         # data
         branches = self.branches
         end_points = self.skelet.end_points
@@ -485,29 +488,23 @@ class SkeletonDecomposition:
         end_points_filtered = self.skelet.end_points_filtered
 
         # professional styles
-        # plt.rcParams['figure.constrained_layout.use'] = True
-        plt.rcParams['mathtext.fontset'] = 'stix'
-        plt.rcParams['font.size'] = 10
-        plt.rcParams['figure.dpi'] = 300
-        plt.rcParams['font.family'] = 'STIXGeneral'
-        plt.rcParams['figure.figsize'] = (15, 10)
-        # plt.rcParams['text.usetex'] = True  # TeX rendering
-        # A4 size: 8.27 x 11.69 inches
-        # plt.tight_layout()
+        fig_w = 8.27  # A4 width in inches
+        fig_h = fig_w * self.zmd.hw[0] / self.zmd.hw[1]
+        set_plot_styles(fig_w, fig_h)
 
         # scale_m: float = min(zmd.hw)*zmd.resolution/10
-        figsize = (15, 10)
+        # A4 size: 8.27 x 11.69 inches
+        # figsize = (15, 10)
         scale_px = min(self.zmd.hw)/500.0
         marker_size = 10 / scale_px
         colors = plt.cm.get_cmap('hsv', len(branches))
 
         # --------------------------------------------------------------------------------------------------------------
         # Figure 1: skeleton and endpoints/branchpoints
-        fig1, ax = plt.subplots(1, 1, figsize=figsize)
+        fig1, ax = plt.subplots(1, 1)
 
-        # ----------------------------------------------------------------------
         # plot skeleton (medial) axis - endpoints and branchpoints in same plot
-        ax.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=1.5/scale_px)
+        ax.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=2/scale_px)
         ax.imshow(FREE-self.skelet.distance_skeleton_map, cmap='bone', alpha=1.0)
         # endpoints
         ax.scatter(end_points[:, 1], end_points[:, 0], color='blue', s=marker_size, label='Endpoints')
@@ -515,18 +512,19 @@ class SkeletonDecomposition:
         ax.scatter(branch_points[:, 1], branch_points[:, 0], color='red', s=marker_size, label='Branchpoints')
         # filtered endpoints
         ax.scatter(end_points_filtered[:, 1], end_points_filtered[:, 0], color='lime', s=marker_size, label='Filtered Endpoints')
-        configure_ax(ax, 'Skeleton with Endpoints and Branchpoints')
+        configure_ax(ax, 'Skeleton with Endpoints and Branchpoints', show_title=False)
 
         # --------------------------------------------------------------------------------------------------------------
         # Figure 2: plot branches with critical points and base points
-        fig2, ax2 = plt.subplots(1, 1, figsize=figsize)
-        ax2.imshow(self.zmd.map_ws, cmap='gray', alpha=1.0)
+        fig2, ax2 = plt.subplots(1, 1)
+
+        ax2.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=2/scale_px)
         # branches
         for i, branch in enumerate(branches):
             label = "Branch" if i == 0 else None
             yy, xx = branch.points[:, 0], branch.points[:, 1]
             color = 'orange' if branch.end_type == 'skip' else colors(i)
-            plt.plot(xx, yy, color=color, linewidth=1/scale_px, label=label)
+            plt.plot(xx, yy, color=color, linewidth=2/scale_px, linestyle='-', label=label)
         # critical points
         critical_points = np.array(self.critical_points)
         ax2.scatter(critical_points[:, 1], critical_points[:, 0], color='magenta', s=marker_size, label='Critical Points')
@@ -538,20 +536,21 @@ class SkeletonDecomposition:
         for i, path in enumerate(self.base_paths):
             path = np.array(path)
             label = "Bases Connection" if i == 0 else None
-            ax2.plot(path[:, 1], path[:, 0], color='gray', linewidth=1.5/scale_px, linestyle='--', label=label)
+            ax2.plot(path[:, 1], path[:, 0], color='gray', linewidth=2/scale_px, linestyle='--', label=label)
         # plot error point if any
         if self.error_point:
             ep = self.error_point
             ax2.scatter(ep[1], ep[0], color='red', s=marker_size*3, label='Error Point')
         # finalize
-        configure_ax(ax2, 'Detected Branches with Critical and Base Points')
+        configure_ax(ax2, 'Detected Branches with Critical and Base Points', show_title=False)
+        ax2.invert_yaxis()
 
-        # --------------------------------------------------------------------------------------------------------------
-        # Figure 3: division map
-        _, ax3 = plt.subplots(1, 1, figsize=figsize)
-        ax3.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=1.5/scale_px)
-        ax3.imshow(self.skelet.devision_map, cmap='tab20', alpha=1.0)
-        configure_ax(ax3, 'Division Map based on Skeleton', legend=False)
+        # # --------------------------------------------------------------------------------------------------------------
+        # # Figure 3: division map
+        # _, ax3 = plt.subplots(1, 1, figsize=figsize)
+        # ax3.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=2/scale_px)
+        # ax3.imshow(self.skelet.devision_map, cmap='tab20', alpha=1.0)
+        # configure_ax(ax3, 'Division Map based on Skeleton', show_legend=False)
 
         # save figures
         if PipeLineConfig.do_save_decomposition_plot:
@@ -571,125 +570,3 @@ class SkeletonDecomposition:
         # cv.imshow("Division Map", self.skelet.devision_map)
         # cv.waitKey(0)
         # cv.destroyAllWindows()
-
-# ======================================================================================================================
-# visualization styles
-# ======================================================================================================================
-
-# import scienceplots
-
-# # Use the science style
-# plt.style.use(['science'])
-
-# ------------------------------------------------------------------------------
-
-# # Use IEEE style with grid
-# plt.style.use(['science', 'ieee', 'grid'])
-
-# ------------------------------------------------------------------------------
-
-# import matplotlib_inline
-# matplotlib_inline.backend_inline.set_matplotlib_formats("svg")
-
-# plt.rcParams.update({
-#     "figure.figsize": (9, 6),
-#     "axes.spines.top": False,
-#     "axes.spines.right": False,
-#     "font.size": 14,
-#     "figure.titlesize": "xx-large",
-#     "xtick.labelsize": "medium",
-#     "ytick.labelsize": "medium",
-#     "axes.axisbelow": True
-# })
-
-# ======================================================================================================================
-# find base points
-# ======================================================================================================================
-
-# def find_base_points_perpendicular_lines(self):
-#     """Find base points for critical points.
-
-#     For each critical point, find two base points by extending lines
-#     in both perpendicular directions to the tangent at the critical point until hitting contour or occupied space.
-#     """
-#     base_points_all = []
-
-#     # find branch angle at critical points
-#     for branch in self.branches:
-#         for cp_idx, cp in zip(branch.cp_idxs, branch.cp_coords):
-#             # estimate tangent using neighboring (d_idx) points
-#             d_idx = 5  # paramz
-#             idx1 = max(0, cp_idx - d_idx)
-#             idx2 = min(branch.length - 1, cp_idx + d_idx)
-#             p1 = branch.points[idx1]
-#             p2 = branch.points[idx2]
-#             # tangent angle
-#             dy = p2[0] - p1[0]
-#             dx = p2[1] - p1[1]
-#             angle = np.arctan2(dy, dx)
-#             # perpendicular angle
-#             perp_angle = angle + np.pi / 2
-
-#             # search line in both perpendicular directions till hitting contour or occupied space
-#             height, width = self.map_ws.shape
-#             dist_cp = int(self.skelet.distance_map[cp[0], cp[1]])
-#             r = dist_cp
-#             base_pts = []
-#             for sign in [1, -1]:
-#                 for dist in range(r-10, 5*r):
-#                     y = cp[0] + int(round(sign * dist * np.sin(perp_angle)))
-#                     x = cp[1] + int(round(sign * dist * np.cos(perp_angle)))
-#                     if 0 <= y < height and 0 <= x < width:
-#                         if self.skelet.contour_map[y, x] == FREE or self.map_ws[y, x] == OCCUPIED:
-#                             base_pts.append((y, x))
-#                             break
-#             if len(base_pts) == 0:
-#                 self.lg.error(f"No base points found for critical point at {cp}.")
-#                 continue
-#             if len(base_pts) == 1:
-#                 self.lg.error(f"Only one base point found for critical point at {cp}.")
-#             base_points_all.append(np.array(base_pts, dtype=int))
-
-#     self.base_points = base_points_all
-
-# def find_base_points_circle(self):
-#     """
-#     Find base points for critical points.
-#     For each critical point, sample points on the circle of radius `dist_cp`
-#     around the critical point and collect those lying on occupied/contour space.
-
-#     Incomplete method: more than two base points may be found.
-#     (solution: create contours based on boundary and medial axis and create masks for each closed area)
-#     """
-#     base_points_all = []
-
-#     height, width = self.map_ws.shape
-#     for cp in self.critical_points:
-#         y_cp, x_cp = cp
-#         dist_cp = self.skelet.distance_map[y_cp, x_cp]
-#         if dist_cp <= 0:
-#             self.lg.error(f"Invalid distance at critical point {cp}.")
-#             continue
-#         # Sample points on circle around critical point
-#         angles = np.linspace(0, 2 * np.pi, num=360, endpoint=False)
-#         pts = []
-#         r = dist_cp + 1
-#         for ang in angles:
-#             y = y_cp + int(round(r * np.sin(ang)))
-#             x = x_cp + int(round(r * np.cos(ang)))
-#             if 0 <= y < height and 0 <= x < width:
-#                 if self.skelet.contour_map[y, x] == FREE:
-#                     pts.append((y, x))
-
-#         # If none found on contour, fallback to occupied map border (value 0)
-#         if not pts:
-#             for ang in angles:
-#                 y = y_cp + int(round(r * np.sin(ang)))
-#                 x = x_cp + int(round(r * np.cos(ang)))
-#                 if 0 <= y < height and 0 <= x < width:
-#                     if self.map_ws[y, x] == 0:
-#                         pts.append((y, x))
-#         if pts:
-#             base_points_all.append(np.array(pts, dtype=int))
-
-#     self.base_points = base_points_all

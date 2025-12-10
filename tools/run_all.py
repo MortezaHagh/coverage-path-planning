@@ -1,13 +1,15 @@
+""" Run all coverage path planning methods on all maps. """
 from covpp.base.configs import PipeLineConfig
 
 
 map_names = [
     "Map0",
-    "Map1",
     "Map2",
     "Map4",
-    "map_fr52",]
-
+    "map_fr52",
+    'MapPaper'
+]
+# office_a
 # map_names = ["map_fr52", "Map4"]
 # map_names = ["MapPaper"]
 
@@ -32,10 +34,8 @@ if __name__ == "__main__":
             for cpp_method in covpp_method:
 
                 # use_insc_ret
-                rects = [False]
-                if segm_method == "voronoi":
-                    # rects = [True, False]
-                    rects = [True]
+                rects = [False, True]
+                # rects = [True]
 
                 # run for all rects
                 for rect in rects:

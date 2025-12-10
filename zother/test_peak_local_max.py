@@ -1,11 +1,12 @@
+""" Example of using peak_local_max from skimage to find local maxima in an image. """
 from scipy import ndimage as ndi
 import matplotlib.pyplot as plt
-from skimage.feature import peak_local_max
+from skimage.feature import peak_local_max  # pylint: disable=E0611
 # from skimage import data, img_as_float
 
 # Load image from path
-im_path = "/home/morteza/Documents/00-CovPP/covpp/results/map_fr52/AMain/merge.png"
-image = plt.imread(im_path)
+IM_PATH = "/home/morteza/Documents/00-CovPP/covpp/results/map_fr52/AMain/merge.png"
+image = plt.imread(IM_PATH)
 
 # apply distance transform
 image = ndi.distance_transform_edt(image)
@@ -27,7 +28,7 @@ print("minimum value in image_max:", image_max.min())
 coordinates = peak_local_max(image, min_distance=1, threshold_abs=1)
 
 # display results
-fig, axes = plt.subplots(1, 3, figsize=(8, 3), sharex=True, sharey=True)
+fig, axes = plt.subplots(1, 3, figsize=(8, 3), sharex=True, sharey=True, constrained_layout=True)
 ax = axes.ravel()
 ax[0].imshow(image, cmap=plt.cm.gray)
 ax[0].axis('off')

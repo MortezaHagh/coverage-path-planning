@@ -74,9 +74,9 @@ class SeqOptimizerBase:
 
     def plot(self):
         """ Plot the optimized cell sequence. """
-        _, ax = plt.subplots(1, 1)
-        ax.set_title("Optimized Cells Sequence")
+        _, ax = plt.subplots(1, 1, constrained_layout=True)
         ax.set_aspect('equal', adjustable='box')
+        ax.axis('off')
 
         for cell in self.cells:
             ax.plot(cell.cxy[0], cell.cxy[1], "ro")
