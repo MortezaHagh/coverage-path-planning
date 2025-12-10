@@ -47,7 +47,7 @@ class PipeLineConfig:
     dpi = 300
 
     # Methods names for main modules: segmentation, coverage path planning, sequence
-    segmentation_method = "voronoi"    # simple, voronoi, skeleton
+    segmentation_method = "skeleton"    # simple, voronoi, skeleton
     covpp_method = "boust"              # simple, boust, contour, grid_energy_min
     pp_method = "astar"                 # astar
     sequence_method = "milp"            # simple, dfs, milp

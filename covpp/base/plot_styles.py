@@ -8,11 +8,12 @@ def set_plot_styles(fig_w=None, fig_h=None) -> None:
     """ Set plot styles for CovPP visualizations. """
     # professional styles
     plt.style.use(['science'])
-    plt.rcParams['figure.constrained_layout.use'] = True
     plt.rcParams['figure.dpi'] = PipeLineConfig.dpi
     if fig_w and fig_h:
         plt.rcParams['figure.figsize'] = (fig_w, fig_h)
 
+# plt.rcParams['figure.constrained_layout.use'] = True
+# fig2, ax2 = plt.subplots(1, 1, constrained_layout=True)
 
 # ======================================================================================================================
 # visualization styles

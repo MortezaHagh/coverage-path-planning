@@ -3,7 +3,6 @@ import dataclasses
 import heapq
 import cv2 as cv
 import numpy as np
-import scienceplots  # pylint: disable=unused-import
 from networkx import Graph
 from matplotlib import pyplot as plt
 from skimage.morphology import medial_axis  # , skeletonize
@@ -36,8 +35,8 @@ class Branch:
     length: int                     # length of the branch (number of points)
     end_type: str                   # 'endpoint' | 'branchpoint' | 'skip'
     end_point: tuple                # (y, x)
-    points: np.ndarray              # shape (N, 2), dtype=int , list of (y, x)
     start_point: tuple              # (y, x)
+    points: np.ndarray              # shape (N, 2), dtype=int , list of (y, x)
     cp_idxs: np.ndarray = None      # indices in critical points list
     cp_coords: np.ndarray = None    # shape (N, 2), dtype=int , list of (y, x)
 
@@ -56,19 +55,20 @@ class SkeletonDecomposition:
         self.map_ws = zmd.map_ws   # uint8 binary map (OCCUPIED, FREE)
 
         # settings
-        self.min_branch_length_px = 10              # minimum branch length to be considered
-        self.end_dist_threshold_ratio = 0.1         # threshold ratio for min distance from ends
-        self.max_critical_region_ratio = 0.6        # maximum ratio of critical region length to branch length
-        self.min_max_distance_ratio = 0.8           # minimum ratio of min distance to max distance in branch to consider critical point
+        self.min_branch_length_px: int = 10             # minimum branch length to be considered
+        self.end_dist_threshold_ratio: float = 0.1      # threshold ratio for min distance from ends
+        self.max_critical_region_ratio: float = 0.6     # maximum ratio of critical region length to branch length
+        self.min_max_distance_ratio: float = 0.8        # minimum ratio of min distance to max distance in branch to consider critical point
 
         # attributes
-        self.error_point = None                         # for debugging
-        self.skelet: Skelet = None                      # skeletonization data
-        self.branches: list[Branch] = []                # skeleton branches
-        self.critical_points: list[np.ndarray] = []     # local min distance points in branches
-        self.base_points: list[np.ndarray] = []         # base points for critical points
-        self.side_points: list[np.ndarray] = []         # side points for critical points
-        self.base_paths: list[list[tuple]] = []         # expansion points during base point search
+        self.error_point = None             # for debugging
+        self.skelet: Skelet = None          # skeletonization data
+        self.branches: list[Branch] = []    # skeleton branches
+        self.critical_points: list[np.ndarray] = []             # local min distance points in branches (n_cp)
+        self.base_points: list[tuple[tuple, tuple]] = []           # base points for critical points (n_cp * 2)
+        self.side_points: list[tuple[tuple, tuple]] = []           # side points for critical points (n_cp * 2)
+        self.divisions: list[tuple[tuple, tuple]] = []             # division areas for each critical point (n_cp)
+        self.base_paths: list[tuple[tuple, tuple]] = []            # connecting each base point to the critical point
 
     def skeleton_decomposition(self) -> None:
         """Run skeletonization-based segmentation pipeline."""
@@ -193,7 +193,7 @@ class SkeletonDecomposition:
         """ Find local minimum distance points in each branch.
         If there are multiple points (next to each other) in the branch with the same minimum distance, select the middle one.
         """
-        cp_points: list[tuple] = []  # list of (y, x) critical points
+        cp_pts: list[np.ndarray] = []  # list of (y, x) critical points
         for branch in self.branches:
             dists = self.skelet.distance_norm_map[branch.points[:, 0], branch.points[:, 1]]
             # smoother = LowessSmoother(smooth_fraction=0.2, iterations=1)
@@ -216,27 +216,27 @@ class SkeletonDecomposition:
             if len(min_indices)/branch.length > self.max_critical_region_ratio:
                 continue
 
+            # only consider if min_dist is significantly less than max_dist
+            if min_dist > max_dist * self.min_max_distance_ratio:
+                continue
+
             # # select middle index if multiple
             # if len(min_indices) > 1:
             #     mid_idx = min_indices[len(min_indices) // 2]
             # else:
             #     mid_idx = min_indices[0]
 
-            # only consider if min_dist is significantly less than max_dist
-            if min_dist > max_dist * self.min_max_distance_ratio:
-                continue
-
             # take the first one and last one (to avoid biasing to one end)
             min_indices = np.array([min_indices[0], min_indices[-1]])
             local_ps = branch.points[min_indices]
-            cp_points.extend(local_ps)
+            cp_pts.extend(local_ps)
 
             # update branch info
             branch.cp_coords = local_ps
             branch.cp_idxs = min_indices
 
         # update critical points list
-        self.critical_points = cp_points
+        self.critical_points = cp_pts
 
     def find_base_points(self):
         """ Find base points for critical points. """
@@ -244,9 +244,25 @@ class SkeletonDecomposition:
         # self.find_base_points_circle()
         self.find_base_points_by_side_expansion()
 
-    # ==================================================================================================================
-    # find base points methods
-    # ==================================================================================================================
+    def create_segmented_map(self):
+
+        # put the base_paths on the map_ws and create segmented map
+        seg_map = self.map_ws.copy()
+        for paired_paths in self.base_paths:
+            for path in paired_paths:
+                for y, x in path:
+                    seg_map[y, x] = OCCUPIED
+
+        # visualize
+        cv.imshow("Segmented Map", seg_map)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
+
+        return seg_map
+
+        # ==================================================================================================================
+        # find base points methods
+        # ==================================================================================================================
 
     def find_base_points_by_side_expansion(self):
         """Find base points for critical points."""
@@ -257,12 +273,12 @@ class SkeletonDecomposition:
             for cp in branch.cp_coords:
                 self.get_base_points_by_find_expand_side_points(cp)
 
-    def get_side_points(self, cp: np.ndarray) -> list[np.ndarray]:
+    def get_side_points(self, cp: np.ndarray) -> np.ndarray:
         """ Find two side points for a critical point. """
 
         # find neighbors (8-connectivity) of cp
         dxy_8c = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1),  (1, 0),  (1, 1)]
-        neighbor_points: list[np.ndarray] = []
+        side_pts: list[tuple[int, int]] = []
         divide_values = [0]
         for dy, dx in dxy_8c:
             y, x = cp
@@ -274,24 +290,17 @@ class SkeletonDecomposition:
             if dv in divide_values:
                 continue
             divide_values.append(dv)
-            neighbor_points.append(np.array((y, x), dtype=int))
-        if len(neighbor_points) < 2:
-            self.lg.error(f"Could not find two neighbor points for critical point at {cp}.")
+            side_pts.append((y, x))
+
+        if len(side_pts) != 2:
+            self.lg.error(f"Expected 2 side points, found {len(side_pts)} for critical point at {cp}.")
             self.error_point = cp
             self.visualize_skeleton()
             return None
 
-        # select two neighbors that are farthest apart
-        max_dist = -1
-        side_points: list[np.ndarray] = []
-        for point_i in neighbor_points:
-            for point_j in neighbor_points:
-                dist = np.linalg.norm(point_i - point_j)
-                if dist > max_dist:
-                    max_dist = dist
-                    side_points = [point_i, point_j]
-        self.side_points.extend(side_points)
-        return side_points
+        self.divisions.append(tuple(divide_values[1:]))
+        self.side_points.append(tuple(side_pts))
+        return side_pts
 
     def get_base_points_by_find_expand_side_points(self, cp: np.ndarray) -> np.ndarray:
         """ Find two side points for a critical point and expand until finding base points.
@@ -304,20 +313,20 @@ class SkeletonDecomposition:
         dxy_8c = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1),  (1, 0),  (1, 1)]
 
         # find side points
-        side_points = self.get_side_points(cp)
+        side_pts = self.get_side_points(cp)
 
         # expand like graph search two side points until hitting contour or occupied space (stop expansion if reached skeleton)
-        base_pts = []
-        base_paths: list[list[tuple]] = []
-        for sp in side_points:
-            base_path: list[tuple] = []
+        base_pts: list[tuple[int, int]] = []           # two base points
+        base_paths: list[tuple[tuple[int, int]]] = []   # two base paths
+        for side_pt in side_pts:
+            base_path = []
             visited: set[tuple] = set()
             heap: list[tuple[int, int, int, int]] = []  # (priority=distance, steps, y, x)
-            sy, sx = sp[0], sp[1]
+            sy, sx = side_pt[0], side_pt[1]
             heapq.heappush(heap, (self.skelet.distance_norm_map[sy, sx], 0, sy, sx))
 
-            found_base = None
-            while heap and found_base is None:
+            base_p = None
+            while heap and base_p is None:
                 _, steps, cy, cx = heapq.heappop(heap)
                 if (cy, cx) in visited:
                     continue
@@ -326,7 +335,7 @@ class SkeletonDecomposition:
 
                 # check if hitting contour or occupied space
                 if self.map_ws[cy, cx] == 0:
-                    found_base = (cy, cx)
+                    base_p = (cy, cx)
                     break
 
                 # if on skeleton, do not expand further
@@ -344,21 +353,21 @@ class SkeletonDecomposition:
                         new_steps += 1  # diagonal penalty
                     heapq.heappush(heap, (nprio, new_steps, ny, nx))
 
-            if found_base is not None:
-                base_pts.append(np.array(found_base, dtype=int))
-                base_paths.append(base_path)
+            if base_p is not None:
+                base_pts.append(base_p)
+                base_paths.append(tuple(base_path))
 
         # results
-        if not base_pts:
+        if len(base_pts) == 0:
             self.lg.error(f"No base points found for critical point at {cp}.")
             return
         if len(base_pts) != 2:
             self.lg.error(f"Expected 2 base points, found {len(base_pts)} for critical point at {cp}.")
             return
 
-        base_pts = np.array(base_pts, dtype=int)
-        self.base_points.extend(base_pts)
-        self.base_paths.extend(base_paths)
+        # store results
+        self.base_points.append(tuple(base_pts))
+        self.base_paths.append(tuple(base_paths))
 
     # ==================================================================================================================
     # Branch extraction method
@@ -406,16 +415,16 @@ class SkeletonDecomposition:
         branches = []
 
         # Identify special nodes (end_points_filtered and branch_points)
-        special_points = set(map(tuple, self.skelet.end_points_filtered)).union(set(map(tuple, self.skelet.branch_points)))
+        special_pts = set(map(tuple, self.skelet.end_points_filtered)).union(set(map(tuple, self.skelet.branch_points)))
 
         # Start walks from each special node
-        for s in special_points:
+        for s in special_pts:
             for v in graph.neighbors(s):
                 e = tuple(sorted((s, v)))
                 if e in visited_edges:
                     continue
                 # Walk until next special/junction
-                path: list[tuple] = self.walk_branch(s, v, special_points, graph)
+                path: list[tuple] = self.walk_branch(s, v, special_pts, graph)
                 # Mark all edges in the path as visited
                 for a, b in zip(path[:-1], path[1:]):
                     visited_edges.add(tuple(sorted((a, b))))
@@ -424,7 +433,7 @@ class SkeletonDecomposition:
                 points = np.array(path, dtype=int)
 
                 # Classify end type
-                if end in special_points:
+                if end in special_pts:
                     end_type = 'special'
                 else:
                     end_type = 'skip'
@@ -479,13 +488,20 @@ class SkeletonDecomposition:
             if show_title:
                 ax.set_title(title, fontsize='medium')
             if show_legend:
-                ax.legend(frameon=True, edgecolor='black', fontsize='small', bbox_to_anchor=(1, 1))
+                ax.legend(
+                    frameon=True,
+                    edgecolor='black',
+                    fontsize='small',
+                    loc='upper left',
+                    bbox_to_anchor=(1.02, 1),
+                    borderaxespad=0.0,
+                )
 
         # data
         branches = self.branches
-        end_points = self.skelet.end_points
-        branch_points = self.skelet.branch_points
-        end_points_filtered = self.skelet.end_points_filtered
+        end_pts = self.skelet.end_points
+        branch_pts = self.skelet.branch_points
+        end_pts_filtered = self.skelet.end_points_filtered
 
         # professional styles
         fig_w = 8.27  # A4 width in inches
@@ -494,29 +510,28 @@ class SkeletonDecomposition:
 
         # scale_m: float = min(zmd.hw)*zmd.resolution/10
         # A4 size: 8.27 x 11.69 inches
-        # figsize = (15, 10)
         scale_px = min(self.zmd.hw)/500.0
         marker_size = 10 / scale_px
         colors = plt.cm.get_cmap('hsv', len(branches))
 
         # --------------------------------------------------------------------------------------------------------------
         # Figure 1: skeleton and endpoints/branchpoints
-        fig1, ax = plt.subplots(1, 1)
+        fig1, ax = plt.subplots(1, 1, constrained_layout=True)
 
         # plot skeleton (medial) axis - endpoints and branchpoints in same plot
         ax.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=2/scale_px)
         ax.imshow(FREE-self.skelet.distance_skeleton_map, cmap='bone', alpha=1.0)
         # endpoints
-        ax.scatter(end_points[:, 1], end_points[:, 0], color='blue', s=marker_size, label='Endpoints')
+        ax.scatter(end_pts[:, 1], end_pts[:, 0], color='blue', s=marker_size, label='Endpoints')
         # branchpoints
-        ax.scatter(branch_points[:, 1], branch_points[:, 0], color='red', s=marker_size, label='Branchpoints')
+        ax.scatter(branch_pts[:, 1], branch_pts[:, 0], color='red', s=marker_size, label='Branchpoints')
         # filtered endpoints
-        ax.scatter(end_points_filtered[:, 1], end_points_filtered[:, 0], color='lime', s=marker_size, label='Filtered Endpoints')
+        ax.scatter(end_pts_filtered[:, 1], end_pts_filtered[:, 0], color='lime', s=marker_size, label='Filtered Endpoints')
         configure_ax(ax, 'Skeleton with Endpoints and Branchpoints', show_title=False)
 
         # --------------------------------------------------------------------------------------------------------------
         # Figure 2: plot branches with critical points and base points
-        fig2, ax2 = plt.subplots(1, 1)
+        fig2, ax2 = plt.subplots(1, 1, constrained_layout=True)
 
         ax2.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=2/scale_px)
         # branches
@@ -525,22 +540,29 @@ class SkeletonDecomposition:
             yy, xx = branch.points[:, 0], branch.points[:, 1]
             color = 'orange' if branch.end_type == 'skip' else colors(i)
             plt.plot(xx, yy, color=color, linewidth=2/scale_px, linestyle='-', label=label)
+
         # critical points
-        critical_points = np.array(self.critical_points)
-        ax2.scatter(critical_points[:, 1], critical_points[:, 0], color='magenta', s=marker_size, label='Critical Points')
+        critical_pts = np.array(self.critical_points).reshape(-1, 2)
+        ax2.scatter(critical_pts[:, 1], critical_pts[:, 0], color='magenta', s=marker_size, label='Critical Points')
+
         # base points
-        if self.base_points:
-            base_points = np.array(self.base_points)
-            ax2.scatter(base_points[:, 1], base_points[:, 0], color='green', s=marker_size, label='Base Points')
+        base_pts = np.array(self.base_points).reshape(-1, 2)
+        ax2.scatter(base_pts[:, 1], base_pts[:, 0], color='green', s=marker_size, label='Base Points')
+
         # base paths
-        for i, path in enumerate(self.base_paths):
-            path = np.array(path)
-            label = "Bases Connection" if i == 0 else None
-            ax2.plot(path[:, 1], path[:, 0], color='gray', linewidth=2/scale_px, linestyle='--', label=label)
+        labeled = True
+        for paths in self.base_paths:
+            for path in paths:
+                path = np.array(path)
+                label = "Bases Connection" if labeled else None
+                ax2.plot(path[:, 1], path[:, 0], color='gray', linewidth=2/scale_px, linestyle='--', label=label)
+                labeled = False
+
         # plot error point if any
         if self.error_point:
             ep = self.error_point
             ax2.scatter(ep[1], ep[0], color='red', s=marker_size*3, label='Error Point')
+
         # finalize
         configure_ax(ax2, 'Detected Branches with Critical and Base Points', show_title=False)
         ax2.invert_yaxis()
@@ -557,8 +579,8 @@ class SkeletonDecomposition:
             save_dir = self.zmd.segmentation_dir
             fig1_path = save_dir + "/skeleton_end_branch_points.svg"
             fig2_path = save_dir + "/skeleton_branches_criticals.svg"
-            fig1.savefig(fig1_path, format='svg', dpi=PipeLineConfig.dpi)
-            fig2.savefig(fig2_path, format='svg', dpi=PipeLineConfig.dpi)
+            fig1.savefig(fig1_path, format='svg', dpi=PipeLineConfig.dpi, bbox_inches='tight')
+            fig2.savefig(fig2_path, format='svg', dpi=PipeLineConfig.dpi, bbox_inches='tight')
 
         plt.show()
 
