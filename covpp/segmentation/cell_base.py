@@ -140,7 +140,7 @@ class CellBase:
             self.size_type = "small"
 
         # disable planning in very small cells
-        if self.area < robot_area_px:
+        if self.area < robot_area_px * 4:  # param
             # print(f"[WARN] cell area is too small: {self.id}")
             self.do_planning = False
 

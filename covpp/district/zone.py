@@ -61,7 +61,7 @@ class ZoneData:
         self.zone_evaluator = ZoneEvaluationHandler(self.zmd)
 
         # plotter
-        self.cells_plotter = CellsPlotter(zmd.method_results_dir, zmd.segmentation_dir)
+        self.cells_plotter = CellsPlotter(zmd.method_results_dir, zmd.segmentation_method_dir)
 
         # resulting data
         self.complete_path_px: MyPath = None
@@ -155,7 +155,7 @@ class ZoneData:
         cv.imwrite(map_hl_path, self.zmd.map_planning, png_params)
         # save map segmentation
         m_name_s = "map_segmentation.png"
-        map_s_path = os.path.join(self.zmd.segmentation_dir, m_name_s)
+        map_s_path = os.path.join(self.zmd.segmentation_method_dir, m_name_s)
         cv.imwrite(map_s_path, self.zmd.map_segmentation, png_params)
 
     def save_map_map_cleaned(self):

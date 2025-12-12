@@ -42,6 +42,7 @@ class ZoneMapData:
         self.result_file: str = None                # path to zone result file ./results/<map_name>/District/Zone_i/<method>/result.json
         self.method_results_dir: str = None         # path to zone result directory ./results/<map_name>/District/Zone_i/<method>
         self.segmentation_dir: str = None           # path to zone segmentation directory ./results/<map_name>/District/Zone_i/segmentation
+        self.segmentation_method_dir: str = None           # path to zone segmentation directory ./results/<map_name>/District/Zone_i/segmentation
         #
         self.resolution: float = None
         self.orig_map_data: MapData = None
@@ -89,6 +90,8 @@ class ZoneMapData:
             self.result_file = self.zone_dir + f"/{PipeLineConfig.method}/result.json"
             self.segmentation_dir = os.path.join(self.zone_dir, "segmentation")
             os.makedirs(self.segmentation_dir, exist_ok=True)
+            self.segmentation_method_dir = os.path.join(self.segmentation_dir, PipeLineConfig.segmentation_method)
+            os.makedirs(self.segmentation_method_dir, exist_ok=True)
             self.method_results_dir = os.path.join(self.zone_dir, PipeLineConfig.method)
             os.makedirs(self.method_results_dir, exist_ok=True)
 

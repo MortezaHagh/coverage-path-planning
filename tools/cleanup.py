@@ -11,7 +11,7 @@ def cleanup_district_folders(base_dir: str) -> None:
     """
     for root, dirs, _ in os.walk(base_dir):
         for dir_name in dirs:
-            if dir_name == "District":
+            if dir_name == "Zone_0":
                 dir_path = os.path.join(root, dir_name)
                 print(f"Removing directory: {dir_path}")
                 shutil.rmtree(dir_path, ignore_errors=True)

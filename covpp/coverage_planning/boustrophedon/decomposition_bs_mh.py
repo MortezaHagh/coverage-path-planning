@@ -28,7 +28,7 @@ class CellDecomposition:
     """
 
     def __init__(self, main_cell_id, resolution: float = 0.05, results_dir: str = None):
-        self.lg = MyLogger("CellDecompositionMH")
+        self.lg = MyLogger("BoustrophedonCellDecompositionMH")
         #
         self.main_cell_id: int = main_cell_id
         self.results_dir: str = results_dir
@@ -51,7 +51,7 @@ class CellDecomposition:
         self.mcells: list[Cell] = []
 
     def initiate(self):
-        """Execute complete decomposition pipeline.
+        """Execute complete boustrophedon decomposition pipeline.
 
         Runs all steps from obstacle creation through visualization of the
         final decomposed cells.

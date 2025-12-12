@@ -55,7 +55,10 @@ class SkeletonDecomposition:
         self.side_points: list[tuple[tuple, tuple]] = []            # side points for critical points (n_cp * 2)
         self.cp_skel_segments: list[tuple[tuple, tuple]] = []       # division areas for each critical point (n_cp)
         self.base_paths: list[tuple[tuple, tuple]] = []             # connecting each base point to the critical point
+
+        # results
         self.polygons: list = [Polygon]                             # shapely polygons for each segment
+        self.adjacency_matrix: np.ndarray = np.ndarray              # adjacency matrix between segments
 
     def skeleton_decomposition(self) -> None:
         """Run skeletonization-based segmentation pipeline."""
@@ -71,8 +74,8 @@ class SkeletonDecomposition:
         # self.lg.info2(f"Found {len(self.base_points)} base points for critical points.")
 
         segmented_map, seg_ids, contours = self.create_segmented_map()
-        adjacency_matrix = self.create_adjacency_matrix(segmented_map, seg_ids)
-        self.create_polygons(contours, adjacency_matrix)
+        self.adjacency_matrix = self.create_adjacency_matrix(segmented_map, seg_ids)
+        self.create_polygons(contours, self.adjacency_matrix)
 
     # ==================================================================================================================
     # segmentation methods
@@ -105,7 +108,7 @@ class SkeletonDecomposition:
         # find contours and fill areas
         contours, _ = cv.findContours(seg_map, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
         seg_map = np.zeros_like(seg_map)
-        print(f"Found {len(contours)} contours in segmented map.")
+        # print(f"Found {len(contours)} contours in segmented map.")
 
         # filter small contours
         filtered_contours = []
@@ -113,7 +116,7 @@ class SkeletonDecomposition:
             area = cv.contourArea(cnt)
             if area >= 10:  # minimum area threshold # param
                 filtered_contours.append(cnt)
-        print(f"Found {len(filtered_contours)} filtered contours in segmented map.")
+        # print(f"Found {len(filtered_contours)} filtered contours in segmented map.")
 
         # check too many contours
         if len(filtered_contours) > 254:
@@ -167,7 +170,9 @@ class SkeletonDecomposition:
             if len(pts) < 3:
                 self.lg.error(f"Contour {i} has less than 3 points, cannot create polygon.")
                 continue
-            poly = Polygon(pts)
+            # add global coordinate conversion
+            g_pts = self.zmd.global_xy + pts
+            poly = Polygon(g_pts)
             polygons.append(poly)
         self.polygons = polygons
 
@@ -661,7 +666,7 @@ class SkeletonDecomposition:
         # save figures
         im_format = 'svg'  # 'svg'
         if PipeLineConfig.do_save_decomposition_plot:
-            save_dir = self.zmd.segmentation_dir
+            save_dir = self.zmd.segmentation_method_dir
             fig1_path = save_dir + "/skeleton_end_branch_points" + f".{im_format}"
             fig2_path = save_dir + "/skeleton_branches_criticals" + f".{im_format}"
             fig1.savefig(fig1_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')

@@ -81,7 +81,7 @@ class GridGenerator:
         else:
             self.grid = self.create_grid_by_map(grid_l)
 
-        self.plot_grid_map(zmd.segmentation_dir)
+        self.plot_grid_map(zmd.segmentation_method_dir)
 
     def calculate_base_grid_size(self, resolution) -> float:
         """ Calculate base grid size based on cleaning radius and map resolution. """
