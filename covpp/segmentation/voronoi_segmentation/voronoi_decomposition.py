@@ -45,7 +45,7 @@ class VoronoiDecomposition:
         self.lg.info3(f"Robot radius in pixels: {self.robot_r_px:.2f}")
 
         # basic data
-        self.results_dir: str = zmd.method_results_dir
+        self.results_dir: str = zmd.segmentation_dir
         self.b_poly: Polygon = map_polygs.b_poly                # bounding polygon
         self.obs_polys: list[Polygon] = map_polygs.obs_polys    # obstacle polygons
 

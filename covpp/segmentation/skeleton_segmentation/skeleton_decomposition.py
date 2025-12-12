@@ -1,48 +1,34 @@
 """Voronoi-based segmentation for optimal workspace decomposition."""
-import dataclasses
 import heapq
 import cv2 as cv
 import numpy as np
 from networkx import Graph
 from matplotlib import pyplot as plt
+from shapely.geometry import Polygon
 from skimage.morphology import medial_axis  # , skeletonize
 from covpp.base.logger import MyLogger
 from covpp.base.plot_styles import set_plot_styles
 from covpp.base.configs import RobotConfig, PipeLineConfig
 from covpp.district.zone_map_data import ZoneMapData
+from covpp.segmentation.skeleton_segmentation.data_structures import Skelet, Branch
 # from tsmoothie.smoother import LowessSmoother
 
 OCCUPIED = 0
 FREE = 255
 
 
-@dataclasses.dataclass
-class Skelet:
-    """ Contains skeletonization results. """
-    skeleton_map: np.ndarray                # dtype=bool
-    distance_map: np.ndarray                # dtype=uint8
-    distance_norm_map: np.ndarray           # dtype=uint8 OCCUPIED-FREE
-    distance_skeleton_map: np.ndarray       # dtype=uint8 OCCUPIED-FREE
-    devision_map: np.ndarray                # dtype=uint8
-    end_points: np.ndarray                  # dtype=uint8 (y, x)
-    branch_points: np.ndarray               # dtype=uint8 (y, x)
-    end_points_filtered: np.ndarray         # dtype=uint8 (y, x)
-
-
-@dataclasses.dataclass
-class Branch:
-    """ Represents a skeleton branch/path between end_points/branch_points. """
-    length: int                     # length of the branch (number of points)
-    end_type: str                   # 'endpoint' | 'branchpoint' | 'skip'
-    end_point: tuple                # (y, x)
-    start_point: tuple              # (y, x)
-    points: np.ndarray              # shape (N, 2), dtype=int , list of (y, x)
-    cp_idxs: np.ndarray = None      # indices in critical points list
-    cp_coords: np.ndarray = None    # shape (N, 2), dtype=int , list of (y, x)
-
-
 class SkeletonDecomposition:
-    """Skeletonization-based decomposition of the zone map."""
+    """Skeletonization-based decomposition of the zone map.
+
+    Steps:
+    - Create skeleton of the workspace.
+    - Extract skeleton branches between end points and branch points.
+    - Find critical points in branches based on local minimum distance to obstacles.
+    - For each critical point, find two base points by expanding side points until hitting contours.
+    - Create segmented map by connecting base points and filling areas.
+    - Create polygons for each segment.
+    - Create adjacency matrix based on critical points connecting segments.
+    """
 
     def __init__(self, zmd: ZoneMapData):
         self.lg = MyLogger("SkeletonDecomposition")
@@ -64,11 +50,12 @@ class SkeletonDecomposition:
         self.error_point = None             # for debugging
         self.skelet: Skelet = None          # skeletonization data
         self.branches: list[Branch] = []    # skeleton branches
-        self.critical_points: list[np.ndarray] = []             # local min distance points in branches (n_cp)
-        self.base_points: list[tuple[tuple, tuple]] = []           # base points for critical points (n_cp * 2)
-        self.side_points: list[tuple[tuple, tuple]] = []           # side points for critical points (n_cp * 2)
-        self.divisions: list[tuple[tuple, tuple]] = []             # division areas for each critical point (n_cp)
-        self.base_paths: list[tuple[tuple, tuple]] = []            # connecting each base point to the critical point
+        self.critical_points: list[np.ndarray] = []                 # local min distance points in branches (n_cp)
+        self.base_points: list[tuple[tuple, tuple]] = []            # base points for critical points (n_cp * 2)
+        self.side_points: list[tuple[tuple, tuple]] = []            # side points for critical points (n_cp * 2)
+        self.cp_skel_segments: list[tuple[tuple, tuple]] = []       # division areas for each critical point (n_cp)
+        self.base_paths: list[tuple[tuple, tuple]] = []             # connecting each base point to the critical point
+        self.polygons: list = [Polygon]                             # shapely polygons for each segment
 
     def skeleton_decomposition(self) -> None:
         """Run skeletonization-based segmentation pipeline."""
@@ -79,14 +66,110 @@ class SkeletonDecomposition:
         self.lg.info2(f"Extracted {len(self.branches)} skeleton branches.")
 
         self.find_critical_points()
-        # self.lg.info2(f"Found {len(self.critical_points)} critical points in skeleton branches.")
         self.find_base_points()
+        # self.lg.info2(f"Found {len(self.critical_points)} critical points in skeleton branches.")
         # self.lg.info2(f"Found {len(self.base_points)} base points for critical points.")
 
-        self.segmentation_ppp()
+        segmented_map, seg_ids, contours = self.create_segmented_map()
+        adjacency_matrix = self.create_adjacency_matrix(segmented_map, seg_ids)
+        self.create_polygons(contours, adjacency_matrix)
 
-        self.visualize_skeleton()
-        raise NotImplementedError("Skeletonization visualization complete.")
+    # ==================================================================================================================
+    # segmentation methods
+    # ==================================================================================================================
+
+    def create_segmented_map(self):
+        """ Create segmented map based on base points. 
+
+        Steps:
+        - Connect each two base points with a line.
+        - Find contours and fill areas to create segmented map.
+        - Each area will have a unique gray value. (later used in creating cells)
+        """
+
+        seg_map = self.map_ws.copy()
+
+        # create a line connecting each two base points
+        for bases in self.base_points:
+            base1, base2 = bases
+            cv.line(seg_map, (base1[1], base1[0]), (base2[1], base2[0]), OCCUPIED, thickness=2)
+
+        # put the base_paths on the map_ws and create segmented map
+        # for paired_paths in self.base_paths:
+        #     for path in paired_paths:
+        #         for y, x in path:
+        #             seg_map[y, x] = OCCUPIED
+
+        seg_ids = []
+
+        # find contours and fill areas
+        contours, _ = cv.findContours(seg_map, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+        seg_map = np.zeros_like(seg_map)
+        print(f"Found {len(contours)} contours in segmented map.")
+
+        # filter small contours
+        filtered_contours = []
+        for cnt in contours:
+            area = cv.contourArea(cnt)
+            if area >= 10:  # minimum area threshold # param
+                filtered_contours.append(cnt)
+        print(f"Found {len(filtered_contours)} filtered contours in segmented map.")
+
+        # check too many contours
+        if len(filtered_contours) > 254:
+            self.lg.warn(f"Too many contours found in segmented map: {len(filtered_contours)}.")
+
+        # fill area with different gray value (used for segment IDs)
+        for i,  cnt in enumerate(filtered_contours):
+            new_id = i + 1
+            seg_ids.append(new_id)
+            cv.fillPoly(seg_map, pts=[cnt], color=new_id)
+            cv.drawContours(seg_map, [cnt], 0, FREE, thickness=0)
+
+        if not seg_ids:
+            raise ValueError("No segments found in segmented map.")
+
+        return seg_map, seg_ids, filtered_contours
+
+    def create_adjacency_matrix(self, segmented_map: np.ndarray, seg_ids: list[int]) -> np.ndarray:
+
+        adjacency_matrix = np.zeros((len(seg_ids), len(seg_ids)), dtype=np.bool)
+        h, w = segmented_map.shape
+        canvas_size = 40 // 2
+
+        for cp in self.critical_points:
+            y, x = cp
+            y_min = max(0, y - canvas_size)
+            y_max = min(h, y + canvas_size)
+            x_min = max(0, x - canvas_size)
+            x_max = min(w, x + canvas_size)
+            canvas = segmented_map[y_min:y_max, x_min:x_max]
+            unique_ids = np.unique(canvas)
+            # remove OCCUPIED and FREE
+            unique_ids = unique_ids[(unique_ids != OCCUPIED) & (unique_ids != FREE)]
+            n_ids = len(unique_ids)
+            if n_ids < 2:
+                self.lg.error(f"Less than 2 segments found near critical point at {cp}.")
+
+            for i in range(n_ids):
+                for j in range(i+1, n_ids):
+                    adjacency_matrix[unique_ids[i]-1, unique_ids[j]-1] = True
+                    adjacency_matrix[unique_ids[j]-1, unique_ids[i]-1] = True
+        return adjacency_matrix
+
+    def create_polygons(self, contours: list[np.ndarray], adjacency_matrix: np.ndarray) -> None:
+
+        # create shapely polygons for each contour
+        from shapely.geometry import Polygon
+        polygons = []
+        for i, cnt in enumerate(contours):
+            pts = cnt.reshape(-1, 2)
+            if len(pts) < 3:
+                self.lg.error(f"Contour {i} has less than 3 points, cannot create polygon.")
+                continue
+            poly = Polygon(pts)
+            polygons.append(poly)
+        self.polygons = polygons
 
     # ==================================================================================================================
     # skeletonization and special points extraction
@@ -96,13 +179,14 @@ class SkeletonDecomposition:
         """Create skeleton of the workspace and find end_points and branch_points."""
 
         # Compute medial axis (skeleton) and the distance transform
-        medial_axis_map, distance_map = medial_axis(self.map_ws, return_distance=True)  # ske: dtype=bool, distance: dtype=float64
+        # ske: dtype=bool, distance: dtype=float64
+        medial_axis_map, distance_map = medial_axis(self.map_ws, return_distance=True)
         skeleton_map = medial_axis_map
 
         # distance transform and normalization
-        # distance_map = cv.distanceTransform(self.map_ws, distanceType=cv.DIST_L2, maskSize=5)  # dtype=float32
+        # distance_map = cv.distanceTransform(self.map_ws, distanceType=cv.DIST_L2, maskSize=5)
         distance_map = distance_map.astype(np.uint8)
-        distance_norm_map = (distance_map / distance_map.max() * FREE).astype(np.uint8)
+        distance_norm_map = (distance_map / distance_map.max() * FREE).astype(np.uint8)  # dtype=uint8
 
         # # skeletonization
         # skeleton_map = skeletonize(self.map_ws)  # dtype=bool
@@ -114,19 +198,19 @@ class SkeletonDecomposition:
         distance_skeleton_map = distance_norm_map * skeleton_map
 
         # ----------------------------------------------------------------------
-        # Division Map Creation
-        devide_map = self.map_ws.copy()             # start with workspace map
-        devide_map[skeleton_map] = OCCUPIED         # set skeleton pixels to OCCUPIED
-        devide_map = FREE - devide_map              # invert map, so skeleton contours are closed areas
+        # Skeleton Segmented Map Creation
+        skeleton_segmented_map = self.map_ws.copy()                 # start with workspace map
+        skeleton_segmented_map[skeleton_map] = OCCUPIED             # set skeleton pixels to OCCUPIED
+        skeleton_segmented_map = FREE - skeleton_segmented_map      # invert map, so skeleton contours are closed areas
         # find contours and fill areas
-        contours2, _ = cv.findContours(devide_map, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+        contours2, _ = cv.findContours(skeleton_segmented_map, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         # fill area with different gray value
         if len(contours2) > 999:
             self.lg.warn(f"Too many contours found: {len(contours2)}.")
-        devide_map = devide_map.astype(np.uint16)   # use uint16 to support more contours
+        skeleton_segmented_map = skeleton_segmented_map.astype(np.uint16)   # use uint16 to support more contours
         for i, cnt in enumerate(contours2):
-            cv.fillPoly(devide_map, pts=[cnt], color=i+1)
-        devide_map[skeleton_map] = OCCUPIED         # make skeleton pixels OCCUPIED again
+            cv.fillPoly(skeleton_segmented_map, pts=[cnt], color=i+1)
+        skeleton_segmented_map[skeleton_map] = OCCUPIED                      # make skeleton pixels OCCUPIED again
 
         # final skeletonization data
         self.skelet = Skelet(
@@ -134,7 +218,7 @@ class SkeletonDecomposition:
             distance_map=distance_map,
             distance_norm_map=distance_norm_map,
             distance_skeleton_map=distance_skeleton_map,
-            devision_map=devide_map,
+            skeleton_segmented_map=skeleton_segmented_map,
             end_points=None,
             branch_points=None,
             end_points_filtered=None
@@ -143,13 +227,13 @@ class SkeletonDecomposition:
     def find_endpoints_branchpoints(self) -> None:
         """ Find end_points and branch_points in the skeleton. """
 
-        skeleton = self.skelet.skeleton_map.astype(np.uint8)  # dtype=uint8
+        skeleton = self.skelet.skeleton_map.astype(np.uint8)    # dtype=uint8
 
         # Convolution kernel to count neighbors
         kernel = np.array([[1, 1, 1],
                            [1, 10, 1],
                            [1, 1, 1]], dtype=np.uint8)
-        filtered = cv.filter2D(skeleton, -1, kernel)   # dtype=uint8
+        filtered = cv.filter2D(skeleton, -1, kernel)            # dtype=uint8
 
         # Identify end_points and branch_points based on neighbor counts
         end_points_map = np.where(filtered == 11, 1, 0).astype(np.uint8)     # dtype=uint8
@@ -160,14 +244,14 @@ class SkeletonDecomposition:
         branchpoint_coords = np.column_stack(np.where(branch_points_map))
         for y, x in branchpoint_coords:
             radius = 1.2 * self.skelet.distance_norm_map[y, x]
-            cv.circle(mask, (x, y), int(radius), 1, thickness=-1)  # filled circle
+            cv.circle(mask, (x, y), int(radius), 1, thickness=-1)   # filled circle
         end_points_filtered_1 = end_points_map * (1 - mask)
 
         # second method for filtering
-        # fildter end_points with same distance as min_distance in skeleton
+        # filter end_points with same distance as min_distance in skeleton
         distance_skeleton = self.skelet.distance_skeleton_map
         dists_sorted = np.sort(distance_skeleton[distance_skeleton > 0])
-        dists_sorted = dists_sorted[:np.sum(end_points_map)]
+        dists_sorted = dists_sorted[:np.sum(end_points_map)]  # only need as many as end points
         dist_thresh = dists_sorted[-1]
         end_points_filtered2 = np.where(distance_skeleton > dist_thresh, end_points_map, 0).astype(np.uint8)
 
@@ -179,15 +263,26 @@ class SkeletonDecomposition:
         branch_points = np.column_stack(np.where(branch_points_map))
         end_points_filtered = np.column_stack(np.where(end_points_filtered_map))
 
+        # validate
+        if len(end_points) == 0:
+            self.lg.error("No end points found in skeleton.")
+        if len(branch_points) == 0:
+            self.lg.error("No branch points found in skeleton.")
+
         # skeletonization data
         self.skelet.end_points = end_points
         self.skelet.branch_points = branch_points
         self.skelet.end_points_filtered = end_points_filtered
 
-    def extract_special_branches(self) -> list[Branch]:
+    def extract_special_branches(self) -> None:
         """ Extract branches from a skeleton as paths between end_points/branch_points. """
         graph = self.create_graph_and_specials()
         self.branches = self.extract_special_branches_from_graph(graph)
+
+        # validate
+        if len(self.branches) == 0:
+            raise ValueError("No branches extracted from skeleton.")
+            # self.lg.error("No branches extracted from skeleton.")
 
     # ==================================================================================================================
     # find critical points and base points
@@ -232,10 +327,11 @@ class SkeletonDecomposition:
 
             # take the first one and last one (to avoid biasing to one end)
             min_indices = np.array([min_indices[0], min_indices[-1]])
+            # min_indices = np.array([min_indices[0]])
             local_ps = branch.points[min_indices]
             cp_pts.extend(local_ps)
 
-            # update branch info
+            # update branch  info
             branch.cp_coords = local_ps
             branch.cp_idxs = min_indices
 
@@ -243,149 +339,24 @@ class SkeletonDecomposition:
         self.critical_points = cp_pts
 
     def find_base_points(self):
-        """ Find base points for critical points. """
-        # self.find_base_points_perpendicular_lines()
-        # self.find_base_points_circle()
-        self.find_base_points_by_side_expansion()
-
-    def segmentation_ppp(self):
-        segmented_map, seg_ids, contours = self.create_segmented_map()
-
-        # find set of unique division numbers in segmented map
-
-        # create a mask for each segment (with unique value in segmented map)
-        # find division numbers in self.skelet.devision_map based for each mask
-
-        seg_divsions = []
-        for seg_id in seg_ids:
-            mask = np.where(segmented_map == seg_id, True, False).astype(np.bool)
-            division_nums = np.unique(self.skelet.devision_map[mask])
-            if len(division_nums) == 1:
-                raise ValueError(f"No division numbers found for segment ID {seg_id}.")
-            division_nums = set(division_nums[1:])  # remove 0 (OCCUPIED)
-            seg_divsions.append(division_nums)
-
-        adjacency_matrix = np.zeros((len(seg_ids), len(seg_ids)), dtype=np.bool)
-        for i, divs_1 in enumerate(seg_divsions):
-            for j, divs_2 in enumerate(seg_divsions[i+1:]):
-                common = divs_1.intersection(divs_2)
-                if common:
-                    adjacency_matrix[i, i + 1 + j] = True
-                    adjacency_matrix[i + 1 + j, i] = True
-
-        # create shapely polygons for each contour
-        from shapely.geometry import Polygon
-        seg_polygons = []
-        for cnt in contours:
-            pts = cnt.reshape(-1, 2)
-            poly = Polygon(pts)
-            seg_polygons.append(poly)
-
-        # plot polygons and adjacency
-        fig, ax = plt.subplots(1, 1, constrained_layout=True)
-        for i, poly in enumerate(seg_polygons):
-            x, y = poly.exterior.xy
-            ax.fill(x, y, alpha=0.5)
-            ax.text(poly.centroid.x, poly.centroid.y, str(i), fontsize=12, ha='center', va='center')
-        for i in range(len(seg_polygons)):
-            for j in range(i+1, len(seg_polygons)):
-                if adjacency_matrix[i, j]:
-                    poly1 = seg_polygons[i]
-                    poly2 = seg_polygons[j]
-                    x1, y1 = poly1.centroid.x, poly1.centroid.y
-                    x2, y2 = poly2.centroid.x, poly2.centroid.y
-                    ax.plot([x1, x2], [y1, y2], color='red', linestyle='--', linewidth=1)
-        ax.set_title("Segmented Map with Adjacency")
-        plt.show()
-
-    def create_segmented_map(self):
-        """ Create segmented map based on base points. 
-
-        - Connect each two base points with a line.
-        - Find contours and fill areas to create segmented map.
-        - Each area will have a unique gray value. (later used in creating cells)
-        """
-
-        seg_map = self.map_ws.copy()
-
-        # create a line connecting each two base points
-        for bases in self.base_points:
-            base1, base2 = bases
-            cv.line(seg_map, (base1[1], base1[0]), (base2[1], base2[0]), OCCUPIED, thickness=2)
-
-        # put the base_paths on the map_ws and create segmented map
-        # for paired_paths in self.base_paths:
-        #     for path in paired_paths:
-        #         for y, x in path:
-        #             seg_map[y, x] = OCCUPIED
-
-        seg_ids = []
-
-        # find contours and fill areas
-        contours, _ = cv.findContours(seg_map, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-        seg_map = np.zeros_like(seg_map)
-        print(f"Found {len(contours)} contours in segmented map.")
-        if len(contours) > 254:
-            self.lg.warn(f"Too many contours found in segmented map: {len(contours)}.")
-        for i,  cnt in enumerate(contours):
-            new_id = i + 1
-            seg_ids.append(new_id)
-            cv.fillPoly(seg_map, pts=[cnt], color=new_id)
-            cv.drawContours(seg_map, [cnt], 0, FREE, thickness=1)
-
-        # # visualize
-        # cv.imshow("Segmented Map", seg_map)
-        # cv.waitKey(0)
-        # cv.destroyAllWindows()
-
-        if not seg_ids:
-            raise ValueError("No segments found in segmented map.")
-
-        return seg_map, seg_ids, contours
-
-        # ==================================================================================================================
-        # find base points methods
-        # ==================================================================================================================
-
-    def find_base_points_by_side_expansion(self):
         """Find base points for critical points."""
 
         for branch in self.branches:
             if branch.cp_coords is None:
                 continue
             for cp in branch.cp_coords:
-                self.get_base_points_by_find_expand_side_points(cp)
+                self.get_base_points_by_expand_side_points(cp)
 
-    def get_side_points(self, cp: np.ndarray) -> np.ndarray:
-        """ Find two side points for a critical point. """
+        # validate
+        if len(self.base_points) != len(self.critical_points):
+            self.lg.error(f"N base points {len(self.base_points)} != N critical points {len(self.critical_points)}.")
+            raise ValueError("Base points and critical points count mismatch.")
 
-        # find neighbors (8-connectivity) of cp
-        dxy_8c = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1),  (1, 0),  (1, 1)]
-        side_pts: list[tuple[int, int]] = []
-        divide_values = [0]
-        for dy, dx in dxy_8c:
-            y, x = cp
-            y += dy
-            x += dx
-            dv = self.skelet.devision_map[y, x]
-            # ingore if on skeleton
-            # if self.skelet.skeleton_map[y, x]:
-            if dv in divide_values:
-                continue
-            divide_values.append(dv)
-            side_pts.append((y, x))
+        # ==================================================================================================================
+        # find base points methods
+        # ==================================================================================================================
 
-        if len(side_pts) != 2:
-            self.lg.error(f"Expected 2 side points, found {len(side_pts)} for critical point at {cp}.")
-            self.error_point = cp
-            self.visualize_skeleton()
-            return None
-
-        self.divisions.append(tuple(divide_values[1:]))
-        self.side_points.append(tuple(side_pts))
-        return side_pts
-
-    def get_base_points_by_find_expand_side_points(self, cp: np.ndarray) -> np.ndarray:
+    def get_base_points_by_expand_side_points(self, cp: np.ndarray) -> np.ndarray:
         """ Find two side points for a critical point and expand until finding base points.
 
         Expansion is guided by `distance_map`: neighbors with lower distance are explored first,
@@ -399,7 +370,7 @@ class SkeletonDecomposition:
         side_pts = self.get_side_points(cp)
 
         # expand like graph search two side points until hitting contour or occupied space (stop expansion if reached skeleton)
-        base_pts: list[tuple[int, int]] = []           # two base points
+        base_pts: list[tuple[int, int]] = []            # two base points
         base_paths: list[tuple[tuple[int, int]]] = []   # two base paths
         for side_pt in side_pts:
             base_path = []
@@ -440,17 +411,44 @@ class SkeletonDecomposition:
                 base_pts.append(base_p)
                 base_paths.append(tuple(base_path))
 
-        # results
+        # validate results
         if len(base_pts) == 0:
-            self.lg.error(f"No base points found for critical point at {cp}.")
-            return
+            # self.lg.error(f"No base points found for critical point at {cp}.")
+            raise ValueError(f"No base points found for critical point at {cp}.")
         if len(base_pts) != 2:
-            self.lg.error(f"Expected 2 base points, found {len(base_pts)} for critical point at {cp}.")
-            return
+            # self.lg.error(f"Expected 2 base points, found {len(base_pts)} for critical point at {cp}.")
+            raise ValueError(f"Expected 2 base points, found {len(base_pts)} for critical point at {cp}.")
 
         # store results
         self.base_points.append(tuple(base_pts))
         self.base_paths.append(tuple(base_paths))
+
+    def get_side_points(self, cp: np.ndarray) -> np.ndarray:
+        """ Find two side points for a critical point. """
+
+        # find neighbors (8-connectivity) of cp
+        dxy_8c = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1),  (1, 0),  (1, 1)]
+        side_pts: list[tuple[int, int]] = []
+        divide_values = [OCCUPIED]  # to ignore skeleton
+        for dy, dx in dxy_8c:
+            y, x = cp
+            y += dy
+            x += dx
+            dv = self.skelet.skeleton_segmented_map[y, x]
+            # ingore if on skeleton
+            # if self.skelet.skeleton_map[y, x]:
+            if dv in divide_values:
+                continue
+            divide_values.append(dv)
+            side_pts.append((y, x))
+
+        if len(side_pts) != 2:
+            raise ValueError(f"Expected 2 side points, found {len(side_pts)} for critical point at {cp}.")
+            # self.lg.error(f"Expected 2 side points, found {len(side_pts)} for critical point at {cp}.")
+
+        self.cp_skel_segments.append(tuple(divide_values[1:]))
+        self.side_points.append(tuple(side_pts))
+        return side_pts
 
     # ==================================================================================================================
     # Branch extraction method
@@ -486,6 +484,10 @@ class SkeletonDecomposition:
         #     deg = graph.degree[n]
         #     if deg == 1 or deg >= 3:
         #         specials.add(n)
+
+        # validate
+        if graph.number_of_nodes() < 20:  # parameter
+            raise ValueError("Skeleton graph has too few nodes, likely invalid skeleton.")
 
         return graph
 
@@ -544,7 +546,6 @@ class SkeletonDecomposition:
         while True:
             # deg = graph.degree[curr]
             if curr in specials and curr != start:
-                # Hit terminal special node
                 break
             # Continue through degree-2 chain
             nbrs = list(graph.neighbors(curr))
@@ -654,24 +655,25 @@ class SkeletonDecomposition:
         # # Figure 3: division map
         # _, ax3 = plt.subplots(1, 1, constrained_layout=True)
         # ax3.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=2/scale_px)
-        # ax3.imshow(self.skelet.devision_map, cmap='tab20', alpha=1.0)
+        # ax3.imshow(self.skelet.skeleton_segmented_map, cmap='tab20', alpha=1.0)
         # configure_ax(ax3, 'Division Map based on Skeleton', show_legend=False)
 
         # save figures
+        im_format = 'svg'  # 'svg'
         if PipeLineConfig.do_save_decomposition_plot:
             save_dir = self.zmd.segmentation_dir
-            fig1_path = save_dir + "/skeleton_end_branch_points.svg"
-            fig2_path = save_dir + "/skeleton_branches_criticals.svg"
-            fig1.savefig(fig1_path, format='svg', dpi=PipeLineConfig.dpi, bbox_inches='tight')
-            fig2.savefig(fig2_path, format='svg', dpi=PipeLineConfig.dpi, bbox_inches='tight')
+            fig1_path = save_dir + "/skeleton_end_branch_points" + f".{im_format}"
+            fig2_path = save_dir + "/skeleton_branches_criticals" + f".{im_format}"
+            fig1.savefig(fig1_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')
+            fig2.savefig(fig2_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')
 
-        plt.show()
+        # plt.show()
 
         # # # visualize using OpenCV
         # cv.imshow("distance", self.skelet.distance_norm_map)
         # cv.waitKey(0)
         # cv.destroyAllWindows()
 
-        # cv.imshow("Division Map", self.skelet.devision_map)
+        # cv.imshow("Division Map", self.skelet.skeleton_segmented_map)
         # cv.waitKey(0)
         # cv.destroyAllWindows()

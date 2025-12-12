@@ -9,6 +9,8 @@ def set_plot_styles(fig_w=None, fig_h=None) -> None:
     # professional styles
     plt.style.use(['science'])
     plt.rcParams['figure.dpi'] = PipeLineConfig.dpi
+    # Avoid LaTeX dependency in environments without full TeX install
+    plt.rcParams['text.usetex'] = False
     if fig_w and fig_h:
         plt.rcParams['figure.figsize'] = (fig_w, fig_h)
 

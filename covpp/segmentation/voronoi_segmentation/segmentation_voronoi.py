@@ -346,7 +346,7 @@ class Segmentation(SegmentationBase):
             ax.annotate(f"${i}$", (cp.vp.v[0], cp.vp.v[1]), fontsize=6, color='blue')
         #
         if PipeLineConfig.do_save_decomposition_plot:
-            save_path = self.zmd.method_results_dir + "/rings.png"
+            save_path = self.zmd.segmentation_dir + "/rings.png"
             fig.savefig(save_path, dpi=PipeLineConfig.dpi)
 
         #
