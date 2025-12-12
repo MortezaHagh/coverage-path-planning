@@ -48,6 +48,9 @@
         "/home/morteza/catkin_ws/devel/lib/python3/dist-packages",
         "/opt/ros/noetic/lib/python3/dist-packages"
     ],
+    // "terminal.integrated.defaultProfile.linux": "Login Bash",
+    "terminal.integrated.defaultProfile.linux": "zsh",
+    // 
     "latex-workshop.bibtex-fields.sort.enabled": true,
     "latex-workshop.bibtex-format.sort.enabled": true,
     "latex-workshop.formatting.latex": "latexindent",

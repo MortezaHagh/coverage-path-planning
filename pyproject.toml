@@ -83,7 +83,7 @@ zip-safe = false
 "covpp" = ["**/__pycache__/*", "**/*.py[co]", "**/.DS_Store"]
 
 [tool.setuptools.data-files]
-"" = ["README.md", "LICENSE", "documentation.md", "requirements.txt"]
+"" = ["README.md", "LICENSE", "documentation/documentation.md", "requirements.txt"]
 
 [tool.setuptools.packages.find]
 include = ["covpp*"]

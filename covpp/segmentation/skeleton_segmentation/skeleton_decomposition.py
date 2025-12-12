@@ -77,10 +77,14 @@ class SkeletonDecomposition:
         self.find_endpoints_branchpoints()
         self.extract_special_branches()
         self.lg.info2(f"Extracted {len(self.branches)} skeleton branches.")
+
         self.find_critical_points()
         # self.lg.info2(f"Found {len(self.critical_points)} critical points in skeleton branches.")
         self.find_base_points()
         # self.lg.info2(f"Found {len(self.base_points)} base points for critical points.")
+
+        self.segmentation_ppp()
+
         self.visualize_skeleton()
         raise NotImplementedError("Skeletonization visualization complete.")
 
@@ -118,7 +122,7 @@ class SkeletonDecomposition:
         contours2, _ = cv.findContours(devide_map, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         # fill area with different gray value
         if len(contours2) > 999:
-            self.lg.warning(f"Too many contours found: {len(contours2)}. Using modulo operation to assign colors.")
+            self.lg.warn(f"Too many contours found: {len(contours2)}.")
         devide_map = devide_map.astype(np.uint16)   # use uint16 to support more contours
         for i, cnt in enumerate(contours2):
             cv.fillPoly(devide_map, pts=[cnt], color=i+1)
@@ -244,21 +248,100 @@ class SkeletonDecomposition:
         # self.find_base_points_circle()
         self.find_base_points_by_side_expansion()
 
+    def segmentation_ppp(self):
+        segmented_map, seg_ids, contours = self.create_segmented_map()
+
+        # find set of unique division numbers in segmented map
+
+        # create a mask for each segment (with unique value in segmented map)
+        # find division numbers in self.skelet.devision_map based for each mask
+
+        seg_divsions = []
+        for seg_id in seg_ids:
+            mask = np.where(segmented_map == seg_id, True, False).astype(np.bool)
+            division_nums = np.unique(self.skelet.devision_map[mask])
+            if len(division_nums) == 1:
+                raise ValueError(f"No division numbers found for segment ID {seg_id}.")
+            division_nums = set(division_nums[1:])  # remove 0 (OCCUPIED)
+            seg_divsions.append(division_nums)
+
+        adjacency_matrix = np.zeros((len(seg_ids), len(seg_ids)), dtype=np.bool)
+        for i, divs_1 in enumerate(seg_divsions):
+            for j, divs_2 in enumerate(seg_divsions[i+1:]):
+                common = divs_1.intersection(divs_2)
+                if common:
+                    adjacency_matrix[i, i + 1 + j] = True
+                    adjacency_matrix[i + 1 + j, i] = True
+
+        # create shapely polygons for each contour
+        from shapely.geometry import Polygon
+        seg_polygons = []
+        for cnt in contours:
+            pts = cnt.reshape(-1, 2)
+            poly = Polygon(pts)
+            seg_polygons.append(poly)
+
+        # plot polygons and adjacency
+        fig, ax = plt.subplots(1, 1, constrained_layout=True)
+        for i, poly in enumerate(seg_polygons):
+            x, y = poly.exterior.xy
+            ax.fill(x, y, alpha=0.5)
+            ax.text(poly.centroid.x, poly.centroid.y, str(i), fontsize=12, ha='center', va='center')
+        for i in range(len(seg_polygons)):
+            for j in range(i+1, len(seg_polygons)):
+                if adjacency_matrix[i, j]:
+                    poly1 = seg_polygons[i]
+                    poly2 = seg_polygons[j]
+                    x1, y1 = poly1.centroid.x, poly1.centroid.y
+                    x2, y2 = poly2.centroid.x, poly2.centroid.y
+                    ax.plot([x1, x2], [y1, y2], color='red', linestyle='--', linewidth=1)
+        ax.set_title("Segmented Map with Adjacency")
+        plt.show()
+
     def create_segmented_map(self):
+        """ Create segmented map based on base points. 
+
+        - Connect each two base points with a line.
+        - Find contours and fill areas to create segmented map.
+        - Each area will have a unique gray value. (later used in creating cells)
+        """
+
+        seg_map = self.map_ws.copy()
+
+        # create a line connecting each two base points
+        for bases in self.base_points:
+            base1, base2 = bases
+            cv.line(seg_map, (base1[1], base1[0]), (base2[1], base2[0]), OCCUPIED, thickness=2)
 
         # put the base_paths on the map_ws and create segmented map
-        seg_map = self.map_ws.copy()
-        for paired_paths in self.base_paths:
-            for path in paired_paths:
-                for y, x in path:
-                    seg_map[y, x] = OCCUPIED
+        # for paired_paths in self.base_paths:
+        #     for path in paired_paths:
+        #         for y, x in path:
+        #             seg_map[y, x] = OCCUPIED
 
-        # visualize
-        cv.imshow("Segmented Map", seg_map)
-        cv.waitKey(0)
-        cv.destroyAllWindows()
+        seg_ids = []
 
-        return seg_map
+        # find contours and fill areas
+        contours, _ = cv.findContours(seg_map, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+        seg_map = np.zeros_like(seg_map)
+        print(f"Found {len(contours)} contours in segmented map.")
+        if len(contours) > 254:
+            self.lg.warn(f"Too many contours found in segmented map: {len(contours)}.")
+        for i,  cnt in enumerate(contours):
+            new_id = i + 1
+            seg_ids.append(new_id)
+            cv.fillPoly(seg_map, pts=[cnt], color=new_id)
+            cv.drawContours(seg_map, [cnt], 0, FREE, thickness=1)
+
+        # # visualize
+        # cv.imshow("Segmented Map", seg_map)
+        # cv.waitKey(0)
+        # cv.destroyAllWindows()
+
+        if not seg_ids:
+            raise ValueError("No segments found in segmented map.")
+
+        return seg_map, seg_ids, contours
 
         # ==================================================================================================================
         # find base points methods
@@ -569,7 +652,7 @@ class SkeletonDecomposition:
 
         # # --------------------------------------------------------------------------------------------------------------
         # # Figure 3: division map
-        # _, ax3 = plt.subplots(1, 1, figsize=figsize)
+        # _, ax3 = plt.subplots(1, 1, constrained_layout=True)
         # ax3.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=2/scale_px)
         # ax3.imshow(self.skelet.devision_map, cmap='tab20', alpha=1.0)
         # configure_ax(ax3, 'Division Map based on Skeleton', show_legend=False)
@@ -585,7 +668,7 @@ class SkeletonDecomposition:
         plt.show()
 
         # # # visualize using OpenCV
-        # cv.imshow("distance", distance)
+        # cv.imshow("distance", self.skelet.distance_norm_map)
         # cv.waitKey(0)
         # cv.destroyAllWindows()
 

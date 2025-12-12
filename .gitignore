@@ -1,17 +1,14 @@
-# .vscode/
-# docs/build/
-# docs/source/.static/
-# docs/source/.templates/
-coverage_path_planning/
 __pycache__/
-results/Map3
-results/Map4
-results
-docs/build/
 venv/
+# 
 covpp.egg-info/
 dist/
+docs/build/
+results/
+tools/pyastar2d
 paper/
+# data/
+*.sqlite3
 #*.png
 *.json
 *.pgm
@@ -23,4 +20,3 @@ paper/
 # 
 !devcontainer.json
 !settings.json
-temp_code

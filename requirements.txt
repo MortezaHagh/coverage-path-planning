@@ -1,3 +1,5 @@
+# virtualenv venv --python=python3.11
+# python -m pip install -r requirements.txt
 numpy
 matplotlib
 opencv-python
@@ -6,15 +8,13 @@ Shapely
 # 
 scipy # voronoi
 ortools
-pyastar2d
 scikit-image
 # pathfinding
+# pyastar2d ***
 # 
 colorama
 PyYAML
 pynput
-# python -m  pipreqs.pipreqs .
-# virtualenv venv --python=python3.11
 # 
 tsmoothie
 # 
