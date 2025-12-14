@@ -248,6 +248,7 @@ class SequenceHandler:
         self.colors = get_n_colors_cv(n)
         self.add_cells_to_map_planning()
         self.add_cell_paths_to_map_planning()
+        self.add_connection_paths_to_map_planning()
 
     def add_cells_to_map_planning(self) -> None:
         """ Add cells polygons to map_planning and map_segmentation. """
@@ -292,6 +293,15 @@ class SequenceHandler:
                 # add points
                 for point in pp:
                     cv.circle(map_planning, tuple(point), p_r, self.colors[i], -1)
+        self.zmd.map_planning = map_planning
+
+    def add_connection_paths_to_map_planning(self) -> None:
+        """ Add connection paths to map_planning. """
+        map_planning = self.zmd.map_planning
+        for c_path_px in self.c_paths_px:
+            if c_path_px:
+                c_path_px = np.array(c_path_px.xy, dtype=np.int32)
+                map_planning = cv.polylines(map_planning, [c_path_px], isClosed=False, color=(150, 150, 150), thickness=2)
         self.zmd.map_planning = map_planning
 
     # ==================================================================================================================
@@ -344,6 +354,8 @@ class SequenceHandler:
         ax.axis('off')
         self.plot_coverage_paths_px(ax)
         self.plot_connection_paths_px(ax)
+        # flip y-axis for pixel coordinates
+        ax.invert_yaxis()
         self.save_path_fig_px(fig_paths_px)
 
     def plot_coverage_paths_px(self, ax):
@@ -422,6 +434,8 @@ class SequenceHandler:
         if self.f_path_m is not None:
             pp = np.array(self.f_path_m.xy, dtype=np.float32)
             ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2/scale, linestyle='-', markersize=3/scale)
+        # flip y-axis for pixel coordinates
+        ax.invert_yaxis()
         fig_path = os.path.join(self.zmd.method_results_dir, "final_path_m")
         fig.savefig(fig_path+'.svg', format="svg", dpi=PipeLineConfig.dpi)
         plt.close('all')
@@ -452,13 +466,13 @@ class SequenceHandler:
         line_1, = ax.plot(self.f_path_px.xy[:2, 0], self.f_path_px.xy[:2, 1], "o-", color='green', markersize=5, linewidth=2)
         self.anim_line = [line_0, line_1]
         self.animate(fig)
-        self.save_path_fig(fig, is_anim=True)
-        # plt.show()
+        plt.show()
+        self.save_path_fig_px(fig, is_anim=True)
 
     def animate(self, fig):
         """ Create animation for robot full path. """
         self.anim = animation.FuncAnimation(fig, self.anim_update, init_func=self.init_anim,
-                                            frames=self.f_path_px.n, repeat=False, interval=1, blit=True)
+                                            frames=self.f_path_px.n, repeat=False, interval=2, blit=True)
 
     def init_anim(self):
         """ Initialize animation. """

@@ -58,10 +58,9 @@ class PipeLineConfig:
     # segmentation options
     use_insc_ret = True  # find approx rectangles from initial segmentation cells
 
-    # voronoi specific options
-    if segmentation_method == "voronoi":
-        if use_insc_ret:
-            method = method + "_rect"
+    # update main method
+    if use_insc_ret:
+        method = method + "_rect"
 
     @classmethod
     def update(cls, segmentation_method: str = 'voronoi', covpp_method: str = 'boust',
@@ -76,10 +75,9 @@ class PipeLineConfig:
         # update main method
         cls.method = cls.segmentation_method + '_' + cls.covpp_method + '_' + cls.sequence_method
 
-        # voronoi method
-        if segmentation_method == "voronoi":
-            if use_insc_ret:
-                cls.method = cls.method + "_rect"
+        # update for inscribed rectangles
+        if use_insc_ret:
+            cls.method = cls.method + "_rect"
 
 
 @dataclasses.dataclass

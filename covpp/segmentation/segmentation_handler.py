@@ -96,6 +96,7 @@ class SegmentationHandler:
         # resulting base cells from segmentor
         bcells = self.segmentor.cells
         n_bcells = self.segmentor.n_cells
+        # self.bcells = bcells
 
         # if no cells were created, try simple segmentation
         if n_bcells == 0:
@@ -128,5 +129,22 @@ class SegmentationHandler:
             raise ValueError("No processed cells available for validation.")
 
         cell_validity = [cell.validate_cell() for cell in self.cells]
-        if not all(cell_validity):
-            raise ValueError("One or more cells failed validation checks.")
+        # if not all(cell_validity):
+        #     raise ValueError("One or more cells failed validation checks.")
+
+    def plot_segmentation(self) -> None:
+        """Plot segmentation results."""
+        from matplotlib import pyplot as plt
+        plt.close('all')
+        fig, ax = plt.subplots()
+        ax.set_aspect('equal')
+        for cell in self.cells:
+            poly = cell.poly
+            x, y = poly.exterior.xy
+            ax.plot(x, y)
+            # text at centroid
+            centroid = poly.centroid
+            ax.text(centroid.x, centroid.y, f"{cell.id}", fontsize=12, ha='center', va='center')
+
+        ax.set_title("Segmented Polygons")
+        plt.show()

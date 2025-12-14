@@ -79,6 +79,17 @@ class MergeCells:
                 # create merged polygon
                 merged_polys = [id_cell_map[id].base_poly for id in group_ids]
                 new_poly = unary_union(merged_polys)
+
+                # check if new_poly is MultiPolygon
+                if new_poly.geom_type == 'MultiPolygon':
+                    # bugger, merge, bufffer to slove issue
+                    merged_polys = [poly.buffer(2) for poly in merged_polys]
+                    new_poly = unary_union(merged_polys).buffer(-2)
+
+                # check if new_poly is MultiPolygon
+                if new_poly.geom_type == 'MultiPolygon':
+                    raise ValueError("Merged polygon resulted in a MultiPolygon, which is not supported.")  # todo
+
                 # new_poly = new_poly.convex_hull
                 new_cell = CellBase(idx=old_id, poly=new_poly, resolution=self.resolution)
 

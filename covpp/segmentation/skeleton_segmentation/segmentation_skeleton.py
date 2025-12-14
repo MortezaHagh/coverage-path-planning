@@ -45,3 +45,16 @@ class Segmentation(SegmentationBase):
             adjacent_indices = np.where(self.adjacency_matrix[i] == 1)[0]
             for j in adjacent_indices:
                 cell.add_adjacent_id(j)
+
+    # def plot_segmentation(self) -> None:
+    #     """Plot segmentation results."""
+    #     from matplotlib import pyplot as plt
+    #     plt.close('all')
+    #     fig, ax = plt.subplots()
+    #     ax.set_aspect('equal')
+    #     for poly in self.polygons:
+    #         x, y = poly.exterior.xy
+    #         ax.plot(x, y)
+
+    #     ax.set_title("Segmented Polygons")
+    #     plt.show()

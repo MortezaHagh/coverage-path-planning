@@ -22,9 +22,9 @@ class PathPlannerBase:
 
         # map - cost_map
         self.free_cost = 1
-        self.occ_cost = 10
+        self.occ_cost = 100
         binary_map = (map_ws == 255).astype(np.uint8)  # 1 = free, 0 = obstacle
-        self.cost_map = np.where(binary_map == 1, 1, 10).astype(np.float32)
+        self.cost_map = np.where(binary_map == 1, 1, 100).astype(np.float32)
 
         # start point (offset in global map)
         self.s_x = g_xy[0]

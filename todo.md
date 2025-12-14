@@ -39,3 +39,8 @@
 - in energy min method: add find last point in the obstacle and adjust l based on that
 - new boustraphedon
 - add to inputs: positions of docking stations (later check in which cell they fell in to)
+
+
+## CMD
+
+devcontainer exec --workspace-folder ~/Documents/00-CovPP/covpp -- /bin/zsh

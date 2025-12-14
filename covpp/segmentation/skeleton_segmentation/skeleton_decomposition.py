@@ -47,7 +47,8 @@ class SkeletonDecomposition:
         self.min_max_distance_ratio: float = 0.8        # minimum ratio of min distance to max distance in branch to consider critical point
 
         # attributes
-        self.error_point = None             # for debugging
+        self.error_point1 = []             # for debugging
+        self.error_point2 = []             # for debugging
         self.skelet: Skelet = None          # skeletonization data
         self.branches: list[Branch] = []    # skeleton branches
         self.critical_points: list[np.ndarray] = []                 # local min distance points in branches (n_cp)
@@ -77,6 +78,8 @@ class SkeletonDecomposition:
         self.adjacency_matrix = self.create_adjacency_matrix(segmented_map, seg_ids)
         self.create_polygons(contours, self.adjacency_matrix)
 
+        self.visualize_skeleton()
+
     # ==================================================================================================================
     # segmentation methods
     # ==================================================================================================================
@@ -97,26 +100,55 @@ class SkeletonDecomposition:
             base1, base2 = bases
             cv.line(seg_map, (base1[1], base1[0]), (base2[1], base2[0]), OCCUPIED, thickness=2)
 
+        # # update zone map data segmented map # todo
+        # self.zmd.map_ws = seg_map.copy()
+
         # put the base_paths on the map_ws and create segmented map
         # for paired_paths in self.base_paths:
         #     for path in paired_paths:
         #         for y, x in path:
         #             seg_map[y, x] = OCCUPIED
 
+        # # canny edge detection for better contours
+        # seg_map_canny = cv.Canny(seg_map, 100, 200)
+        # seg_map = seg_map_canny
+
         seg_ids = []
 
         # find contours and fill areas
-        contours, _ = cv.findContours(seg_map, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-        seg_map = np.zeros_like(seg_map)
-        # print(f"Found {len(contours)} contours in segmented map.")
+        contours, hierarchy = cv.findContours(seg_map, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        hierarchy = hierarchy[0]
+        print(f"Found {len(contours)} contours in segmented map.")
 
-        # filter small contours
+        def find_level(h):
+            """ Find the level of contour in hierarchy. """
+            level = 0
+            parent = h[3]
+            while parent != -1:
+                level += 1
+                parent = hierarchy[parent][3]
+            return level
+
+        def is_valid_contour(h) -> bool:
+            # if level is odd, it is a hole contour
+            level = find_level(h)
+            if level % 2 == 1:
+                return False
+            return True
+            # # Check if contour has both parent and children in hierarchy.
+            # return not(h[3] != -1 and h[2] != -1)
+
+        # filter contours: remove those with children and small areas
         filtered_contours = []
-        for cnt in contours:
-            area = cv.contourArea(cnt)
+        it = 0
+        for c, h in zip(contours, hierarchy):
+            if not is_valid_contour(h):
+                continue  # skip contours with children
+            area = cv.contourArea(c)
             if area >= 10:  # minimum area threshold # param
-                filtered_contours.append(cnt)
-        # print(f"Found {len(filtered_contours)} filtered contours in segmented map.")
+                filtered_contours.append(c)
+                it += 1
+        print(f"Found {len(filtered_contours)} filtered contours in segmented map.")
 
         # check too many contours
         if len(filtered_contours) > 254:
@@ -127,7 +159,12 @@ class SkeletonDecomposition:
             new_id = i + 1
             seg_ids.append(new_id)
             cv.fillPoly(seg_map, pts=[cnt], color=new_id)
-            cv.drawContours(seg_map, [cnt], 0, FREE, thickness=0)
+            cv.drawContours(seg_map, [cnt], 0, FREE, thickness=1)
+
+        # # visualize segmented map
+        # cv.imshow("Segmented Map", seg_map)
+        # cv.waitKey(0)
+        # cv.destroyAllWindows()
 
         if not seg_ids:
             raise ValueError("No segments found in segmented map.")
@@ -152,7 +189,8 @@ class SkeletonDecomposition:
             unique_ids = unique_ids[(unique_ids != OCCUPIED) & (unique_ids != FREE)]
             n_ids = len(unique_ids)
             if n_ids < 2:
-                self.lg.error(f"Less than 2 segments found near critical point at {cp}.")
+                self.error_point2.append(cp)
+                self.lg.warn(f"Less than 2 segments found near critical point at {cp}.")
 
             for i in range(n_ids):
                 for j in range(i+1, n_ids):
@@ -210,12 +248,17 @@ class SkeletonDecomposition:
         # find contours and fill areas
         contours2, _ = cv.findContours(skeleton_segmented_map, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         # fill area with different gray value
-        if len(contours2) > 999:
+        if len(contours2) > 254:
             self.lg.warn(f"Too many contours found: {len(contours2)}.")
-        skeleton_segmented_map = skeleton_segmented_map.astype(np.uint16)   # use uint16 to support more contours
+            skeleton_segmented_map = skeleton_segmented_map.astype(np.uint16)   # use uint16 to support more contours
         for i, cnt in enumerate(contours2):
             cv.fillPoly(skeleton_segmented_map, pts=[cnt], color=i+1)
         skeleton_segmented_map[skeleton_map] = OCCUPIED                      # make skeleton pixels OCCUPIED again
+
+        # # visualize skeleton segmented map
+        # cv.imshow("Skeleton Segmented Map", skeleton_segmented_map.astype(np.uint8))
+        # cv.waitKey(0)
+        # cv.destroyAllWindows()
 
         # final skeletonization data
         self.skelet = Skelet(
@@ -330,9 +373,9 @@ class SkeletonDecomposition:
             # else:
             #     mid_idx = min_indices[0]
 
-            # take the first one and last one (to avoid biasing to one end)
-            min_indices = np.array([min_indices[0], min_indices[-1]])
-            # min_indices = np.array([min_indices[0]])
+            # take the first one and last one (to avoid biasing to one end) # todo
+            # min_indices = np.array([min_indices[0], min_indices[-1]])
+            min_indices = np.array([min_indices[0]])
             local_ps = branch.points[min_indices]
             cp_pts.extend(local_ps)
 
@@ -354,14 +397,14 @@ class SkeletonDecomposition:
 
         # validate
         if len(self.base_points) != len(self.critical_points):
-            self.lg.error(f"N base points {len(self.base_points)} != N critical points {len(self.critical_points)}.")
-            raise ValueError("Base points and critical points count mismatch.")
+            self.lg.warn(f"N base points {len(self.base_points)} != N critical points {len(self.critical_points)}.")
+            # raise ValueError("Base points and critical points count mismatch.")
 
         # ==================================================================================================================
         # find base points methods
         # ==================================================================================================================
 
-    def get_base_points_by_expand_side_points(self, cp: np.ndarray) -> np.ndarray:
+    def get_base_points_by_expand_side_points(self, cp: np.ndarray) -> bool:
         """ Find two side points for a critical point and expand until finding base points.
 
         Expansion is guided by `distance_map`: neighbors with lower distance are explored first,
@@ -373,6 +416,8 @@ class SkeletonDecomposition:
 
         # find side points
         side_pts = self.get_side_points(cp)
+        if side_pts is None:
+            return False
 
         # expand like graph search two side points until hitting contour or occupied space (stop expansion if reached skeleton)
         base_pts: list[tuple[int, int]] = []            # two base points
@@ -427,6 +472,7 @@ class SkeletonDecomposition:
         # store results
         self.base_points.append(tuple(base_pts))
         self.base_paths.append(tuple(base_paths))
+        return True
 
     def get_side_points(self, cp: np.ndarray) -> np.ndarray:
         """ Find two side points for a critical point. """
@@ -448,8 +494,10 @@ class SkeletonDecomposition:
             side_pts.append((y, x))
 
         if len(side_pts) != 2:
-            raise ValueError(f"Expected 2 side points, found {len(side_pts)} for critical point at {cp}.")
-            # self.lg.error(f"Expected 2 side points, found {len(side_pts)} for critical point at {cp}.")
+            self.error_point1.append(cp)
+            self.lg.warn(f"Expected 2 side points, found {len(side_pts)} for critical point at {cp}.")
+            return None
+            # raise ValueError(f"Expected 2 side points, found {len(side_pts)} for critical point at {cp}.")
 
         self.cp_skel_segments.append(tuple(divide_values[1:]))
         self.side_points.append(tuple(side_pts))
@@ -648,12 +696,15 @@ class SkeletonDecomposition:
                 labeled = False
 
         # plot error point if any
-        if self.error_point:
-            ep = self.error_point
-            ax2.scatter(ep[1], ep[0], color='red', s=marker_size*3, label='Error Point')
+        if self.error_point1:
+            for ep in self.error_point1:
+                ax2.scatter(ep[1], ep[0], color='red', s=marker_size*3, label='Error Point')
+        if self.error_point2:
+            for ep in self.error_point2:
+                ax2.scatter(ep[1], ep[0], color='cyan', s=marker_size*3, label='Error Point 2')
 
         # finalize
-        configure_ax(ax2, 'Detected Branches with Critical and Base Points', show_title=False)
+        configure_ax(ax2, 'Detected Branches with Critical and Base Points', show_title=False, show_legend=False)
         ax2.invert_yaxis()
 
         # # --------------------------------------------------------------------------------------------------------------
@@ -672,13 +723,31 @@ class SkeletonDecomposition:
             fig1.savefig(fig1_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')
             fig2.savefig(fig2_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')
 
-        # plt.show()
+        # # plt.show()
 
         # # # visualize using OpenCV
         # cv.imshow("distance", self.skelet.distance_norm_map)
         # cv.waitKey(0)
         # cv.destroyAllWindows()
 
-        # cv.imshow("Division Map", self.skelet.skeleton_segmented_map)
+        # # cv.imshow("Division Map", self.skelet.skeleton_segmented_map)
+        # # show critical points
+        # viz_map = self.skelet.skeleton_segmented_map.copy()
+        # viz_map[self.skelet.skeleton_map] = 0  # hide skeleton for better visualization
+        # # ti uint8 for visualization
+        # if viz_map.dtype != np.uint8:
+        #     viz_map = viz_map.astype(np.uint8)
+        # skel_div_map_cp = cv.cvtColor(viz_map, cv.COLOR_GRAY2BGR)
+        # for cp in self.critical_points:
+        #     y, x = cp
+        #     skel_div_map_cp[y, x] = (0, 0, 255)
+        # # show error points
+        # for ep in self.error_point1:
+        #     y, x = ep
+        #     skel_div_map_cp[y, x] = (255, 0, 0)  # error points in blue
+        # for ep in self.error_point2:
+        #     y, x = ep
+        #     skel_div_map_cp[y, x] = (255, 255, 0)  # error points in cyan
+        # cv.imshow("Division Map with Critical Points", skel_div_map_cp)
         # cv.waitKey(0)
         # cv.destroyAllWindows()

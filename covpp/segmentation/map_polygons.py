@@ -59,11 +59,23 @@ class MapPolygons:
 
         # check size
         if len(filtered_c) < 3:
-            self.lg.warn("Not enough points to create bounding polygon for zone")
+            self.lg.warn("Not enough points to create bounding polygon.")
             return False
 
         # shift points by starting coordinates
         self.b_poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
+
+        # check validity
+        if not self.b_poly.is_valid:
+            self.lg.warn("Bounding polygon is not valid.")
+            return False
+        if self.b_poly.is_empty:
+            self.lg.warn("Bounding polygon is empty.")
+            return False
+        if self.b_poly.is_empty:
+            self.lg.warn("Bounding polygon is empty.")
+            return False
+
         return True
 
     def create_obstacle_polygons(self):
@@ -88,9 +100,14 @@ class MapPolygons:
             filtered_c = self.filter_contour_points(c)
             # get the polygon
             if len(filtered_c) < 3:
-                self.lg.warn("Not enough points to create polygon for contour in zone")
+                self.lg.warn("Not enough points to create polygon for an obstacle, skipping.")
                 continue
             poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
+
+            # check validity
+            if not poly.is_valid:
+                self.lg.warn("Obstacle polygon is not valid, fixing using buffer(0).")
+                poly = poly.buffer(0)
             obs_polys.append(poly)
         self.obs_polys = obs_polys
 

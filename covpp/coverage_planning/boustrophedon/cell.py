@@ -9,6 +9,10 @@ class Cell (CellBase):
     """ Cell for boustrophedon decomposition. """
 
     def __init__(self, ind: int, poly: Polygon, event: Event, resolution: float = 0.05):
+        # if polygon is invalid, fix it
+        if not poly.is_valid:
+            poly = poly.buffer(0)
+            print(f"[WARN] Cell {ind}: Polygon is invalid, fixing it.")
         super().__init__(ind, poly, resolution, simplify=False)
 
         #
@@ -160,6 +164,17 @@ class CellGroup:
         # Merge all polygons
         if self.cells:
             merged_polygon = unary_union([cell.poly for cell in self.cells])
+
+            # if merged_polygon is MultiPolygon, take convex hull
+            if merged_polygon.geom_type == 'MultiPolygon':
+                merged_polygon = merged_polygon.convex_hull
+                print(f"[WARN] CellGroup {self.id}: Merged polygon is MultiPolygon, taking convex hull.")
+
+            # if polygon is invalid, fix it
+            if not merged_polygon.is_valid:
+                merged_polygon = merged_polygon.buffer(0)
+                print(f"[WARN] CellGroup {self.id}: Merged polygon is invalid, fixing it.")
+
             self.merged_cell = Cell(self.id, merged_polygon, self.first_cell.event, resolution=self.first_cell.resolution)
 
         # Update the group index for all cells in the group

@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y python3-opencv
 #   && apt-get clean \
 #   && rm -rf /var/lib/apt/lists/*
 
-
+# # Install LaTeX and related tools
 # sudo apt update
 # sudo apt install -y \
 #   latexmk texlive-base texlive-latex-recommended texlive-latex-extra \

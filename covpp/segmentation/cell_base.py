@@ -46,7 +46,7 @@ class CellBase:
 
     """
 
-    def __init__(self, idx: int, poly: Polygon, resolution: float = 0.05, simplify: bool = True):
+    def __init__(self, idx: int, poly: Polygon, resolution: float, simplify: bool = True):
         self.lg = MyLogger(f"CellBase-{idx}")
         self.id: int = idx
 
@@ -152,6 +152,10 @@ class CellBase:
         if insc_circle_radius < self.robot_r_px * self.slim_cell_thresh_c:
             self.slim_type = "slim"
 
+        # if insc_circle_radius < self.robot_r_px: # todo
+        #     print(f"[WARN] cell is too slim: {self.id}")
+        #     self.do_planning = False
+
     def create_cell_points(self):
         """Extract integer coordinate points from cell polygon boundary."""
         if self.poly:
@@ -197,16 +201,21 @@ class CellBase:
 
     def validate_cell(self) -> bool:
         """ Validate cell integrity. """
+        is_valid = True
         if self.area <= 0:
             self.lg.warn(f"Cell has non-positive area: {self.area}")
-            return False
+            is_valid = False
         if not self.poly.is_valid:
             self.lg.warn("Cell polygon is not valid.")
-            return False
+            is_valid = False
         if not self.poly.is_simple:
             self.lg.warn("Cell polygon is not simple.")
-            return False
+            is_valid = False
         if len(self.points) < 3:
             self.lg.warn("Cell polygon has less than 3 points.")
+            is_valid = False
+
+        if not is_valid:
+            self.do_planning = False
             return False
         return True

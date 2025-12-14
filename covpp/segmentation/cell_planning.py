@@ -11,6 +11,9 @@ from covpp.segmentation.eval_rectangles import EvalRectangles
 from covpp.district.zone_map_data import ZoneMapData
 # from shapely import maximum_inscribed_circle, minimum_bounding_circle
 
+FREE = 255
+OCCUPIED = 0
+
 
 class PCell(CellBase):
     """Enhanced cell with geometric analysis for optimal coverage planning.
@@ -22,7 +25,7 @@ class PCell(CellBase):
     """
 
     def __init__(self, cell: CellBase, zmd: ZoneMapData) -> None:
-        super().__init__(cell.id, cell.poly)
+        super().__init__(cell.id, cell.poly, zmd.resolution)
         self.lg = MyLogger(f"PCell-{self.id}")
 
         # adjacent ids
@@ -97,18 +100,22 @@ class PCell(CellBase):
         # points in the new local map coordinates
         poly_pts = points - self.global_xy
 
-        # fill cell polygon area with free space (255)
-        cv.fillPoly(map_cell, [poly_pts], 255)
+        # fill cell polygon area with free space (FREE)
+        cv.fillPoly(map_cell, [poly_pts], FREE)
 
         # mask with free space in the original map
         map_cell = cv.bitwise_and(map_cell, map_ws)
 
-        # # for debugging
-        # map_viz = cv.cvtColor(map_cell, cv.COLOR_GRAY2BGR)
-        # # add poly_pts to map_viz by red color
-        # cv.polylines(map_viz, [poly_pts], isClosed=True, color=(0, 0, 255), thickness=2)
-        # cv.namedWindow(f"Cell {self.id} Map", cv.WINDOW_NORMAL)
-        # cv.imshow(f"Cell {self.id} Map", map_viz)
+        # find inner contours (holes) and fill them with OCCUPIED
+        contours, _ = cv.findContours(map_cell, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        if len(contours) > 1:  # todo based on level
+            self.lg.info(f"Cell {self.id} has {len(contours)-1} inner contours (holes). Filling them.")
+            # cv.drawContours(map_viz, contours, 1, (255, 0, 0), 2)
+            # fill inner contour with black
+            cv.fillPoly(map_cell, [contours[1]], OCCUPIED)
+
+        # # visualize for debugging
+        # cv.imshow(f"Cell {self.id} Map", map_cell)
         # cv.waitKey(0)
         # cv.destroyAllWindows()
 

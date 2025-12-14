@@ -136,8 +136,8 @@ class CellCoveragePathPlanner:
             xl = x_min + d_shift
             xr = x_max - d_shift
             xx = np.linspace(xl, xr, n_r).tolist()
-            xx.insert(0, xl)
-            xx.append(xr)
+            # xx.insert(0, xl)
+            # xx.append(xr)
 
         # check shifting: remove first/last if shifted
         if cell.shift_l:
