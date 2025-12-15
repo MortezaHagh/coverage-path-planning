@@ -56,7 +56,7 @@ class PipeLineConfig:
     method = segmentation_method + '_' + covpp_method + '_' + sequence_method
 
     # segmentation options
-    use_insc_ret = True  # find approx rectangles from initial segmentation cells
+    use_insc_ret = True  # False True # find approx rectangles from initial segmentation cells
 
     # update main method
     if use_insc_ret:

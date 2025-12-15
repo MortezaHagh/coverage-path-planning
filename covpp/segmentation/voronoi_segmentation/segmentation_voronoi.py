@@ -201,13 +201,16 @@ class Segmentation(SegmentationBase):
         ring_cp_ring_idxs = [0]
 
         #
+        start_base_idx = None
         if cp.passed_21:
             ring.append(cp.bs2_vp)
             next_idx = cp.bs2_idx
+            start_base_idx = cp.bs2_idx
             cp.passed_12 = True
         else:
             ring.append(cp.bs1_vp)
             next_idx = cp.bs1_idx
+            start_base_idx = cp.bs1_idx
             cp.passed_21 = True
         cp.n_passed += 1
 
@@ -274,6 +277,13 @@ class Segmentation(SegmentationBase):
             if i > n_points:
                 raise ValueError("Infinite loop detected in creating critical point segment.")
 
+        # todo
+        # check if next_idx is exactly starting base point
+        if next_idx == start_base_idx:
+            self.lg.error(f"Critical point {i_cp} with vp.idx {cp.vp.idx} segment creation ended at starting base.")
+            self.critical_points[i_cp].skip = True
+            return Ring(np.array([]), [], [])
+
         # add the last point
         next_p = self.vor.points[next_idx]
         ring.insert(0, next_p)  # insert at the beginning to close the ring
@@ -328,21 +338,18 @@ class Segmentation(SegmentationBase):
     def create_map_ws_segmented(self):
         """Create a map based on map_ws with segmentation lines drawn."""
         map_ws_segmented = self.zmd.map_ws.copy()
-        # # todo local to world coords?
-        # # draw lines connecting basis points of critical points
-        # for cp in self.critical_points:
-        #     if cp.skip:
-        #         continue
-        #     bs1 = cp.bs1_vp
-        #     bs2 = cp.bs2_vp
-        #     cv.line(map_ws_segmented, (int(bs1[0]), int(bs1[1])), (int(bs2[0]), int(bs2[1])), 0, thickness=2)  # 0: OCCUPIED
-        self.zmd.map_ws_segmented = map_ws_segmented
 
-        # # visualization
-        # cv.namedWindow("Segmented Workspace", cv.WINDOW_NORMAL)
-        # cv.imshow("Segmented Workspace", map_ws_segmented)
-        # cv.waitKey(0)
-        # cv.destroyAllWindows()
+        # draw lines connecting basis points of critical points
+        for cp in self.critical_points:
+            if cp.skip:
+                continue
+            # to map_ws coordinates
+            bs1 = cp.bs1_vp - self.zmd.global_xy
+            bs2 = cp.bs2_vp - self.zmd.global_xy
+            # draw line
+            cv.line(map_ws_segmented, (int(bs1[0]), int(bs1[1])), (int(bs2[0]), int(bs2[1])), 0, thickness=2)  # 0: OCCUPIED
+
+        self.zmd.map_ws_segmented = map_ws_segmented
 
     # ==================================================================================================================
     # Plotting
