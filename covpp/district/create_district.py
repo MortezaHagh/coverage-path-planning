@@ -1,4 +1,12 @@
-""" Create district for coverage path planning. GUI version: select rectangle area as district. """
+"""District selection for coverage path planning (GUI or whole-map).
+
+Steps:
+- If ``PipeLineConfig.whole_map`` is True, create a rectangle covering the map
+- Otherwise open a window and let the user draw/select the district rectangle
+
+Result:
+- A `Rectangle` stored in `DistrictGen.rectangle`.
+"""
 import threading
 import cv2 as cv
 from pynput.keyboard import Listener
@@ -10,13 +18,13 @@ from covpp.gui.rectangle import Rectangle
 
 
 class DistrictGen:
-    """ Create district for coverage path planning. GUI version: select rectangle area as district. 
+    """Create a district rectangle via GUI or whole-map fallback.
 
     Args:
-        map_data (MapData): Map data object.
+    - map_data: The `MapData` used to infer dimensions and display imagery.
 
     Attributes:
-        rectangle (Rectangle): Created district rectangle.
+    - rectangle: The created district rectangle.
     """
 
     def __init__(self, map_data: MapData):
@@ -44,7 +52,7 @@ class DistrictGen:
         # self.validate_district_rectangle()
 
     def create_district_whole(self):
-        """ Get district rectangle based on map data."""
+        """Create a full-map district rectangle based on `MapData` dimensions."""
         rot = 0
         xc = self.__md.up_c_w
         yc = self.__md.up_c_h
@@ -54,7 +62,7 @@ class DistrictGen:
         self.rectangle = Rectangle(rect_data)
 
     def create_district_gui(self) -> None:
-        """ Create district rectangle via GUI interaction. """
+        """Create a district rectangle via interactive GUI selection."""
         # init window
         self.init_wind()
 
@@ -90,5 +98,5 @@ class DistrictGen:
             listener.join()
 
     def get_district_rect(self) -> Rectangle:
-        """ Get the created district rectangle. """
+        """Return the created district rectangle."""
         return self.rectangle

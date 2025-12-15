@@ -1,4 +1,16 @@
-""" Module for finding paths in a map using different path planning methods. """
+"""Path finding entry point
+
+Factory that loads a concrete planner and exposes a consistent interface
+to compute paths on a workspace map.
+
+Steps:
+- Read configured planner name from pipeline configs
+- Load planner implementation via entry points
+- Instantiate planner with workspace map and global offset
+
+Result:
+- ``FindPathInMap.pp`` holds the ready-to-use planner instance.
+"""
 from importlib.metadata import entry_points
 import numpy as np
 from covpp.base.logger import MyLogger
@@ -7,11 +19,11 @@ from covpp.path_planning.path_planner_base import PathPlannerBase
 
 
 class FindPathInMap:
-    """ Class for finding path in a map using different path planning methods.
+    """Create a configured path planner for a workspace map.
 
     Supported Methods:
-        - "astar": A* algorithm using pyastar2d library
-        - Additional methods can be added by implementing PathPlannerBase subclasses
+    - "astar": A* algorithm using pyastar2d
+    - Additional methods: implement a subclass of ``PathPlannerBase`` and register it.
     """
 
     def __init__(self, map_ws: np.ndarray, g_xy: tuple[int, int]):
@@ -28,3 +40,18 @@ class FindPathInMap:
         # ----------------------------------------------------------------------
 
         self.pp: PathPlannerBase = planner_cls(map_ws, g_xy)
+
+    def find_path(self, start, end):
+        """Delegate path finding to the configured planner.
+
+        Args:
+        - start: Global start as ``MyPoint``.
+        - end: Global end as ``MyPoint``.
+
+        Returns:
+        - MyPath: Global-frame path constructed by the underlying planner.
+
+        Notes:
+        - Mirrors ``PathPlannerBase.find_path`` while keeping planner details opaque.
+        """
+        return self.pp.find_path(start, end)

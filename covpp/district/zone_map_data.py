@@ -1,4 +1,16 @@
-""" ZoneMapData class to store zone map data."""
+"""ZoneMapData container for per-zone maps and metadata.
+
+Holds cropped maps, rectangles, pixel bounds, and result paths with values in
+pixels by default and global map coordinates unless noted otherwise.
+
+Steps:
+- Initialize identifiers and folders via :meth:`set_result_path`
+- Populate maps and rectangles from SpaceAnalyzer
+- Save maps and JSON payload via :meth:`save_data`
+
+Result:
+- Ready-to-use inputs for segmentation, coverage planning, and evaluation.
+"""
 import os
 import json
 import copy
@@ -19,19 +31,16 @@ def convert_to_native(data: dict) -> dict:
 
 
 class ZoneMapData:
-    """ZoneMapData class to store zone map data. values are in pixel by default.
-
-    All coordinates are stored with respect to the original map (global coordinates).
+    """Storage for zone-level map artifacts and metadata (global frame).
 
     Args:
-        ind (int): Zone index identifier.
+    - ind: Zone index identifier.
 
     Attributes:
-        ind, name, zone_dir, maps_dir, result_file, method_results_dir, segmentation_dir,
-        resolution, orig_map_data, orig_rectangle, rectangle, final_rectangle, rect_data, final_rect_data,
-        vertices, final_vertices, hw_bd, hw, global_xy,
-        map_orig, map_ws, map_sf_orig, map_cleaning,
-        map_planning, map_segmentation
+    - Paths: ``zone_dir``, ``maps_dir``, ``result_file``, ``method_results_dir``, ``segmentation_dir``
+    - Geometry: ``orig_rectangle``, ``rectangle``, ``final_rectangle``, ``rect_data``, ``final_rect_data``
+    - Pixels/bounds: ``vertices``, ``final_vertices``, ``hw_bd``, ``hw``, ``global_xy``
+    - Maps: ``map_orig``, ``map_ws``, ``map_sf_orig``, ``map_cleaning``, ``map_planning``, ``map_segmentation``, ``map_ws_segmented``
     """
 
     def __init__(self, ind: int = 0):
@@ -69,6 +78,7 @@ class ZoneMapData:
 
     @property
     def final_rect_data(self) -> dict:
+        """Return a shallow copy of the final rectangle data dict."""
         return copy.copy(self._final_rect_data)
 
     def set_name(self, name: str):
@@ -81,7 +91,13 @@ class ZoneMapData:
         self.set_result_path()
 
     def set_result_path(self):
-        """ set zone result paths based on zone name and original map data. """
+        """Compute and create result folders based on map and zone name.
+
+        Steps:
+        - For district vs zone, build directory structure
+        - Create segmentation and method result folders
+        - Create maps subdirectory
+        """
 
         if self.name == 'District':
             self.zone_dir = self.orig_map_data.mcfg.district_dir
@@ -123,10 +139,7 @@ class ZoneMapData:
         self.vertices = vertices
 
     def set_final_rect_data(self, rect_data_t: dict, vertices: list[tuple[int, int]]):
-        """
-        set final rectangle data and final vertices.
-        final rectangle is the free space bounding box.
-        """
+        """Set the final free-space bounding rectangle data and vertices."""
         # data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
         # vertices: [(x, y), ...]
         self._final_rect_data = rect_data_t
@@ -150,8 +163,10 @@ class ZoneMapData:
         self.map_planning = map_viz
 
     def set_hw_bd_px(self, hw_bd: dict):
-        """ set map boundary in pixels.
-        dict with keys = {"h_min", "w_min", "h_max", "w_max"}
+        """Set pixel bounds and derive local shape and global offset.
+
+        Args:
+        - hw_bd: Dict with keys ``h_min``, ``w_min``, ``h_max``, ``w_max``.
         """
         self.hw_bd = hw_bd
         self.hw = (hw_bd["h_max"] - hw_bd["h_min"],
@@ -163,7 +178,7 @@ class ZoneMapData:
     # --------------------------------------------------------------------------
 
     def save_data(self) -> None:
-        """ save zone map data to files. maps, local_map.json. """
+        """Persist maps (PNG) and a JSON metadata file to disk."""
 
         # Save map images with maximum quality (lossless PNG)
         png_params = [cv.IMWRITE_PNG_COMPRESSION, 0]
@@ -193,5 +208,4 @@ class ZoneMapData:
             visualize_map_s(self.map_orig, f"zone_{self.ind}_{'orig'}")
 
     def validate_data(self):
-        # later
-        pass
+        """Placeholder for validating presence/shape of required maps."""

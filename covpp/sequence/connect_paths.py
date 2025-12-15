@@ -1,4 +1,13 @@
-"""Path connection module. """
+"""Path connection between coverage cells.
+
+Steps:
+- Initialize connection/path matrices
+- Optionally precompute all inter-cell connections and distances
+- Build connection paths along the optimized sequence
+
+Result:
+- ``c_paths_px`` holds the connection paths for the selected ordering.
+"""
 import numpy as np
 from covpp.base.logger import MyLogger
 from covpp.base.geometry import MyPath, MyPoint
@@ -28,8 +37,10 @@ class ConnectPaths:
         self.n_cells: int = None                                # number of cells
 
     def initialize(self, cells: list[PCell]):
-        """ Initialize connection paths and distances matrices based on the number of cells.
-            - i, j are cell indexes in the cells list
+        """Initialize path and distance matrices sized to the number of cells.
+
+        Notes:
+        - Indices ``i, j`` refer to positions in the given ``cells`` list.
         """
         # cell_ids = [cell.id for cell in cells]
         # n = max(cell_ids)
@@ -39,7 +50,7 @@ class ConnectPaths:
         self.all_distances = np.full((n, n), np.inf, dtype=float)
 
     def find_all_connections(self, cells: list[PCell]):
-        """ Find all connection paths between cells (based on their coverage paths endpoints) and store them in a matrix. """
+        """Compute all pairwise connection paths based on coverage endpoints."""
         self.lg.info2("find all connections paths")
         n = self.n_cells
         all_connections = np.full((n, n), None, dtype=object)
@@ -55,7 +66,7 @@ class ConnectPaths:
         self.all_connection_paths = all_connections
 
     def find_all_distances(self):
-        """ Calculate distances based on connection paths and store them in a matrix. """
+        """Compute pairwise distances from the precomputed connection paths."""
         self.lg.info2("find all distances")
         n = self.n_cells
         all_distances = np.full((n, n), np.inf, dtype=float)
@@ -68,9 +79,11 @@ class ConnectPaths:
         self.all_distances = all_distances
 
     def connect_paths(self, paths_px: list[MyPath], seq_idxs: list[int] = None) -> None:
-        """ Connect paths based on the given sequence of cell indices.
-            - If seq_idxs is None, connect paths in the given order.
-            - If path between two cells is not found, create it.
+        """Create connection paths following a given sequence (or input order).
+
+        Behavior:
+        - If ``seq_idxs`` is None, connects the provided paths in order
+        - Otherwise uses ``all_connection_paths`` and fills any missing entries
         """
         c_paths = []  # list of connection paths
 
@@ -91,11 +104,11 @@ class ConnectPaths:
         self.c_paths_px = c_paths
 
     def find_path(self, start: MyPoint, end: MyPoint) -> MyPath:
-        """ Find path between two points using the FindPathInMap class. """
+        """Find a collision-free path between two global points."""
         return self.fp.find_path(start, end)
 
     def update_connection_2_cells(self, start_idx: int, end_idx: int, start: MyPoint, end: MyPoint) -> float:
-        """ Update (recalculate) connection path and distance between two cells."""
+        """Recompute connection path and distance entry between two cells."""
         if start is None or end is None:
             self.lg.warn("Start or end index is None.")
             return float('inf')

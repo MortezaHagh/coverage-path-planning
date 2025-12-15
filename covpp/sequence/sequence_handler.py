@@ -128,7 +128,12 @@ class SequenceHandler:
         self.paths: SequencePaths = SequencePaths()
 
     def run(self, cells: list[PCell], map_polygons: MapPolygons) -> None:
-        """ Run sequence creation and path connection. """
+        """Run sequencing + connection and update visualization.
+
+        Args:
+        - cells: Planning cells with coverage paths.
+        - map_polygons: Polygons for plotting context.
+        """
         self.cells = cells
         self.n_cells = len(cells)
         self.map_polygons = map_polygons
@@ -143,13 +148,12 @@ class SequenceHandler:
         # **********************
 
     def create_sequence(self) -> None:
-        """
-        Create optimum sequence of cells to be covered.
+        """Create an optimized visitation order for coverage cells.
 
         Steps:
-        1. Calculate distances between cells (if needed).
-        2. Optimize sequence of cells based on distances.
-        3. Store paths in sequence paths.
+        1. Initialize connection helper and optionally compute distances
+        2. Run the configured optimizer to produce ``seq_idxs``
+        3. Store paths in sequence order
         """
         self.lg.info2("Creating optimized cell sequence")
 
@@ -174,7 +178,7 @@ class SequenceHandler:
         self.paths_px = [cell.path_px for cell in self.s_cells if cell.do_planning]
 
     def optimize(self, distances: np.ndarray = None) -> None:
-        """ Optimize cell visit sequence using the selected sequencer. """
+        """Optimize cell visit sequence using the selected sequencer."""
         if len(self.cells) == 0:
             return
         elif len(self.cells) == 1:
@@ -186,9 +190,7 @@ class SequenceHandler:
         self.s_cells = [self.cells[i] for i in self.seq_idxs]
 
     def connect_paths(self) -> None:
-        """ Connect the paths based on the created sequence.
-            connect end-start points of paths.
-        """
+        """Connect coverage paths end-to-start using the optimized sequence."""
         self.lg.info2("Connecting paths based on optimized sequence")
         self.connections.connect_paths(self.paths_px, self.seq_idxs)
         self.c_paths_px = self.connections.c_paths_px
@@ -199,7 +201,7 @@ class SequenceHandler:
     # ==================================================================================================================
 
     def post_planning(self) -> None:
-        """ Perform post-planning steps such as filtering and creating full path. """
+        """Filter connection paths and build the final path bundle."""
         if len(self.paths_px) == 0 or len(self.paths_m) == 0:
             self.lg.error("No paths found. Cannot post_planning.")
             return
@@ -208,7 +210,7 @@ class SequenceHandler:
         self.create_full_path()
 
     def create_full_path(self) -> None:
-        """ Create the full path by combining coverage paths and connection paths. """
+        """Combine coverage and connection paths into a single full path."""
         n_paths = len(self.paths_px)
         f_path_px = []
         for i in range(n_paths-1):
@@ -220,7 +222,7 @@ class SequenceHandler:
         self.f_path_m = self.path_px_to_m(self.f_path_px)
 
     def plot_paths(self):
-        """ Plot all paths: coverage, connection, and final path. """
+        """Plot coverage, connection, and final paths (save to disk if enabled)."""
         self.plot_paths_px()        # paths.png svg
         self.plot_final_path_m()    # final_path.svg
         if PipeLineConfig.do_animate:

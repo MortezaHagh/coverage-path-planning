@@ -159,7 +159,15 @@ class CoveragePathPlannerBase:
 
     @staticmethod
     def apply_distance_filter_path(path: MyPath, resolution: float) -> MyPath:
-        """ Filter the full path based on the minimum distance between waypoints. """
+        """Filter path to enforce min/max waypoint spacing.
+
+        Args:
+        - path: Input path in pixel coordinates.
+        - resolution: Map resolution (m/px) for converting thresholds.
+
+        Returns:
+        - MyPath: Filtered path in pixel coordinates.
+        """
         min_wp_dist_px = PlanningConfig.min_wp_dist / resolution  # convert to px
         new_points = []
         prev_point = path.point(0)
@@ -223,12 +231,12 @@ class CoveragePathPlannerBase:
         """Rotate entire path around an origin point.
 
         Args:
-            path: Path to rotate.
-            angle: Rotation angle in degrees.
-            origin: Center point for rotation (x, y tuple).
+        - path: Path to rotate (pixel coordinates).
+        - angle: Rotation angle in radians.
+        - origin: Center point for rotation ``(x, y)``.
 
         Returns:
-            MyPath: Rotated path.
+        - MyPath: Rotated path (pixel coordinates).
         """
         return MyPath([self.rotate_point(p, angle, origin) for p in path.points])
 

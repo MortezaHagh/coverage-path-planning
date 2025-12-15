@@ -56,20 +56,21 @@ class DistrictData:
         self.district_stats = DistrictStatsBase()
 
     def create_zones_hl(self) -> None:
-        """Create all zones in the district and initialize high-level map planning.
+        """Create zones and initialize district-level planning visualization.
 
-        This method creates zone subdivisions and updates the district-level
-        planning visualization map.
+        Steps:
+        - Generate zone rectangles and `ZoneMapData`
+        - Construct `ZoneData` objects for each zone
+        - Update the district planning map overlay
         """
         self.create_zones()
         self.update_map_planning()
 
     def run_planning_pipeline(self) -> None:
-        """Execute coverage planning pipeline for all zones and aggregate statistics.
+        """Run segmentation → coverage → sequencing → evaluation for all zones.
 
-        This method runs the complete planning pipeline (segmentation, path planning,
-        sequencing, evaluation) for each zone, then aggregates district-level performance statistics
-        and updates the final planning visualization.
+        Result:
+        - Updates `district_stats`, the final planning map, and persists outputs.
         """
 
         self.lg.info1("Step: running coverage planning pipeline on all zones")
@@ -92,10 +93,12 @@ class DistrictData:
         self.save_map_planning()
 
     def create_zones(self) -> None:
-        """Create zones based on rectangle subdivision method.
+        """Create zones using the configured rectangle subdivision method.
 
-        Generates zone rectangles, creates ZoneMapData for each zone,
-        and initializes ZoneData objects.
+        Steps:
+        - Create zone rectangles (currently single rectangle per district)
+        - Clone SpaceAnalyzer, update by zone rectangle, and fetch `ZoneMapData`
+        - Instantiate `ZoneData` and register in `zone_datas`
         """
         self.lg.info1("Step: creating zones [ZoneData] and their map data")
 
@@ -114,7 +117,7 @@ class DistrictData:
             self.zone_datas.append(zd)
 
     def update_map_planning(self) -> None:
-        """ update district map_planning based on all zones map_planning. """
+        """Composite district planning map from per-zone planning overlays."""
         mapp = self.dmd.map_planning.copy()
         for zd in self.zone_datas:
             x1, y1 = zd.zmd.hw_bd["h_min"], zd.zmd.hw_bd["w_min"]
@@ -125,7 +128,7 @@ class DistrictData:
         self.dmd.map_planning = mapp
 
     def save_map_planning(self) -> None:
-        """ save district map_planning to file. """
+        """Save district planning visualization as a lossless PNG (no compression). """
         if not PipeLineConfig.do_save_maps:
             return
         m_name = f"/mp_{PipeLineConfig.method}.png"
@@ -137,7 +140,7 @@ class DistrictData:
     # ==================================================================================================================
 
     def create_zone_rectangles_1(self) -> list[Rectangle]:
-        """ create two zone rectangles by splitting the district rectangle into two halves. """
+        """Split the district into two halves along the short axis (rotated). """
         # data = self.dmd.rect_data
         data = self.dmd.final_rect_data
         h = data["h"]
@@ -158,7 +161,7 @@ class DistrictData:
         return [rect1, rect2]
 
     def create_one_zone_rectangle(self) -> list[Rectangle]:
-        """ create one zone rectangle covering the whole district. """
+        """Create a single zone rectangle covering the whole district. """
         data = self.dmd.final_rect_data
         h = data["h"]
         w = data["w"]

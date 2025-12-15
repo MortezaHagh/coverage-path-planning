@@ -1,4 +1,8 @@
-""" Zone evaluation base classes."""
+"""Zone evaluation base classes.
+
+Defines base data structures and interface for computing zone-level KPIs
+from generated coverage and sequence paths.
+"""
 import json
 from covpp.base.logger import MyLogger
 from covpp.district.zone_map_data import ZoneMapData
@@ -44,7 +48,11 @@ class ZoneStatsBase:
         self.overlap_p = None
 
     def get_data_dict(self) -> dict:
-        """Get statistics data as a dictionary. """
+        """Serialize statistics to a plain dictionary for reporting.
+
+        Returns:
+        - dict: JSON-serializable payload of KPIs and metadata.
+        """
         return {
             "map_name": self.map_name,
             "method": self.method,
@@ -92,17 +100,28 @@ class ZoneEvaluationBase:
         self.stats: ZoneStatsBase = None
 
     def evaluate(self, times: float = 0.0):
-        """ evaluate zone statistics. To be implemented in derived classes. """
+        """Compute zone statistics. Must be implemented by subclasses.
+
+        Args:
+        - times: Optional timing info or dict (depends on subclass needs).
+        """
         raise NotImplementedError("Zone evaluation subclasses must implement evaluate() method")
 
     def save_result(self):
-        """ save zone statistics and planner statistics of the zone to json file. """
+        """Persist zone statistics to the zone’s result JSON file. """
         zone_stats = self.stats.get_data_dict()
         with open(self.zmd.result_file, 'wt', encoding='utf-8') as f:
             json.dump(zone_stats, f, indent=4)
 
     def validate_data(self, times: dict) -> bool:
-        """ check if data are valid for evaluation. """
+        """Validate prerequisites before evaluating statistics.
+
+        Checks presence of timing info and required paths; prepares a cleaned map
+        fallback when full path is missing.
+
+        Returns:
+        - bool: True when safe to compute metrics; False otherwise.
+        """
         is_valid = True
 
         # check times

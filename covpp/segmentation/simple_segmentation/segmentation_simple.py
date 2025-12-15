@@ -21,11 +21,19 @@ class Segmentation(SegmentationBase):
         self.lg.update_name("SegmentationSimple")
 
     def run(self) -> None:
-        """Execute simple segmentation by creating a single cell."""
+        """Execute simple segmentation by creating a single cell.
+
+        Returns:
+        - None
+        """
         self.create_cells()
 
     def create_cells(self) -> None:
-        """Instantiate a single ``CellBase`` for the whole zone polygon."""
+        """Instantiate a single ``CellBase`` for the whole zone polygon.
+
+        Returns:
+        - None
+        """
         cell = CellBase(idx=0, poly=self.map_polygons.b_poly, resolution=self.zmd.resolution)
         self.cells.append(cell)
         self.n_cells = 1

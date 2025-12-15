@@ -1,4 +1,18 @@
-""" Space Analyzer Module - Analyze space for creating free space maps and MapData based on robot and workspace configurations. """
+"""Space Analyzer Module
+
+Analyze space to generate local free-space maps and zone-level MapData
+based on robot and workspace configurations.
+
+Steps:
+- Crop and frame the district/zone rectangle
+- Derive workspace (ws) and cleaning maps via dilation/erosion or distance maps
+- Select a connected free-space island (optionally via user click)
+- Remove islands and compute final free-space bounding rectangle
+- Build visualization layers and assemble a `ZoneMapData`
+
+Result:
+- Populated maps (orig/ws/cleaning/selected) and a ready-to-use `ZoneMapData`.
+"""
 import copy
 import cv2 as cv
 import numpy as np
@@ -14,19 +28,19 @@ OCCUPIED_COST = 0
 
 
 class SpaceAnalyzer:
-    """
-    Analyze space for creating free space maps based on robot and workspace configurations.
-        ws: work space (max(wf and os distances)). displays feasible position for the center of the robot.
-        cleaning: cleanable area.
-        orig: original or eroded back after dilation
-        sf: selected free space
-        f: filtered (island detection)
-        bb: bounding box
+    """Space analysis pipeline for free-space map creation.
 
-    Methods:
-        create_local_map_ws_selection: create local map and work space based on input (district) rectangle.
-        update_by_rectangle: update the generated space and maps based on new frame (zone rectangle)
-        create_zone_map_data: create zone map data object after space analysis.
+    Notes on map types:
+    - ws: workspace (feasible robot-center positions)
+    - cleaning: cleanable area given the robot radius
+    - orig: original or eroded-back after dilation
+    - sf: selected free-space (single island)
+    - f: filtered (island removal)
+
+    Key methods:
+    - ``create_local_map_ws_selection``: Build ws/cleaning maps, select island, compute artifacts
+    - ``update_by_rectangle``: Re-run analysis for a new zone rectangle
+    - ``create_zone_map_data``: Package outputs into a `ZoneMapData`
     """
 
     def __init__(self, map_data: MapData, rectangle: Rectangle):
@@ -90,7 +104,20 @@ class SpaceAnalyzer:
     # ==========================================================================
 
     def update_by_rectangle(self, rectangle: Rectangle) -> None:
-        """Update the generated space and maps based on new frame (zone rectangle)"""
+        """Recompute maps for a new zone rectangle.
+
+        Args:
+        - rectangle: New zone frame to apply for local analysis.
+
+        Steps:
+        - Update internal rectangle, vertices, and bounds
+        - Re-crop all derived maps to the new frame
+        - Recompute final free-space bounding rectangle and visualization
+        - Refresh the `ZoneMapData`
+
+        Returns:
+        - None
+        """
         self.space_type = "Zone"
         self.rectangle = rectangle
         self.vertices = np.array(rectangle.vertices_t, dtype=np.int32)
@@ -117,7 +144,20 @@ class SpaceAnalyzer:
         self.create_zone_map_data()
 
     def create_local_map_ws_selection(self) -> None:
-        """Create local map and work space based on input (district) rectangle."""
+        """Build local ws/cleaning maps and select a free-space island.
+
+        Steps:
+        - Crop input binary map to the district rectangle
+        - Compute cleaning and workspace maps (dilation/erosion or distance)
+        - Select a single free-space island via click or center default
+        - Remove islands to ensure accessibility
+        - Derive cleaning and original maps for the selected island
+        - Compute final free-space bounding rectangle
+        - Create final visualization and package data
+
+        Returns:
+        - None
+        """
 
         # crop map and mask
         binary_map = self.binary_map_0
@@ -169,7 +209,15 @@ class SpaceAnalyzer:
         self.create_zone_map_data()
 
     def create_zone_map_data(self) -> None:
-        """ Create zone map data object after space analysis. """
+        """Populate and store a `ZoneMapData` from current artifacts.
+
+        Sets original map data, rectangles, derived maps, visualization, and
+        pixel bounds. Keeps an internal deep-copiable snapshot via property
+        `zone_map_data`.
+
+        Returns:
+        - None
+        """
         zone_map_data = ZoneMapData()
         zone_map_data.set_orig_map_data(self.orig_map_data)
         zone_map_data.set_orig_rectangle(self.orig_rectangle)
@@ -185,13 +233,17 @@ class SpaceAnalyzer:
         self.__zone_map_data = zone_map_data
 
     def get_final_freespace_bd_rect(self, map_i: np.ndarray) -> dict:
-        """
-        Find rectangle bounding the free selected space (global).
-        Returns:
-            dict: {"vertices": vertices, "rect_data": data}
+        """Compute bounding rectangle of selected free space in global frame.
 
-            vertices: [(x, y), ...]
-            data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        Args:
+        - map_i: Map in local frame used to derive the rectangle.
+
+        Returns:
+        - dict: {"vertices": np.ndarray[(N,2)], "rect_data": {"xc","yc","rot","w","h"}}
+
+        Notes:
+        - Uses local bounding rectangle then shifts to global coordinates
+        - Returns empty dict values if no valid rectangle is found
         """
 
         final_map = map_i.copy()
@@ -223,13 +275,13 @@ class SpaceAnalyzer:
         return rect
 
     def find_bounding_rect(self, map_i: np.ndarray) -> dict:
-        """
-        Find bounding rectangle of the free space.
-        Returns:
-            sol: {"vertices": vertices, "rect_data": data}
+        """Find bounding rectangle of the free space in local frame.
 
-            vertices: [(x, y), ...]
-            data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
+        Args:
+        - map_i: Local map image with selected free-space pixels.
+
+        Returns:
+        - dict: {"vertices": np.ndarray[(N,2)], "rect_data": {"xc","yc","rot","w","h"}}
         """
         if self.space_type == "District":
             sol = find_circumscribed_rectangle(map_i)
@@ -244,11 +296,31 @@ class SpaceAnalyzer:
     # ==========================================================================
 
     def distance_filter(self, map_full: np.ndarray) -> np.ndarray:
-        """ Detect free spaces considering distance from obstacles using distance transform."""
+        """Detect free spaces using distance transform with obstacle clearance.
+
+        Args:
+        - map_full: Full binary map; defaults to `self.binary_map_0` when None.
+
+        Returns:
+        - np.ndarray: Cropped workspace map meeting distance-to-obstacle threshold.
+        """
         return self.detect_free_spaces_dist_occ(map_full=map_full, dist_from_occ_m=self.scfg.ws_r_dist)
 
     def detect_free_spaces_dist_occ(self, map_full: np.ndarray, dist_from_occ_m: float = 0.0) -> np.ndarray:
-        """ Detect free spaces considering distance from obstacles using distance transform."""
+        """Detect free spaces considering distance from obstacles using distance transform.
+
+        Args:
+        - map_full: Full binary map with FREE/OCCUPIED labels.
+        - dist_from_occ_m: Required clearance from obstacles, in meters.
+
+        Steps:
+        - Expand crop to account for border effects
+        - Compute L2 distance transform and normalize
+        - Threshold based on required clearance and crop back
+
+        Returns:
+        - np.ndarray: Cropped workspace map satisfying the distance criterion.
+        """
 
         # current map
         if map_full is None:
@@ -290,7 +362,18 @@ class SpaceAnalyzer:
         return map_ws
 
     def select_free_space(self, map_i: np.ndarray) -> None:
-        """ Select free space point on the map. """
+        """Select the seed point for free-space island extraction.
+
+        Args:
+        - map_i: Cropped workspace map shown for selection context.
+
+        Behavior:
+        - If `scfg.select_free_space` is False, selects map center by default
+        - Otherwise opens an interactive window and waits for a click
+
+        Returns:
+        - None
+        """
         self.lg.info("selecting the free space ...")
         free_map_disp = cv.addWeighted(self.map_c_orig, 0.4, map_i, 0.6, 0)
         if not self.scfg.select_free_space:
@@ -306,20 +389,24 @@ class SpaceAnalyzer:
         cv.destroyAllWindows()
 
     def select_point_cb(self, event, x, y, _, __) -> None:
-        """ Mouse callback function to select a point. """
+        """Mouse callback to capture the selected point for island extraction."""
         if event == cv.EVENT_LBUTTONDOWN:
             self.fs_selected_point = (x, y)
             self.is_fs_point_selected = True
 
     def separate_selected_free_space(self, c_map: np.ndarray) -> np.ndarray:
-        """
-        Selecting open space from candidates based on the clicked point.
-        Find all contours in the image and selects contour which contains selected point.
-        Each contour will be separate free space.
+        """Extract the free-space island containing the selected point.
+
+        Steps:
+        - Find external contours
+        - Choose the contour containing the selected point, or the largest
+        - Fill and mask to isolate the selected island
+
         Args:
-            c_map (np.ndarray): cropped map.
+        - c_map: Cropped workspace map.
+
         Returns:
-            np.ndarray: selected_free_space.
+        - np.ndarray: Binary map of the selected island.
         """
         self.lg.info("selecting the open space based on the selecting point.")
 
@@ -351,7 +438,11 @@ class SpaceAnalyzer:
         return map_fs
 
     def remove_islands(self, map_i: np.ndarray) -> np.ndarray:
-        """ Filter: Remove islands (inaccessible areas) from the map. """
+        """Remove inaccessible islands (holes) from the selected free-space map.
+
+        Returns:
+        - np.ndarray: Filtered map with holes removed.
+        """
         contours, hierarchy = cv.findContours(map_i, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         if len(contours) == 0:
             return map_i
@@ -368,9 +459,11 @@ class SpaceAnalyzer:
     # ==========================================================================
 
     def calculate_hw_bounds(self) -> None:
-        """
-        Calculate height width bounds based on the rectangle vertices.
-        dict keys: h_min, w_min, h_max, w_max
+        """Calculate pixel bounds of the current rectangle.
+
+        Result keys:
+        - `hw_bd`: dict with h_min, w_min, h_max, w_max in global frame
+        - `hw_bd_local`: dict with local frame bounds starting at (0,0)
         """
         wh_max = np.max(self.vertices, axis=0)
         wh_min = np.min(self.vertices, axis=0)
@@ -382,13 +475,13 @@ class SpaceAnalyzer:
         self.hw_bd_local = {"h_min": 0, "w_min": 0, "h_max": h_max-h_min, "w_max": w_max-w_min}
 
     def crop_and_frame(self, map_i: np.ndarray) -> np.ndarray:
-        """ crop the map based on the rectangle (hw_bd) and add frame (rectangle) to the map. """
+        """Crop the map to `hw_bd` and draw the rectangle frame on top."""
         map_cropped = self.crop_map(map_i)
         map_framed = self.make_frame(map_cropped, local_frame=True, value=OCCUPIED_COST)
         return map_framed
 
     def crop_map(self, map_i: np.ndarray) -> np.ndarray:
-        """ crop the map based on the rectangle (hw_bd). """
+        """Crop the map to `hw_bd` and mask outside-rectangle area as occupied."""
 
         # cropped map and vertices
         map_cropped = copy.copy(map_i[self.hw_bd["h_min"]:self.hw_bd["h_max"], self.hw_bd["w_min"]:self.hw_bd["w_max"]])
@@ -407,7 +500,7 @@ class SpaceAnalyzer:
         return map_cropped
 
     def make_frame(self, map_i: np.ndarray, local_frame: bool = True, value: int = 0) -> np.ndarray:
-        """ add frame (rectangle) to the map array as value (default = 0). """
+        """Draw the rectangle frame on a map with the given value/color."""
         if local_frame:
             hw_bd = self.hw_bd_local
         else:
@@ -429,9 +522,10 @@ class SpaceAnalyzer:
         return map_with_rect
 
     def apply_hw_limits(self, hw_limits) -> dict:
-        """
-        Apply hw limits based on the original map size.
-        dict keys: h_min w_min h_max w_max
+        """Clamp rectangle bounds to fit within the original map dimensions.
+
+        Returns:
+        - dict: Updated bounds with keys h_min, w_min, h_max, w_max.
         """
         updated_hw = copy.copy(hw_limits)
         w_min = max(0, updated_hw["w_min"])
@@ -444,7 +538,16 @@ class SpaceAnalyzer:
     # ==========================================================================
 
     def dilate_erode_map(self, map_i: np.ndarray, radius_m: float, erode: bool = False) -> np.ndarray:
-        """ Dilate or erode the map based on the radius."""
+        """Morphologically dilate or erode the map by a metric radius.
+
+        Args:
+        - map_i: Input binary map.
+        - radius_m: Metric radius to apply (converted using map resolution).
+        - erode: When True applies erosion; otherwise applies dilation.
+
+        Returns:
+        - np.ndarray: Binary result after morphology.
+        """
         radius_px = int(radius_m / self.orig_map_data.up_resolution)
         kernel_size = 2*radius_px + 1
         kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (kernel_size, kernel_size))

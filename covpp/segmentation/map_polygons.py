@@ -1,4 +1,14 @@
-"""Polygon extraction module for workspace boundaries and obstacles."""
+"""Polygon extraction for workspace boundaries and obstacles.
+
+Steps:
+- Detect external workspace boundary via contours
+- Simplify contours by distance thresholding
+- Build shapely polygons in global pixel coordinates
+- Validate and fix polygons if needed
+
+Result:
+- ``b_poly`` for the boundary and ``obs_polys`` for obstacles.
+"""
 import cv2 as cv
 import numpy as np
 # from shapely import affinity
@@ -48,8 +58,13 @@ class MapPolygons:
     def create_bounding(self) -> bool:
         """Extract workspace boundary polygon from binary map.
 
-        Uses contour detection to find the largest contour representing
-        the workspace boundary.
+        Steps:
+        - Find largest external contour as the workspace boundary
+        - Filter contour points by minimum distance
+        - Convert to global pixel coordinates and validate polygon
+
+        Returns:
+        - bool: True on success; False when boundary creation fails.
         """
         contours, _ = cv.findContours(self.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
         biggest_contour = max(contours, key=cv.contourArea)
@@ -75,7 +90,13 @@ class MapPolygons:
         return True
 
     def create_obstacle_polygons(self):
-        """Extract obstacle polygons from binary map using contour detection."""
+        """Extract obstacle polygons inside the workspace boundary.
+
+        Steps:
+        - Find inner contours (holes) of the workspace
+        - Filter, convert to global coordinates, and validate polygons
+        - Attempt fix via ``buffer(0)`` when invalid
+        """
         # get obstacle contours inside the biggest contour from map image
         contours, hierarchy = cv.findContours(self.map_ws, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
 
@@ -113,7 +134,11 @@ class MapPolygons:
         self.obs_polys = obs_polys
 
     def filter_contour_points(self, contour: np.ndarray):
-        """ Filter contour points by minimum distance."""
+        """Filter contour points by a minimum Euclidean distance.
+
+        Returns:
+        - list[np.ndarray]: Subset of contour points satisfying spacing.
+        """
         skip = set()
         for i, p1 in enumerate(contour):
             if i in skip:
@@ -128,7 +153,12 @@ class MapPolygons:
         return filtered_c
 
     def rotate_all_polygons(self, angle: float, origin_t: np.ndarray = None) -> None:
-        """ Rotate all polygons (bounding and obstacles) by the given angle around their centroid. """
+        """Rotate boundary and obstacle polygons around an origin.
+
+        Args:
+        - angle: Rotation angle in radians.
+        - origin_t: Optional origin ``[x, y]``; defaults to each polygon centroid.
+        """
         self.b_poly = self.rotate_polygon(self.b_poly, angle, origin_t)
         rotated_obs_polys = []
         for poly in self.obs_polys:
@@ -137,7 +167,16 @@ class MapPolygons:
         self.obs_polys = rotated_obs_polys
 
     def rotate_polygon(self, poly: Polygon, angle: float, origin_t: np.ndarray = None) -> Polygon:
-        """ Rotate the given polygon by the given angle around the given origin. """
+        """Rotate a polygon by an angle around an origin.
+
+        Args:
+        - poly: Input polygon.
+        - angle: Rotation angle in radians.
+        - origin_t: Optional origin ``[x, y]``; defaults to polygon centroid.
+
+        Returns:
+        - Polygon: Rotated polygon (not re-shifted back to global origin).
+        """
         # rotate bounding polygon
         if origin_t is None:
             origin = np.array(poly.centroid.coords)[0]

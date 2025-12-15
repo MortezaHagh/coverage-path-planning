@@ -10,14 +10,18 @@ from covpp.evaluation.zone_evaluation_base import ZoneStatsBase, ZoneEvaluationB
 
 
 class ZoneEvaluation(ZoneEvaluationBase):
-    """Zone evaluation class to evaluate zone statistics. """
+    """Concrete zone evaluation that computes timing, path, and area KPIs. """
 
     def __init__(self, zmd: ZoneMapData, paths: SequencePaths):
         super().__init__(zmd, paths)
         self.lg = MyLogger("ZoneEvaluation")
 
     def evaluate(self, times: dict = None):
-        """ Compute zone coverage statistics based on map, generated paths, and timing information. """
+        """Compute coverage statistics using map, generated paths, and timings.
+
+        Args:
+        - times: Dict with keys 'start', 'segmentation', 'coverage_planning', 'sequencing'.
+        """
         self.stats = ZoneStatsBase()
         self.stats.map_name = self.zmd.orig_map_data.name
         self.stats.method = PipeLineConfig.method
@@ -41,14 +45,14 @@ class ZoneEvaluation(ZoneEvaluationBase):
         self.save_result()
 
     def calculate_time_statistics(self, times: dict) -> None:
-        """ calculate time statistics from timing information. """
+        """Populate time-related statistics from timing checkpoints. """
         self.stats.time_segmentation = times['segmentation'] - times['start']
         self.stats.time_coverage_planning = times['coverage_planning'] - times['segmentation']
         self.stats.time_sequencing = times['sequencing'] - times['coverage_planning']
         self.stats.time_total = times['sequencing'] - times['start']
 
     def calculate_path_statistics(self) -> None:
-        """ calculate path statistics: lengths and yaw changes. """
+        """Compute path lengths and total yaw changes for full and coverage paths. """
         full_path: MyPath = self.paths.f_path_m
 
         # full path length
@@ -88,7 +92,7 @@ class ZoneEvaluation(ZoneEvaluationBase):
         self.stats.coverage_yaw_rad = yaw_changes
 
     def calculate_travel_times(self):
-        """ calculate estimated travel times based on path lengths and robot configurations. """
+        """Estimate travel times from path lengths and robot kinematic limits. """
         # full travel time
         t_lin = self.stats.full_length / RobotConfig.v_lin_avg
         t_ang = self.stats.full_yaw_rad / RobotConfig.v_ang_avg
@@ -103,12 +107,12 @@ class ZoneEvaluation(ZoneEvaluationBase):
     # ------------------------------------------------------------------------------------------------------------------
 
     def calculate_cleaning_area(self):
-        """ calculate area to be cleaned in pixels and meters. """
+        """Compute cleanable area in pixels and meters from ``map_cleaning``. """
         self.stats.cleaning_area_px = np.sum(self.zmd.map_cleaning == 255)
         self.stats.cleaning_area_m = self.stats.cleaning_area_px * (self.zmd.resolution**2)
 
     def calculate_cleaned_area_stats(self, cleaned_acc: np.ndarray) -> None:
-        """ calculate cleaned area statistics from cleaned accumulated area. """
+        """Compute cleaned/overlap/uncleaned areas and coverage percentage. """
 
         cleaned_area_px = np.sum(cleaned_acc > 0)
         cleaned_area_m = cleaned_area_px * (self.zmd.resolution ** 2)
@@ -130,7 +134,7 @@ class ZoneEvaluation(ZoneEvaluationBase):
         self.stats.coverage_p = self.stats.cleaned_area_m / self.stats.cleaning_area_m * 100
 
     def calculate_cleaned_accumulated_area(self) -> np.ndarray:
-        """ calculate cleaned accumulated area from paths. """
+        """Accumulate cleaned passes per pixel by buffering coverage paths. """
 
         # [cleaned_acc]: accumulate number of passes for each pixel from paths
         # for covered area calculation
@@ -181,7 +185,7 @@ class ZoneEvaluation(ZoneEvaluationBase):
         return cleaned_acc
 
     def update_map_planning(self, cleaned_acc: np.ndarray) -> None:
-        """ update map planning with cleaning paths. """
+        """Update planning visualization with cleaning coverage overlays. """
 
         # [map_cleaned]: show uncleaned area and overlaps, only for visualization
         # uncleaned free pixels -> red, cleaned -> scaled green

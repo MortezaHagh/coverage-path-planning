@@ -64,14 +64,29 @@ class PCell(CellBase):
         self.find_cell_main_direction()
 
     def eval_cell_rectangles(self) -> None:
-        """Evaluate cell for rectangle-like properties to optimize planning. """
+        """Evaluate rectangle-like properties to guide coverage strategy.
+
+        Sets:
+        - ``rect_like``: True if an inscribed rectangle is usable
+        - ``rectangle_poly``: The inscribed rectangle polygon (expanded/rotated)
+        """
 
         er = EvalRectangles(self.id, self.poly, self.robot_r_px)
         self.rect_like = er.rect_like
         self.rectangle_poly = er.rectangle_poly
 
     def create_cell_map(self, zone_map: np.ndarray, zone_rectangle: Rectangle) -> None:
-        """ Create binary map for the given cell. """
+        """Create a binary map for the given cell in local coordinates.
+
+        Steps:
+        - Compute a padded bounding box around the cell
+        - Crop the zone map to this box and create an empty cell map
+        - Fill the cell polygon (or inscribed rectangle) as free
+        - Mask with zone free space and fill detected inner holes as occupied
+
+        Returns:
+        - None
+        """
 
         # determine bounding box  of the cell in the zone map
         x_min = int(self.x_min_p - zone_rectangle.x_min)
@@ -131,8 +146,10 @@ class PCell(CellBase):
         self.map = map_cell
 
     def find_cell_main_direction(self) -> None:
-        """ Find main directions of each cell using Hough Transform.
-            to be implemented in child classes.
+        """Compute the cell's main direction using Hough Transform.
+
+        Sets ``major_direction`` in radians. Uses rectangle orientation
+        when available, otherwise falls back to line detection.
         """
         if self.rect_like:
             self.major_direction = self.main_direction_by_cell_rectangle()
@@ -144,14 +161,18 @@ class PCell(CellBase):
     # ==================================================================================================================
 
     def main_direction_by_cell_rectangle(self) -> float:
-        """ Get main direction from cell rectangle orientation. """
+        """Get main direction from inscribed rectangle orientation (radians). """
 
         edge_prop = find_longest_edge_poly(self.rectangle_poly)
         longest_angle = edge_prop['angle']
         return (longest_angle + np.pi/2) % np.pi
 
     def cell_main_direction(self) -> float:
-        """ Find main direction of the cell using Hough Transform. """
+        """Find main direction of the cell via probabilistic Hough lines.
+
+        Returns:
+        - float: Dominant direction angle in radians within [0, π).
+        """
         # Edge detection
         edges = cv.Canny(self.map, 50, 150, apertureSize=3)
 
@@ -190,7 +211,7 @@ class PCell(CellBase):
         return major_direction
 
     def cell_main_direction_1(self) -> float:
-        """ Find main direction of the cell using Hough Transform. """
+        """Alternative Hough-based method to compute the main direction (radians). """
 
         # Edge detection
         edges = cv.Canny(self.map, 50, 150, apertureSize=3)
@@ -224,7 +245,7 @@ class PCell(CellBase):
         return major_direction
 
     def vizualize_main_direction(self, major_direction: float, lines: np.ndarray = None, lines_p: np.ndarray = None) -> float:
-        """ Visualize main direction on the cell map. """
+        """Visualize the main direction over the cell map (debug utility). """
         # visualization
         # Draw arrow from center of map in free-space direction
         h, w = self.map.shape

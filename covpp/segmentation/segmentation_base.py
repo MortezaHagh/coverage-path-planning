@@ -48,20 +48,32 @@ class SegmentationBase:
     def run(self):
         """Execute the segmentation algorithm.
 
-        This method must be implemented by all child classes. It should
-        decompose the zone workspace into cells and populate the cells
-        and n_cells attributes.
+        Steps (expected from subclasses):
+        - Generate raw cell polygons from workspace/obstacles
+        - Call ``create_cells`` to build ``CellBase`` objects
+        - Optionally call ``set_cell_adjacents`` and ``create_map_ws_segmented``
+
+        Returns:
+        - None
         """
         raise NotImplementedError("Segmentation subclasses must implement run() method")
 
     def create_cells(self):
-        """Create CellBase objects for each segmented cell. """
+        """Create ``CellBase`` objects for each segmented cell.
+
+        Returns:
+        - None
+        """
         raise NotImplementedError("Segmentation subclasses must implement run() method")
 
     def set_cell_adjacents(self):
-        """Set adjacent cells for each cell based on shared boundaries or other criteria. """
+        """Set adjacency relationships between cells (shared boundaries, etc.).
+
+        Returns:
+        - None
+        """
         raise NotImplementedError("Segmentation subclasses must implement set_cell_adjacents() method")
 
     def create_map_ws_segmented(self):
-        """Create a map based on map_ws with segmentation lines drawn."""
+        """Render segmentation lines over the workspace map for visualization."""
         raise NotImplementedError("Segmentation subclasses must implement create_map_ws_segmented() method")

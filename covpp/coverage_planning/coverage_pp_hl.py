@@ -51,7 +51,15 @@ class CoveragePPHandler:
         """Execute coverage path planning for all cells.
 
         Args:
-            cells: List of processed cells from segmentation.
+        - cells: List of processed cells from segmentation.
+
+        Steps:
+        - Store input cells
+        - Dispatch to configured coverage planning method
+        - Attach resulting paths back to the cells
+
+        Returns:
+        - None
         """
         self.cells = cells
         self.run_covpp_method()
@@ -59,9 +67,10 @@ class CoveragePPHandler:
     def run_covpp_method(self) -> None:
         """Apply coverage path planning algorithm to all cells in the zone.
 
-        This method loads the configured planning algorithm and creates a
-        planner instance for each cell. Successfully planned paths are stored
-        in the cell objects (path_m and path_px attributes).
+        Notes:
+        - Loads the configured planner via entry points
+        - For each cell: runs planner, validates, and assigns ``path_m``/``path_px``
+        - Marks cells as not plannable when planning fails
         """
 
         self.lg.info2("start coverage path planning for cells")

@@ -33,12 +33,16 @@ class PathPlannerBase:
     def plan_path(self, start: tuple[int, int], end: tuple[int, int]) -> list[tuple[int, int]]:
         """Plan a local-frame path between two free pixels.
 
-        Subclasses must replace this method with an algorithm that consumes the
-        prepared ``cost_map`` and returns an ordered list of (x, y) pixel
-        coordinates describing the path in the local frame.
+        Args:
+        - start: Local pixel coordinate ``(x, y)`` for the start.
+        - end: Local pixel coordinate ``(x, y)`` for the end.
+
+        Notes:
+        - Subclasses must replace this method with a concrete algorithm that consumes
+            the prepared ``cost_map`` and returns an ordered list of local pixels.
 
         Returns:
-            list[tuple[int, int]]: Local-frame waypoints for the path.
+        - list[tuple[int, int]]: Local-frame waypoints for the path.
         """
         raise NotImplementedError("This method should be overridden by subclasses.")
 
@@ -51,7 +55,7 @@ class PathPlannerBase:
             3. Sum Euclidean segment lengths to obtain the travelled metric length.
 
         Returns:
-            float: ``inf`` if no path exists, otherwise the polyline length in pixels.
+            float: ``inf`` if no path exists, otherwise polyline length (pixels).
         """
 
         # get path
@@ -66,11 +70,15 @@ class PathPlannerBase:
     def find_path(self, start: MyPoint, end: MyPoint) -> MyPath:
         """Compute a global-frame path between two map points.
 
+        Args:
+        - start: Global ``MyPoint`` start.
+        - end: Global ``MyPoint`` end.
+
         Returns:
-            MyPath: Path with absolute pixel coordinates, ready for downstream consumers.
+        - MyPath: Path with absolute pixel coordinates, ready for downstream consumers.
 
         Raises:
-            ValueError: If start/end are not in free space or if ``plan_path`` fails.
+        - ValueError: If start/end are not free or if ``plan_path`` fails.
         """
 
         # start - end
