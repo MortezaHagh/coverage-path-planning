@@ -20,7 +20,7 @@
 
 ## Quick Summary
 
-`covpp` is a modular, plugin-driven coverage path planning pipeline for indoor (grid / occupancy) maps. Starting from a grayscale map + YAML, it selects a district, analyzes free space, segments into cells, plans per–cell coverage paths, sequences them, and evaluates performance. Algorithms for segmentation, coverage planning, low-level path finding, and sequencing are loaded via Python entry points (`segmentors`, `planners`, `path_planners`, `sequencers`) so you can add new methods based on base interfaces without touching core code.
+`covpp` is a modular, plugin-driven coverage path planning pipeline for (grid / occupancy) maps. Starting from a grayscale map + YAML, it selects a district, analyzes free space, segments into cells, plans per–cell coverage paths, sequences them, and evaluates performance. Algorithms for segmentation, coverage planning, low-level path finding, and sequencing are loaded via Python entry points (`segmentors`, `coverage_planners`, `path_planners`, `sequencers`) so you can add new methods based on base interfaces without touching core code.
 
 ## Overview
 
@@ -78,7 +78,7 @@ The pipeline executes in the following sequential steps:
 - Creates zones (subdivisions of the district)
 - Manages zone map data
 
-### 6. **Zone-Level Coverage Planning** (`ZoneData`)
+### 6. **Zone-Level Coverage Planning** (`ZoneData`) [**Main Planning Step**]
 
 For each zone in the district:
 
@@ -89,7 +89,7 @@ For each zone in the district:
 
 ## Module Details
 
-For detailed information about each module, please refer to [Module Details](docs/documentation/module_details.md).
+For detailed information about each module, please refer to [Module Details](module_details.md).
 
 ## Data Flow
 
@@ -188,24 +188,35 @@ results/
 
 ### result.json Structure
 
+Saved via `ZoneStatsBase.get_data_dict()`; key fields include:
+
 ```json
 {
-  "map": "Map2",
-  "method": "contour",
-  "zone_stats": {
-    "path_len_m": 123.45,
-    "coverage_p": 98.7,
-    "cleaning_area_m": 50.2,
-    "n_paths": 5
-  },
-  "planner_stats": {
-    "len_m": 123.45,
-    "n_paths": 5,
-    "yaw_changes": 12,
-    "planning_time": 2.34
-  }
+  "map_name": "Map2",
+  "method": "boust",
+  "zone_ind": 0,
+  "full_trav_time": 42.1,
+  "coverage_trav_time": 31.0,
+  "time_segmentation": 0.5,
+  "time_coverage_planning": 1.7,
+  "time_sequencing": 0.3,
+  "time_total": 2.5,
+  "full_length": 120.55,
+  "coverage_length": 95.20,
+  "full_yaw_rad": 12.33,
+  "coverage_yaw_rad": 8.76,
+  "cleaning_area_px": 215342,
+  "cleaning_area_m": 53.84,
+  "cleaned_area_px": 210000,
+  "cleaned_area_m": 52.5,
+  "uncleaned_area_m": 1.34,
+  "overlaped_area_m": 4.12,
+  "coverage_p": 97.51,
+  "overlap_p": 7.65
 }
 ```
+
+District-level aggregation is saved by `DistrictEvaluationHandler` using the per-zone stats.
 
 ## Plugin-Based Architecture (Entry Points)
 
@@ -263,10 +274,10 @@ All method selection is controlled through configuration files:
 ```python
 # In configs.py
 class PipeLineConfig:
-    segmentation_method: str = "voronoi"  # or "simple", "custom"
-    covpp_method: str = "boust"           # or "contour", "custom"
-  pp_method: str = "astar"              # or any custom path-planner plugin name
-    sequence_method: str = "simple"       # or "dfs", "milp", "custom"
+    segmentation_method: str = "voronoi"   # or "simple", custom via entry points
+    covpp_method: str = "boust"            # or "contour", custom via entry points
+    pp_method: str = "astar"               # or any custom path-planner plugin name
+    sequence_method: str = "simple"        # or "dfs", "milp", custom via entry points
 ```
 
 This allows:
@@ -346,3 +357,18 @@ python main.py Map2
 - Voronoi decomposition: Optimal space partitioning
 - Distance Transform: Contour-based path generation
 - Plugin Architecture: Extensible software design patterns
+
+## Notes on Map Layers
+
+- `ws`: workspace (feasible robot-center positions)
+- `cleaning`: cleanable area given the cleaning radius
+- `sf`: selected free-space island (single connected component)
+- `orig`: original (or eroded-back) workspace for context
+- `map_planning`/`map_segmentation`: visualization overlays
+
+## Entry Point Groups
+
+- `segmentors`: segmentation methods
+- `coverage_planners`: coverage path planners
+- `path_planners`: low-level point-to-point planners
+- `sequencers`: sequence optimizers

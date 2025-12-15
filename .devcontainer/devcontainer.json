@@ -36,6 +36,7 @@
 		"extensions": [
 			// editor
 			"eamodio.gitlens",
+			"mhutchie.git-graph",
 			"esbenp.prettier-vscode",
 			// Python
 			"donjayamanne.python-extension-pack",
