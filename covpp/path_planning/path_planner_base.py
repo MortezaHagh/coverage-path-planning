@@ -30,15 +30,15 @@ class PathPlannerBase:
         self.s_x = g_xy[0]
         self.s_y = g_xy[1]
 
-    def plan_path(self, start: MyPoint, end: MyPoint) -> MyPath:
-        """Plan a local-path solution between two free pixels.
+    def plan_path(self, start: tuple[int, int], end: tuple[int, int]) -> list[tuple[int, int]]:
+        """Plan a local-frame path between two free pixels.
 
         Subclasses must replace this method with an algorithm that consumes the
-        prepared ``cost_map`` and returns an **ordered** iterable of (x, y) pixel
-        coordinates describing the path in the *local* frame.
+        prepared ``cost_map`` and returns an ordered list of (x, y) pixel
+        coordinates describing the path in the local frame.
 
         Returns:
-            MyPath | list[tuple[int, int]]: Local-frame waypoints for the path.
+            list[tuple[int, int]]: Local-frame waypoints for the path.
         """
         raise NotImplementedError("This method should be overridden by subclasses.")
 

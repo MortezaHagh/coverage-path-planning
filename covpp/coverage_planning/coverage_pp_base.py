@@ -219,7 +219,7 @@ class CoveragePathPlannerBase:
         """
         return MyPoint(p.x * self.resolution, p.y * self.resolution)
 
-    def rotate_path(self, path: MyPath, angle: float, origin: tuple) -> None:
+    def rotate_path(self, path: MyPath, angle: float, origin: tuple) -> MyPath:
         """Rotate entire path around an origin point.
 
         Args:
@@ -228,7 +228,7 @@ class CoveragePathPlannerBase:
             origin: Center point for rotation (x, y tuple).
 
         Returns:
-            Rotated path.
+            MyPath: Rotated path.
         """
         return MyPath([self.rotate_point(p, angle, origin) for p in path.points])
 

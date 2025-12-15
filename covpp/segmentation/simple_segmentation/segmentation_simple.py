@@ -24,7 +24,7 @@ class Segmentation(SegmentationBase):
         """Execute simple segmentation by creating a single cell."""
         self.create_cells()
 
-    def create_cells(self) -> list[CellBase]:
+    def create_cells(self) -> None:
         """Instantiate a single ``CellBase`` for the whole zone polygon."""
         cell = CellBase(idx=0, poly=self.map_polygons.b_poly, resolution=self.zmd.resolution)
         self.cells.append(cell)

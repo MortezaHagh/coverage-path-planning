@@ -102,7 +102,7 @@ class Obstacle:
             e.set_prev_e(self.events[prev_ind])
             e.set_next_e(self.events[next_ind])
 
-    def eval_concave(self) -> bool:
+    def eval_concave(self) -> None:
         for e in self.events:
             x, y = e.xy
             prev_x, prev_y = e.prev_e.xy

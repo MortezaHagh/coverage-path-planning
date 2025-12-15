@@ -156,8 +156,12 @@ def find_cnt_level(h, hierarchy) -> int:
     return level
 
 
-def evaluate_polygon(polygon: Polygon) -> bool:
-    """ Check if a polygon is valid (non-empty, has area, and is valid)."""
+def evaluate_polygon(polygon: Polygon) -> tuple[bool, str]:
+    """ Check if a polygon is valid (non-empty, has area, and is valid).
+
+    Returns:
+        tuple[bool, str]: (is_valid, status) where status explains invalidity.
+    """
     is_valid = True
     status = ""
     if not polygon.is_valid:

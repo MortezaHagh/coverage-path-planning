@@ -157,7 +157,7 @@ class DistrictData:
         rect2 = Rectangle(data2)
         return [rect1, rect2]
 
-    def create_one_zone_rectangle(self) -> Rectangle:
+    def create_one_zone_rectangle(self) -> list[Rectangle]:
         """ create one zone rectangle covering the whole district. """
         data = self.dmd.final_rect_data
         h = data["h"]

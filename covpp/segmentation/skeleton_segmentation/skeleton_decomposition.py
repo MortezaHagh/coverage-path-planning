@@ -474,7 +474,7 @@ class SkeletonDecomposition:
         self.base_paths.append(tuple(base_paths))
         return True
 
-    def get_side_points(self, cp: np.ndarray) -> np.ndarray:
+    def get_side_points(self, cp: np.ndarray) -> list[tuple[int, int]] | None:
         """ Find two side points for a critical point. """
 
         # find neighbors (8-connectivity) of cp

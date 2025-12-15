@@ -68,7 +68,7 @@ class ZoneMapData:
         self.map_ws_segmented: np.ndarray = None        # map with segment lines added
 
     @property
-    def final_rect_data(self) -> int:
+    def final_rect_data(self) -> dict:
         return copy.copy(self._final_rect_data)
 
     def set_name(self, name: str):

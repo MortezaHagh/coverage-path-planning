@@ -53,7 +53,7 @@ class DistrictGen:
         rect_data = {"xc": xc, "yc": yc, "rot": rot, "w": w, "h": h}
         self.rectangle = Rectangle(rect_data)
 
-    def create_district_gui(self) -> Rectangle:
+    def create_district_gui(self) -> None:
         """ Create district rectangle via GUI interaction. """
         # init window
         self.init_wind()

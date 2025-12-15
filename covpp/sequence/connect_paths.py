@@ -67,7 +67,7 @@ class ConnectPaths:
                 all_distances[i, j] = np.sum(np.linalg.norm(np.diff(path.xy, axis=0), axis=1))
         self.all_distances = all_distances
 
-    def connect_paths(self, paths_px: list[MyPath], seq_idxs: list[int] = None) -> list[MyPath]:
+    def connect_paths(self, paths_px: list[MyPath], seq_idxs: list[int] = None) -> None:
         """ Connect paths based on the given sequence of cell indices.
             - If seq_idxs is None, connect paths in the given order.
             - If path between two cells is not found, create it.
@@ -94,7 +94,7 @@ class ConnectPaths:
         """ Find path between two points using the FindPathInMap class. """
         return self.fp.find_path(start, end)
 
-    def update_connection_2_cells(self, start_idx: int, end_idx: int, start: MyPoint, end: MyPoint) -> MyPath:
+    def update_connection_2_cells(self, start_idx: int, end_idx: int, start: MyPoint, end: MyPoint) -> float:
         """ Update (recalculate) connection path and distance between two cells."""
         if start is None or end is None:
             self.lg.warn("Start or end index is None.")

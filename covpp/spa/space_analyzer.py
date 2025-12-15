@@ -367,7 +367,7 @@ class SpaceAnalyzer:
 
     # ==========================================================================
 
-    def calculate_hw_bounds(self) -> dict:
+    def calculate_hw_bounds(self) -> None:
         """
         Calculate height width bounds based on the rectangle vertices.
         dict keys: h_min, w_min, h_max, w_max
@@ -443,7 +443,7 @@ class SpaceAnalyzer:
 
     # ==========================================================================
 
-    def dilate_erode_map(self, map_i: np.ndarray, radius_m: float, erode: False) -> tuple[np.ndarray, np.ndarray]:
+    def dilate_erode_map(self, map_i: np.ndarray, radius_m: float, erode: bool = False) -> np.ndarray:
         """ Dilate or erode the map based on the radius."""
         radius_px = int(radius_m / self.orig_map_data.up_resolution)
         kernel_size = 2*radius_px + 1

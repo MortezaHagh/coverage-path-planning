@@ -103,7 +103,7 @@ class EvalRectangles:
         #     # circle_circum_poly=circle_circum_poly,
         # )
 
-    def simplify_polygon(self, tol) -> None:
+    def simplify_polygon(self, tol) -> Polygon:
         """ Simplify the cell polygon to reduce number of vertices. """
         simple_poly = self.poly.simplify(tol, preserve_topology=True)
         return simple_poly
