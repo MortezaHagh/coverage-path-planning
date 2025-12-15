@@ -1,11 +1,11 @@
 """Boustrophedon (back-and-forth) coverage path planning implementation."""
 import numpy as np
-from covpp.base.geometry import MyPath, MyPoint
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
-from covpp.map_topology.map_graph import MapSearchGraph
 from covpp.segmentation.cell_planning import PCell
 from covpp.segmentation.map_polygons import MapPolygons
+from covpp.map_topology.map_graph import MapSearchGraph
+from covpp.base.geometry import MyPath, MyPoint, evaluate_polygon
 from covpp.coverage_planning.coverage_pp_base import CoveragePathPlannerBase
 from covpp.coverage_planning.boustrophedon.cell import Cell
 from covpp.coverage_planning.boustrophedon.plotter import BoustPlotter
@@ -127,10 +127,10 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
 
         any_apth = False
         for cell in self.mcells:
-
-            if not cell.poly.is_valid:
+            is_valid, _ = evaluate_polygon(cell.poly)
+            if not is_valid:
                 cell.do_planning = False
-                self.lg.warn(f"Cell {cell.id} polygon is not valid.")
+                self.lg.warn(f"Cell {cell.id} polygon is not valid. Skipping coverage planning for this cell.")
                 continue
             cell_planner = CellCoveragePathPlanner(cell=cell, zone_ind=self.zmd.ind, resolution=self.resolution)
             if cell_planner.path_m:

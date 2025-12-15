@@ -1,6 +1,7 @@
 """ Cell and CellGroup classes for boustrophedon decomposition."""
 from shapely import Polygon
 from shapely.ops import unary_union
+from covpp.base.geometry import evaluate_polygon
 from covpp.segmentation.cell_base import CellBase
 from covpp.coverage_planning.boustrophedon.events import Event
 
@@ -9,10 +10,15 @@ class Cell (CellBase):
     """ Cell for boustrophedon decomposition. """
 
     def __init__(self, ind: int, poly: Polygon, event: Event, resolution: float = 0.05):
-        # if polygon is invalid, fix it
-        if not poly.is_valid:
+        # evaluate validity of polygon
+        is_valid = evaluate_polygon(poly)[0]
+        if not is_valid:
+            print(f"[BoustCell][WARN] Cell {ind}: Polygon is invalid. Trying to fix it.")
             poly = poly.buffer(0)
-            print(f"[WARN] Cell {ind}: Polygon is invalid, fixing it.")
+            is_valid = evaluate_polygon(poly)[0]
+            if not is_valid:
+                raise ValueError(f"[BoustCell][ERROR] Cell {ind}: Polygon is still invalid after fixing.")
+
         super().__init__(ind, poly, resolution, simplify=False)
 
         #
@@ -165,15 +171,22 @@ class CellGroup:
         if self.cells:
             merged_polygon = unary_union([cell.poly for cell in self.cells])
 
-            # if merged_polygon is MultiPolygon, take convex hull
-            if merged_polygon.geom_type == 'MultiPolygon':
-                merged_polygon = merged_polygon.convex_hull
-                print(f"[WARN] CellGroup {self.id}: Merged polygon is MultiPolygon, taking convex hull.")
-
-            # if polygon is invalid, fix it
-            if not merged_polygon.is_valid:
+            # check validity
+            is_valid, status = evaluate_polygon(merged_polygon)
+            if not is_valid:
+                print(f"[CellGroup][WARN] CellGroup {self.id}: Merged polygon is invalid. Trying to fix it.")
                 merged_polygon = merged_polygon.buffer(0)
-                print(f"[WARN] CellGroup {self.id}: Merged polygon is invalid, fixing it.")
+
+            # if merged_polygon is MultiPolygon, take convex hull
+            is_valid, status = evaluate_polygon(merged_polygon)
+            if status == "multi_polygon":
+                print(f"[CellGroup][WARN] CellGroup {self.id}: Merged polygon is MultiPolygon, taking convex hull.")
+                merged_polygon = merged_polygon.convex_hull
+
+            # check final validity
+            is_valid, status = evaluate_polygon(merged_polygon)
+            if not is_valid:
+                print(f"[CellGroup][ERROR] CellGroup {self.id}: Merged polygon is still invalid after fixing. Status: {status}")
 
             self.merged_cell = Cell(self.id, merged_polygon, self.first_cell.event, resolution=self.first_cell.resolution)
 

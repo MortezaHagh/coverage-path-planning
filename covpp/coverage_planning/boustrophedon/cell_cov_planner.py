@@ -3,7 +3,7 @@ import numpy as np
 from shapely.affinity import scale
 from shapely.geometry import Polygon, Point, LineString
 from covpp.base.logger import MyLogger
-from covpp.base.geometry import MyPoint, MyPath
+from covpp.base.geometry import MyPoint, MyPath, evaluate_polygon
 from covpp.base.configs import PlanningConfig, PipeLineConfig
 from covpp.coverage_planning.boustrophedon.cell import Cell
 
@@ -76,13 +76,15 @@ class CellCoveragePathPlanner:
         self.poly_m = Polygon(points_m_p)
 
         # check validity
-        if not self.poly_m.is_valid:
-            self.lg.warn(f"Cell polygon (in meter) {self.cell.id} is not valid.")
+        is_valid, _ = evaluate_polygon(self.poly_m)
+        if not is_valid:
+            self.lg.warn(f"Cell polygon (in meter) {self.cell.id} is not valid. Trying to fix it.")
             fixed_poly = self.poly_m.buffer(0)
-            if fixed_poly.is_valid and not fixed_poly.is_empty and fixed_poly.geom_type == 'Polygon':
+            is_valid, _ = evaluate_polygon(fixed_poly)
+            if is_valid:
                 self.poly_m = fixed_poly
-                self.lg.warn(f"Cell polygon (in meter) {self.cell.id} is fixed.")
             else:
+                self.lg.warn(f"Cell polygon (in meter) {self.cell.id} is still not valid after fixing. Skipping planning.")
                 self.cell.do_planning = False
                 return False
 

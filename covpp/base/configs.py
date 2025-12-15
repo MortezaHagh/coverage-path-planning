@@ -84,7 +84,7 @@ class PipeLineConfig:
 class RobotConfig:
     """Nominal robot characteristics used to estimate motion effort."""
 
-    radius = 0.2            # robot radius in meters
+    radius = 0.3            # robot radius in meters
     v_lin_avg = 0.5         # average linear velocity in m/s
     v_ang_avg = 0.7         # average angular velocity in rad/s
 

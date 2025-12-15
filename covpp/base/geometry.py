@@ -154,3 +154,31 @@ def find_cnt_level(h, hierarchy) -> int:
         h = hierarchy[0][h[3]]
         level += 1
     return level
+
+
+def evaluate_polygon(polygon: Polygon) -> bool:
+    """ Check if a polygon is valid (non-empty, has area, and is valid)."""
+    is_valid = True
+    status = ""
+    if not polygon.is_valid:
+        is_valid = False
+        status = "invalid"
+    elif polygon.is_empty:
+        is_valid = False
+        status = "empty"
+    elif not polygon.is_simple:
+        is_valid = False
+        status = "not_simple"
+    elif polygon.area == 0:
+        is_valid = False
+        status = "zero_area"
+
+    if not is_valid:
+        return False, status
+
+    # check if it is multi polygon
+    if polygon.geom_type == 'MultiPolygon':
+        is_valid = False
+        status = "multi_polygon"
+
+    return is_valid, status

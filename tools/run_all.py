@@ -6,8 +6,8 @@ map_names = [
     "Map0",
     "Map2",
     "Map4",
-    "Map_fr52",
     'MapPaper',
+    "Map_fr52",
     'Map_office_a',
 ]
 # map_names = ["Map_fr52", "Map4"]
@@ -15,8 +15,8 @@ map_names = [
 
 if __name__ == "__main__":
 
-    # seg_methods = ["skeleton", "voronoi"]
-    seg_methods = ["skeleton"]
+    seg_methods = ["skeleton", "voronoi"]
+    # seg_methods = ["skeleton"]
     covpp_methods = ["boust", "contour", "grid_energy_min"]
     rects = [False, True]
     # rects = [True]

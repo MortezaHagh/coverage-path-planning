@@ -4,6 +4,7 @@ import numpy as np
 # from shapely import affinity
 from shapely import Polygon, Point
 from covpp.base.logger import MyLogger
+from covpp.base.geometry import evaluate_polygon
 
 
 class MapPolygons:
@@ -66,14 +67,9 @@ class MapPolygons:
         self.b_poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
 
         # check validity
-        if not self.b_poly.is_valid:
-            self.lg.warn("Bounding polygon is not valid.")
-            return False
-        if self.b_poly.is_empty:
-            self.lg.warn("Bounding polygon is empty.")
-            return False
-        if self.b_poly.is_empty:
-            self.lg.warn("Bounding polygon is empty.")
+        is_valid, status = evaluate_polygon(self.b_poly)
+        if not is_valid:
+            self.lg.warn(f"Bounding polygon is not valid, Status: {status}")
             return False
 
         return True
@@ -105,9 +101,14 @@ class MapPolygons:
             poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
 
             # check validity
-            if not poly.is_valid:
-                self.lg.warn("Obstacle polygon is not valid, fixing using buffer(0).")
+            is_valid, status = evaluate_polygon(poly)
+            if not is_valid:
+                self.lg.warn(f"Obstacle polygon is not valid, Status: {status}. Trying to fix it.")
                 poly = poly.buffer(0)
+                is_valid, status = evaluate_polygon(poly)
+                if not is_valid:
+                    self.lg.warn(f"Obstacle polygon is still not valid after fixing, skipping. Status: {status}")
+                    raise ValueError(f"Obstacle polygon is still not valid after fixing. Status: {status}")
             obs_polys.append(poly)
         self.obs_polys = obs_polys
 
