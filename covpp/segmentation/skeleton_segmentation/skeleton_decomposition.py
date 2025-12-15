@@ -58,7 +58,7 @@ class SkeletonDecomposition:
         self.base_paths: list[tuple[tuple, tuple]] = []             # connecting each base point to the critical point
 
         # results
-        self.polygons: list = [Polygon]                             # shapely polygons for each segment
+        self.polygons: list[Polygon] = []                           # shapely polygons for each segment
         self.adjacency_matrix: np.ndarray = np.ndarray              # adjacency matrix between segments
         self.map_ws_segmented: np.ndarray = np.ndarray              # map_ws with segmentation lines drawn
 
@@ -68,7 +68,6 @@ class SkeletonDecomposition:
         self.create_skeleton()
         self.find_endpoints_branchpoints()
         self.extract_special_branches()
-        self.lg.info2(f"Extracted {len(self.branches)} skeleton branches.")
 
         self.find_critical_points()
         self.find_base_points()
@@ -78,6 +77,7 @@ class SkeletonDecomposition:
         segmented_map, seg_ids, contours = self.create_segmented_map()
         self.adjacency_matrix = self.create_adjacency_matrix(segmented_map, seg_ids)
         self.create_polygons(contours, self.adjacency_matrix)
+        self.lg.info2(f"Extracted {len(self.polygons)} polygons.")
 
         self.visualize_skeleton()
 
@@ -330,8 +330,7 @@ class SkeletonDecomposition:
 
         # validate
         if len(self.branches) == 0:
-            raise ValueError("No branches extracted from skeleton.")
-            # self.lg.error("No branches extracted from skeleton.")
+            self.lg.warn("No branches extracted from skeleton.")
 
     # ==================================================================================================================
     # find critical points and base points
@@ -375,8 +374,8 @@ class SkeletonDecomposition:
             #     mid_idx = min_indices[0]
 
             # take the first one and last one (to avoid biasing to one end) # todo
-            # min_indices = np.array([min_indices[0], min_indices[-1]])
-            min_indices = np.array([min_indices[0]])
+            min_indices = np.array([min_indices[0], min_indices[-1]])
+            # min_indices = np.array([min_indices[0]])
             local_ps = branch.points[min_indices]
             cp_pts.extend(local_ps)
 

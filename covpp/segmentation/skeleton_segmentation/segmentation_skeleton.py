@@ -22,15 +22,37 @@ class Segmentation(SegmentationBase):
     def run(self) -> None:
         """Run skeletonization-based segmentation pipeline."""
 
+        # skeleton decomposition
         skelet_de = SkeletonDecomposition(self.zmd)
         skelet_de.skeleton_decomposition()
         self.polygons = skelet_de.polygons
         self.adjacency_matrix = skelet_de.adjacency_matrix
 
+        # self.plot_segmentation()
+
+        # post-process polygons
+        self.post_process_polygons()
+
         # create cells
         self.create_cells()
         self.set_cell_adjacents()
         self.create_map_ws_segmented(skelet_de.map_ws_segmented)
+
+    def post_process_polygons(self):
+        """ Post-process polygons to fix potential issues such as MultiPolygons. """
+        new_polys = []
+        for poly in self.polygons:
+
+            # fix potential invalid polygon issues
+            poly = poly.buffer(0)
+
+            # if it is multi polygon, take the largest one
+            if poly.geom_type == 'MultiPolygon':
+                self.lg.warn("Found MultiPolygon during post-processing. Taking the largest polygon.")
+                poly = max(poly.geoms, key=lambda a: a.area)
+
+            new_polys.append(poly)
+        self.polygons = new_polys
 
     def create_cells(self):
         """Create CellBase objects for each segmented cell. """
@@ -57,9 +79,11 @@ class Segmentation(SegmentationBase):
     #     plt.close('all')
     #     fig, ax = plt.subplots()
     #     ax.set_aspect('equal')
-    #     for poly in self.polygons:
+    #     for i, poly in enumerate(self.polygons):
     #         x, y = poly.exterior.xy
     #         ax.plot(x, y)
+    #         # text
+    #         ax.text(poly.centroid.x, poly.centroid.y, str(i), fontsize=12, ha='center')
 
     #     ax.set_title("Segmented Polygons")
     #     plt.show()
