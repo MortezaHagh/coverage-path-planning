@@ -1,7 +1,7 @@
 """ Module to merge adjacent cells based on certain criteria. """
 # from shapely import coverage_union
 from shapely.ops import unary_union
-from shapely.geometry import LineString
+from shapely.geometry import LineString, Polygon
 from covpp.segmentation.cell_base import CellBase
 from covpp.base.logger import MyLogger
 
@@ -26,9 +26,9 @@ class MergeCells:
         #
         id_cell_map = {cell.id: cell for cell in self.cells}
         groups_ids = self.find_merge_groups(id_cell_map)
-        merged_cells = self.merge_groups(groups_ids, id_cell_map)
+        merged_cells, merged_group_ids = self.create_merge_groups(groups_ids, id_cell_map)
         self.updated_cells = merged_cells
-        self.update_ids(groups_ids)
+        self.update_ids(merged_group_ids)
 
     def find_merge_groups(self, id_cell_map: dict[int, CellBase]) -> list[set[int]]:
         """ Find groups of cells to be merged based on adjacency and criteria. """
@@ -62,51 +62,73 @@ class MergeCells:
             merge_groups.append(groups_ids)
         return merge_groups
 
-    def merge_groups(self, groups_ids: list[set[int]], id_cell_map: dict[int, CellBase]) -> None:
+    def create_merge_groups(self, groups_ids: list[set[int]], id_cell_map: dict[int, CellBase]) -> None:
         """ Merge cells in each group and update ids and adjacent ids. """
 
         # create merged cells
+        merged_ids = []
+        merged_group_ids = []
         merged_cells: list[CellBase] = []
         for group_ids in groups_ids:
-
             if len(group_ids) == 1:
-                old_id = min(group_ids)
-                new_cell = id_cell_map[old_id]
-            else:
-                self.lg.info(f"Merging group: {group_ids}")
-                old_id = min(group_ids)
+                continue
 
-                # create merged polygon
-                merged_polys = [id_cell_map[id].base_poly for id in group_ids]
-                new_poly = unary_union(merged_polys)
+            # Merge cells in the group
+            self.lg.info(f"Merging group: {group_ids}")
+            old_id = min(group_ids)
 
-                # check if new_poly is MultiPolygon
-                if new_poly.geom_type == 'MultiPolygon':
-                    # bugger, merge, bufffer to slove issue
-                    merged_polys = [poly.buffer(2) for poly in merged_polys]
-                    new_poly = unary_union(merged_polys).buffer(-2)
+            # create merged polygon
+            polygons = [id_cell_map[id].base_poly for id in group_ids]
+            new_poly = self.create_merged_polygon(polygons.copy())
 
-                # check if new_poly is MultiPolygon
-                if new_poly.geom_type == 'MultiPolygon':
-                    raise ValueError("Merged polygon resulted in a MultiPolygon, which is not supported.")  # todo
+            it = 2
+            while new_poly.geom_type == 'MultiPolygon' and it <= 4:
+                self.lg.warn(f"Merged polygon is MultiPolygon, applying buffer fix with b={it}.")
+                new_poly = self.create_merged_polygon(polygons.copy(), b=it*2)
+                it += 1
 
-                # new_poly = new_poly.convex_hull
-                new_cell = CellBase(idx=old_id, poly=new_poly, resolution=self.resolution)
+            # check if new_poly is MultiPolygon
+            if new_poly.geom_type == 'MultiPolygon':
+                self.lg.warn(f"Failed to merge group {group_ids} into a single Polygon after buffering.")
+                continue
 
-                # all old_ids of the adjacent cells of the group
-                adjacent_ids = set()
-                for gid in group_ids:
-                    adjacent_ids.update(id_cell_map[gid].adjacent_ids)
-                adjacent_ids.difference_update(group_ids)
-                new_cell.adjacent_ids = list(adjacent_ids)
+            # new_poly = new_poly.convex_hull
+            new_cell = CellBase(idx=old_id, poly=new_poly, resolution=self.resolution)
 
-                # update adjacent ids of neighboring cells
-                for old_adj_id in adjacent_ids:
-                    adj_cell = id_cell_map[old_adj_id]
-                    adj_cell.adjacent_ids = [old_id if x in group_ids else x for x in adj_cell.adjacent_ids]
+            # all old_ids of the adjacent cells of the group
+            adjacent_ids = set()
+            for gid in group_ids:
+                adjacent_ids.update(id_cell_map[gid].adjacent_ids)
+            adjacent_ids.difference_update(group_ids)
+            new_cell.adjacent_ids = list(adjacent_ids)
+
+            # update adjacent ids of neighboring cells
+            for old_adj_id in adjacent_ids:
+                adj_cell = id_cell_map[old_adj_id]
+                adj_cell.adjacent_ids = [old_id if x in group_ids else x for x in adj_cell.adjacent_ids]
 
             merged_cells.append(new_cell)
-        return merged_cells
+            merged_group_ids.append(group_ids)
+
+        # add unmerged cells
+        for cell in self.cells:
+            if cell.id not in merged_ids:
+                merged_cells.append(cell)
+                merged_group_ids.append({cell.id})
+
+        return merged_cells, merged_group_ids
+
+    def create_merged_polygon(self, polygons: list[Polygon], b: int = 2) -> Polygon:
+        """ Create a merged polygon from a list of polygons. """
+        merged_poly = unary_union(polygons)
+
+        # check if new_poly is MultiPolygon
+        if merged_poly.geom_type == 'MultiPolygon':
+            # bugger, merge, bufffer to slove issue
+            polygons = [poly.buffer(b) for poly in polygons]
+            merged_poly = unary_union(polygons).buffer(-b)
+
+        return merged_poly
 
     def update_ids(self, groups_ids: list[set[int]]) -> None:
         """ Assign new sequential ids to merged cells and update adjacent ids accordingly. """
