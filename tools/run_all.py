@@ -11,11 +11,18 @@ map_names = [
     'Map_office_a',
 ]
 # map_names = ["Map_fr52", "Map4"]
-# map_names = ["Map_office_a"]
+# map_names = ["Map_fr52"]
 
 if __name__ == "__main__":
 
-    covpp_method = ["boust", "contour", "grid_energy_min"]
+    # seg_methods = ["skeleton", "voronoi"]
+    seg_methods = ["skeleton"]
+    covpp_methods = ["boust", "contour", "grid_energy_min"]
+    rects = [False, True]
+    # rects = [True]
+
+    # covpp_method = ["boust"]
+
     dcfg = PipeLineConfig()
 
     # run for all maps
@@ -28,15 +35,10 @@ if __name__ == "__main__":
         #     S_CELL_IDX = 0
 
         # run for all segmentation methods
-        # for segm_method in ['voronoi', 'skeleton']:
-        for segm_method in ['skeleton']:
+        for segm_method in seg_methods:
 
             # run for all coverage path planning methods
-            for cpp_method in covpp_method:
-
-                # use_insc_ret
-                rects = [False, True]
-                # rects = [True]
+            for cpp_method in covpp_methods:
 
                 # run for all rects
                 for rect in rects:

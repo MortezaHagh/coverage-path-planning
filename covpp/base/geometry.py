@@ -121,6 +121,32 @@ def find_longest_edge_poly(polygon: Polygon) -> dict:
     return result
 
 
+def find_shortest_edge_poly(polygon: Polygon) -> dict:
+    """ Find the shortest edge of a polygon and return its properties."""
+    # find smallest edge of the polygon
+    coords = np.array(polygon.exterior.coords)
+    edges = np.diff(coords, axis=0)
+    edge_lengths = np.linalg.norm(edges, axis=1)
+    min_edge_idx = np.argmin(edge_lengths)
+    edge_length = edge_lengths[min_edge_idx]
+
+    # two edge points
+    p1 = coords[min_edge_idx]
+    p2 = coords[(min_edge_idx + 1) % len(coords)]
+
+    # calculate the angle of the edge p1->p2
+    theta = np.arctan2(p2[1] - p1[1], p2[0] - p1[0])
+
+    # return results
+    result = {
+        'p1': p1,
+        'p2': p2,
+        'angle': theta,
+        'length': edge_length
+    }
+    return result
+
+
 def find_cnt_level(h, hierarchy) -> int:
     """ Find the level of a contour in the hierarchy."""
     level = 0
