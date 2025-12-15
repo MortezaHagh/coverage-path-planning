@@ -65,6 +65,7 @@ class ZoneMapData:
         # maps[updated during planning]
         self.map_planning: np.ndarray = None            # map visualization for planning (map_viz)
         self.map_segmentation: np.ndarray = None        # map segmentation visualization
+        self.map_ws_segmented: np.ndarray = None        # map with segment lines added
 
     @property
     def final_rect_data(self) -> int:
@@ -137,6 +138,7 @@ class ZoneMapData:
 
     def set_map_ws(self, map_ws: np.ndarray):
         self.map_ws = map_ws
+        self.map_ws_segmented = map_ws.copy()
 
     def set_map_sf_orig(self, map_sf_orig: np.ndarray):
         self.map_sf_orig = map_sf_orig

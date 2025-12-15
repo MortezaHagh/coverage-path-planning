@@ -63,6 +63,12 @@ class CellBase:
         # polygon and points
         if simplify:
             poly = self.simplify_cell_poly(poly)
+
+        # validate polygon
+        if not self.validate_polygon(poly):
+            self.lg.error(f"Invalid polygon for cell {self.id}.")
+            raise ValueError(f"Invalid polygon for cell {self.id}.")
+
         self.base_poly: Polygon = deepcopy(poly)                # original cell polygon before any modifications
         self.poly: Polygon = poly                               # cell polygon
         self.points: np.ndarray = np.array([], dtype=np.int32)  # cell polygon points
@@ -100,11 +106,20 @@ class CellBase:
 
         # ----------------------------------------------------------------------
         # calculate cell specs
+        self.update_polygon(self.poly)
+
+    def update_polygon(self, polygon: Polygon):
+        """Update the cell polygon and recalculate specifications."""
+        if not self.validate_polygon(polygon):
+            self.lg.error(f"Invalid polygon for cell {self.id}.")
+            raise ValueError(f"Invalid polygon for cell {self.id}.")
+
+        self.poly = polygon
+        # recalculate specs
         self.calculate_cell_specs()
         self.evaluate_cell_area()
         self.eval_cell_slimness()
-
-        # create cell points
+        # recreate cell points
         self.create_cell_points()
 
     def set_optim_id(self, ind: int, next_cell_idx: int = None):
@@ -199,17 +214,24 @@ class CellBase:
     # validation
     # --------------------------------------------------------------------------
 
-    def validate_cell(self) -> bool:
-        """ Validate cell integrity. """
+    def validate_polygon(self, poly: Polygon) -> bool:
         is_valid = True
-        if self.area <= 0:
-            self.lg.warn(f"Cell has non-positive area: {self.area}")
-            is_valid = False
-        if not self.poly.is_valid:
+        if not poly.is_valid:
             self.lg.warn("Cell polygon is not valid.")
             is_valid = False
-        if not self.poly.is_simple:
+        if not poly.is_simple:
             self.lg.warn("Cell polygon is not simple.")
+            is_valid = False
+        if poly.geom_type != 'Polygon':
+            self.lg.warn(f"Cell polygon is not a valid Polygon, got {poly.geom_type}.")
+            is_valid = False
+        return is_valid
+
+    def validate_cell(self) -> bool:
+        """ Validate cell integrity. """
+        is_valid = self.validate_polygon(self.poly)
+        if self.area <= 0:
+            self.lg.warn(f"Cell has non-positive area: {self.area}")
             is_valid = False
         if len(self.points) < 3:
             self.lg.warn("Cell polygon has less than 3 points.")

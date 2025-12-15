@@ -132,19 +132,19 @@ class SegmentationHandler:
         # if not all(cell_validity):
         #     raise ValueError("One or more cells failed validation checks.")
 
-    def plot_segmentation(self) -> None:
-        """Plot segmentation results."""
-        from matplotlib import pyplot as plt
-        plt.close('all')
-        fig, ax = plt.subplots()
-        ax.set_aspect('equal')
-        for cell in self.cells:
-            poly = cell.poly
-            x, y = poly.exterior.xy
-            ax.plot(x, y)
-            # text at centroid
-            centroid = poly.centroid
-            ax.text(centroid.x, centroid.y, f"{cell.id}", fontsize=12, ha='center', va='center')
+    # def plot_segmentation(self) -> None:
+    #     """Plot segmentation results."""
+    #     from matplotlib import pyplot as plt
+    #     plt.close('all')
+    #     fig, ax = plt.subplots()
+    #     ax.set_aspect('equal')
+    #     for cell in self.cells:
+    #         poly = cell.poly
+    #         x, y = poly.exterior.xy
+    #         ax.plot(x, y)
+    #         # text at centroid
+    #         centroid = poly.centroid
+    #         ax.text(centroid.x, centroid.y, f"{cell.id}", fontsize=12, ha='center', va='center')
 
-        ax.set_title("Segmented Polygons")
-        plt.show()
+    #     ax.set_title("Segmented Polygons")
+    #     plt.show()

@@ -6,12 +6,12 @@ map_names = [
     "Map0",
     "Map2",
     "Map4",
-    "map_fr52",
-    'MapPaper'
+    "Map_fr52",
+    'MapPaper',
+    'Map_office_a',
 ]
-# office_a
-# map_names = ["map_fr52", "Map4"]
-# map_names = ["MapPaper"]
+# map_names = ["Map_fr52", "Map4"]
+# map_names = ["Map_office_a"]
 
 if __name__ == "__main__":
 
@@ -28,14 +28,15 @@ if __name__ == "__main__":
         #     S_CELL_IDX = 0
 
         # run for all segmentation methods
-        for segm_method in ['voronoi', 'skeleton']:
+        # for segm_method in ['voronoi', 'skeleton']:
+        for segm_method in ['skeleton']:
 
             # run for all coverage path planning methods
             for cpp_method in covpp_method:
 
                 # use_insc_ret
-                # rects = [False, True]
-                rects = [True]
+                rects = [False, True]
+                # rects = [True]
 
                 # run for all rects
                 for rect in rects:

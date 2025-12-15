@@ -60,6 +60,3 @@ if __name__ == "__main__":
     print("Polygon Centroid:", poly.centroid)
 
     plot_polygon(poly)
-
-    # Check if the polygon is valid
-    print("Is the polygon valid?", poly.is_valid)

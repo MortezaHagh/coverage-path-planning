@@ -105,7 +105,7 @@ class Ring:
         self.poly: Polygon = Polygon(points)
         self.n_p: int = len(self.points)                # number of points in the ring
 
-    def is_valid(self) -> bool:
+    def is_valid_ring(self) -> bool:
         """ Check if the ring is valid (not empty and has at least one critical point). """
         return len(self.points) > 2 and len(self.cp_icp_idxs) > 0
 

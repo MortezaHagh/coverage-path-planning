@@ -119,3 +119,12 @@ def find_longest_edge_poly(polygon: Polygon) -> dict:
         'length': edge_length
     }
     return result
+
+
+def find_cnt_level(h, hierarchy) -> int:
+    """ Find the level of a contour in the hierarchy."""
+    level = 0
+    while h[3] != -1:
+        h = hierarchy[0][h[3]]
+        level += 1
+    return level

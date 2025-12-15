@@ -1,4 +1,5 @@
 """Voronoi-based segmentation for optimal workspace decomposition."""
+import cv2 as cv
 import numpy as np
 from shapely import Polygon
 from matplotlib import pyplot as plt
@@ -65,6 +66,7 @@ class Segmentation(SegmentationBase):
         self.set_cell_adjacents()
         self.process_cells()
         self.n_cells = len(self.cells)
+        self.create_map_ws_segmented()
 
         # plotting
         self.plot_rings()
@@ -164,7 +166,7 @@ class Segmentation(SegmentationBase):
 
                 # create segment for this critical point
                 ring: Ring = self.create_cp_segment(i, cp)
-                if not ring.is_valid():
+                if not ring.is_valid_ring():
                     self.lg.warn(f"Critical point {i} with vp.idx {cp.vp.idx} segment creation failed, ring not valid.")
                     continue
                 self.rings.append(ring)
@@ -322,6 +324,25 @@ class Segmentation(SegmentationBase):
         self.lg.info("Processing cells")
         for cell in self.cells:
             cell.process_cell()
+
+    def create_map_ws_segmented(self):
+        """Create a map based on map_ws with segmentation lines drawn."""
+        map_ws_segmented = self.zmd.map_ws.copy()
+        # # todo local to world coords?
+        # # draw lines connecting basis points of critical points
+        # for cp in self.critical_points:
+        #     if cp.skip:
+        #         continue
+        #     bs1 = cp.bs1_vp
+        #     bs2 = cp.bs2_vp
+        #     cv.line(map_ws_segmented, (int(bs1[0]), int(bs1[1])), (int(bs2[0]), int(bs2[1])), 0, thickness=2)  # 0: OCCUPIED
+        self.zmd.map_ws_segmented = map_ws_segmented
+
+        # # visualization
+        # cv.namedWindow("Segmented Workspace", cv.WINDOW_NORMAL)
+        # cv.imshow("Segmented Workspace", map_ws_segmented)
+        # cv.waitKey(0)
+        # cv.destroyAllWindows()
 
     # ==================================================================================================================
     # Plotting

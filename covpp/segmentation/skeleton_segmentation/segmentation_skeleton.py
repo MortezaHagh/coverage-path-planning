@@ -30,6 +30,7 @@ class Segmentation(SegmentationBase):
         # create cells
         self.create_cells()
         self.set_cell_adjacents()
+        self.create_map_ws_segmented(skelet_de.map_ws_segmented)
 
     def create_cells(self):
         """Create CellBase objects for each segmented cell. """
@@ -45,6 +46,10 @@ class Segmentation(SegmentationBase):
             adjacent_indices = np.where(self.adjacency_matrix[i] == 1)[0]
             for j in adjacent_indices:
                 cell.add_adjacent_id(j)
+
+    def create_map_ws_segmented(self, map_ws_segmented: np.ndarray):
+        """Create a map based on map_ws with segmentation lines drawn."""
+        self.zmd.map_ws_segmented = map_ws_segmented
 
     # def plot_segmentation(self) -> None:
     #     """Plot segmentation results."""

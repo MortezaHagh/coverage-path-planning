@@ -77,7 +77,9 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             if next_node is None:
                 next_node, next_heading = self.backtrace_find_feasible(path_nodes)
                 if next_node is None:
-                    raise RuntimeError("No feasible next node found during coverage path planning.")
+                    # raise RuntimeError("No feasible next node found during coverage path planning.")
+                    self.lg.error("No feasible next node found during coverage path planning. Breaking loop.")
+                    break
 
             # move to next node
             cur_node = next_node

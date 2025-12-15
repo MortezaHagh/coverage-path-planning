@@ -60,6 +60,7 @@ class SkeletonDecomposition:
         # results
         self.polygons: list = [Polygon]                             # shapely polygons for each segment
         self.adjacency_matrix: np.ndarray = np.ndarray              # adjacency matrix between segments
+        self.map_ws_segmented: np.ndarray = np.ndarray              # map_ws with segmentation lines drawn
 
     def skeleton_decomposition(self) -> None:
         """Run skeletonization-based segmentation pipeline."""
@@ -100,8 +101,8 @@ class SkeletonDecomposition:
             base1, base2 = bases
             cv.line(seg_map, (base1[1], base1[0]), (base2[1], base2[0]), OCCUPIED, thickness=2)
 
-        # # update zone map data segmented map # todo
-        # self.zmd.map_ws = seg_map.copy()
+        # # # create map_ws_segmented
+        self.map_ws_segmented = seg_map.copy()
 
         # put the base_paths on the map_ws and create segmented map
         # for paired_paths in self.base_paths:
@@ -118,7 +119,7 @@ class SkeletonDecomposition:
         # find contours and fill areas
         contours, hierarchy = cv.findContours(seg_map, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
         hierarchy = hierarchy[0]
-        print(f"Found {len(contours)} contours in segmented map.")
+        self.lg.debug(f"Found {len(contours)} contours in segmented map.")
 
         def find_level(h):
             """ Find the level of contour in hierarchy. """
@@ -148,7 +149,7 @@ class SkeletonDecomposition:
             if area >= 10:  # minimum area threshold # param
                 filtered_contours.append(c)
                 it += 1
-        print(f"Found {len(filtered_contours)} filtered contours in segmented map.")
+        self.lg.debug(f"Found {len(filtered_contours)} filtered contours in segmented map.")
 
         # check too many contours
         if len(filtered_contours) > 254:

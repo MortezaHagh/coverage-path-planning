@@ -1,4 +1,5 @@
 """ Generate grid representation of the cell map."""
+import os
 import cv2 as cv
 import numpy as np
 from shapely.geometry import Point
@@ -153,11 +154,9 @@ class GridGenerator:
                 x_m = points_map[i, j, 0]
                 y_m = points_map[i, j, 1]
                 if 0 <= y_m < max_map_y and 0 <= x_m < max_map_x:
-                    pass
-                    # assume free if inside rectangle
-                    # if self.cell.map[y_m, x_m] == 0:  # occupied
-                    #     g_map[i, j] = 0
-                    #     nodes[i, j].free = False
+                    if self.cell.map[y_m, x_m] == 0:  # occupied
+                        g_map[i, j] = 0
+                        nodes[i, j].free = False
                 else:
                     raise ValueError("Grid cell center is out of cell map bounds.")
 
@@ -245,6 +244,11 @@ class GridGenerator:
         # find biggest edge of polygon
         poly = self.cell.poly
         scaled_poly_in = poly.buffer(-2, join_style=2, resolution=8)
+
+        # chekc if it is multi polygon
+        if scaled_poly_in.geom_type == 'MultiPolygon':
+            scaled_poly_in = poly.buffer(0, join_style=2, resolution=8)
+
         edge_props = find_longest_edge_poly(scaled_poly_in)
         p1 = edge_props['p1'] - self.cell.global_xy
 
@@ -498,7 +502,12 @@ class GridGenerator:
 
         # write image
         if PipeLineConfig.do_save_maps:
-            cv.imwrite(f"{path}/grid_map_{self.cell.id}.png", viz_map)
+            save_dir = os.path.join(path, "grid_maps")
+            if PipeLineConfig.use_insc_ret:
+                save_dir += "_rect"
+            os.makedirs(save_dir, exist_ok=True)
+            save_path = os.path.join(save_dir, f"grid_map_{self.cell.id}.png")
+            cv.imwrite(save_path, viz_map)
 
         # # show image
         # cv.namedWindow("grid_map", cv.WINDOW_NORMAL)

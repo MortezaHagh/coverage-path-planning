@@ -5,7 +5,7 @@ from shapely import Polygon
 from covpp.gui.rectangle import Rectangle
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig
-from covpp.base.geometry import find_longest_edge_poly
+from covpp.base.geometry import find_longest_edge_poly, find_cnt_level
 from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.eval_rectangles import EvalRectangles
 from covpp.district.zone_map_data import ZoneMapData
@@ -106,13 +106,22 @@ class PCell(CellBase):
         # mask with free space in the original map
         map_cell = cv.bitwise_and(map_cell, map_ws)
 
-        # find inner contours (holes) and fill them with OCCUPIED
-        contours, _ = cv.findContours(map_cell, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-        if len(contours) > 1:  # todo based on level
-            self.lg.info(f"Cell {self.id} has {len(contours)-1} inner contours (holes). Filling them.")
-            # cv.drawContours(map_viz, contours, 1, (255, 0, 0), 2)
-            # fill inner contour with black
-            cv.fillPoly(map_cell, [contours[1]], OCCUPIED)
+        # checking segmentation map fot inner contours
+        map_seg = self.zmd.map_ws_segmented[y_min: y_max, x_min: x_max]
+        map_seg = cv.bitwise_and(map_seg, map_cell)
+        contours, hierarchy = cv.findContours(map_seg, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+
+        for h, cnt in zip(hierarchy[0], contours):
+            level = find_cnt_level(h, hierarchy)
+            if level == 1:
+                self.lg.info(f"Cell {self.id} has an inner contour (hole). Filling it.")
+                cv.fillPoly(map_cell, [cnt], OCCUPIED)
+
+        # if len(contours) > 1:  # todo based on level
+        #     self.lg.info(f"Cell {self.id} has {len(contours)-1} inner contours (holes). Filling them.")
+        #     # cv.drawContours(map_viz, contours, 1, (255, 0, 0), 2)
+        #     # fill inner contour with black
+        #     cv.fillPoly(map_cell, [contours[1]], OCCUPIED)
 
         # # visualize for debugging
         # cv.imshow(f"Cell {self.id} Map", map_cell)

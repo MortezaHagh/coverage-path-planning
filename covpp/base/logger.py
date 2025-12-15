@@ -33,7 +33,7 @@ class MyLogger:
         print(f"{Fore.WHITE}[{self.name}]: {message}{Style.RESET_ALL}")
 
     def debug(self, message: str) -> None:
-        print(f"{Fore.BLUE}[{self.name}]: {message}{Style.RESET_ALL}")
+        print(f"{Fore.LIGHTBLACK_EX}[{self.name}]: {message}{Style.RESET_ALL}")
 
     def warn(self, message: str) -> None:
         print(f"{Fore.YELLOW}[{self.name}]: {message}{Style.RESET_ALL}")

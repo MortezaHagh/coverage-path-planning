@@ -54,7 +54,7 @@ class MergeCells:
                     other_cell = id_cell_map.get(j)
                     if other_cell.id in skip_indices:
                         continue
-                    if self.should_merge(current_cell, other_cell):
+                    if self.can_merge(current_cell, other_cell):
                         groups_ids.add(other_cell.id)
                         skip_indices.add(other_cell.id)
                         stack.append(other_cell.id)
@@ -121,7 +121,7 @@ class MergeCells:
             cell.id = old_new_id_map[cell.id]
             cell.adjacent_ids = [old_new_id_map[adj_id] for adj_id in cell.adjacent_ids]
 
-    def should_merge(self, cell1: CellBase, cell2: CellBase) -> bool:
+    def can_merge(self, cell1: CellBase, cell2: CellBase) -> bool:
         """ Determine if two cells should be merged based on criteria. """
         # Check if both cells are small
         if cell1.size_type == "small" and cell2.size_type == "small":
@@ -173,7 +173,7 @@ class MergeCells:
                 other_cell = id_cell_map.get(j)
                 if other_cell.id in skip_indices:
                     continue
-                if self.should_merge(cell, other_cell):
+                if self.can_merge(cell, other_cell):
                     self.lg.info(f"Merging cell {cell.id} with cell {other_cell.id}")
                     cell = self.merge_two_cells(cell, other_cell)
                     skip_indices.add(other_cell.id)

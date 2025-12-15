@@ -61,3 +61,7 @@ class SegmentationBase:
     def set_cell_adjacents(self):
         """Set adjacent cells for each cell based on shared boundaries or other criteria. """
         raise NotImplementedError("Segmentation subclasses must implement set_cell_adjacents() method")
+
+    def create_map_ws_segmented(self):
+        """Create a map based on map_ws with segmentation lines drawn."""
+        raise NotImplementedError("Segmentation subclasses must implement create_map_ws_segmented() method")
