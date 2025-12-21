@@ -1,5 +1,5 @@
 CovPP Modules
------------
+-----------------
 
 .. toctree::
    :maxdepth: 2
@@ -8,6 +8,7 @@ CovPP Modules
    covpp.spa
    covpp.district
    covpp.gui
+   covpp.map_topology
    covpp.segmentation
    covpp.coverage_planning
    covpp.path_planning
@@ -19,6 +20,6 @@ covpp.main
 
 .. automodule:: covpp.main
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 

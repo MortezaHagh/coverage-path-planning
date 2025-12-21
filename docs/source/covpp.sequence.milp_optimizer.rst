@@ -9,13 +9,13 @@ covpp.sequence.milp\_optimizer.sequence\_optimizer
 
 .. automodule:: covpp.sequence.milp_optimizer.sequence_optimizer
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: covpp.sequence.milp_optimizer
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

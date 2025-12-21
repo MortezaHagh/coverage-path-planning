@@ -9,13 +9,13 @@ covpp.coverage\_planning.contour.coverage\_pp\_contour
 
 .. automodule:: covpp.coverage_planning.contour.coverage_pp_contour
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: covpp.coverage_planning.contour
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

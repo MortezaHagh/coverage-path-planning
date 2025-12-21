@@ -9,29 +9,29 @@ covpp.gui.rect\_event\_hl
 
 .. automodule:: covpp.gui.rect_event_hl
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 covpp.gui.rectangle
 --------------------------
 
 .. automodule:: covpp.gui.rectangle
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 covpp.gui.visual\_rectangle
 ----------------------------------
 
 .. automodule:: covpp.gui.visual_rectangle
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: covpp.gui
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

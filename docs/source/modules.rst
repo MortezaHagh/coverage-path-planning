@@ -1,7 +1,7 @@
-scripts
-=======
+covpp
+=====
 
 .. toctree::
    :maxdepth: 3
 
-   scripts
+   covpp

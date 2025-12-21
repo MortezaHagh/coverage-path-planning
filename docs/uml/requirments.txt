@@ -1,7 +1,0 @@
-pylint
-graphviz
-# pyreverse covpp --output-directory docs/uml
-
-sphinx-pyreverse
-
-# make clean && make html

@@ -17,3 +17,11 @@ RUN apt-get update && apt-get install -y python3-opencv
 #   texlive-bibtex-extra biber
 # # Optional extras:
 # # sudo apt install -y texlive-fonts-extra python3-pygments ghostscript
+
+# texlive-extra-utils
+
+# sudo apt install graphviz
+# 
+# python -m pip install sphinx
+# python -m pip install sphinx-pyreverse
+# python -m pip install sphinx-rtd-theme

@@ -18,61 +18,61 @@ covpp.segmentation.cell\_base
 
 .. automodule:: covpp.segmentation.cell_base
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 covpp.segmentation.cell\_planning
 ----------------------------------------
 
 .. automodule:: covpp.segmentation.cell_planning
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 covpp.segmentation.eval\_rectangles
 ------------------------------------------
 
 .. automodule:: covpp.segmentation.eval_rectangles
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 covpp.segmentation.map\_polygons
 ---------------------------------------
 
 .. automodule:: covpp.segmentation.map_polygons
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 covpp.segmentation.merge\_cells
 --------------------------------------
 
 .. automodule:: covpp.segmentation.merge_cells
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 covpp.segmentation.segmentation\_base
 --------------------------------------------
 
 .. automodule:: covpp.segmentation.segmentation_base
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 covpp.segmentation.segmentation\_handler
 -----------------------------------------------
 
 .. automodule:: covpp.segmentation.segmentation_handler
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: covpp.segmentation
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
