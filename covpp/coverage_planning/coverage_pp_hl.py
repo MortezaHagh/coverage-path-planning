@@ -44,6 +44,8 @@ class CoveragePPHandler:
         # input cells from segmentation
         self.cells: list[PCell] = []
 
+        self.planner_cls: CoveragePathPlannerBase = None
+
         # # list of cell coverage planners for cells (loaded in the main planner)
         # self.all_cell_covp_planners: list[CoveragePathPlannerBase] = []
 

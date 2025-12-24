@@ -1,6 +1,10 @@
 CovPP Modules
 -----------------
 
+.. .. uml:: covpp
+..    :packages:
+..    :classes:
+
 .. toctree::
    :maxdepth: 2
 
