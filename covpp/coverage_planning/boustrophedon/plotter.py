@@ -43,6 +43,7 @@ class BoustPlotter:
         # save figures
         if PipeLineConfig.do_save_decomposition_plot:
             self.save_figs()
+        plt.close('all')
 
     def visualize_seperate(self):
         """ Plot cells/events and mcells/groups separately """

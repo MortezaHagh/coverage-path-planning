@@ -486,7 +486,7 @@ class EvalRectangles:
         """ Plot the rectangle evaluation results. """
 
         # plotting
-        _, ax = plt.subplots(1, 1, constrained_layout=True)
+        _, ax = plt.subplots(1, 1, constrained_layout=True, figsize=(12, 8))
         # dont show axis
         ax.axis('off')
         # fix aspect ratio
@@ -494,42 +494,52 @@ class EvalRectangles:
 
         # plot polygon
         x, y = self.spoly.exterior.xy
-        ax.plot(x, y, color='blue', label='Cell Polygon', linewidth=2)
+        ax.plot(x, y, color='blue', label='Cell Polygon', linewidth=2, linestyle='-')
 
         # plot centroid
         cxy = self.poly.centroid.coords[0]
-        ax.plot(cxy[0], cxy[1], 'ro', label='Centroid')
+        ax.plot(cxy[0], cxy[1], 'ro', label='Polygon Centroid')
 
         # plot mic
         if insc_circle_center is not None:
             ax.plot(insc_circle_center[0], insc_circle_center[1], 'go', label='MIC Center')
-            circle = plt.Circle(insc_circle_center, insc_circle_radius, color='green', fill=False, label='MIC Radius')
+            circle = plt.Circle(
+                insc_circle_center,
+                insc_circle_radius,
+                color='green',
+                fill=False,
+                label='MIC Circle',
+                linestyle=':',
+                linewidth=2
+            )
             ax.add_artist(circle)
 
         # circle_circum_poly
         if circle_circum_poly is not None:
             mbc_x, mbc_y = circle_circum_poly.exterior.xy
-            ax.plot(mbc_x, mbc_y, color='orange', label='Minimum Bounding Circle')
+            ax.plot(mbc_x, mbc_y, color='orange', label='MIC', linestyle=(0, (3, 5, 1, 5)))
 
         # plot mrr
         if circum_rect_poly is not None:
             mrr_x, mrr_y = circum_rect_poly.exterior.xy
-            ax.plot(mrr_x, mrr_y, color='purple', label='Minimum Rotated Rectangle')
+            ax.plot(mrr_x, mrr_y, color='purple', label='MRB', linestyle='-.', linewidth=2)
 
         # inscribed_rect_poly
         if inscribed_rect_poly is not None:
             inscribed_rect_x, inscribed_rect_y = inscribed_rect_poly.exterior.xy
-            ax.plot(inscribed_rect_x, inscribed_rect_y, color='cyan', label='Inscribed Rectangle')
+            ax.plot(inscribed_rect_x, inscribed_rect_y, color='cyan', label=' Initial MIR', linestyle='--', linewidth=2)
 
         # expand_inscribed_rectangle
         if expand_inscribed_rectangle is not None:
             expand_rect_x, expand_rect_y = expand_inscribed_rectangle.exterior.xy
-            ax.plot(expand_rect_x, expand_rect_y, color='magenta', label='Estimated Inscribed Rectangle', linewidth=2)
+            ax.plot(expand_rect_x, expand_rect_y, color='magenta', label='Estimated MIR', linewidth=2, linestyle=(0, (5, 1)))
+
+        ax.invert_yaxis()
 
         # legend at outer upper right (outside the plot)
-        plt.legend(loc='lower right', bbox_to_anchor=(1.3, 1.0), fontsize=12)
-        plt.title(f"Cell {self.id} Evaluation")
-        plt.show()
+        plt.legend(loc='lower right', bbox_to_anchor=(1.0, 0.9), fontsize=12, frameon=True)
+        # plt.show()
 
-        # save_dir = "/home/morteza/Documents/00-CovPP/covpp/results/zOther/segmentation"
+        # save_dir = "./results/zOther/segmentation"
         # fig.savefig(f"{save_dir}/cell_{self.id}_evaluation.pdf", bbox_inches='tight', format='pdf', dpi=600)
+        # fig.savefig(f"{save_dir}/cell_{self.id}_evaluation.pdf", format='pdf', dpi=600)

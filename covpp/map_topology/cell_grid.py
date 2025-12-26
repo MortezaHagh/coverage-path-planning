@@ -516,29 +516,42 @@ class GridGenerator:
 
         # # plot using matplotlib
         # from matplotlib import pyplot as plt
-        # fig, ax = plt.subplots(1,1, figsize=(8, 8), constrained_layout=True)
+        # fig, ax = plt.subplots(1, 1, figsize=(12, 8), constrained_layout=True)
         # ax.set_aspect('equal', adjustable='box')
+        # ax.axis('off')
 
-        # # plot map
-        # ax.imshow(self.grid.map, cmap='gray', origin='upper')
+        # # plot map in the same pixel coordinate frame as nodes
+        # # using the original cell map avoids coordinate mismatch with node positions
+        # ax.imshow(self.cell.map, cmap='gray', origin='upper')
 
         # # plot nodes
         # gxy = self.cell.global_xy
         # for node in self.grid.nodes.flatten():
         #     if node.free:
-        #         ax.plot(node.x - gxy[0], node.y - gxy[1], 'go', markersize=2)
+        #         ax.plot(node.x - gxy[0], node.y - gxy[1], 'go', markersize=6)
         #     else:
-        #         ax.plot(node.x - gxy[0], node.y - gxy[1], 'ro', markersize=2)
+        #         ax.plot(node.x - gxy[0], node.y - gxy[1], 'ro', markersize=6)
 
         # # plot start node and heading
         # node = self.grid.current_node
         # head = self.grid.current_heading
         # gxy = self.cell.global_xy
-        # ax.plot(node.x - gxy[0], node.y - gxy[1], 'bo', markersize=4)
+        # # ax.plot(node.x - gxy[0], node.y - gxy[1], 'bo', markersize=4)
         # x_end = node.x + 50 * np.cos(head) - gxy[0]
         # y_end = node.y + 50 * np.sin(head) - gxy[1]
-        # ax.plot([node.x - gxy[0], x_end], [node.y - gxy[1], y_end], 'b-')
-        # ax.set_title(f"Grid Map - Cell {self.cell.id}")
+        # # ax.plot([node.x - gxy[0], x_end], [node.y - gxy[1], y_end], 'b-')
+
+        # # add labels manually to free and occupied nodes
+        # ax.plot([], [], 'go', label='Free Node')
+        # ax.plot([], [], 'ro', label='Occupied Node')
+        # ax.legend(loc='upper right', fontsize=12, frameon=True, facecolor='white', framealpha=1.0)
+
+        # # ax.set_title(f"Grid Map - Cell {self.cell.id}")
+        # ax.set_xbound(0, self.cell.map.shape[1])
+        # ax.set_ybound(0, self.cell.map.shape[0])
+
+        # save_dir = "./results/zOther"
         # # fig.savefig(f"{path}/grid_map_{self.cell.id}.png")
-        # plt.show()
+        # fig.savefig(f"{save_dir}/grid_map_{self.cell.id}.pdf", bbox_inches='tight', dpi=600, format='pdf')
+        # # plt.show()
         # plt.close(fig)

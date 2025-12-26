@@ -724,6 +724,7 @@ class SkeletonDecomposition:
             fig2.savefig(fig2_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')
 
         # # plt.show()
+        plt.close('all')
 
         # # # visualize using OpenCV
         # cv.imshow("distance", self.skelet.distance_norm_map)

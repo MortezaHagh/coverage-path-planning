@@ -250,7 +250,7 @@ class SequenceHandler:
         self.colors = get_n_colors_cv(n)
         self.add_cells_to_map_planning()
         self.add_cell_paths_to_map_planning()
-        self.add_connection_paths_to_map_planning()
+        # self.add_connection_paths_to_map_planning()
 
     def add_cells_to_map_planning(self) -> None:
         """ Add cells polygons to map_planning and map_segmentation. """
