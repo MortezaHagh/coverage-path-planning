@@ -161,6 +161,11 @@ class ZoneMapData:
 
     def set_map_viz(self, map_viz: np.ndarray):
         self.map_planning = map_viz
+        # # change color of all non-free space to gray for better visualization
+        # map_viz_gray = cv.cvtColor(map_viz, cv.COLOR_BGR2GRAY)
+        # mask = (map_viz_gray != 255)
+        # map_viz[mask] = [200, 200, 200]
+        # self.map_planning = map_viz
 
     def set_hw_bd_px(self, hw_bd: dict):
         """Set pixel bounds and derive local shape and global offset.

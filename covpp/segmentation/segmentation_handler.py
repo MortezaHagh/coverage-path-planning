@@ -96,7 +96,6 @@ class SegmentationHandler:
         # resulting base cells from segmentor
         bcells = self.segmentor.cells
         n_bcells = self.segmentor.n_cells
-        # self.bcells = bcells
 
         # if no cells were created, try simple segmentation
         if n_bcells == 0:
@@ -112,6 +111,7 @@ class SegmentationHandler:
         # merge cells
         merger = MergeCells(bcells)
         self.bcells = merger.updated_cells
+        # self.bcells = bcells
 
         # check if ids are unique
         cell_ids = [cell.id for cell in self.bcells]
@@ -129,8 +129,8 @@ class SegmentationHandler:
             raise ValueError("No processed cells available for validation.")
 
         cell_validity = [cell.validate_cell() for cell in self.cells]
-        # if not all(cell_validity):
-        #     raise ValueError("One or more cells failed validation checks.")
+        if not all(cell_validity):
+            raise ValueError("One or more cells failed validation checks.")
 
     # def plot_segmentation(self) -> None:
     #     """Plot segmentation results."""

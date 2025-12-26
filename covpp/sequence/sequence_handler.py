@@ -264,7 +264,7 @@ class SequenceHandler:
             alpha = 0.1
             self.zmd.map_planning = cv.addWeighted(map_p_fill, alpha, map_p, 1 - alpha, 0)
             # add cells to map_segmentation
-            map_s = cv.polylines(self.zmd.map_segmentation, [pp], isClosed=True, color=(100, 100, 100), thickness=2)
+            map_s = cv.polylines(self.zmd.map_segmentation, [pp], isClosed=True, color=(100, 100, 100), thickness=5)
             map_s_fill = self.zmd.map_segmentation.copy()
             cv.fillPoly(map_s_fill, [pp], color=self.colors[i])
             alpha = 0.1

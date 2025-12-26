@@ -39,7 +39,7 @@ class CellsPlotter:
     def visualize_cells(self, cells: list[PCell]):
         """ Visualize cells obtained from segmentation. """
 
-        fig, ax = plt.subplots(1, 1, constrained_layout=True)
+        fig, ax = plt.subplots(1, 1, constrained_layout=True, figsize=(12, 8))
         ax.set_aspect('equal', adjustable='box')
         ax.axis('off')
 
@@ -51,13 +51,26 @@ class CellsPlotter:
             else:
                 color = colors[i+ng]
 
-            # merged cell
+            # cell polygon
             x, y = cell.poly.exterior.xy
             cx, cy = cell.cxy
-            ax.text(cx, cy, f"${cell.id}$", color='black', fontsize=12)
-            # ax.plot(cx, cy, 'o', color='purple', markersize=6)
-            ax.plot(x, y, color=color, linewidth=4, linestyle='-')
+            ax.plot(x, y, color=color, linewidth=2, linestyle='-')
             ax.fill(x, y, alpha=0.2, fc=color)
+            ax.text(cx, cy, f"${cell.id}$", color='black', fontsize=10)
+
+            # # rectangle polygon
+            # if cell.rectangle_poly is not None:
+            #     rx, ry = cell.rectangle_poly.exterior.xy
+            #     ax.plot(rx, ry, color='black', linewidth=2, linestyle='--')
+
+        # manually create legend
+        from matplotlib.lines import Line2D
+        legend_elements = [Line2D([0], [0], color='black', lw=2, linestyle='-', label='Cell Polygon'),
+                           Line2D([0], [0], color='black', lw=2, linestyle='--', label='Inscribed Rectangle')]
+        ax.legend(handles=legend_elements, loc='upper right', frameon=True, fontsize=12,
+                  edgecolor='black',
+                  bbox_to_anchor=(1.1, 1.05),
+                  borderaxespad=0.0,)
         ax.invert_yaxis()
         return fig, ax
 
