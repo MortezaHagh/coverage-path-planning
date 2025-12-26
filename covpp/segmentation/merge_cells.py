@@ -45,7 +45,7 @@ class MergeCells:
 
             groups_ids: set[int] = {cell.id}
             stack: list[int] = [cell.id]
-
+            merge_poly: Polygon = cell.base_poly  # for checking line within union
             while stack:
                 current_id = stack.pop()
                 current_cell = id_cell_map[current_id]
@@ -54,10 +54,13 @@ class MergeCells:
                     other_cell = id_cell_map.get(j)
                     if other_cell.id in skip_indices:
                         continue
-                    if self.can_merge(current_cell, other_cell):
+                    if self.can_merge(current_cell, other_cell, merge_poly):
                         groups_ids.add(other_cell.id)
                         skip_indices.add(other_cell.id)
                         stack.append(other_cell.id)
+
+                        # update merge_poly
+                        merge_poly = self.create_merged_polygon([merge_poly, other_cell.base_poly])
 
             merge_groups.append(groups_ids)
         return merge_groups
@@ -81,17 +84,6 @@ class MergeCells:
             polygons = [id_cell_map[id].base_poly for id in group_ids]
             new_poly = self.create_merged_polygon(polygons.copy())
 
-            it = 2
-            while new_poly.geom_type == 'MultiPolygon' and it <= 4:
-                self.lg.warn(f"Merged polygon is MultiPolygon, applying buffer fix with b={it}.")
-                new_poly = self.create_merged_polygon(polygons.copy(), b=it*2)
-                it += 1
-
-            # check if new_poly is MultiPolygon
-            if new_poly.geom_type == 'MultiPolygon':
-                self.lg.warn(f"Failed to merge group {group_ids} into a single Polygon after buffering.")
-                continue
-
             # new_poly = new_poly.convex_hull
             new_cell = CellBase(idx=old_id, poly=new_poly, resolution=self.resolution)
 
@@ -109,6 +101,7 @@ class MergeCells:
 
             merged_cells.append(new_cell)
             merged_group_ids.append(group_ids)
+            merged_ids.extend(group_ids)
 
         # add unmerged cells
         for cell in self.cells:
@@ -118,15 +111,21 @@ class MergeCells:
 
         return merged_cells, merged_group_ids
 
-    def create_merged_polygon(self, polygons: list[Polygon], b: int = 2) -> Polygon:
+    def create_merged_polygon(self, polygons: list[Polygon], b: int = 2, max_iter: int = 4) -> Polygon:
         """ Create a merged polygon from a list of polygons. """
         merged_poly = unary_union(polygons)
 
+        it = 1
+        while merged_poly.geom_type == 'MultiPolygon' and it <= max_iter:
+            buf = b * it
+            self.lg.warn(f"Merged polygon is MultiPolygon, applying buffer fix with b={buf}.")
+            buffered_polys = [poly.buffer(buf) for poly in polygons]
+            merged_poly = unary_union(buffered_polys).buffer(-buf)
+            it += 1
+
         # check if new_poly is MultiPolygon
         if merged_poly.geom_type == 'MultiPolygon':
-            # bugger, merge, bufffer to slove issue
-            polygons = [poly.buffer(b) for poly in polygons]
-            merged_poly = unary_union(polygons).buffer(-b)
+            raise ValueError("Merged polygon is still MultiPolygon after buffering.")
 
         return merged_poly
 
@@ -143,36 +142,45 @@ class MergeCells:
             cell.id = old_new_id_map[cell.id]
             cell.adjacent_ids = [old_new_id_map[adj_id] for adj_id in cell.adjacent_ids]
 
-    def can_merge(self, cell1: CellBase, cell2: CellBase) -> bool:
+    def can_merge(self, cell1: CellBase, cell2: CellBase, merge_poly: Polygon) -> bool:
         """ Determine if two cells should be merged based on criteria. """
-        # Check if both cells are small
-        if cell1.size_type == "small" and cell2.size_type == "small":
-            return True
 
-        # Check if both cells are slim
-        if cell1.slim_type == "slim" and cell2.slim_type == "slim":
-            if self.check_line_within_union(cell1, cell2):
-                return True
-
-        # check if either cell is slim or small
-        checks = 0
         if cell1.slim_type == "slim" or cell1.size_type == "small":
-            checks += 1
-        if cell2.slim_type == "slim" or cell2.size_type == "small":
-            checks += 1
-        if checks == 2:
-            if self.check_line_within_union(cell1, cell2):
-                return True
+            if cell2.slim_type == "slim" or cell2.size_type == "small":
+                if self.check_line_within_union(cell1, cell2, merge_poly):
+                    return True
 
         return False
 
-    def check_line_within_union(self, cell1: CellBase, cell2: CellBase) -> bool:
+        # # Check if both cells are small
+        # if cell1.size_type == "small" and cell2.size_type == "small":
+        #     return True
+
+        # # Check if both cells are slim
+        # if cell1.slim_type == "slim" and cell2.slim_type == "slim":
+        #     if self.check_line_within_union(cell1, cell2, merge_poly):
+        #         return True
+
+        # # check if either cell is slim or small
+        # checks = 0
+        # if cell1.slim_type == "slim" or cell1.size_type == "small":
+        #     checks += 1
+        # if cell2.slim_type == "slim" or cell2.size_type == "small":
+        #     checks += 1
+        # if checks == 2:
+        #     if self.check_line_within_union(cell1, cell2, merge_poly):
+        #         return True
+
+        # return False
+
+    def check_line_within_union(self, cell1: CellBase, cell2: CellBase, merge_poly: Polygon) -> bool:
         """ Check if the line connecting the centroids of two cells lies within their union polygon. """
 
-        centroid1 = cell1.base_poly.centroid
+        centroid1 = merge_poly.centroid
         centroid2 = cell2.base_poly.centroid
         line = LineString([centroid1, centroid2])
-        union_poly = unary_union([cell1.base_poly, cell2.base_poly])
+        union_poly = self.create_merged_polygon([merge_poly, cell2.base_poly])
+        # union_poly = unary_union([cell1.base_poly, cell2.base_poly])
         # union_poly = union_poly.convex_hull
         return union_poly.contains(line)
 

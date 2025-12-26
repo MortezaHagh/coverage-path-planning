@@ -54,10 +54,11 @@ class CellsPlotter:
             # merged cell
             x, y = cell.poly.exterior.xy
             cx, cy = cell.cxy
-            ax.text(cx, cy, f"${cell.id}$", color='black', fontsize=8)
+            ax.text(cx, cy, f"${cell.id}$", color='black', fontsize=12)
             # ax.plot(cx, cy, 'o', color='purple', markersize=6)
             ax.plot(x, y, color=color, linewidth=4, linestyle='-')
             ax.fill(x, y, alpha=0.2, fc=color)
+        ax.invert_yaxis()
         return fig, ax
 
     def visualize_sequence(self, cells: list[PCell], ax):

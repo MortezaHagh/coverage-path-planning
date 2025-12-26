@@ -88,6 +88,7 @@ class CellBase:
         # cell classification
         self.size_type: str = "normal"      # small, normal, large
         self.slim_type: str = "normal"      # slim, normal
+        self.types: list[str] = []
 
         # cell specs
         self.major_direction: float = 0.0   # main direction angle of the cell (free space) - radians
@@ -153,6 +154,7 @@ class CellBase:
         robot_area_px = np.pi * (self.robot_r_px ** 2)
         if self.area < self.small_cell_thresh_c * robot_area_px:
             self.size_type = "small"
+            self.types.append("small")
 
         # disable planning in very small cells
         if self.area < robot_area_px * 4:  # param
@@ -166,6 +168,7 @@ class CellBase:
         insc_circle_radius = np.linalg.norm(np.array(insc_circle_center) - np.array(circle_insc_boundary))
         if insc_circle_radius < self.robot_r_px * self.slim_cell_thresh_c:
             self.slim_type = "slim"
+            self.types.append("slim")
 
         # if insc_circle_radius < self.robot_r_px: # todo
         #     print(f"[WARN] cell is too slim: {self.id}")

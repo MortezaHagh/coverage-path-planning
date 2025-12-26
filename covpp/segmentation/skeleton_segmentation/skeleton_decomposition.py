@@ -374,8 +374,8 @@ class SkeletonDecomposition:
             #     mid_idx = min_indices[0]
 
             # take the first one and last one (to avoid biasing to one end) # todo
-            min_indices = np.array([min_indices[0], min_indices[-1]])
-            # min_indices = np.array([min_indices[0]])
+            # min_indices = np.array([min_indices[0], min_indices[-1]])
+            min_indices = np.array([min_indices[0]])
             local_ps = branch.points[min_indices]
             cp_pts.extend(local_ps)
 
