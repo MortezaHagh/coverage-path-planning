@@ -270,12 +270,12 @@ class SequenceHandler:
             alpha = 0.1
             self.zmd.map_segmentation = cv.addWeighted(map_s_fill, alpha, map_s, 1 - alpha, 0)
 
-            # add rectangle if rect_like
-            if cell.rect_like:
-                rp = cell.rectangle_poly.exterior.coords.xy
-                rpoints = np.array(list(zip(rp[0], rp[1])), dtype=np.int32)
-                self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [rpoints], isClosed=True, color=(0, 0, 0), thickness=2)
-                self.zmd.map_segmentation = cv.polylines(self.zmd.map_segmentation, [rpoints], isClosed=True, color=(0, 0, 0), thickness=2)
+            # # add rectangle
+            # if cell.rect_like:
+            #     rp = cell.rectangle_poly.exterior.coords.xy
+            #     rpoints = np.array(list(zip(rp[0], rp[1])), dtype=np.int32)
+            #     self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [rpoints], isClosed=True, color=(0, 0, 0), thickness=2)
+            #     self.zmd.map_segmentation = cv.polylines(self.zmd.map_segmentation, [rpoints], isClosed=True, color=(0, 0, 0), thickness=2)
 
     def add_cell_paths_to_map_planning(self) -> None:
         """ Add cell coverage paths to map_planning. """
@@ -374,16 +374,18 @@ class SequenceHandler:
             ax.plot(x, y, color="black", linewidth=1)
 
         # coverage paths
+        fontsize = 45/scale  # 16
+        markersize = 20/scale  # 6
         for i, path in enumerate(self.paths_px):
             if path is None:
                 continue
             pp = np.array(path.xy, dtype=np.int32)
-            ax.plot(pp[:, 0], pp[:, 1], color=colors[i], linewidth=2/scale, linestyle='-')
+            ax.plot(pp[:, 0], pp[:, 1], color=colors[i], linewidth=4/scale, linestyle='-')
             # start and end points
-            ax.plot(pp[0, 0], pp[0, 1], 'o', color=colors[i], markersize=6/scale)
-            ax.text(pp[0, 0], pp[0, 1], f'$S_{{{i}}}$', fontsize=16/scale, color='k')
-            ax.plot(pp[-1, 0], pp[-1, 1], 's', color=colors[i], markersize=6/scale)
-            ax.text(pp[-1, 0], pp[-1, 1], f'$E_{{{i}}}$', fontsize=16/scale, color='k')
+            ax.plot(pp[0, 0], pp[0, 1], 'o', color=colors[i], markersize=markersize)
+            ax.text(pp[0, 0], pp[0, 1], f'$S_{{{i}}}$', fontsize=fontsize, color='k')
+            ax.plot(pp[-1, 0], pp[-1, 1], 's', color=colors[i], markersize=markersize)
+            ax.text(pp[-1, 0], pp[-1, 1], f'$E_{{{i}}}$', fontsize=fontsize, color='k')
 
     def plot_connection_paths_px(self, ax):
         """ Plot the connection paths between coverage paths. (gray dashed lines) """
@@ -393,7 +395,7 @@ class SequenceHandler:
             pp = np.array(c_path.xy, dtype=np.int32)
             ax.plot(pp[0, 0], pp[0, 1], "o", color='gray', markersize=3)
             ax.plot(pp[-1, 0], pp[-1, 1], "o", color='gray', markersize=3)
-            ax.plot(pp[:, 0], pp[:, 1], color='gray', linestyle='--', linewidth=2)
+            ax.plot(pp[:, 0], pp[:, 1], color='gray', linestyle='--', linewidth=4)
 
     def save_path_fig_px(self, fig, is_anim=False):
         """ Save the path ( in pixels) figure. """

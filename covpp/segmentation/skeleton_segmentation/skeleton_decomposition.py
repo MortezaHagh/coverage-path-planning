@@ -628,9 +628,9 @@ class SkeletonDecomposition:
                 ax.legend(
                     frameon=True,
                     edgecolor='black',
-                    fontsize='small',
+                    fontsize=10,
                     loc='upper left',
-                    bbox_to_anchor=(1.02, 1),
+                    bbox_to_anchor=(1.0, 1),
                     borderaxespad=0.0,
                 )
 
@@ -648,7 +648,7 @@ class SkeletonDecomposition:
         # scale_m: float = min(zmd.hw)*zmd.resolution/10
         # A4 size: 8.27 x 11.69 inches
         scale_px = min(self.zmd.hw)/500.0
-        marker_size = 10 / scale_px
+        marker_size = 50 / scale_px
         colors = plt.cm.get_cmap('hsv', len(branches))
 
         # --------------------------------------------------------------------------------------------------------------
@@ -670,21 +670,15 @@ class SkeletonDecomposition:
         # Figure 2: plot branches with critical points and base points
         fig2, ax2 = plt.subplots(1, 1, constrained_layout=True)
 
-        ax2.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=2/scale_px)
+        # Draw contours in the background
+        ax2.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=4/scale_px, zorder=0)
         # branches
         for i, branch in enumerate(branches):
             label = "Branch" if i == 0 else None
             yy, xx = branch.points[:, 0], branch.points[:, 1]
             color = 'orange' if branch.end_type == 'skip' else colors(i)
-            plt.plot(xx, yy, color=color, linewidth=2/scale_px, linestyle='-', label=label)
-
-        # critical points
-        critical_pts = np.array(self.critical_points).reshape(-1, 2)
-        ax2.scatter(critical_pts[:, 1], critical_pts[:, 0], color='magenta', s=marker_size, label='Critical Points')
-
-        # base points
-        base_pts = np.array(self.base_points).reshape(-1, 2)
-        ax2.scatter(base_pts[:, 1], base_pts[:, 0], color='green', s=marker_size, label='Base Points')
+            # Draw branch lines below points
+            ax2.plot(xx, yy, color=color, linewidth=4/scale_px, linestyle='-', label=label, zorder=2)
 
         # base paths
         labeled = True
@@ -692,19 +686,29 @@ class SkeletonDecomposition:
             for path in paths:
                 path = np.array(path)
                 label = "Bases Connection" if labeled else None
-                ax2.plot(path[:, 1], path[:, 0], color='gray', linewidth=2/scale_px, linestyle='--', label=label)
+                # Base paths beneath branch lines and points
+                ax2.plot(path[:, 1], path[:, 0], color='gray', linewidth=4/scale_px, linestyle='-', label=label, zorder=1)
                 labeled = False
+
+        # critical points
+        critical_pts = np.array(self.critical_points).reshape(-1, 2)
+        # Ensure points render above lines
+        ax2.scatter(critical_pts[:, 1], critical_pts[:, 0], color='red', alpha=1, s=marker_size, label='Critical Points', zorder=4)
+
+        # base points
+        base_pts = np.array(self.base_points).reshape(-1, 2)
+        ax2.scatter(base_pts[:, 1], base_pts[:, 0], color='blue', alpha=1, s=marker_size, label='Base Points', zorder=4)
 
         # plot error point if any
         if self.error_point1:
             for ep in self.error_point1:
-                ax2.scatter(ep[1], ep[0], color='red', s=marker_size*3, label='Error Point')
+                ax2.scatter(ep[1], ep[0], color='red', s=marker_size*3, label='Error Point', zorder=5)
         if self.error_point2:
             for ep in self.error_point2:
-                ax2.scatter(ep[1], ep[0], color='cyan', s=marker_size*3, label='Error Point 2')
+                ax2.scatter(ep[1], ep[0], color='cyan', s=marker_size*3, label='Error Point 2', zorder=5)
 
         # finalize
-        configure_ax(ax2, 'Detected Branches with Critical and Base Points', show_title=False, show_legend=False)
+        configure_ax(ax2, 'Detected Branches with Critical and Base Points', show_title=False, show_legend=True)
         ax2.invert_yaxis()
 
         # # --------------------------------------------------------------------------------------------------------------
@@ -715,7 +719,7 @@ class SkeletonDecomposition:
         # configure_ax(ax3, 'Division Map based on Skeleton', show_legend=False)
 
         # save figures
-        im_format = 'svg'  # 'svg'
+        im_format = 'png'  # 'svg'
         if PipeLineConfig.do_save_decomposition_plot:
             save_dir = self.zmd.segmentation_method_dir
             fig1_path = save_dir + "/skeleton_end_branch_points" + f".{im_format}"

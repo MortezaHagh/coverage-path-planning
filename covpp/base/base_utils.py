@@ -8,7 +8,7 @@ def get_n_colors_plt(n: int) -> list:
     """ Get n distinct colors from matplotlib's colormaps or HSV spectrum. """
     if n <= 0:
         raise ValueError("Number of colors 'n' must be a positive integer.")
-    cmap = plt.get_cmap('hsv')  # You can use 'tab10', 'tab20', 'Set3', etc.
+    cmap = plt.get_cmap('Dark2')  # You can use 'tab10', 'tab20', 'Set3', 'Dark2'.
     colors_rgb = [cmap(i / n)[:3] for i in range(n)]  # RGB values (0-1)
     return colors_rgb
 

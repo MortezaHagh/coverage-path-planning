@@ -2,7 +2,7 @@
 import numpy as np
 
 
-def rearrange_points_by_point(point: np.ndarray, points: np.ndarray) -> np.ndarray:
+def rearrange_points_by_point(point: np.ndarray, points: np.ndarray, make_closed: bool = True) -> np.ndarray:
     """ Rearrange points starting from the closest point to the given point. """
 
     # Find the index of the closest point to the given point
@@ -10,7 +10,8 @@ def rearrange_points_by_point(point: np.ndarray, points: np.ndarray) -> np.ndarr
     # Rearrange points starting from the closest point
     rearranged_points = rearrange_points_by_idx(idx, points)
     # add first point to the end of the list
-    rearranged_points = np.concatenate((rearranged_points, [rearranged_points[0]]), axis=0)
+    if make_closed:
+        rearranged_points = np.concatenate((rearranged_points, [rearranged_points[0]]), axis=0)
     return rearranged_points
 
 

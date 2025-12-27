@@ -31,6 +31,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         self.lg.update_name(f"CovPPContour-Z{zmd.ind}-C{cell.id}")
 
         # settings
+        self.robot_r_px = int(PlanningConfig.cleaning_r_ov / self.resolution)
         self.add_line_thresh = 0.2      # threshold to add extra boust line
         if PipeLineConfig.all_cleaned:
             self.add_line_thresh = 0.05
@@ -51,15 +52,12 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         Uses polygon buffering to create concentric contours that form a
         spiral coverage pattern.
         """
+        robot_d_px = self.robot_r_px * 2
         poly = self.cell.poly
-        # scale the polygon to smaller size
-
-        robot_r_px = PlanningConfig.cleaning_r_ov / self.resolution
-        robot_d_px = robot_r_px * 2
-
         scaled_polys = []
         points = []
 
+        # scale the polygon to smaller size
         # scaled_poly = scale(poly, xfact=0.5, yfact=0.5, origin='center')
 
         #
@@ -84,12 +82,11 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
     def calculate_path_combinaiton(self) -> None:
         """ Calculate the coverage path by distance transform and inscribed rectangle if available. """
 
-        robot_r_px = int(PlanningConfig.cleaning_r_ov / self.resolution)
         points = []
 
         # plan by inscribed rectangle if available
         if self.cell.rect_like:
-            self.path_px = self.complete_path_by_rectangle(points, robot_r_px)
+            self.path_px = self.complete_path_by_rectangle(points)
             return
 
         # initial scale of the polygon
@@ -106,10 +103,10 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         s_xy = self.cell.global_xy
 
         # complete the path by distance transform
-        path_px = self.complete_path_by_distance_transform(points, self.cell.map, s_xy, robot_r_px)
+        path_px = self.complete_path_by_distance_transform(points, self.cell.map, s_xy)
         self.path_px = path_px
 
-    def complete_path_by_rectangle(self, points: list, robot_r_px: int) -> MyPath:
+    def complete_path_by_rectangle(self, points: list) -> MyPath:
         """
         Complete the path using the inscribed rectangle of the cell.
 
@@ -121,7 +118,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         """
 
         rect = self.cell.rectangle_poly
-        robot_d_px = int(robot_r_px * 2)
+        robot_d_px = int(self.robot_r_px * 2)
 
         # main rectangle
         d_buffer = -2  # initial buffer distance to avoid edge cases
@@ -130,17 +127,8 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             self.lg.error(f"Cell {self.cell.id} main_rectangle has issues.")
             return MyPath([])
         new_points = scaled_rect.exterior.coords
-        new_points = np.array(new_points)
-        # todo
-        # add one point between last two points to avoid sharp turn and overlap
-        p0, p1 = new_points[-1], new_points[-2]
-        d = np.linalg.norm(np.array(p0) - np.array(p1))
-        if d > robot_r_px:
-            c = (d - robot_r_px*0.2) / d
-            mid_point = np.array(p1 + (p0-p1) * c)
-            new_points = new_points[:-1]
-            new_points = np.append(new_points, [mid_point], axis=0)
-        #
+        new_points = self.filter_points_by_distance(np.array(new_points))
+        new_points = self.add_smoothing_point(new_points)
         points.extend(list(new_points))
 
         # n scales
@@ -185,17 +173,9 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             if scaled_rect.is_empty or scaled_rect is None:
                 break
             new_points = scaled_rect.exterior.coords
-            new_points = pu.rearrange_points_by_point(points[-1], new_points)
-            # todo
-            # add one point between last two points to avoid sharp turn and overlap
-            p0, p1 = new_points[-2], new_points[-3]
-            d = np.linalg.norm(np.array(p0) - np.array(p1))
-            if d > robot_r_px:
-                c = (d - robot_r_px*0.2) / d
-                mid_point = np.array(p1 + (p0-p1) * c)
-                new_points = new_points[:-2]
-                new_points = np.append(new_points, [mid_point], axis=0)
-            #
+            new_points = self.filter_points_by_distance(np.array(new_points))
+            new_points = pu.rearrange_points_by_point(points[-1], new_points, make_closed=False)
+            new_points = self.add_smoothing_point(new_points)
             points.extend(list(new_points))
 
         # line like at the center of the rectangle
@@ -217,7 +197,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         points = [MyPoint(int(p[0]), int(p[1])) for p in points]
         return MyPath(points)
 
-    def complete_path_by_distance_transform(self, points: list, c_map: np.ndarray, s_xy: np.ndarray, robot_r_px: int) -> MyPath:
+    def complete_path_by_distance_transform(self, points: list, c_map: np.ndarray, s_xy: np.ndarray) -> MyPath:
         """
         Complete the path using distance transform method.
 
@@ -228,7 +208,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         4. Handle any remaining area with a final contour extraction.
         """
 
-        robot_d_px = int(robot_r_px * 2)
+        robot_d_px = int(self.robot_r_px * 2)
 
         # distance transform
         dist_transform = cv.distanceTransform(c_map, cv.DIST_L2, 5)
@@ -261,13 +241,15 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             # add points from the polygons to the path
             for poly in polys:
                 new_points = poly.exterior.coords + s_xy
+                new_points = self.filter_points_by_distance(new_points)
                 # rearrange points starting from the closest point to the last point in points
-                new_points = pu.rearrange_points_by_point(points[-1], new_points)
+                new_points = pu.rearrange_points_by_point(points[-1], new_points, make_closed=False)
+                new_points = self.add_smoothing_point(new_points)
                 points.extend(list(new_points))
 
         # last try
-        if (max_dist - curr_dist) > robot_r_px:
-            r_area = robot_r_px * robot_r_px * np.pi / 2
+        if (max_dist - curr_dist) > self.robot_r_px:
+            r_area = self.robot_r_px * self.robot_r_px * np.pi / 2
             polys = self.find_poly_by_dist(dist_transform=dist_transform, dist=max_dist)
             if polys is not None and len(polys) > 0:
                 for poly in polys:
@@ -277,6 +259,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
                         coords = np.array(coords[:n_coords], dtype=np.float32)
 
                     new_points = coords + s_xy
+                    # new_points = self.filter_points_by_distance(new_points)
                     # rearrange points starting from the closest point to the last point in points
                     new_points = pu.rearrange_points_by_point(points[-1], new_points)
                     points.extend(list(new_points))
@@ -315,8 +298,36 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         return polys
 
     # ==========================================================================
+    # Helper Methods
+    # ==========================================================================
 
     def rearrange_polys_by_area(self, polys: list[Polygon]) -> list[Polygon]:
         """ Rearrange polygons by area in descending order. """
         polys.sort(key=lambda p: p.area, reverse=True)
         return polys
+
+    def filter_points_by_distance(self, points: np.ndarray) -> np.ndarray:
+        max_d = self.robot_r_px * 0.9
+        # filter points that are too close to each other
+        filtered_points = [points[0]]
+        for p in points[1:]:
+            d = np.linalg.norm(p - filtered_points[-1])
+            if d >= max_d:
+                filtered_points.append(p)
+
+        # remove last point if too close to first point
+        d = np.linalg.norm(points[0] - filtered_points[-1])
+        if d < max_d:
+            filtered_points.pop()
+
+        return np.array(filtered_points)
+
+    def add_smoothing_point(self, points: np.ndarray) -> np.ndarray:
+        """ Add a smoothing point before the last point if the last edge is too long. """
+        p0, p1 = points[0], points[-1]
+        d = np.linalg.norm(np.array(p0) - np.array(p1))
+        if d > self.robot_r_px:
+            c = (d - self.robot_r_px*0.9) / d
+            mid_point = np.array(p1 + (p0-p1) * c)
+            points = np.append(points, [mid_point], axis=0)
+        return points
