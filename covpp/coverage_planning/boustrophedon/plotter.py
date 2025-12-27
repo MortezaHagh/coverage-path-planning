@@ -141,8 +141,8 @@ class BoustPlotter:
             cx, cy = cg.merged_cell.cxy
             text = f"g{i}"
             ax.text(cx, cy, text, color='black', fontsize=8)
-            ax.plot(x, y, color=color, linewidth=4, linestyle='-')
             ax.plot(cx, cy, 'o', color='purple', markersize=6)
+            ax.plot(x, y, color=color, linewidth=4, linestyle='-')
             #
             for cell in cg.cells:
                 # fill
@@ -158,6 +158,7 @@ class BoustPlotter:
                 ax.plot([mcx, acx], [mcy, acy], color=color, linewidth=1, linestyle='--')
 
         #
+        ax.invert_yaxis()
         if fig:
             self.fig_mcells = fig
 
