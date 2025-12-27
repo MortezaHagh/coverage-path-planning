@@ -4,6 +4,7 @@ venv/
 covpp.egg-info/
 dist/
 docs/build/
+maps/
 results/
 tools/pyastar2d
 paper/

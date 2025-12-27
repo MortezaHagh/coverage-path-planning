@@ -121,7 +121,7 @@ class HoughDirectionFinder:
 
 if __name__ == "__main__":
     # map_fr52
-    dir = '/home/morteza/Documents/00-CovPP/covpp/results/results_r_0.3/map_fr52/District/maps/local_map_3_cleaning.png'
+    dir = '/home/morteza/Documents/00-CovPP/covpp/maps/results_r_0.3/map_fr52/District/maps/local_map_3_cleaning.png'
     map_image = cv2.imread(dir, cv2.IMREAD_GRAYSCALE)
 
     hough_finder = HoughDirectionFinder(map_image)

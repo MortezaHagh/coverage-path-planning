@@ -31,7 +31,7 @@ print("Path:", path_list)
 # import cv2
 
 
-# image = "/workspaces/covpp/results/Map2/AMain/merge.png"
+# image = "/workspaces/covpp/maps/Map2/AMain/merge.png"
 
 # # load image
 

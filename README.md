@@ -113,7 +113,7 @@ covpp/
 │ ├── spa/ # Space analysis tools
 │ ├── district/ # District and zone management
 │ └── gui/ # Interactive tools
-├── results/ # Maps and results
+├── maps/ # Maps and results
 ├── docs/ # Sphinx documentation
 └── main.py # Entry point
 
@@ -139,10 +139,10 @@ You can develop your own method by subclassing the relevant base class, register
 
 ## Results
 
-Results are saved in the `results/<map_name>/District/` directory:
+Results are saved in the `maps/<map_name>/District/` directory:
 
 ```text
-results/Map2/District/
+maps/Map2/District/
 ├── map_planning.png  # Visualization
 ├── result.json       # Statistics
 └── Zone_0/

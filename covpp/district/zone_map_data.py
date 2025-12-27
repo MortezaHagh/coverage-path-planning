@@ -46,12 +46,12 @@ class ZoneMapData:
     def __init__(self, ind: int = 0):
         self.ind: int = ind
         self.name: str = f"Zone_{self.ind}"
-        self.zone_dir: str = None                   # path to zone directory ./results/<map_name>/District/Zone_i
-        self.maps_dir: str = None                   # path to zone maps directory ./results/<map_name>/District/Zone_i/maps
-        self.result_file: str = None                # path to zone result file ./results/<map_name>/District/Zone_i/<method>/result.json
-        self.method_results_dir: str = None         # path to zone result directory ./results/<map_name>/District/Zone_i/<method>
-        self.segmentation_dir: str = None           # path to zone segmentation directory ./results/<map_name>/District/Zone_i/segmentation
-        self.segmentation_method_dir: str = None           # path to zone segmentation directory ./results/<map_name>/District/Zone_i/segmentation
+        self.zone_dir: str = None                   # path to zone directory ./maps/<map_name>/District/Zone_i
+        self.maps_dir: str = None                   # path to zone maps directory ./maps/<map_name>/District/Zone_i/maps
+        self.result_file: str = None                # path to zone result file ./maps/<map_name>/District/Zone_i/<method>/result.json
+        self.method_results_dir: str = None         # path to zone result directory ./maps/<map_name>/District/Zone_i/<method>
+        self.segmentation_dir: str = None           # path to zone segmentation directory ./maps/<map_name>/District/Zone_i/segmentation
+        self.segmentation_method_dir: str = None           # path to zone segmentation directory ./maps/<map_name>/District/Zone_i/segmentation
         #
         self.resolution: float = None
         self.orig_map_data: MapData = None

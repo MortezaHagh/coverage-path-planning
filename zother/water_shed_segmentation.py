@@ -7,8 +7,8 @@ from skimage.segmentation import watershed
 from skimage.feature import peak_local_max  # pylint: disable=E0611
 
 # Load image from path
-# im_path = "/home/morteza/Documents/00-CovPP/covpp/results/map_fr52/AMain/merge.png"
-IM_PATH = "/home/morteza/Documents/00-CovPP/covpp/results/results_r_0.3/map_fr52/District/maps/local_map_3_cleaning.png"
+# im_path = "/home/morteza/Documents/00-CovPP/covpp/maps/map_fr52/AMain/merge.png"
+IM_PATH = "/home/morteza/Documents/00-CovPP/covpp/maps/results_r_0.3/map_fr52/District/maps/local_map_3_cleaning.png"
 image = plt.imread(IM_PATH)
 
 # make sure the image is binary

@@ -5,7 +5,7 @@ from skimage.feature import peak_local_max  # pylint: disable=E0611
 # from skimage import data, img_as_float
 
 # Load image from path
-IM_PATH = "/home/morteza/Documents/00-CovPP/covpp/results/map_fr52/AMain/merge.png"
+IM_PATH = "/home/morteza/Documents/00-CovPP/covpp/maps/map_fr52/AMain/merge.png"
 image = plt.imread(IM_PATH)
 
 # apply distance transform

@@ -540,6 +540,6 @@ class EvalRectangles:
         plt.legend(loc='lower right', bbox_to_anchor=(1.0, 0.9), fontsize=12, frameon=True)
         # plt.show()
 
-        # save_dir = "./results/zOther/segmentation"
+        # save_dir = "./maps/zOther/segmentation"
         # fig.savefig(f"{save_dir}/cell_{self.id}_evaluation.pdf", bbox_inches='tight', format='pdf', dpi=600)
         # fig.savefig(f"{save_dir}/cell_{self.id}_evaluation.pdf", format='pdf', dpi=600)
