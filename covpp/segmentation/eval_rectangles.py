@@ -48,6 +48,31 @@ class EvalRectangles:
         # evaluate cell rectangles
         self.eval_cell_rectangles()
 
+    def find_contact_angle(self, insc_circle_poly) -> float:
+        """ Find the angle of contact point between cell polygon and inscribed circle polygon. 
+
+            Used to create the base inscribed rectangle aligned with the cell shape.
+        """
+
+        # find the contact points between two shapely polygons
+        contact_points = self.poly.intersection(insc_circle_poly)
+        if contact_points.is_empty:
+            raise ValueError("No contact points found between cell polygon and inscribed circle polygon.")
+        contact_coords = np.array(contact_points.coords)
+        contact_point = contact_coords[0]  # take the first contact point
+        #  find the angle of the contact point with respect to the center of the inscribed circle
+        insc_circle_center = insc_circle_poly.centroid.coords[0]
+        angle = np.arctan2(contact_point[1] - insc_circle_center[1],
+                           contact_point[0] - insc_circle_center[0])
+        return angle
+
+        #  # alternative: use the circumscribed rectangle to find the angle
+        # # calculate the angle of the rectangle
+        # rect_circum_coords = np.array(circum_rect_poly.exterior.coords)
+        # angle = np.arctan2(rect_circum_coords[1, 1] - rect_circum_coords[0, 1],
+        #                    rect_circum_coords[1, 0] - rect_circum_coords[0, 0])
+        # return angle
+
     def eval_cell_rectangles(self) -> None:
         """ Evaluate the cell for rectangle-like properties."""
 
@@ -64,12 +89,15 @@ class EvalRectangles:
         insc_circle_center, circle_insc_boundary = insc_circle_poly.coords
         insc_circle_radius = np.linalg.norm(np.array(insc_circle_center) - np.array(circle_insc_boundary))
 
+        # find angle for initial base_inscribed_rect_poly
+        angle = self.find_contact_angle(insc_circle_poly)
+
         # # minimum circumscribed circle
         # circle_circum_poly = minimum_bounding_circle(self.poly)
         # circle_circum_area = circle_circum_poly.area
 
         # create base inscribed rectangle
-        base_inscribed_rect_poly = self.create_base_inscribed_rectangle(circum_rect_poly, insc_circle_center, insc_circle_radius)
+        base_inscribed_rect_poly = self.create_base_inscribed_rectangle(angle, insc_circle_center, insc_circle_radius)
 
         # calculate steps for expansion
         self.find_steps(base_inscribed_rect_poly, circum_rect_poly)
@@ -121,13 +149,8 @@ class EvalRectangles:
         cell_rect_circum_area_ratio = self.area/self.circum_rectangle_poly.area
         self.rect_circum_like = cell_rect_circum_area_ratio >= self.k_circum
 
-    def create_base_inscribed_rectangle(self, circum_rect_poly, insc_circle_center, insc_circle_radius) -> Polygon:
+    def create_base_inscribed_rectangle(self, angle: float, insc_circle_center, insc_circle_radius) -> Polygon:
         """ Create an inscribed rectangle inside the circumscribed rectangle of the cell based on the inscribed circle. """
-
-        # calculate the angle of the rectangle
-        rect_circum_coords = np.array(circum_rect_poly.exterior.coords)
-        angle = np.arctan2(rect_circum_coords[1, 1] - rect_circum_coords[0, 1],
-                           rect_circum_coords[1, 0] - rect_circum_coords[0, 0])
 
         # create initial rectangle inside the inscribed circle
         rect_coords = []

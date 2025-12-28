@@ -2,24 +2,26 @@
 from covpp.base.configs import PipeLineConfig
 
 
-map_names = [
-    "Map0",
-    "Map2",
-    "Map4",
-    'MapPaper',
-    "Map_fr52",
-    'Map_office_a',
-]
+# map_names = [
+#     "Map4",
+#     'MapPaper',
+#     'MapPaper2',
+#     "Map5",
+#     'Map_office_a',
+# ]
 # map_names = ["Map_fr52", "Map4"]
-# map_names = ["Map_fr52"]
+# map_names = ["MapPaper2"]
+
+map_names = ["MapT"+str(i) for i in range(1, 12)]
 
 if __name__ == "__main__":
 
-    seg_methods = ["skeleton", "voronoi"]
-    # seg_methods = ["skeleton"]
-    covpp_methods = ["boust", "contour", "grid_energy_min"]
-    rects = [False, True]
-    # rects = [True]
+    # seg_methods = ["skeleton", "voronoi"]
+    seg_methods = ["skeleton"]
+    # covpp_methods = ["boust", "contour", "grid_energy_min"]
+    covpp_methods = ["boust"]
+    # rects = [False, True]
+    rects = [True]
 
     # covpp_method = ["boust"]
 

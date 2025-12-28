@@ -42,7 +42,7 @@ class SkeletonDecomposition:
 
         # settings
         self.min_branch_length_px: int = 10             # minimum branch length to be considered
-        self.end_dist_threshold_ratio: float = 0.1      # threshold ratio for min distance from ends
+        self.end_dist_threshold_ratio: float = 0.05      # threshold ratio for min distance from ends
         self.max_critical_region_ratio: float = 0.6     # maximum ratio of critical region length to branch length
         self.min_max_distance_ratio: float = 0.8        # minimum ratio of min distance to max distance in branch to consider critical point
 
@@ -354,8 +354,8 @@ class SkeletonDecomposition:
             min_dist = dists.min()
             d_min_max = max_dist - min_dist
             d_min_end = min_end_dist - min_dist
-            if d_min_end < self.end_dist_threshold_ratio * d_min_max:
-                continue
+            # if d_min_end < self.end_dist_threshold_ratio * d_min_max:
+            #     continue
 
             min_indices = np.where(dists == min_dist)[0]
 

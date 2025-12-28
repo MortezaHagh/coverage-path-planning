@@ -17,12 +17,12 @@ class MapConfig:
     free_thresh = None      # [not used] Maximum occupancy probability below which a cell is considered free
     occupied_thresh = None  # [not used] Minimum occupancy probability above which a cell is considered occupied
     # directories and paths
-    data_dir = "./results"          # base directory for maps ./results/
+    data_dir = "./maps"          # base directory for maps ./maps/
     map_name = None                 # name of the main map folder
     base_folder = "AMain"           # inside each map folder, contains main map files
-    map_dir = None                  # path to main map folder: ./results/<map_name>/AMain
+    map_dir = None                  # path to main map folder: ./maps/<map_name>/AMain
     district_folder = "District"
-    district_dir = None             # path to district folder: ./results/<map_name>/District
+    district_dir = None             # path to district folder: ./maps/<map_name>/District
 
 
 @dataclasses.dataclass
@@ -100,7 +100,7 @@ class SpaceConfig:
 
     # safety distance (robot footprint from obstacles)
     wf_safe_dist = 0.0  # 0.1                   # safety distance of robot during wall following from walls or obstacles
-    os_safe_dist = 0.1  # 0.2                   # safe distance of robot during open space from obstacles
+    os_safe_dist = 0.0  # 0.2                   # safe distance of robot during open space from obstacles
     ws_dist = max(wf_safe_dist, os_safe_dist)   # workspace safety distance: max required distance of robot from obstacles
 
     # safety distances (robot center from obstacles)

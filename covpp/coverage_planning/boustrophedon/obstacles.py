@@ -421,7 +421,11 @@ class Obstacle:
             up_e.etype1_updown = 'up'
             down_e.etype1_updown = 'down'
         else:
-            raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
+            # todo: analyze this case
+            up_e.skip_sweep = True
+            down_e.skip_sweep = True
+            print(f"[{self.ns}][process_fake_out_events] Error: Unexpected event types.")
+            # raise ValueError(f"[{self.ns}][process_fake_in_events] Invalid event types")
 
     # def inverse_event_types(self):
     #     for e in self.events:

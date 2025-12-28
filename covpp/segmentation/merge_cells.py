@@ -61,6 +61,8 @@ class MergeCells:
 
                         # update merge_poly
                         merge_poly = self.create_merged_polygon([merge_poly, other_cell.base_poly])
+                        if merge_poly is None:
+                            break
 
             merge_groups.append(groups_ids)
         return merge_groups
@@ -83,6 +85,8 @@ class MergeCells:
             # create merged polygon
             polygons = [id_cell_map[id].base_poly for id in group_ids]
             new_poly = self.create_merged_polygon(polygons.copy())
+            if new_poly is None:
+                continue
 
             # new_poly = new_poly.convex_hull
             new_cell = CellBase(idx=old_id, poly=new_poly, resolution=self.resolution)
@@ -125,7 +129,9 @@ class MergeCells:
 
         # check if new_poly is MultiPolygon
         if merged_poly.geom_type == 'MultiPolygon':
-            raise ValueError("Merged polygon is still MultiPolygon after buffering.")
+            # raise ValueError("Merged polygon is still MultiPolygon after buffering.")
+            self.lg.error("Merged polygon is still MultiPolygon after buffering. Taking convex hull as fallback.")
+            return None
 
         return merged_poly
 
