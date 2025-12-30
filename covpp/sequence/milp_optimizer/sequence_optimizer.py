@@ -43,7 +43,8 @@ class SeqOptimizer(SeqOptimizerBase):
                     self.distm[i, j] = 0.0
 
         # solve TSP using MILP
-        self.success = self.solve_tsp_milp()
+        # self.success = self.solve_tsp_milp()
+        self.success = self.solve_tsp_or_tools()
         if not self.success:
             self.lg.error("No optimal solution found.")
             return
@@ -104,6 +105,50 @@ class SeqOptimizer(SeqOptimizerBase):
             return False
         return True
 
+    def solve_tsp_or_tools(self) -> bool:
+        """Solve the TSP using OR-Tools Routing Solver (fast heuristic)."""
+        from ortools.constraint_solver import pywrapcp, routing_enums_pb2
+
+        n = self.n
+        if self.distm is None:
+            self.lg.error("Distance matrix not initialized.")
+            return False
+
+        # Create the routing index manager and model
+        manager = pywrapcp.RoutingIndexManager(n, 1, self.start_idx)
+        routing = pywrapcp.RoutingModel(manager)
+
+        # Distance callback
+        def distance_callback(from_index, to_index):
+            from_node = manager.IndexToNode(from_index)
+            to_node = manager.IndexToNode(to_index)
+            return int(self.distm[from_node, to_node] * 1e6)  # scale to int
+
+        transit_callback_index = routing.RegisterTransitCallback(distance_callback)
+        routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
+
+        # Set search parameters
+        search_parameters = pywrapcp.DefaultRoutingSearchParameters()
+        search_parameters.first_solution_strategy = (
+            routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
+        search_parameters.time_limit.seconds = 10  # 10 seconds
+
+        # Solve
+        solution = routing.SolveWithParameters(search_parameters)
+        if solution:
+            # Extract the route
+            index = routing.Start(0)
+            tour = []
+            while not routing.IsEnd(index):
+                tour.append(manager.IndexToNode(index))
+                index = solution.Value(routing.NextVar(index))
+            self.tour = tour
+            self.tour_ids = [self.ids[i] for i in self.tour]
+            self.tour_idxs = [self.id_idx[i] for i in self.tour_ids]
+            return True
+        else:
+            self.lg.error("[or_routine]: No solution found.")
+            return False
 
 # class GraphSearch(SeqOptimizerBase):
 #     def __init__(self, cells: list[PCell]):
