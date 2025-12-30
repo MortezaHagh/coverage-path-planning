@@ -22,8 +22,8 @@ class SeqOptimizer(SeqOptimizerBase):
 
     def create_tour(self):
         """Perform DFS to populate ``tour_ids`` then map to indexes."""
-        self.visited_ids = {i: False for i in self.ids}
-        self.ids_depth = {i: 0 for i in self.ids}
+        self.visited_ids = {i: False for i in self.all_ids}
+        self.ids_depth = {i: 0 for i in self.all_ids}
         start = self.start_id
         self.dfs(start, 0)
         self.tour_idxs = [self.id_idx[i] for i in self.tour_ids]
@@ -31,10 +31,11 @@ class SeqOptimizer(SeqOptimizerBase):
     def dfs(self, c_id: int, level: int):
         """Recursive DFS that records traversal depth for tie-breaking."""
         self.visited_ids[c_id] = True
-        self.tour_ids.append(c_id)
         idx = self.id_idx[c_id]
+        if self.cells[idx].do_planning:
+            self.tour_ids.append(c_id)
         # Get adjacent planning cells
-        neighbors = [n for n in self.cells[idx].adjacent_ids if n in self.ids]
+        neighbors = [n for n in self.cells[idx].adjacent_ids if n in self.all_ids]
         levels = []
         for neigh_id in neighbors:
             if not self.visited_ids[neigh_id]:

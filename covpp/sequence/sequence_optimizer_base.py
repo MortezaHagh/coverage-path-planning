@@ -27,6 +27,7 @@ class SeqOptimizerBase:
         self.start_idx: int = 0               # default start index for the tour
         self.start_id: int = -1               # default start id for the tour
         self.ids: list[int] = []              # planning cell ids
+        self.all_ids: list[int] = []          # all cell ids
         self.id_idx: dict[int, int] = dict()  # cell id to index mapping
         self.n: int = 0                       # number of planning cells
 
@@ -53,6 +54,7 @@ class SeqOptimizerBase:
         self.start_idx = start_idx
         self.start_id = cells[start_idx].id
         self.id_idx = {c.id: i for i, c in enumerate(cells)}
+        self.all_ids = [c.id for c in self.cells]
         self.ids = [c.id for c in self.cells if c.do_planning]
         self.n = len(self.ids)
         if self.n == 0:

@@ -67,7 +67,7 @@ def main():
     lg = MyLogger(ns)
     if len(sys.argv) < 2:
         lg.error("Usage: python main.py <map_name>")
-        map_name = "Map_fr52"  # Map_fr52 Map2 Map4 MapPaper Map_office_a
+        map_name = "MapT4"  # Map_fr52 Map2 Map4 MapPaper Map_office_a
     else:
         map_name = sys.argv[1]
     run_pipeline(map_name)
