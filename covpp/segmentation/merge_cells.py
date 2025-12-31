@@ -186,6 +186,8 @@ class MergeCells:
         centroid2 = cell2.base_poly.centroid
         line = LineString([centroid1, centroid2])
         union_poly = self.create_merged_polygon([merge_poly, cell2.base_poly])
+        if union_poly is None:
+            return False
         # union_poly = unary_union([cell1.base_poly, cell2.base_poly])
         # union_poly = union_poly.convex_hull
         return union_poly.contains(line)

@@ -12,7 +12,7 @@ from covpp.base.configs import PipeLineConfig
 # map_names = ["Map_fr52", "Map4"]
 # map_names = ["MapPaper2"]
 
-map_names = ["MapT"+str(i) for i in range(1, 12)]
+map_names = ["MapT"+str(i) for i in range(1, 11)]
 
 if __name__ == "__main__":
 

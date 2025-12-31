@@ -95,6 +95,24 @@ def angle_diff(a, b):
     return diff
 
 
+def find_angle_between_points(p1: tuple[int, int], p2: tuple[int, int], p3: tuple[int, int]) -> float:
+    """ Find angle between three points (in degrees). angle: p1->p2->p3."""
+    a = np.array(p1)
+    b = np.array(p2)
+    c = np.array(p3)
+
+    ab = b - a
+    cb = b - c
+
+    dot_product = np.dot(ab, cb)
+    norm_ab = np.linalg.norm(ab)
+    norm_cb = np.linalg.norm(cb)
+
+    cos_angle = dot_product / (norm_ab * norm_cb)
+    angle_rad = np.arccos(np.clip(cos_angle, -1.0, 1.0))
+    return angle_rad
+
+
 def find_longest_edge_poly(polygon: Polygon) -> dict:
     """ Find the longest edge of a polygon and return its properties."""
     # find biggest edge of the polygon
