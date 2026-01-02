@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from shapely import Polygon
 from shapely.geometry import Point
-from shapely.affinity import scale
+from shapely.affinity import scale, rotate, translate
 from shapely import maximum_inscribed_circle
 from covpp.base import planning_utils as pu
 from covpp.base.geometry import find_longest_edge_poly, find_shortest_edge_poly
@@ -31,7 +31,7 @@ class EvalRectangles:
 
         # settings
         self.k_circum = 0.8
-        self.k_inscr = 0.74
+        self.k_inscr = 0.77
 
         # attributes for evaluation
         self.steps = {}                             # dictionary to hold expansion steps
@@ -48,11 +48,12 @@ class EvalRectangles:
         # evaluate cell rectangles
         self.eval_cell_rectangles()
 
-    def find_contact_angle(self, insc_circle_poly) -> float:
+    def find_contact_angle(self, insc_circle_poly) -> list[float]:
         """ Find the angle of contact point between cell polygon and inscribed circle polygon. 
 
             Used to create the base inscribed rectangle aligned with the cell shape.
         """
+        angles = []
 
         # find the contact points between two shapely polygons
         contact_points = self.poly.intersection(insc_circle_poly)
@@ -64,14 +65,15 @@ class EvalRectangles:
         insc_circle_center = insc_circle_poly.centroid.coords[0]
         angle = np.arctan2(contact_point[1] - insc_circle_center[1],
                            contact_point[0] - insc_circle_center[0])
-        return angle
+        angles.append(angle)
 
-        #  # alternative: use the circumscribed rectangle to find the angle
-        # # calculate the angle of the rectangle
-        # rect_circum_coords = np.array(circum_rect_poly.exterior.coords)
-        # angle = np.arctan2(rect_circum_coords[1, 1] - rect_circum_coords[0, 1],
-        #                    rect_circum_coords[1, 0] - rect_circum_coords[0, 0])
-        # return angle
+        # alternative: use the circumscribed rectangle to find the angle
+        # calculate the angle of the rectangle
+        rect_circum_coords = np.array(self.poly.minimum_rotated_rectangle.exterior.coords)
+        angle = np.arctan2(rect_circum_coords[1, 1] - rect_circum_coords[0, 1],
+                           rect_circum_coords[1, 0] - rect_circum_coords[0, 0])
+        angles.append(angle)
+        return angles
 
     def eval_cell_rectangles(self) -> None:
         """ Evaluate the cell for rectangle-like properties."""
@@ -90,23 +92,35 @@ class EvalRectangles:
         insc_circle_radius = np.linalg.norm(np.array(insc_circle_center) - np.array(circle_insc_boundary))
 
         # find angle for initial base_inscribed_rect_poly
-        angle = self.find_contact_angle(insc_circle_poly)
+        angles = self.find_contact_angle(insc_circle_poly)
 
         # # minimum circumscribed circle
         # circle_circum_poly = minimum_bounding_circle(self.poly)
         # circle_circum_area = circle_circum_poly.area
 
-        # create base inscribed rectangle
-        base_inscribed_rect_poly = self.create_base_inscribed_rectangle(angle, insc_circle_center, insc_circle_radius)
+        rect_polys = []
+        angles.append(0)
+        poly_center = self.poly.centroid.coords[0]
+        centers = [insc_circle_center, insc_circle_center, poly_center]
 
-        # calculate steps for expansion
-        self.find_steps(base_inscribed_rect_poly, circum_rect_poly)
+        for angle_, center_ in zip(angles, centers):
+            # create base inscribed rectangle
+            base_inscribed_rect_poly = self.create_base_inscribed_rectangle(angle_, center_, insc_circle_radius*0.8)
+            # calculate steps for expansion
+            self.find_steps(base_inscribed_rect_poly, circum_rect_poly)
 
-        # ----------------------------------------------------------------------
-        # # eval rectangle-like based on
-        rectangle_poly = self.eval_by_expand_inscribed_rectangle(base_inscribed_rect_poly, insc_circle_center)
+            # ----------------------------------------------------------------------
+            # # eval rectangle-like based on
+            rectangle_poly = self.eval_by_expand_inscribed_rectangle(base_inscribed_rect_poly, center_)
+            rect_polys.append(rectangle_poly)
+            # ----------------------------------------------------------------------
+
+        # choose the best rectangle polygon based on area
+        areas = [rect_poly.area for rect_poly in rect_polys]
+        max_area_idx = np.argmax(areas)
+        rectangle_poly = rect_polys[max_area_idx]
+        self.rect_insc_like = areas[max_area_idx]/self.area >= self.k_inscr
         self.rect_like = self.rect_insc_like
-        # ----------------------------------------------------------------------
 
         # start rectangle from closest point to the start of the original polygon
         # coords[:-1] so that last point (same as first) is not repeated
@@ -119,7 +133,7 @@ class EvalRectangles:
         # rect_area_ratio = rect_area/self.area
         # print(f"rect_area_ratio: {rect_area_ratio:.2f}")
         # print(f"rect_like: {self.rect_like}")
-        # # print(" --------------------- ")
+        # print(" --------------------- ")
 
         # #
         # self.plot_cell_evaluation(
@@ -140,8 +154,9 @@ class EvalRectangles:
         """ Find expansion steps based on cell properties. """
         steps = {}
         steps['robot_r'] = self.r_px
-        steps['base_insc_rect'] = find_shortest_edge_poly(base_inscribed_rect_poly)['length'] / 10
+        steps['base_insc_rect'] = find_shortest_edge_poly(base_inscribed_rect_poly)['length'] / 8
         steps['circum_rect'] = find_shortest_edge_poly(circum_rect_poly)['length'] / 10
+        steps['scale_factor'] = 0.08
         self.steps = steps
 
     def eval_by_circumscribed_rect(self) -> None:
@@ -172,29 +187,26 @@ class EvalRectangles:
         # first expansion
         expanded_rect_poly_1 = self.expand_inscribed_rectangle_1(base_inscribed_rect_poly, insc_circle_center)
         area_1 = expanded_rect_poly_1.area
-        rect_cell_a_r = area_1 / self.area
+        # rect_cell_a_r = area_1 / self.area
         # print(f"r1: {rect_cell_a_r:.2f}")
-        if rect_cell_a_r > self.k_inscr:
-            self.rect_insc_like = True
-            return expanded_rect_poly_1
+        # if rect_cell_a_r > self.k_inscr:
+        #     return expanded_rect_poly_1, True
 
         # second expansion
         expanded_rect_poly_2 = self.expand_inscribed_rectangle_2(base_inscribed_rect_poly, insc_circle_center)
         area_2 = expanded_rect_poly_2.area
-        rect_cell_a_r = area_2 / self.area
+        # rect_cell_a_r = area_2 / self.area
         # print(f"r2: {rect_cell_a_r:.2f}")
-        if rect_cell_a_r > self.k_inscr:
-            self.rect_insc_like = True
-            return expanded_rect_poly_2
+        # if rect_cell_a_r > self.k_inscr:
+        #     return expanded_rect_poly_2, True
 
         # third expansion
         expanded_rect_poly_3 = self.expand_inscribed_rectangle_3(base_inscribed_rect_poly)
         area_3 = expanded_rect_poly_3.area
-        rect_cell_a_r = area_3 / self.area
+        # rect_cell_a_r = area_3 / self.area
         # print(f"r3: {rect_cell_a_r:.2f}")
-        if rect_cell_a_r > self.k_inscr:
-            self.rect_insc_like = True
-            return expanded_rect_poly_3
+        # if rect_cell_a_r > self.k_inscr:
+        #     return expanded_rect_poly_3, True
 
         #
         all_polys = [expanded_rect_poly_1, expanded_rect_poly_2, expanded_rect_poly_3]
@@ -207,28 +219,23 @@ class EvalRectangles:
     # ==================================================================================================================
 
     def expand_inscribed_rectangle_1(self, inscribed_rect_poly: Polygon, insc_circle_center) -> Polygon:
-        """ Expand the base inscribed rectangle.
-            Keep expanding in each direction till collision, then move to next direction.
+        """Expand by iteratively scaling along each edge direction using containment checks.
+        Uses `scale_rect_poly` for directional scaling and `is_poly_in_polygon` to stop at collision.
         """
 
-        # find step
-        # step = self.r_px
-        step = self.steps['base_insc_rect']
-        min_step = step / 5
+        # Initial gentle shrink to provide room for expansion stability
+        inscribed_rect_poly = scale(inscribed_rect_poly, xfact=0.8, yfact=0.8, origin=insc_circle_center)
 
-        # scale inscribed_rect_poly
-        sf = 0.8
-        inscribed_rect_poly = scale(inscribed_rect_poly, xfact=sf, yfact=sf, origin=insc_circle_center)
+        # Determine small scaling step relative to rectangle size
+        delta_scale = self.steps.get('scale_factor', 0.1)
+        # shortest_len = find_shortest_edge_poly(inscribed_rect_poly)['length']
+        # base_step = self.steps.get('base_insc_rect', shortest_len / 8.0)
+        # delta_scale = max(0.01, min(0.08, base_step / max(shortest_len, 1e-6) / 2.0))
 
-        #
-        coords = inscribed_rect_poly.exterior.coords[:-1]
-        coords = list(coords)
+        # Calculate edge midpoints angles
+        coords = list(inscribed_rect_poly.exterior.coords[:-1])
         idx1s = [0, 1, 2, 3]
         idx2s = [1, 2, 3, 0]
-        steps = [step for _ in range(len(idx2s))]
-        n_e = np.ones(4, dtype=int)        # number of expansions in each direction
-
-        # calculate the angles of the midpoints of the edges
         thetas = []
         for idx1, idx2 in zip(idx1s, idx2s):
             p1 = coords[idx1]
@@ -237,66 +244,43 @@ class EvalRectangles:
             theta = np.arctan2(midp[1] - insc_circle_center[1], midp[0] - insc_circle_center[0])
             thetas.append(theta)
 
-        # expand in all directions
+        # Two passes to allow iterative balancing of directions
         for _ in range(2):
-            new_coords = coords.copy()
+            for theta in thetas:
+                # Expand along current direction until collision
+                local_delta = delta_scale
+                grew = True
+                while grew:
+                    candidate = self.scale_rect_poly(inscribed_rect_poly, 1.0 + local_delta, theta)
+                    if self.is_poly_in_polygon(candidate):
+                        inscribed_rect_poly = candidate
+                    else:
+                        grew = False
+                    #     # try smaller increment
+                    #     local_delta *= 0.5
+                    #     if local_delta < 0.005:
+                    #         grew = False
 
-            # update steps for each direction based on n_e
-            max_n_e = np.max(n_e)
-            if max_n_e == 0:
-                break
-            steps = [step*(ne/max_n_e) for step, ne in zip(steps, n_e)]
-
-            any_valid = True
-            while any_valid:
-                any_valid = False
-                for i, (idx1, idx2, theta) in enumerate(zip(idx1s, idx2s, thetas)):
-                    step = steps[i]
-                    p1 = new_coords[idx1]
-                    p2 = new_coords[idx2]
-                    midp = np.mean([p1, p2], axis=0)
-                    success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, theta, step)
-                    if success:
-                        n_e[i] += 1
-                        any_valid = True
-                        new_coords[idx1] = new_p1
-                        new_coords[idx2] = new_p2
-                    elif steps[i] > min_step:
-                        any_valid = True
-                        steps[i] = step / 2  # reduce the step size
-
-        # create the expanded rectangle polygon
-        expanded_rect_poly = Polygon(new_coords)
-        return expanded_rect_poly
+        return inscribed_rect_poly
 
     def expand_inscribed_rectangle_2(self, inscribed_rect_poly: Polygon, insc_circle_center) -> Polygon:
-        """
-        Expand the base inscribed rectangle.
-        First find the main direction of expansion buy expanding in each direction separately till collision,
-        then expand in that direction and then in the other directions.
+        """Expand by selecting the most permissive direction first, then others.
+        Uses `scale_rect_poly` for directional scaling and `is_poly_in_polygon` to bound growth.
         """
 
-        # find step
-        # smallest length of the rectangle side
-        rect_circum_coords = np.array(inscribed_rect_poly.exterior.coords)
-        rect_circum_side_lengths = np.linalg.norm(np.diff(rect_circum_coords, axis=0), axis=1)
-        min_rect_circum_side_length = np.min(rect_circum_side_lengths)
-        step = self.steps['base_insc_rect']
-        min_step = step / 5
+        # Gentle initial shrink for stability
+        s_rect_poly = scale(inscribed_rect_poly, xfact=0.6, yfact=0.6, origin=insc_circle_center)
 
-        # scale inscribed_rect_poly
-        sf = 0.3
-        s_rect_poly = scale(inscribed_rect_poly, xfact=sf, yfact=sf, origin=insc_circle_center)
+        # Determine scaling step
+        delta_scale = self.steps.get('scale_factor', 0.1)
+        # shortest_len = find_shortest_edge_poly(s_rect_poly)['length']
+        # base_step = self.steps.get('base_insc_rect', shortest_len / 8.0)
+        # delta_scale = max(0.01, min(0.08, base_step / max(shortest_len, 1e-6) / 2.0))
 
-        #
-        coords = s_rect_poly.exterior.coords[:-1]
-        coords = list(coords)
+        # Edge midpoints angles
+        coords = list(s_rect_poly.exterior.coords[:-1])
         idx1s = [0, 1, 2, 3]
         idx2s = [1, 2, 3, 0]
-        steps = [step for _ in range(4)]
-        n_e = np.zeros(4, dtype=int)  # number of expansions in each direction
-
-        # calculate the angles of the midpoints of the edges
         thetas = []
         for idx1, idx2 in zip(idx1s, idx2s):
             p1 = coords[idx1]
@@ -305,198 +289,110 @@ class EvalRectangles:
             theta = np.arctan2(midp[1] - insc_circle_center[1], midp[0] - insc_circle_center[0])
             thetas.append(theta)
 
-        # find main direction of expansion
-        # expand seperately in each direction till collision
-        coords_cand = [coords.copy() for _ in range(4)]
-        for i, (idx1, idx2, theta) in enumerate(zip(idx1s, idx2s, thetas)):
-            is_valid = True
-            while is_valid:
-                step = steps[i]
-                p1 = coords_cand[i][idx1]
-                p2 = coords_cand[i][idx2]
-                midp = np.mean([p1, p2], axis=0)
-                success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, theta, step)
-                if success:
-                    n_e[i] += 1
-                    coords_cand[i][idx1] = new_p1
-                    coords_cand[i][idx2] = new_p2
+        # Probe each direction separately to measure allowable growth
+        growth_counts = []
+        for theta in thetas:
+            test_poly = s_rect_poly
+            count = 0
+            local_delta = delta_scale
+            while True:
+                candidate = self.scale_rect_poly(test_poly, 1.0 + local_delta, theta)
+                if self.is_poly_in_polygon(candidate):
+                    test_poly = candidate
+                    count += 1
                 else:
-                    is_valid = False
+                    break
+            growth_counts.append(count)
 
-        # max step direction
-        max_step_idx = np.argmax(n_e)
-        best_coords = coords_cand[max_step_idx]
-
-        # remove the max_step_idx item from idx1s, idx2s, thetas
-        idx1s = [idx for i, idx in enumerate(idx1s) if i != max_step_idx]
-        idx2s = [idx for i, idx in enumerate(idx2s) if i != max_step_idx]
-        thetas = [theta for i, theta in enumerate(thetas) if i != max_step_idx]
-        n_e = np.ones(3, dtype=int)        # reset
-
-        # expand in the other 3 directions
-        for _ in range(2):
-            new_coords = best_coords.copy()  # reset best_coords for each iteration
-
-            # update steps for each direction based on n_e
-            max_n_e = np.max(n_e)
-            if max_n_e == 0:
+        # Choose best direction and expand fully along it
+        best_idx = int(np.argmax(growth_counts)) if len(growth_counts) > 0 else 0
+        best_theta = thetas[best_idx]
+        local_delta = delta_scale
+        while True:
+            candidate = self.scale_rect_poly(s_rect_poly, 1.0 + local_delta, best_theta)
+            if self.is_poly_in_polygon(candidate):
+                s_rect_poly = candidate
+            else:
                 break
-            steps = [step*(ne/max_n_e) for step, ne in zip(steps, n_e)]
 
-            any_valid = True
-            while any_valid:
-                any_valid = False
-                for i, (idx1, idx2, theta) in enumerate(zip(idx1s, idx2s, thetas)):
-                    step = steps[i]
-                    p1 = new_coords[idx1]
-                    p2 = new_coords[idx2]
-                    midp = np.mean([p1, p2], axis=0)
-                    success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, theta, step)
-                    if success:
-                        n_e[i] += 1
-                        any_valid = True
-                        new_coords[idx1] = new_p1
-                        new_coords[idx2] = new_p2
-                    elif steps[i] > min_step:
-                        any_valid = True
-                        steps[i] = step / 2  # reduce the step size
+        # Expand remaining directions modestly
+        for theta in [t for i, t in enumerate(thetas) if i != best_idx]:
+            local_delta = delta_scale
+            grew = True
+            while grew:
+                candidate = self.scale_rect_poly(s_rect_poly, 1.0 + local_delta, theta)
+                if self.is_poly_in_polygon(candidate):
+                    s_rect_poly = candidate
+                else:
+                    grew = False
+                #     local_delta *= 0.5
+                #     if local_delta < 0.005:
+                #         grew = False
 
-        # create the expanded rectangle polygon
-        expanded_rect_poly = Polygon(new_coords)
-        return expanded_rect_poly
+        return s_rect_poly
 
     def expand_inscribed_rectangle_3(self, inscribed_rect_poly: Polygon) -> Polygon:
-        """
-        Expand the base inscribed rectangle.
-        Expand based on the biggest edge of the base rectangle.
+        """Expand primarily along the longest edge direction of the cell polygon.
+        Uses `scale_rect_poly` with the edge's angle and its perpendicular.
         """
 
-        # step
-        # step = self.r_px
-        step = self.steps['base_insc_rect']
-        min_step = step / 3
+        # Determine scaling step
+        delta_scale = self.steps.get('scale_factor', 0.1)
+        # shortest_len = find_shortest_edge_poly(inscribed_rect_poly)['length']
+        # base_step = self.steps.get('base_insc_rect', shortest_len / 8.0)
+        # delta_scale = max(0.01, min(0.08, base_step / max(shortest_len, 1e-6) / 2.0))
 
-        # find biggest edge of the self.poly
+        # Longest edge properties of the cell polygon
         edge_prop = find_longest_edge_poly(self.poly)
-        p1 = edge_prop['p1']
-        p2 = edge_prop['p2']
         theta = edge_prop['angle']
-        edge_length = edge_prop['length']
 
-        #  move p1 and p2 in the direction of the center of the edge
-        l_edge = edge_length / 4
-        s_p1 = (p1[0] + l_edge * np.cos(theta),
-                p1[1] + l_edge * np.sin(theta))
-        s_p2 = (p2[0] + l_edge * np.cos(-theta),
-                p2[1] + l_edge * np.sin(-theta))
+        # First, expand along longest-edge direction
+        grew = True
+        while grew:
+            candidate = self.scale_rect_poly(inscribed_rect_poly, 1.0 + delta_scale, theta)
+            if self.is_poly_in_polygon(candidate):
+                inscribed_rect_poly = candidate
+            else:
+                grew = False
+                # delta_scale *= 0.5
+                # if delta_scale < 0.005:
+                #     grew = False
 
-        # create third and fourth points
-        # p3 is the point from p2 perpendicular to edge p1-p2
-        th3 = theta + np.pi / 2,
-        p3 = (
-            s_p2[0] + step * np.cos(th3),
-            s_p2[1] + step * np.sin(th3)
-        )
-        if not self.spoly.contains(Point(p3)):
-            th3 = theta - np.pi / 2
-            p3 = (
-                s_p1[0] + step * np.cos(th3),
-                s_p1[1] + step * np.sin(th3)
-            )
-        if not self.spoly.contains(Point(p3)):
-            # self.lg.error("[expand_inscribed_rectangle_3] Cannot find a valid point p3.")
-            return inscribed_rect_poly
-            # raise ValueError("Cannot find a valid point p3 for the inscribed rectangle expansion.")
+        # Then, expand along the perpendicular direction
+        perp_theta = theta + np.pi / 2.0
+        local_delta = max(delta_scale, 0.01)
+        grew = True
+        while grew:
+            candidate = self.scale_rect_poly(inscribed_rect_poly, 1.0 + local_delta, perp_theta)
+            if self.is_poly_in_polygon(candidate):
+                inscribed_rect_poly = candidate
+            else:
+                grew = False
+            #     local_delta *= 0.5
+            #     if local_delta < 0.005:
+            #         grew = False
 
-        # move p1 and p2 alittle inside
-        delta = step/5
-        p1 = (s_p1[0] + delta * np.cos(th3),
-              s_p1[1] + delta * np.sin(th3))
-        p2 = (s_p2[0] + delta * np.cos(th3),
-              s_p2[1] + delta * np.sin(th3))
+        return inscribed_rect_poly
 
-        # p4 is the point from p1 perpendicular to edge p1-p2
-        p4 = (s_p1[0] + step * np.cos(th3),
-              s_p1[1] + step * np.sin(th3))
-        if not self.spoly.contains(Point(p4)):
-            # self.lg.error("Cannot find a valid point p4 for the inscribed rectangle expansion.")
-            return inscribed_rect_poly
-            # raise ValueError("Cannot find a valid point p4 for the inscribed rectangle expansion.")
+    def is_poly_in_polygon(self, poly: Polygon) -> bool:
+        """ Check if the polygon poly is inside the cell polygon. """
+        for coord in poly.exterior.coords:
+            point = Point(coord)
+            if not self.spoly.contains(point):
+                return False
+        return True
 
-        # create new polygon
-        coords = [p1, p2, p3, p4]  # new polygon
-        new_poly = Polygon(coords)
-        center = new_poly.centroid.coords[0]
-
-        #
-        coords = list(coords)
-        idx1s = [1, 2, 3]
-        idx2s = [2, 3, 0]
-        steps = [step for _ in range(3)]
-        n_e = np.ones(3, dtype=int)        # number of expansions in each direction
-
-        # calculate the angles of the midpoints of the edges
-        thetas = []
-        for idx1, idx2 in zip(idx1s, idx2s):
-            p1 = coords[idx1]
-            p2 = coords[idx2]
-            midp = np.mean([p1, p2], axis=0)
-            theta = np.arctan2(midp[1] - center[1], midp[0] - center[0])
-            thetas.append(theta)
-
-        # expand in all directions
-        for _ in range(2):
-            new_coords = coords.copy()
-
-            # update steps for each direction based on n_e
-            max_n_e = np.max(n_e)
-            if max_n_e == 0:
-                break
-            steps = [step*(ne/max_n_e) for step, ne in zip(steps, n_e)]
-
-            #
-            any_valid = True
-            while any_valid:
-                any_valid = False
-                for i, (idx1, idx2, theta) in enumerate(zip(idx1s, idx2s, thetas)):
-                    step = steps[i]
-                    p1 = new_coords[idx1]
-                    p2 = new_coords[idx2]
-                    midp = np.mean([p1, p2], axis=0)
-                    success, new_p1, new_p2 = self.expand_2_points_eval(p1, p2, theta, step)
-                    if success:
-                        n_e[i] += 1
-                        any_valid = True
-                        new_coords[idx1] = new_p1
-                        new_coords[idx2] = new_p2
-                    elif steps[i] > min_step:
-                        any_valid = True
-                        steps[i] = step / 2  # reduce the step size
-
-        # create the expanded rectangle polygon
-        expanded_rect_poly = Polygon(new_coords)
-        return expanded_rect_poly
-
-    def expand_2_points_eval(self, p1, p2, theta, step):
-        """ expand two points p1 and p2 in the direction of angle theta by step and check if the new points are inside the polygon. """
-        new_p1 = (
-            p1[0] + step * np.cos(theta),
-            p1[1] + step * np.sin(theta)
-        )
-        new_p2 = (
-            p2[0] + step * np.cos(theta),
-            p2[1] + step * np.sin(theta)
-        )
-        # check if the new points are inside the polygon
-        success = False
-        if self.spoly.contains(Point(new_p1)):
-            if self.spoly.contains(Point(new_p2)):
-                # point bertween p1 and p2
-                mid_p = ((new_p1[0] + new_p2[0]) / 2,
-                         (new_p1[1] + new_p2[1]) / 2)
-                if self.spoly.contains(Point(mid_p)):
-                    success = True
-        return success, new_p1, new_p2
+    def scale_rect_poly(self, rect_poly: Polygon, scale_factor: float, theta: float) -> Polygon:
+        """ Scale the rectangle polygon in the direction of theta by scale_factor. """
+        # center of the rectangle
+        center = rect_poly.centroid.coords[0]
+        # rotate to align with x axis
+        rect_poly = rotate(rect_poly, angle=np.degrees(-theta), origin=center)
+        # scale in x direction
+        scaled_rect_poly = scale(rect_poly, xfact=scale_factor, yfact=1.0, origin=center)
+        # rotate back
+        scaled_rect_poly = rotate(scaled_rect_poly, angle=np.degrees(theta), origin=center)
+        return scaled_rect_poly
 
     # ==================================================================================================================
     # plotting
@@ -561,7 +457,7 @@ class EvalRectangles:
 
         # legend at outer upper right (outside the plot)
         plt.legend(loc='lower right', bbox_to_anchor=(1.0, 0.9), fontsize=12, frameon=True)
-        # plt.show()
+        plt.show()
 
         # save_dir = "./maps/zOther/segmentation"
         # fig.savefig(f"{save_dir}/cell_{self.id}_evaluation.pdf", bbox_inches='tight', format='pdf', dpi=600)
