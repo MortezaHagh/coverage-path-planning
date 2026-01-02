@@ -58,10 +58,10 @@ class CellsPlotter:
             ax.fill(x, y, alpha=0.2, fc=color)
             ax.text(cx, cy, f"${cell.id}$", color='black', fontsize=10)
 
-            # # rectangle polygon
-            # if cell.rectangle_poly is not None:
-            #     rx, ry = cell.rectangle_poly.exterior.xy
-            #     ax.plot(rx, ry, color='black', linewidth=2, linestyle='--')
+            # rectangle polygon
+            if cell.rectangle_poly is not None:
+                rx, ry = cell.rectangle_poly.exterior.xy
+                ax.plot(rx, ry, color='black', linewidth=2, linestyle='--')
 
         # manually create legend
         from matplotlib.lines import Line2D

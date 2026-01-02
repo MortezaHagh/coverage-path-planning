@@ -292,9 +292,9 @@ class SequenceHandler:
                 cv.polylines(overlay, [pp], isClosed=False, color=self.colors[i], thickness=robot_d_px)
                 alpha = 0.2  # Adjust transparency (0.0 transparent, 1.0 opaque)
                 map_planning = cv.addWeighted(overlay, alpha, map_planning, 1 - alpha, 0)
-                # add points
-                for point in pp:
-                    cv.circle(map_planning, tuple(point), p_r, self.colors[i], -1)
+                # # add points
+                # for point in pp:
+                #     cv.circle(map_planning, tuple(point), p_r, self.colors[i], -1)
         self.zmd.map_planning = map_planning
 
     def add_connection_paths_to_map_planning(self) -> None:

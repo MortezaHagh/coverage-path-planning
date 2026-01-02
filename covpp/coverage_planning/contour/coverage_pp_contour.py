@@ -242,6 +242,8 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
             for poly in polys:
                 new_points = poly.exterior.coords + s_xy
                 new_points = self.filter_points_by_distance(new_points)
+                if len(new_points) < 1:
+                    continue
                 # rearrange points starting from the closest point to the last point in points
                 new_points = pu.rearrange_points_by_point(points[-1], new_points, make_closed=False)
                 new_points = self.add_smoothing_point(new_points)

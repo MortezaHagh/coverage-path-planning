@@ -18,10 +18,10 @@ if __name__ == "__main__":
 
     # seg_methods = ["skeleton", "voronoi"]
     seg_methods = ["skeleton"]
-    # covpp_methods = ["boust", "contour", "grid_energy_min"]
-    covpp_methods = ["boust"]
-    # rects = [False, True]
-    rects = [True]
+    covpp_methods = ["boust", "contour", "grid_energy_min"]
+    # covpp_methods = ["boust"]
+    rects = [False, True]
+    # rects = [True]
 
     # covpp_method = ["boust"]
 

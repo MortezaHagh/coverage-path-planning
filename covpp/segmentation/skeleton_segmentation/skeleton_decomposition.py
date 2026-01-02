@@ -142,6 +142,7 @@ class SkeletonDecomposition:
         # self.lg.info2(f"Prev base points: {n_prev_base_pts}")
         # self.lg.info2(f"New base points: {n_new_base_pts - n_prev_base_pts}.")
 
+        # # new critical points
         # # plot for debugging # todo
         # _, ax = plt.subplots(1, 1)
         # for cp in new_cps:
@@ -521,13 +522,13 @@ class SkeletonDecomposition:
 
         # validate results
         if len(base_pts) == 0:
-            raise ValueError(f"No base points found for critical point at {cp}.")
-            # self.lg.error(f"No base points found for critical point at {cp}.")
-            # return False
+            # raise ValueError(f"No base points found for critical point at {cp}.")
+            self.lg.error(f"No base points found for critical point at {cp}.")
+            return False
         if len(base_pts) != n_pts:
-            raise ValueError(f"Expected {n_pts} base points, found {len(base_pts)} for critical point at {cp}.")
-            # self.lg.error(f"Expected 2 base points, found {len(base_pts)} for critical point at {cp}.")
-            # return False
+            # raise ValueError(f"Expected {n_pts} base points, found {len(base_pts)} for critical point at {cp}.")
+            self.lg.error(f"Expected 2 base points, found {len(base_pts)} for critical point at {cp}.")
+            return False
 
         # store results
         cp.base_points = base_pts
@@ -585,6 +586,7 @@ class SkeletonDecomposition:
             if len(open) > 4:
                 break
 
+        # # side points
         # # plot for debugging # todo
         # if self.refinement_step:
         #     _, ax = plt.subplots(1, 1)
@@ -752,9 +754,23 @@ class SkeletonDecomposition:
         if not self.check_if_line_crosses_segmentation_map(g1, g2):
             return None
 
-        path = shortest_path(self.sk_graph, source=tuple(gc), target=tuple(g1))
-        n_path = len(path)
-        new_ind = n_path // 5
+        angle = find_angle_between_points(g1, gc, g2)
+        if angle > np.deg2rad(120):
+            return None
+
+        d1 = np.linalg.norm(np.array(gc) - np.array(g1))
+        d2 = np.linalg.norm(np.array(gc) - np.array(g2))
+
+        if d1 < d2:
+            gg = g2
+        else:
+            gg = g1
+
+        path = shortest_path(self.sk_graph, source=tuple(gc), target=tuple(gg))
+        # n_path = len(path)
+        # new_ind = n_path // 5
+        new_ind = self.skelet.distance_map[gc[0], gc[1]]
+        # new_ind = int(new_ind * 0.7)  # move closer to gc
         new_coord = path[new_ind]
         return CriticalPoint(coord=np.array(new_coord))
 
@@ -780,7 +796,8 @@ class SkeletonDecomposition:
         gi = group[max_hit_idx]
         path = shortest_path(self.sk_graph, source=tuple(gc), target=tuple(gi))
         n_path = len(path)
-        new_ind = n_path // 5
+        # new_ind = n_path // 5
+        new_ind = self.skelet.distance_map[gc[0], gc[1]]
         new_coord = path[new_ind]
         return CriticalPoint(coord=np.array(new_coord))
 
@@ -829,6 +846,7 @@ class SkeletonDecomposition:
             groups.append(group)
             candid_bps.append(node)
 
+        # # groups
         # # plot for debugging # todo
         # _, ax = plt.subplots(1, 1)
         # ax.imshow(segmented_map, cmap='gray', alpha=0.5)
@@ -932,6 +950,7 @@ class SkeletonDecomposition:
 
         self.bpts_graph = bps_graph
 
+        #  # bps_graph
         # # plot for debugging # todo
         # _, axs = plt.subplots(1, 1)
         # axs.imshow(self.zmd.map_ws, cmap='gray', alpha=0.5)
@@ -1058,6 +1077,15 @@ class SkeletonDecomposition:
 
         # # plt.show()
         plt.close('all')
+
+        # # plot division map separately
+        # fig, ax = plt.subplots(1, 1, constrained_layout=True)
+        # ax.imshow(self.skelet.skeleton_segmented_map, cmap='nipy_spectral', alpha=1.0)  # nipy_spectral tab20
+        # ax.set_aspect('equal')
+        # ax.axis('off')
+        # fig3_path = save_dir + "/skeleton_division_map.pdf"
+        # plt.show()
+        # fig.savefig(fig3_path, format='pdf', dpi=600, bbox_inches='tight')
 
         # # cv.imshow("Division Map", self.skelet.skeleton_segmented_map)
         # # show critical points
