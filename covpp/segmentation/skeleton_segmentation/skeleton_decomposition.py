@@ -53,7 +53,8 @@ class SkeletonDecomposition:
         self.map_ws = zmd.map_ws   # uint8 binary map (OCCUPIED, FREE)
 
         # settings
-        self.end_dist_threshold_ratio: float = 0.05         # threshold ratio for min distance from ends
+        # threshold ratio for min distance from ends # [m1-3: 0.05][m4-m10:0.005][m11:0.00]
+        self.end_dist_threshold_ratio: float = 0.05
         self.max_critical_region_ratio: float = 0.6         # maximum ratio of critical region length to branch length
         self.min_max_distance_ratio: float = 0.8            # minimum ratio of min distance to max distance in branch to consider critical point
         self.min_area_thresh_for_contour: int = 10          # minimum area threshold for valid contour
@@ -950,9 +951,9 @@ class SkeletonDecomposition:
 
         self.bpts_graph = bps_graph
 
-        #  # bps_graph
+        # # bps_graph
         # # plot for debugging # todo
-        # _, axs = plt.subplots(1, 1)
+        # fig, axs = plt.subplots(1, 1, constrained_layout=True, figsize=(12, 8))
         # axs.imshow(self.zmd.map_ws, cmap='gray', alpha=0.5)
         # for node in bps_graph.nodes:
         #     neighbors = list(bps_graph.neighbors(node))
@@ -961,7 +962,9 @@ class SkeletonDecomposition:
         #     for neighbor in neighbors:
         #         axs.plot([node[1], neighbor[1]], [node[0], neighbor[0]], c='g')
         # axs.set_aspect('equal')
+        # axs.axis('off')
         # plt.show()
+        # fig.savefig("branch_points_graph.pdf", dpi=600, format='pdf', bbox_inches='tight')
 
     # ==================================================================================================================
     # visualization methods

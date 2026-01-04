@@ -31,7 +31,7 @@ class EvalRectangles:
 
         # settings
         self.k_circum = 0.8
-        self.k_inscr = 0.77
+        self.k_inscr = 0.77  # 0.77 # [m1:0.7]
 
         # attributes for evaluation
         self.steps = {}                             # dictionary to hold expansion steps
@@ -156,7 +156,7 @@ class EvalRectangles:
         steps['robot_r'] = self.r_px
         steps['base_insc_rect'] = find_shortest_edge_poly(base_inscribed_rect_poly)['length'] / 8
         steps['circum_rect'] = find_shortest_edge_poly(circum_rect_poly)['length'] / 10
-        steps['scale_factor'] = 0.08
+        steps['scale_factor'] = 0.08  # 0.08 # [m1:0.9]
         self.steps = steps
 
     def eval_by_circumscribed_rect(self) -> None:
