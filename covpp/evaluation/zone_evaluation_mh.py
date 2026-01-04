@@ -46,10 +46,10 @@ class ZoneEvaluation(ZoneEvaluationBase):
 
     def calculate_time_statistics(self, times: dict) -> None:
         """Populate time-related statistics from timing checkpoints. """
-        self.stats.time_segmentation = times['segmentation'] - times['start']
-        self.stats.time_coverage_planning = times['coverage_planning'] - times['segmentation']
-        self.stats.time_sequencing = times['sequencing'] - times['coverage_planning']
-        self.stats.time_total = times['sequencing'] - times['start']
+        self.stats.pt_segmentation = times['segmentation'] - times['start']
+        self.stats.pt_coverage_planning = times['coverage_planning'] - times['segmentation']
+        self.stats.pt_sequencing = times['sequencing'] - times['coverage_planning']
+        self.stats.pt_pipeline = times['sequencing'] - times['start']
 
     def calculate_path_statistics(self) -> None:
         """Compute path lengths and total yaw changes for full and coverage paths. """
@@ -75,7 +75,7 @@ class ZoneEvaluation(ZoneEvaluationBase):
         angle_diffs = np.diff(angles)
         angle_diffs = np.abs((angle_diffs + np.pi) % (2 * np.pi) - np.pi)
         yaw_changes = np.sum(np.abs(angle_diffs))
-        self.stats.full_yaw_rad = float(yaw_changes)
+        self.stats.yaw_path_full = float(yaw_changes)
 
         # coverage yaw changes
         yaw_changes = 0.0
@@ -89,18 +89,18 @@ class ZoneEvaluation(ZoneEvaluationBase):
             angle_diffs = np.abs((angle_diffs + np.pi) % (2 * np.pi) - np.pi)
             yaw_changes += np.sum(np.abs(angle_diffs))
         yaw_changes = float(yaw_changes)
-        self.stats.coverage_yaw_rad = yaw_changes
+        self.stats.yaw_path_coverage = yaw_changes
 
     def calculate_travel_times(self):
         """Estimate travel times from path lengths and robot kinematic limits. """
         # full travel time
         t_lin = self.stats.full_length / RobotConfig.v_lin_avg
-        t_ang = self.stats.full_yaw_rad / RobotConfig.v_ang_avg
-        self.stats.full_trav_time = t_lin + t_ang
+        t_ang = self.stats.yaw_path_full / RobotConfig.v_ang_avg
+        self.stats.trav_time_full = t_lin + t_ang
         # coverage travel time
         t_lin = self.stats.coverage_length / RobotConfig.v_lin_avg
-        t_ang = self.stats.coverage_yaw_rad / RobotConfig.v_ang_avg
-        self.stats.coverage_trav_time = t_lin + t_ang
+        t_ang = self.stats.yaw_path_coverage / RobotConfig.v_ang_avg
+        self.stats.trav_time_coverage = t_lin + t_ang
 
     # ------------------------------------------------------------------------------------------------------------------
     # Cleaning area calculations
@@ -109,29 +109,29 @@ class ZoneEvaluation(ZoneEvaluationBase):
     def calculate_cleaning_area(self):
         """Compute cleanable area in pixels and meters from ``map_cleaning``. """
         self.stats.cleaning_area_px = np.sum(self.zmd.map_cleaning == 255)
-        self.stats.cleaning_area_m = self.stats.cleaning_area_px * (self.zmd.resolution**2)
+        self.stats.area_cleaning_m = self.stats.cleaning_area_px * (self.zmd.resolution**2)
 
     def calculate_cleaned_area_stats(self, cleaned_acc: np.ndarray) -> None:
         """Compute cleaned/overlap/uncleaned areas and coverage percentage. """
 
         cleaned_area_px = np.sum(cleaned_acc > 0)
-        cleaned_area_m = cleaned_area_px * (self.zmd.resolution ** 2)
+        area_cleaned_m = cleaned_area_px * (self.zmd.resolution ** 2)
         self.stats.cleaned_area_px = cleaned_area_px
-        self.stats.cleaned_area_m = cleaned_area_m
+        self.stats.area_cleaned_m = area_cleaned_m
 
         # overlaped_area
         # calculate cleaned area based on the length of the path and cleaning width
         cleaning_width_m = 2 * PlanningConfig.cleaning_r
         total_cleaned_area_m = self.stats.coverage_length * cleaning_width_m  # full_length or coverage_length # imp
-        self.stats.overlaped_area_m = total_cleaned_area_m - self.stats.cleaned_area_m
-        overlap_p = self.stats.overlaped_area_m / self.stats.cleaning_area_m * 100
-        self.stats.overlap_p = max(0.0, overlap_p)  # avoid negative overlap due to rounding errors
+        self.stats.area_overlaped_m = total_cleaned_area_m - self.stats.area_cleaned_m
+        area_overlap_pc = self.stats.area_overlaped_m / self.stats.area_cleaning_m * 100
+        self.stats.area_overlap_pc = max(0.0, area_overlap_pc)  # avoid negative overlap due to rounding errors
 
-        # uncleaned_area_m
-        self.stats.uncleaned_area_m = self.stats.cleaning_area_m - self.stats.cleaned_area_m
+        # area_uncleaned_m
+        self.stats.area_uncleaned_m = self.stats.area_cleaning_m - self.stats.area_cleaned_m
 
         # coverage percentage
-        self.stats.coverage_p = self.stats.cleaned_area_m / self.stats.cleaning_area_m * 100
+        self.stats.area_coverage_pc = self.stats.area_cleaned_m / self.stats.area_cleaning_m * 100
 
     def calculate_cleaned_accumulated_area(self) -> np.ndarray:
         """Accumulate cleaned passes per pixel by buffering coverage paths. """

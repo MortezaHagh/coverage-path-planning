@@ -62,8 +62,8 @@ def main():
         'n_paths': ['planner_stats', 'n_paths'],
         'len_m': ['planner_stats', 'len_m'],
         'yaw_changes': ['planner_stats', 'yaw_changes'],
-        'coverage_p': ['zone_stats', 'coverage_p'],
-        'overlap_p': ['zone_stats', 'overlap_p']
+        'area_coverage_pc': ['zone_stats', 'area_coverage_pc'],
+        'area_overlap_pc': ['zone_stats', 'area_overlap_pc']
     }
 
     # User selection (you can modify this part)
@@ -86,7 +86,7 @@ def main():
         selected_param = choice if choice in parameters else 'len_m'
 
     # Option 2: Direct assignment (uncomment to use)
-    # selected_param = 'coverage_p'  # Change this to desired parameter
+    # selected_param = 'area_coverage_pc'  # Change this to desired parameter
 
     parameter_path = parameters.get(selected_param, parameters['len_m'])
 

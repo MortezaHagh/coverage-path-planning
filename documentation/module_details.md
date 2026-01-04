@@ -262,6 +262,7 @@ Coverage planners are discovered via the `coverage_planners` entry point group:
 Key boustrophedon submodules: `decomposition_bs_mh.py`, `cell_cov_planner.py`, `obstacles.py`, `events.py`, `plotter.py`.
 
 One-liners (when to use):
+
 - `boust`: Reliable for large, rectilinear spaces with few obstacles; produces tidy, parallel lanes with predictable turn behavior.
 - `contour`: Best for organic/curvy rooms; iteratively follows inward contours (buffer + distance transform) to hug boundaries.
 - `grid_energy_min`: Simple greedy sweep on a grid that minimizes heading changes; topology-agnostic and robust to noisy maps.
@@ -362,11 +363,11 @@ Computes performance metrics and statistics.
   - `evaluate(paths, times)`: Compute metrics and persist results
 - **Metrics (ZoneStatsBase)**:
   - `map_name`, `method`, `zone_ind`
-  - Travel times: `full_trav_time`, `coverage_trav_time`
-  - Stage times: `time_segmentation`, `time_coverage_planning`, `time_sequencing`, `time_total`
-  - Path metrics: `full_length`, `coverage_length`, `full_yaw_rad`, `coverage_yaw_rad`
-  - Areas: `cleaning_area_px/m`, `cleaned_area_px/m`, `uncleaned_area_m`, `overlaped_area_m`
-  - Ratios: `coverage_p`, `overlap_p`
+  - Travel times: `trav_time_full`, `trav_time_coverage`
+  - Stage times: `pt_segmentation`, `pt_coverage_planning`, `pt_sequencing`, `pt_pipeline`
+  - Path metrics: `full_length`, `coverage_length`, `yaw_path_full`, `yaw_path_coverage`
+  - Areas: `cleaning_area_px/m`, `cleaned_area_px/m`, `area_uncleaned_m`, `area_overlaped_m`
+  - Ratios: `area_coverage_pc`, `area_overlap_pc`
 
 ### **DistrictEvaluationHandler**
 
@@ -383,4 +384,4 @@ Computes performance metrics and statistics.
 ### **DistrictStatsBase** (district_evaluation.py)
 
 - **Purpose**: Aggregated district-level KPIs and serialization
-- **Key Fields**: Mirrors sums/ratios across zones (`full_path_length`, `coverage_path_length`, times, areas, coverage/overlap ratios)
+- **Key Fields**: Mirrors sums/ratios across zones (`l_path_full`, `l_path_coverage`, times, areas, coverage/overlap ratios)

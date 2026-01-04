@@ -15,25 +15,25 @@ class DistrictStatsBase:
         self.map_name: str = None
         self.method: str = None
         self.n_zones: int = None
-        self.full_trav_time: float = None
-        self.coverage_trav_time: float = None
+        self.trav_time_full: float = None
+        self.trav_time_coverage: float = None
         #
-        self.time_segmentation: float = None
-        self.time_coverage_planning: float = None
-        self.time_sequencing: float = None
-        self.time_total: float = None
+        self.pt_segmentation: float = None
+        self.pt_coverage_planning: float = None
+        self.pt_sequencing: float = None
+        self.pt_pipeline: float = None
         #
-        self.full_path_length: float = None
-        self.coverage_path_length: float = None
-        self.full_yaw_rad: float = None
-        self.coverage_yaw_rad: float = None
+        self.l_path_full: float = None
+        self.l_path_coverage: float = None
+        self.yaw_path_full: float = None
+        self.yaw_path_coverage: float = None
         #
-        self.cleaning_area_m: float = None
-        self.cleaned_area_m: float = None
-        self.uncleaned_area_m: float = None
-        self.overlaped_area_m: float = None
-        self.coverage_p: float = None
-        self.overlap_p: float = None
+        self.area_cleaning_m: float = None
+        self.area_cleaned_m: float = None
+        self.area_uncleaned_m: float = None
+        self.area_overlaped_m: float = None
+        self.area_coverage_pc: float = None
+        self.area_overlap_pc: float = None
 
     def get_data_dict(self) -> dict:
         """Convert statistics to dictionary format for serialization."""
@@ -41,22 +41,22 @@ class DistrictStatsBase:
             "map_name": self.map_name,
             "method": self.method,
             "n_zones": int(self.n_zones),
-            "full_trav_time": round(float(self.full_trav_time), 2),
-            "coverage_trav_time": round(float(self.coverage_trav_time), 2),
-            "time_segmentation": round(float(self.time_segmentation), 2),
-            "time_coverage_planning": round(float(self.time_coverage_planning), 2),
-            "time_sequencing": round(float(self.time_sequencing), 2),
-            "time_total": round(float(self.time_total), 2),
-            "full_path_length": round(float(self.full_path_length), 2),
-            "coverage_path_length": round(float(self.coverage_path_length), 2),
-            "full_yaw_rad": round(float(self.full_yaw_rad), 2),
-            "coverage_yaw_rad": round(float(self.coverage_yaw_rad), 2),
-            "cleaning_area_m": round(float(self.cleaning_area_m), 2),
-            "cleaned_area_m": round(float(self.cleaned_area_m), 2),
-            "uncleaned_area_m": round(float(self.uncleaned_area_m), 2),
-            "overlaped_area_m": round(float(self.overlaped_area_m), 2),
-            "coverage_p": round(float(self.coverage_p), 2),
-            "overlap_p": round(float(self.overlap_p), 2)
+            "trav_time_full": round(float(self.trav_time_full), 2),
+            "trav_time_coverage": round(float(self.trav_time_coverage), 2),
+            "pt_segmentation": round(float(self.pt_segmentation), 2),
+            "pt_coverage_planning": round(float(self.pt_coverage_planning), 2),
+            "pt_sequencing": round(float(self.pt_sequencing), 2),
+            "pt_pipeline": round(float(self.pt_pipeline), 2),
+            "l_path_full": round(float(self.l_path_full), 2),
+            "l_path_coverage": round(float(self.l_path_coverage), 2),
+            "yaw_path_full": round(float(self.yaw_path_full), 2),
+            "yaw_path_coverage": round(float(self.yaw_path_coverage), 2),
+            "area_cleaning_m": round(float(self.area_cleaning_m), 2),
+            "area_cleaned_m": round(float(self.area_cleaned_m), 2),
+            "area_uncleaned_m": round(float(self.area_uncleaned_m), 2),
+            "area_overlaped_m": round(float(self.area_overlaped_m), 2),
+            "area_coverage_pc": round(float(self.area_coverage_pc), 2),
+            "area_overlap_pc": round(float(self.area_overlap_pc), 2)
         }
 
 
@@ -84,22 +84,22 @@ class DistrictEvaluationHandler:
             raise ValueError("No zone statistics provided for district evaluation.")
 
         # aggregate statistics from all zones
-        self.stats.full_trav_time = sum(zs.full_trav_time for zs in zone_stats)
-        self.stats.coverage_trav_time = sum(zs.coverage_trav_time for zs in zone_stats)
-        self.stats.time_segmentation = sum(zs.time_segmentation for zs in zone_stats)
-        self.stats.time_coverage_planning = sum(zs.time_coverage_planning for zs in zone_stats)
-        self.stats.time_sequencing = sum(zs.time_sequencing for zs in zone_stats)
-        self.stats.time_total = sum(zs.time_total for zs in zone_stats)
-        self.stats.full_path_length = sum(zs.full_length for zs in zone_stats)
-        self.stats.coverage_path_length = sum(zs.coverage_length for zs in zone_stats)
-        self.stats.full_yaw_rad = sum(zs.full_yaw_rad for zs in zone_stats)
-        self.stats.coverage_yaw_rad = sum(zs.coverage_yaw_rad for zs in zone_stats)
-        self.stats.cleaning_area_m = sum(zs.cleaning_area_m for zs in zone_stats)
-        self.stats.cleaned_area_m = sum(zs.cleaned_area_m for zs in zone_stats)
-        self.stats.uncleaned_area_m = sum(zs.uncleaned_area_m for zs in zone_stats)
-        self.stats.overlaped_area_m = sum(zs.overlaped_area_m for zs in zone_stats)
-        self.stats.coverage_p = self.stats.cleaned_area_m / self.stats.cleaning_area_m * 100
-        self.stats.overlap_p = self.stats.overlaped_area_m / self.stats.cleaning_area_m * 100
+        self.stats.trav_time_full = sum(zs.trav_time_full for zs in zone_stats)
+        self.stats.trav_time_coverage = sum(zs.trav_time_coverage for zs in zone_stats)
+        self.stats.pt_segmentation = sum(zs.pt_segmentation for zs in zone_stats)
+        self.stats.pt_coverage_planning = sum(zs.pt_coverage_planning for zs in zone_stats)
+        self.stats.pt_sequencing = sum(zs.pt_sequencing for zs in zone_stats)
+        self.stats.pt_pipeline = sum(zs.pt_pipeline for zs in zone_stats)
+        self.stats.l_path_full = sum(zs.full_length for zs in zone_stats)
+        self.stats.l_path_coverage = sum(zs.coverage_length for zs in zone_stats)
+        self.stats.yaw_path_full = sum(zs.yaw_path_full for zs in zone_stats)
+        self.stats.yaw_path_coverage = sum(zs.yaw_path_coverage for zs in zone_stats)
+        self.stats.area_cleaning_m = sum(zs.area_cleaning_m for zs in zone_stats)
+        self.stats.area_cleaned_m = sum(zs.area_cleaned_m for zs in zone_stats)
+        self.stats.area_uncleaned_m = sum(zs.area_uncleaned_m for zs in zone_stats)
+        self.stats.area_overlaped_m = sum(zs.area_overlaped_m for zs in zone_stats)
+        self.stats.area_coverage_pc = self.stats.area_cleaned_m / self.stats.area_cleaning_m * 100
+        self.stats.area_overlap_pc = self.stats.area_overlaped_m / self.stats.area_cleaning_m * 100
 
         # save result
         self.save_result()
