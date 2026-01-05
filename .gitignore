@@ -8,7 +8,6 @@ maps/
 results/
 tools/pyastar2d
 paper/
-# data/
 *.sqlite3
 #*.png
 *.json

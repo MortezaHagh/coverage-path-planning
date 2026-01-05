@@ -171,7 +171,7 @@ main.py
 ### Directory Structure
 
 ```text
-results/
+maps/
   └─ <map_name>/
        └─ District/
             ├─ map_planning_<method>.png
