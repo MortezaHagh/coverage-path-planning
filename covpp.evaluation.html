@@ -1,0 +1,157 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>covpp.evaluation &mdash; covpp 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2ed17a75"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="covpp.sequence.simple_optimizer" href="covpp.sequence.simple_optimizer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            covpp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="covpp.html">CovPP Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="covpp.base.html">covpp.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.spa.html">covpp.spa</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.district.html">covpp.district</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.gui.html">covpp.gui</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.map_topology.html">covpp.map_topology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.html">covpp.segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.html">covpp.coverage_planning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.path_planning.html">covpp.path_planning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.sequence.html">covpp.sequence</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">covpp.evaluation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-evaluation-district-evaluation">covpp.evaluation.district_evaluation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-evaluation-zone-evaluation-base">covpp.evaluation.zone_evaluation_base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-evaluation-zone-evaluation-handler">covpp.evaluation.zone_evaluation_handler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-evaluation-zone-evaluation-mh">covpp.evaluation.zone_evaluation_mh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="covpp.html#covpp-main">covpp.main</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">covpp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="covpp.html">CovPP Modules</a></li>
+      <li class="breadcrumb-item active">covpp.evaluation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/covpp.evaluation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="covpp-evaluation">
+<h1>covpp.evaluation<a class="headerlink" href="#covpp-evaluation" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="covpp-evaluation-district-evaluation">
+<h2>covpp.evaluation.district_evaluation<a class="headerlink" href="#covpp-evaluation-district-evaluation" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.evaluation.district_evaluation.png"><img alt="_images/classes_covpp.evaluation.district_evaluation.png" height="665" src="_images/classes_covpp.evaluation.district_evaluation.png" width="427" />
+</a>
+</section>
+<section id="covpp-evaluation-zone-evaluation-base">
+<h2>covpp.evaluation.zone_evaluation_base<a class="headerlink" href="#covpp-evaluation-zone-evaluation-base" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.evaluation.zone_evaluation_base.png"><img alt="_images/classes_covpp.evaluation.zone_evaluation_base.png" height="504" src="_images/classes_covpp.evaluation.zone_evaluation_base.png" width="744" />
+</a>
+</section>
+<section id="covpp-evaluation-zone-evaluation-handler">
+<h2>covpp.evaluation.zone_evaluation_handler<a class="headerlink" href="#covpp-evaluation-zone-evaluation-handler" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.evaluation.zone_evaluation_handler.png"><img alt="_images/classes_covpp.evaluation.zone_evaluation_handler.png" height="144" src="_images/classes_covpp.evaluation.zone_evaluation_handler.png" width="451" />
+</a>
+</section>
+<section id="covpp-evaluation-zone-evaluation-mh">
+<h2>covpp.evaluation.zone_evaluation_mh<a class="headerlink" href="#covpp-evaluation-zone-evaluation-mh" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.evaluation.zone_evaluation_mh.png"><img alt="_images/classes_covpp.evaluation.zone_evaluation_mh.png" height="264" src="_images/classes_covpp.evaluation.zone_evaluation_mh.png" width="613" />
+</a>
+</section>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.evaluation.png"><img alt="_images/classes_covpp.evaluation.png" height="1283" src="_images/classes_covpp.evaluation.png" width="1396" />
+</a>
+<span class="target" id="module-covpp.evaluation"></span></section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="covpp.sequence.simple_optimizer.html" class="btn btn-neutral float-left" title="covpp.sequence.simple_optimizer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MortezaH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

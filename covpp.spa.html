@@ -1,0 +1,241 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>covpp.spa &mdash; covpp 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2ed17a75"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="covpp.district" href="covpp.district.html" />
+    <link rel="prev" title="covpp.base" href="covpp.base.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            covpp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="covpp.html">CovPP Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="covpp.base.html">covpp.base</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">covpp.spa</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-spa-inscribed-rectangle-histogram">covpp.spa.inscribed_rectangle_histogram</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.spa.inscribed_rectangle_histogram.largest_rectangle_in_histogram"><code class="docutils literal notranslate"><span class="pre">largest_rectangle_in_histogram()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.spa.inscribed_rectangle_histogram.find_largest_inscribed_rectangle"><code class="docutils literal notranslate"><span class="pre">find_largest_inscribed_rectangle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.spa.inscribed_rectangle_histogram.find_largest_in_rectangle"><code class="docutils literal notranslate"><span class="pre">find_largest_in_rectangle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.spa.inscribed_rectangle_histogram.find_inscribed_rotated_rectangle"><code class="docutils literal notranslate"><span class="pre">find_inscribed_rotated_rectangle()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-spa-spa-rectangles">covpp.spa.spa_rectangles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.spa.spa_rectangles.find_circumscribed_rectangle"><code class="docutils literal notranslate"><span class="pre">find_circumscribed_rectangle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.spa.spa_rectangles.find_inscribed_rotated_rectangle_1"><code class="docutils literal notranslate"><span class="pre">find_inscribed_rotated_rectangle_1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.spa.spa_rectangles.find_inscribed_rotated_rectangle"><code class="docutils literal notranslate"><span class="pre">find_inscribed_rotated_rectangle()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-spa-space-analyzer">covpp.spa.space_analyzer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.district.html">covpp.district</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.gui.html">covpp.gui</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.map_topology.html">covpp.map_topology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.html">covpp.segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.html">covpp.coverage_planning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.path_planning.html">covpp.path_planning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.sequence.html">covpp.sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.evaluation.html">covpp.evaluation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="covpp.html#covpp-main">covpp.main</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">covpp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="covpp.html">CovPP Modules</a></li>
+      <li class="breadcrumb-item active">covpp.spa</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/covpp.spa.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="covpp-spa">
+<h1>covpp.spa<a class="headerlink" href="#covpp-spa" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="covpp-spa-inscribed-rectangle-histogram">
+<h2>covpp.spa.inscribed_rectangle_histogram<a class="headerlink" href="#covpp-spa-inscribed-rectangle-histogram" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.spa.inscribed_rectangle_histogram.png"><img alt="_images/classes_covpp.spa.inscribed_rectangle_histogram.png" height="11" src="_images/classes_covpp.spa.inscribed_rectangle_histogram.png" width="11" />
+</a>
+<p id="module-covpp.spa.inscribed_rectangle_histogram">Find the largest inscribed rectangle in a binary map using histogram method.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.spa.inscribed_rectangle_histogram.largest_rectangle_in_histogram">
+<span class="sig-name descname"><span class="pre">largest_rectangle_in_histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">heights</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.spa.inscribed_rectangle_histogram.largest_rectangle_in_histogram" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.spa.inscribed_rectangle_histogram.find_largest_inscribed_rectangle">
+<span class="sig-name descname"><span class="pre">find_largest_inscribed_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.spa.inscribed_rectangle_histogram.find_largest_inscribed_rectangle" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.spa.inscribed_rectangle_histogram.find_largest_in_rectangle">
+<span class="sig-name descname"><span class="pre">find_largest_in_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.spa.inscribed_rectangle_histogram.find_largest_in_rectangle" title="Link to this definition"></a></dt>
+<dd><p>find largest rectangle in the biggest open space contour.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.spa.inscribed_rectangle_histogram.find_inscribed_rotated_rectangle">
+<span class="sig-name descname"><span class="pre">find_inscribed_rotated_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.spa.inscribed_rectangle_histogram.find_inscribed_rotated_rectangle" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="covpp-spa-spa-rectangles">
+<h2>covpp.spa.spa_rectangles<a class="headerlink" href="#covpp-spa-spa-rectangles" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.spa.spa_rectangles.png"><img alt="_images/classes_covpp.spa.spa_rectangles.png" height="11" src="_images/classes_covpp.spa.spa_rectangles.png" width="11" />
+</a>
+<p id="module-covpp.spa.spa_rectangles">Utility functions for SPA (Spatial Analysis) involving rectangle detection in maps.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.spa.spa_rectangles.find_circumscribed_rectangle">
+<span class="sig-name descname"><span class="pre">find_circumscribed_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#covpp.spa.spa_rectangles.find_circumscribed_rectangle" title="Link to this definition"></a></dt>
+<dd><p>Find the minimum area rectangle that circumscribes all free cells in the map.</p>
+<dl class="simple">
+<dt>Method:</dt><dd><ol class="arabic simple">
+<li><p>Find contours of the free cells in the map.</p></li>
+<li><p>Combine all contours to get the minimum area rectangle using cv.minAreaRect.</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>{&quot;vertices&quot;: [(x, y), ...], &quot;rect_data&quot;: {&quot;xc&quot;: xc, &quot;yc&quot;: yc, &quot;rot&quot;: rot, &quot;w&quot;: w, &quot;h&quot;: h}}</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.spa.spa_rectangles.find_inscribed_rotated_rectangle_1">
+<span class="sig-name descname"><span class="pre">find_inscribed_rotated_rectangle_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#covpp.spa.spa_rectangles.find_inscribed_rotated_rectangle_1" title="Link to this definition"></a></dt>
+<dd><p>Find the maximum area rectangle that can be inscribed within the free cells in the map.</p>
+<dl>
+<dt>Method:</dt><dd><ol class="arabic simple">
+<li><p>Find contours of the free cells in the map.</p></li>
+<li><p>Find the largest contour and fit a rotated rectangle around it.</p></li>
+<li><p>Extract the center, size, and angle of the minimum area rectangle.</p></li>
+</ol>
+<p>4. For various scales and rotations of the rectangle:
+a. Scale the rectangle.
+b. Rotate the rectangle.
+c. Check if all vertices of the rectangle lie within the largest contour.
+d. If yes, calculate the area and update the best rectangle if it's larger than the previous best.
+5. Return the best rectangle found.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>{&quot;vertices&quot;: [(x, y), ...], &quot;rect_data&quot;: {&quot;xc&quot;: xc, &quot;yc&quot;: yc, &quot;rot&quot;: rot, &quot;w&quot;: w, &quot;h&quot;: h}}</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.spa.spa_rectangles.find_inscribed_rotated_rectangle">
+<span class="sig-name descname"><span class="pre">find_inscribed_rotated_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#covpp.spa.spa_rectangles.find_inscribed_rotated_rectangle" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="covpp-spa-space-analyzer">
+<h2>covpp.spa.space_analyzer<a class="headerlink" href="#covpp-spa-space-analyzer" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.spa.space_analyzer.png"><img alt="_images/classes_covpp.spa.space_analyzer.png" height="1084" src="_images/classes_covpp.spa.space_analyzer.png" width="867" />
+</a>
+</section>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.spa.png"><img alt="_images/classes_covpp.spa.png" height="1084" src="_images/classes_covpp.spa.png" width="867" />
+</a>
+<span class="target" id="module-covpp.spa"></span></section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="covpp.base.html" class="btn btn-neutral float-left" title="covpp.base" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="covpp.district.html" class="btn btn-neutral float-right" title="covpp.district" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MortezaH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

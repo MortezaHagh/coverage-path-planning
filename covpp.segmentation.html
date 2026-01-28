@@ -1,0 +1,306 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>covpp.segmentation &mdash; covpp 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2ed17a75"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="covpp.segmentation.simple_segmentation" href="covpp.segmentation.simple_segmentation.html" />
+    <link rel="prev" title="covpp.map_topology" href="covpp.map_topology.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            covpp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="covpp.html">CovPP Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="covpp.base.html">covpp.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.spa.html">covpp.spa</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.district.html">covpp.district</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.gui.html">covpp.gui</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.map_topology.html">covpp.map_topology</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">covpp.segmentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.simple_segmentation.html">covpp.segmentation.simple_segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html">covpp.segmentation.voronoi_segmentation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-segmentation-cell-base">covpp.segmentation.cell_base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-segmentation-cell-planning">covpp.segmentation.cell_planning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-segmentation-eval-rectangles">covpp.segmentation.eval_rectangles</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.segmentation.eval_rectangles.EvalRectangles"><code class="docutils literal notranslate"><span class="pre">EvalRectangles</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-segmentation-map-polygons">covpp.segmentation.map_polygons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-segmentation-merge-cells">covpp.segmentation.merge_cells</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-segmentation-segmentation-base">covpp.segmentation.segmentation_base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-segmentation-segmentation-handler">covpp.segmentation.segmentation_handler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.html">covpp.coverage_planning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.path_planning.html">covpp.path_planning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.sequence.html">covpp.sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.evaluation.html">covpp.evaluation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="covpp.html#covpp-main">covpp.main</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">covpp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="covpp.html">CovPP Modules</a></li>
+      <li class="breadcrumb-item active">covpp.segmentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/covpp.segmentation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="covpp-segmentation">
+<h1>covpp.segmentation<a class="headerlink" href="#covpp-segmentation" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="covpp.segmentation.simple_segmentation.html">covpp.segmentation.simple_segmentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.simple_segmentation.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.simple_segmentation.html#covpp-segmentation-simple-segmentation-segmentation-simple">covpp.segmentation.simple_segmentation.segmentation_simple</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.simple_segmentation.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html">covpp.segmentation.voronoi_segmentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp-segmentation-voronoi-segmentation-cell">covpp.segmentation.voronoi_segmentation.cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp-segmentation-voronoi-segmentation-data-structures">covpp.segmentation.voronoi_segmentation.data_structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp-segmentation-voronoi-segmentation-segmentation-voronoi">covpp.segmentation.voronoi_segmentation.segmentation_voronoi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#covpp-segmentation-voronoi-segmentation-voronoi-decomposition">covpp.segmentation.voronoi_segmentation.voronoi_decomposition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.voronoi_segmentation.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="covpp-segmentation-cell-base">
+<h2>covpp.segmentation.cell_base<a class="headerlink" href="#covpp-segmentation-cell-base" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.segmentation.cell_base.png"><img alt="_images/classes_covpp.segmentation.cell_base.png" height="964" src="_images/classes_covpp.segmentation.cell_base.png" width="617" />
+</a>
+</section>
+<section id="covpp-segmentation-cell-planning">
+<h2>covpp.segmentation.cell_planning<a class="headerlink" href="#covpp-segmentation-cell-planning" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.segmentation.cell_planning.png"><img alt="_images/classes_covpp.segmentation.cell_planning.png" height="364" src="_images/classes_covpp.segmentation.cell_planning.png" width="903" />
+</a>
+</section>
+<section id="covpp-segmentation-eval-rectangles">
+<h2>covpp.segmentation.eval_rectangles<a class="headerlink" href="#covpp-segmentation-eval-rectangles" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.segmentation.eval_rectangles.png"><img alt="_images/classes_covpp.segmentation.eval_rectangles.png" height="584" src="_images/classes_covpp.segmentation.eval_rectangles.png" width="1467" />
+</a>
+<p id="module-covpp.segmentation.eval_rectangles">Module for evaluating rectangle-like properties of polygons for planning optimization.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">EvalRectangles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">shapely.Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_px</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Evaluate cell for rectangle-like properties to optimize planning.</p>
+<dl class="simple">
+<dt>Pipeline Steps:</dt><dd><ol class="arabic simple">
+<li><p>Evaluate based on circumscribed rectangle (minimum_rotated_rectangle)</p></li>
+<li><p>Create base inscribed rectangle from maximum inscribed circle</p></li>
+<li><p>Expand inscribed rectangle in multiple directions</p></li>
+<li><p>Set rectangle-like property based on evaluation results</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.find_contact_angle">
+<span class="sig-name descname"><span class="pre">find_contact_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">insc_circle_poly</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.find_contact_angle" title="Link to this definition"></a></dt>
+<dd><p>Find the angle of contact point between cell polygon and inscribed circle polygon.</p>
+<p>Used to create the base inscribed rectangle aligned with the cell shape.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.eval_cell_rectangles">
+<span class="sig-name descname"><span class="pre">eval_cell_rectangles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.eval_cell_rectangles" title="Link to this definition"></a></dt>
+<dd><p>Evaluate the cell for rectangle-like properties.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.simplify_polygon">
+<span class="sig-name descname"><span class="pre">simplify_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">shapely.Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.simplify_polygon" title="Link to this definition"></a></dt>
+<dd><p>Simplify the cell polygon to reduce number of vertices.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.find_steps">
+<span class="sig-name descname"><span class="pre">find_steps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_inscribed_rect_poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">shapely.Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">circum_rect_poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">shapely.Polygon</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.find_steps" title="Link to this definition"></a></dt>
+<dd><p>Find expansion steps based on cell properties.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.eval_by_circumscribed_rect">
+<span class="sig-name descname"><span class="pre">eval_by_circumscribed_rect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.eval_by_circumscribed_rect" title="Link to this definition"></a></dt>
+<dd><p>Evaluate if the cell is rectangle-like based on the area ratio of the cell and the circumscribed rectangle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.create_base_inscribed_rectangle">
+<span class="sig-name descname"><span class="pre">create_base_inscribed_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insc_circle_center</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insc_circle_radius</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">shapely.Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.create_base_inscribed_rectangle" title="Link to this definition"></a></dt>
+<dd><p>Create an inscribed rectangle inside the circumscribed rectangle of the cell based on the inscribed circle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.eval_by_expand_inscribed_rectangle">
+<span class="sig-name descname"><span class="pre">eval_by_expand_inscribed_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_inscribed_rect_poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">shapely.Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insc_circle_center</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">shapely.Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.eval_by_expand_inscribed_rectangle" title="Link to this definition"></a></dt>
+<dd><p>Evaluate the inscribed rectangle by comparing it three expanded inscribed rectangles.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.expand_inscribed_rectangle_1">
+<span class="sig-name descname"><span class="pre">expand_inscribed_rectangle_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inscribed_rect_poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">shapely.Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insc_circle_center</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">shapely.Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.expand_inscribed_rectangle_1" title="Link to this definition"></a></dt>
+<dd><p>Expand by iteratively scaling along each edge direction using containment checks.
+Uses <cite>scale_rect_poly</cite> for directional scaling and <cite>is_poly_in_polygon</cite> to stop at collision.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.expand_inscribed_rectangle_2">
+<span class="sig-name descname"><span class="pre">expand_inscribed_rectangle_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inscribed_rect_poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">shapely.Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insc_circle_center</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">shapely.Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.expand_inscribed_rectangle_2" title="Link to this definition"></a></dt>
+<dd><p>Expand by selecting the most permissive direction first, then others.
+Uses <cite>scale_rect_poly</cite> for directional scaling and <cite>is_poly_in_polygon</cite> to bound growth.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.expand_inscribed_rectangle_3">
+<span class="sig-name descname"><span class="pre">expand_inscribed_rectangle_3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inscribed_rect_poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">shapely.Polygon</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">shapely.Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.expand_inscribed_rectangle_3" title="Link to this definition"></a></dt>
+<dd><p>Expand primarily along the longest edge direction of the cell polygon.
+Uses <cite>scale_rect_poly</cite> with the edge's angle and its perpendicular.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.is_poly_in_polygon">
+<span class="sig-name descname"><span class="pre">is_poly_in_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">shapely.Polygon</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.is_poly_in_polygon" title="Link to this definition"></a></dt>
+<dd><p>Check if the polygon poly is inside the cell polygon.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.scale_rect_poly">
+<span class="sig-name descname"><span class="pre">scale_rect_poly</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rect_poly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">shapely.Polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">shapely.Polygon</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.scale_rect_poly" title="Link to this definition"></a></dt>
+<dd><p>Scale the rectangle polygon in the direction of theta by scale_factor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.segmentation.eval_rectangles.EvalRectangles.plot_cell_evaluation">
+<span class="sig-name descname"><span class="pre">plot_cell_evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">insc_circle_center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insc_circle_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">circle_circum_poly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">circum_rect_poly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inscribed_rect_poly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_inscribed_rectangle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.segmentation.eval_rectangles.EvalRectangles.plot_cell_evaluation" title="Link to this definition"></a></dt>
+<dd><p>Plot the rectangle evaluation results.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="covpp-segmentation-map-polygons">
+<h2>covpp.segmentation.map_polygons<a class="headerlink" href="#covpp-segmentation-map-polygons" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.segmentation.map_polygons.png"><img alt="_images/classes_covpp.segmentation.map_polygons.png" height="324" src="_images/classes_covpp.segmentation.map_polygons.png" width="723" />
+</a>
+</section>
+<section id="covpp-segmentation-merge-cells">
+<h2>covpp.segmentation.merge_cells<a class="headerlink" href="#covpp-segmentation-merge-cells" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.segmentation.merge_cells.png"><img alt="_images/classes_covpp.segmentation.merge_cells.png" height="304" src="_images/classes_covpp.segmentation.merge_cells.png" width="847" />
+</a>
+</section>
+<section id="covpp-segmentation-segmentation-base">
+<h2>covpp.segmentation.segmentation_base<a class="headerlink" href="#covpp-segmentation-segmentation-base" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.segmentation.segmentation_base.png"><img alt="_images/classes_covpp.segmentation.segmentation_base.png" height="239" src="_images/classes_covpp.segmentation.segmentation_base.png" width="313" />
+</a>
+</section>
+<section id="covpp-segmentation-segmentation-handler">
+<h2>covpp.segmentation.segmentation_handler<a class="headerlink" href="#covpp-segmentation-segmentation-handler" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.segmentation.segmentation_handler.png"><img alt="_images/classes_covpp.segmentation.segmentation_handler.png" height="264" src="_images/classes_covpp.segmentation.segmentation_handler.png" width="427" />
+</a>
+</section>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.segmentation.png"><img alt="_images/classes_covpp.segmentation.png" height="3693" src="_images/classes_covpp.segmentation.png" width="2665" />
+</a>
+<span class="target" id="module-covpp.segmentation"></span></section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="covpp.map_topology.html" class="btn btn-neutral float-left" title="covpp.map_topology" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="covpp.segmentation.simple_segmentation.html" class="btn btn-neutral float-right" title="covpp.segmentation.simple_segmentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MortezaH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

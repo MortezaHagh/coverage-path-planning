@@ -1,0 +1,714 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="English" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>covpp.base &mdash; covpp 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2ed17a75"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="covpp.spa" href="covpp.spa.html" />
+    <link rel="prev" title="CovPP Modules" href="covpp.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            covpp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="covpp.html">CovPP Modules</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">covpp.base</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-base-base-utils">covpp.base.base_utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.base_utils.get_n_colors_plt"><code class="docutils literal notranslate"><span class="pre">get_n_colors_plt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.base_utils.get_n_colors_cv"><code class="docutils literal notranslate"><span class="pre">get_n_colors_cv()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.base_utils.visualize_map"><code class="docutils literal notranslate"><span class="pre">visualize_map()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.base_utils.visualize_map_s"><code class="docutils literal notranslate"><span class="pre">visualize_map_s()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-base-configs">covpp.base.configs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.configs.MapConfig"><code class="docutils literal notranslate"><span class="pre">MapConfig</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.configs.PipeLineConfig"><code class="docutils literal notranslate"><span class="pre">PipeLineConfig</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.configs.RobotConfig"><code class="docutils literal notranslate"><span class="pre">RobotConfig</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.configs.SpaceConfig"><code class="docutils literal notranslate"><span class="pre">SpaceConfig</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.configs.PlanningConfig"><code class="docutils literal notranslate"><span class="pre">PlanningConfig</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-base-geometry">covpp.base.geometry</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.geometry.MyPoint"><code class="docutils literal notranslate"><span class="pre">MyPoint</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.geometry.MyPath"><code class="docutils literal notranslate"><span class="pre">MyPath</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.geometry.mod_angle"><code class="docutils literal notranslate"><span class="pre">mod_angle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.geometry.angle_diff"><code class="docutils literal notranslate"><span class="pre">angle_diff()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.geometry.find_angle_between_points"><code class="docutils literal notranslate"><span class="pre">find_angle_between_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.geometry.find_longest_edge_poly"><code class="docutils literal notranslate"><span class="pre">find_longest_edge_poly()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.geometry.find_shortest_edge_poly"><code class="docutils literal notranslate"><span class="pre">find_shortest_edge_poly()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.geometry.find_cnt_level"><code class="docutils literal notranslate"><span class="pre">find_cnt_level()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.geometry.evaluate_polygon"><code class="docutils literal notranslate"><span class="pre">evaluate_polygon()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-base-image-processor">covpp.base.image_processor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-base-inputs-processor">covpp.base.inputs_processor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-base-logger">covpp.base.logger</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-base-map-data">covpp.base.map_data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-base-planning-utils">covpp.base.planning_utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.planning_utils.rearrange_points_by_point"><code class="docutils literal notranslate"><span class="pre">rearrange_points_by_point()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.planning_utils.rearrange_points_by_idx"><code class="docutils literal notranslate"><span class="pre">rearrange_points_by_idx()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#covpp.base.planning_utils.find_closest_point_idx"><code class="docutils literal notranslate"><span class="pre">find_closest_point_idx()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#covpp-base-plot-styles">covpp.base.plot_styles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.spa.html">covpp.spa</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.district.html">covpp.district</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.gui.html">covpp.gui</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.map_topology.html">covpp.map_topology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.segmentation.html">covpp.segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.coverage_planning.html">covpp.coverage_planning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.path_planning.html">covpp.path_planning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.sequence.html">covpp.sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="covpp.evaluation.html">covpp.evaluation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="covpp.html#covpp-main">covpp.main</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">covpp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="covpp.html">CovPP Modules</a></li>
+      <li class="breadcrumb-item active">covpp.base</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/covpp.base.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="covpp-base">
+<h1>covpp.base<a class="headerlink" href="#covpp-base" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="covpp-base-base-utils">
+<h2>covpp.base.base_utils<a class="headerlink" href="#covpp-base-base-utils" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.base.base_utils.png"><img alt="_images/classes_covpp.base.base_utils.png" height="11" src="_images/classes_covpp.base.base_utils.png" width="11" />
+</a>
+<p id="module-covpp.base.base_utils">Utility functions.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.base_utils.get_n_colors_plt">
+<span class="sig-name descname"><span class="pre">get_n_colors_plt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#covpp.base.base_utils.get_n_colors_plt" title="Link to this definition"></a></dt>
+<dd><p>Get n distinct colors from matplotlib's colormaps or HSV spectrum.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.base_utils.get_n_colors_cv">
+<span class="sig-name descname"><span class="pre">get_n_colors_cv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#covpp.base.base_utils.get_n_colors_cv" title="Link to this definition"></a></dt>
+<dd><p>Get n distinct colors in BGR format for OpenCV.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.base_utils.visualize_map">
+<span class="sig-name descname"><span class="pre">visualize_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.base.base_utils.visualize_map" title="Link to this definition"></a></dt>
+<dd><p>Visualize PGM map data using OpenCV.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.base_utils.visualize_map_s">
+<span class="sig-name descname"><span class="pre">visualize_map_s</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.base.base_utils.visualize_map_s" title="Link to this definition"></a></dt>
+<dd><p>Visualize PGM map data using OpenCV (simple version).</p>
+</dd></dl>
+
+</section>
+<section id="covpp-base-configs">
+<h2>covpp.base.configs<a class="headerlink" href="#covpp-base-configs" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.base.configs.png"><img alt="_images/classes_covpp.base.configs.png" height="364" src="_images/classes_covpp.base.configs.png" width="2251" />
+</a>
+<p id="module-covpp.base.configs">Configuration dataclasses used by the pipeline.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.base.configs.MapConfig">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">MapConfig</span></span><a class="headerlink" href="#covpp.base.configs.MapConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Container for occupancy grid metadata and map directory layout.</p>
+<p>Attributes capture the transform from pixel to metric space in addition to
+the on-disk structure of a dataset (e.g. base, district folders).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.MapConfig.origin_m">
+<span class="sig-name descname"><span class="pre">origin_m</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#covpp.base.configs.MapConfig.origin_m" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.MapConfig.resolution">
+<span class="sig-name descname"><span class="pre">resolution</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#covpp.base.configs.MapConfig.resolution" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.MapConfig.free_thresh">
+<span class="sig-name descname"><span class="pre">free_thresh</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#covpp.base.configs.MapConfig.free_thresh" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.MapConfig.occupied_thresh">
+<span class="sig-name descname"><span class="pre">occupied_thresh</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#covpp.base.configs.MapConfig.occupied_thresh" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.MapConfig.data_dir">
+<span class="sig-name descname"><span class="pre">data_dir</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'./maps'</span></span><a class="headerlink" href="#covpp.base.configs.MapConfig.data_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.MapConfig.map_name">
+<span class="sig-name descname"><span class="pre">map_name</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#covpp.base.configs.MapConfig.map_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.MapConfig.base_folder">
+<span class="sig-name descname"><span class="pre">base_folder</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'AMain'</span></span><a class="headerlink" href="#covpp.base.configs.MapConfig.base_folder" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.MapConfig.map_dir">
+<span class="sig-name descname"><span class="pre">map_dir</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#covpp.base.configs.MapConfig.map_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.MapConfig.district_folder">
+<span class="sig-name descname"><span class="pre">district_folder</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'District'</span></span><a class="headerlink" href="#covpp.base.configs.MapConfig.district_folder" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.MapConfig.district_dir">
+<span class="sig-name descname"><span class="pre">district_dir</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#covpp.base.configs.MapConfig.district_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">PipeLineConfig</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Global switches that describe the end-to-end coverage pipeline setup.</p>
+<p>The configuration controls which segmentation, coverage path planning, and
+sequencing modules are used together with plotting and debugging options.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.whole_map">
+<span class="sig-name descname"><span class="pre">whole_map</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.whole_map" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.start_cell_ind">
+<span class="sig-name descname"><span class="pre">start_cell_ind</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.start_cell_ind" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.all_cleaned">
+<span class="sig-name descname"><span class="pre">all_cleaned</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.all_cleaned" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.do_save_maps">
+<span class="sig-name descname"><span class="pre">do_save_maps</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.do_save_maps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.do_save_decomposition_plot">
+<span class="sig-name descname"><span class="pre">do_save_decomposition_plot</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.do_save_decomposition_plot" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.do_plot_decomposition">
+<span class="sig-name descname"><span class="pre">do_plot_decomposition</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.do_plot_decomposition" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.do_animate">
+<span class="sig-name descname"><span class="pre">do_animate</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.do_animate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.dpi">
+<span class="sig-name descname"><span class="pre">dpi</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">300</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.dpi" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.segmentation_method">
+<span class="sig-name descname"><span class="pre">segmentation_method</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'skeleton'</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.segmentation_method" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.covpp_method">
+<span class="sig-name descname"><span class="pre">covpp_method</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'boust'</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.covpp_method" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.pp_method">
+<span class="sig-name descname"><span class="pre">pp_method</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'astar'</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.pp_method" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.sequence_method">
+<span class="sig-name descname"><span class="pre">sequence_method</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'milp'</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.sequence_method" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.use_insc_ret">
+<span class="sig-name descname"><span class="pre">use_insc_ret</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.use_insc_ret" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.method">
+<span class="sig-name descname"><span class="pre">method</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'skeleton_boust_milp_rect'</span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.method" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.base.configs.PipeLineConfig.update">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">segmentation_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'voronoi'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covpp_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'boust'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_insc_ret</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'milp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_cell_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.base.configs.PipeLineConfig.update" title="Link to this definition"></a></dt>
+<dd><p>Update pipeline configuration values.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.base.configs.RobotConfig">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">RobotConfig</span></span><a class="headerlink" href="#covpp.base.configs.RobotConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Nominal robot characteristics used to estimate motion effort.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.RobotConfig.radius">
+<span class="sig-name descname"><span class="pre">radius</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></span><a class="headerlink" href="#covpp.base.configs.RobotConfig.radius" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.RobotConfig.v_lin_avg">
+<span class="sig-name descname"><span class="pre">v_lin_avg</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.5</span></span><a class="headerlink" href="#covpp.base.configs.RobotConfig.v_lin_avg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.RobotConfig.v_ang_avg">
+<span class="sig-name descname"><span class="pre">v_ang_avg</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.7</span></span><a class="headerlink" href="#covpp.base.configs.RobotConfig.v_ang_avg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.base.configs.SpaceConfig">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">SpaceConfig</span></span><a class="headerlink" href="#covpp.base.configs.SpaceConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Workspace safety margins and derived robot clearances.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.SpaceConfig.select_free_space">
+<span class="sig-name descname"><span class="pre">select_free_space</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#covpp.base.configs.SpaceConfig.select_free_space" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.SpaceConfig.robot_radius">
+<span class="sig-name descname"><span class="pre">robot_radius</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></span><a class="headerlink" href="#covpp.base.configs.SpaceConfig.robot_radius" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.SpaceConfig.wf_safe_dist">
+<span class="sig-name descname"><span class="pre">wf_safe_dist</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></span><a class="headerlink" href="#covpp.base.configs.SpaceConfig.wf_safe_dist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.SpaceConfig.os_safe_dist">
+<span class="sig-name descname"><span class="pre">os_safe_dist</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></span><a class="headerlink" href="#covpp.base.configs.SpaceConfig.os_safe_dist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.SpaceConfig.ws_dist">
+<span class="sig-name descname"><span class="pre">ws_dist</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></span><a class="headerlink" href="#covpp.base.configs.SpaceConfig.ws_dist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.SpaceConfig.wf_r_dist">
+<span class="sig-name descname"><span class="pre">wf_r_dist</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></span><a class="headerlink" href="#covpp.base.configs.SpaceConfig.wf_r_dist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.SpaceConfig.os_r_dist">
+<span class="sig-name descname"><span class="pre">os_r_dist</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></span><a class="headerlink" href="#covpp.base.configs.SpaceConfig.os_r_dist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.SpaceConfig.ws_r_dist">
+<span class="sig-name descname"><span class="pre">ws_r_dist</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></span><a class="headerlink" href="#covpp.base.configs.SpaceConfig.ws_r_dist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.SpaceConfig.cleaning_c">
+<span class="sig-name descname"><span class="pre">cleaning_c</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></span><a class="headerlink" href="#covpp.base.configs.SpaceConfig.cleaning_c" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.SpaceConfig.cleaning_r">
+<span class="sig-name descname"><span class="pre">cleaning_r</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></span><a class="headerlink" href="#covpp.base.configs.SpaceConfig.cleaning_r" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.SpaceConfig.uncleaned_dist">
+<span class="sig-name descname"><span class="pre">uncleaned_dist</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></span><a class="headerlink" href="#covpp.base.configs.SpaceConfig.uncleaned_dist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.SpaceConfig.scaler_os_search">
+<span class="sig-name descname"><span class="pre">scaler_os_search</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#covpp.base.configs.SpaceConfig.scaler_os_search" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.base.configs.PlanningConfig">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">PlanningConfig</span></span><a class="headerlink" href="#covpp.base.configs.PlanningConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Aggregated planning parameters derived from space analysis inputs.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PlanningConfig.cleaning_r">
+<span class="sig-name descname"><span class="pre">cleaning_r</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></span><a class="headerlink" href="#covpp.base.configs.PlanningConfig.cleaning_r" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PlanningConfig.margin">
+<span class="sig-name descname"><span class="pre">margin</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.05</span></span><a class="headerlink" href="#covpp.base.configs.PlanningConfig.margin" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PlanningConfig.min_path_overlap">
+<span class="sig-name descname"><span class="pre">min_path_overlap</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></span><a class="headerlink" href="#covpp.base.configs.PlanningConfig.min_path_overlap" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PlanningConfig.cleaning_r_ov">
+<span class="sig-name descname"><span class="pre">cleaning_r_ov</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></span><a class="headerlink" href="#covpp.base.configs.PlanningConfig.cleaning_r_ov" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PlanningConfig.min_wp_dist">
+<span class="sig-name descname"><span class="pre">min_wp_dist</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.15</span></span><a class="headerlink" href="#covpp.base.configs.PlanningConfig.min_wp_dist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.configs.PlanningConfig.max_wp_dist">
+<span class="sig-name descname"><span class="pre">max_wp_dist</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.6</span></span><a class="headerlink" href="#covpp.base.configs.PlanningConfig.max_wp_dist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="covpp-base-geometry">
+<h2>covpp.base.geometry<a class="headerlink" href="#covpp-base-geometry" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.base.geometry.png"><img alt="_images/classes_covpp.base.geometry.png" height="385" src="_images/classes_covpp.base.geometry.png" width="400" />
+</a>
+<p id="module-covpp.base.geometry">Utility classes and functions for geometric primitives.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.base.geometry.MyPoint">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">MyPoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.base.geometry.MyPoint" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Simple 2D point representation.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.geometry.MyPoint.x">
+<span class="sig-name descname"><span class="pre">x</span></span><a class="headerlink" href="#covpp.base.geometry.MyPoint.x" title="Link to this definition"></a></dt>
+<dd><p>X-coordinate (float or int).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float | int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.geometry.MyPoint.y">
+<span class="sig-name descname"><span class="pre">y</span></span><a class="headerlink" href="#covpp.base.geometry.MyPoint.y" title="Link to this definition"></a></dt>
+<dd><p>Y-coordinate (float or int).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float | int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.geometry.MyPoint.xy">
+<span class="sig-name descname"><span class="pre">xy</span></span><a class="headerlink" href="#covpp.base.geometry.MyPoint.xy" title="Link to this definition"></a></dt>
+<dd><p>Property returning (x, y) tuple.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">x</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">y</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id2">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">xy</span></span><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd><p>Return point as (x, y) tuple.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="covpp.base.geometry.MyPath">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">MyPath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.base.geometry.MyPath" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Path representation as sequence of MyPoint objects.</p>
+<p>This class provides a container for storing and manipulating
+sequences of 2D points representing paths.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.geometry.MyPath.points">
+<span class="sig-name descname"><span class="pre">points</span></span><a class="headerlink" href="#covpp.base.geometry.MyPath.points" title="Link to this definition"></a></dt>
+<dd><p>List of MyPoint objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.geometry.MyPath.xy">
+<span class="sig-name descname"><span class="pre">xy</span></span><a class="headerlink" href="#covpp.base.geometry.MyPath.xy" title="Link to this definition"></a></dt>
+<dd><p>NumPy array of (x, y) coordinates.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="covpp.base.geometry.MyPath.n">
+<span class="sig-name descname"><span class="pre">n</span></span><a class="headerlink" href="#covpp.base.geometry.MyPath.n" title="Link to this definition"></a></dt>
+<dd><p>Number of points in the path.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">points</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">xy</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></span><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">n</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.base.geometry.MyPath.set_points">
+<span class="sig-name descname"><span class="pre">set_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#covpp.base.geometry.MyPath.set_points" title="Link to this definition"></a></dt>
+<dd><p>Set new list of points and update xy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>points</strong> -- List of MyPoint objects.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.base.geometry.MyPath.set_xys">
+<span class="sig-name descname"><span class="pre">set_xys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#covpp.base.geometry.MyPath.set_xys" title="Link to this definition"></a></dt>
+<dd><p>Create xy numpy array from points list.</p>
+<p>Automatically detects appropriate dtype (float32 or int32) based on
+the coordinate types.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="covpp.base.geometry.MyPath.point">
+<span class="sig-name descname"><span class="pre">point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#covpp.base.geometry.MyPoint" title="covpp.base.geometry.MyPoint"><span class="pre">MyPoint</span></a></span></span><a class="headerlink" href="#covpp.base.geometry.MyPath.point" title="Link to this definition"></a></dt>
+<dd><p>Get point at specified index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>i</strong> (<em>int</em>) -- Index of point to retrieve.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>MyPoint at index i.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>IndexError</strong> -- If index is out of range.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.geometry.mod_angle">
+<span class="sig-name descname"><span class="pre">mod_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#covpp.base.geometry.mod_angle" title="Link to this definition"></a></dt>
+<dd><p>Normalize angle to [0, 2π).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.geometry.angle_diff">
+<span class="sig-name descname"><span class="pre">angle_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#covpp.base.geometry.angle_diff" title="Link to this definition"></a></dt>
+<dd><p>Returns the smallest signed difference between two angles (in radians).
+Result is in range [-pi, pi).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.geometry.find_angle_between_points">
+<span class="sig-name descname"><span class="pre">find_angle_between_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#covpp.base.geometry.find_angle_between_points" title="Link to this definition"></a></dt>
+<dd><p>Find angle between three points (in degrees). angle: p1-&gt;p2-&gt;p3.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.geometry.find_longest_edge_poly">
+<span class="sig-name descname"><span class="pre">find_longest_edge_poly</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polygon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">shapely.Polygon</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#covpp.base.geometry.find_longest_edge_poly" title="Link to this definition"></a></dt>
+<dd><p>Find the longest edge of a polygon and return its properties.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.geometry.find_shortest_edge_poly">
+<span class="sig-name descname"><span class="pre">find_shortest_edge_poly</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polygon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">shapely.Polygon</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#covpp.base.geometry.find_shortest_edge_poly" title="Link to this definition"></a></dt>
+<dd><p>Find the shortest edge of a polygon and return its properties.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.geometry.find_cnt_level">
+<span class="sig-name descname"><span class="pre">find_cnt_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hierarchy</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#covpp.base.geometry.find_cnt_level" title="Link to this definition"></a></dt>
+<dd><p>Find the level of a contour in the hierarchy.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.geometry.evaluate_polygon">
+<span class="sig-name descname"><span class="pre">evaluate_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polygon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">shapely.Polygon</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#covpp.base.geometry.evaluate_polygon" title="Link to this definition"></a></dt>
+<dd><p>Check if a polygon is valid (non-empty, has area, and is valid).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(is_valid, status) where status explains invalidity.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[bool, str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="covpp-base-image-processor">
+<h2>covpp.base.image_processor<a class="headerlink" href="#covpp-base-image-processor" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.base.image_processor.png"><img alt="_images/classes_covpp.base.image_processor.png" height="264" src="_images/classes_covpp.base.image_processor.png" width="637" />
+</a>
+</section>
+<section id="covpp-base-inputs-processor">
+<h2>covpp.base.inputs_processor<a class="headerlink" href="#covpp-base-inputs-processor" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.base.inputs_processor.png"><img alt="_images/classes_covpp.base.inputs_processor.png" height="324" src="_images/classes_covpp.base.inputs_processor.png" width="452" />
+</a>
+</section>
+<section id="covpp-base-logger">
+<h2>covpp.base.logger<a class="headerlink" href="#covpp-base-logger" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.base.logger.png"><img alt="_images/classes_covpp.base.logger.png" height="233" src="_images/classes_covpp.base.logger.png" width="327" />
+</a>
+</section>
+<section id="covpp-base-map-data">
+<h2>covpp.base.map_data<a class="headerlink" href="#covpp-base-map-data" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.base.map_data.png"><img alt="_images/classes_covpp.base.map_data.png" height="824" src="_images/classes_covpp.base.map_data.png" width="537" />
+</a>
+</section>
+<section id="covpp-base-planning-utils">
+<h2>covpp.base.planning_utils<a class="headerlink" href="#covpp-base-planning-utils" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.base.planning_utils.png"><img alt="_images/classes_covpp.base.planning_utils.png" height="11" src="_images/classes_covpp.base.planning_utils.png" width="11" />
+</a>
+<p id="module-covpp.base.planning_utils">Utility functions for planning.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.planning_utils.rearrange_points_by_point">
+<span class="sig-name descname"><span class="pre">rearrange_points_by_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_closed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#covpp.base.planning_utils.rearrange_points_by_point" title="Link to this definition"></a></dt>
+<dd><p>Rearrange points starting from the closest point to the given point.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.planning_utils.rearrange_points_by_idx">
+<span class="sig-name descname"><span class="pre">rearrange_points_by_idx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#covpp.base.planning_utils.rearrange_points_by_idx" title="Link to this definition"></a></dt>
+<dd><p>Rearrange points starting from idx.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="covpp.base.planning_utils.find_closest_point_idx">
+<span class="sig-name descname"><span class="pre">find_closest_point_idx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#covpp.base.planning_utils.find_closest_point_idx" title="Link to this definition"></a></dt>
+<dd><p>Find the index of the closest point to p in points.</p>
+</dd></dl>
+
+</section>
+<section id="covpp-base-plot-styles">
+<h2>covpp.base.plot_styles<a class="headerlink" href="#covpp-base-plot-styles" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.base.plot_styles.png"><img alt="_images/classes_covpp.base.plot_styles.png" height="11" src="_images/classes_covpp.base.plot_styles.png" width="11" />
+</a>
+</section>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/classes_covpp.base.png"><img alt="_images/classes_covpp.base.png" height="1245" src="_images/classes_covpp.base.png" width="3940" />
+</a>
+<span class="target" id="module-covpp.base"></span></section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="covpp.html" class="btn btn-neutral float-left" title="CovPP Modules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="covpp.spa.html" class="btn btn-neutral float-right" title="covpp.spa" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, MortezaH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
