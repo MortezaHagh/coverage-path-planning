@@ -202,6 +202,21 @@ add_module_names = False
 autodoc_member_order = 'groupwise'
 autosummary_generate = True  # Generate autosummary automatically
 
+# Mock heavy runtime dependencies so docs don't need full installs
+autodoc_mock_imports = [
+    'numpy',
+    'cv2',
+    'skimage',
+    'scipy',
+    'shapely',
+    'matplotlib',
+    'scienceplots',
+    'pynput',
+    'ortools',
+    'networkx',
+    'pyastar2d'
+]
+
 
 class CachedUMLGenerateDirective(UMLGenerateDirective):
     def run(self):
@@ -232,9 +247,9 @@ class CachedUMLGenerateDirective(UMLGenerateDirective):
         return super().run()
 
 
-def setup(app):
-    app.connect('source-read', insert_uml_directive)
-    app.add_directive('uml', CachedUMLGenerateDirective, override=True)
+# def setup(app):
+#     app.connect('source-read', insert_uml_directive)
+#     app.add_directive('uml', CachedUMLGenerateDirective, override=True)
 
 
 def insert_uml_directive(app, docname, source):

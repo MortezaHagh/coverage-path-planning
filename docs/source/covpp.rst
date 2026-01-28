@@ -1,9 +1,8 @@
-CovPP Modules
------------------
+.. covpp package
+.. =============
 
-.. .. uml:: covpp
-..    :packages:
-..    :classes:
+CovPP Modules
+-----------
 
 .. toctree::
    :maxdepth: 2
@@ -19,6 +18,9 @@ CovPP Modules
    covpp.sequence
    covpp.evaluation
 
+.. Submodules
+.. ----------
+
 covpp.main
 -----------------
 
@@ -27,3 +29,10 @@ covpp.main
    :show-inheritance:
    :undoc-members:
 
+.. Module contents
+.. ---------------
+
+.. .. automodule:: covpp
+..    :members:
+..    :show-inheritance:
+..    :undoc-members:

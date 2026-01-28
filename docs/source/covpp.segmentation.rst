@@ -1,4 +1,4 @@
-covpp.segmentation
+covpp.segmentation 
 ==========================
 
 Subpackages
@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 2
 
    covpp.segmentation.simple_segmentation
+   covpp.segmentation.skeleton_segmentation
    covpp.segmentation.voronoi_segmentation
 
 Submodules

@@ -1,0 +1,6 @@
+sphinx>=7.0
+sphinx-pyreverse
+sphinx_rtd_theme
+myst_parser
+sphinx-autodoc-typehints
+pylint
