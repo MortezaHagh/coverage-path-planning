@@ -125,6 +125,6 @@ class PlanningConfig:
     cleaning_r = SpaceConfig.cleaning_r                 # effective cleaning radius
     margin = 0.05                                       # margin from cell boundaries for coverage planning
     min_path_overlap = 0.0                              # minimum overlap required between adjacent cleaning paths
-    cleaning_r_ov = cleaning_r - min_path_overlap/2     # effective cleaning radius considering path overlap
-    min_wp_dist = cleaning_r_ov/2                       # minimum distance between waypoints in coverage path
+    cleaning_r_ov = cleaning_r - min_path_overlap / 2     # effective cleaning radius considering path overlap
+    min_wp_dist = cleaning_r_ov / 2                       # minimum distance between waypoints in coverage path
     max_wp_dist = 2 * cleaning_r_ov                     # maximum distance between waypoints in coverage path

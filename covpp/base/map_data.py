@@ -99,7 +99,7 @@ class MapData:
             if (self.orig_h > wind_hw[0]) or (self.orig_w > wind_hw[1]):
                 self.wind_hw = (self.orig_h, self.orig_w)
             self.wind_h, self.wind_w = self.wind_hw
-            zoom = min(self.wind_h/self.orig_h, self.wind_w/self.orig_w)
+            zoom = min(self.wind_h / self.orig_h, self.wind_w / self.orig_w)
         else:
             self.wind_h, self.wind_w = self.orig_h, self.orig_w
             zoom = 1.0
@@ -122,13 +122,13 @@ class MapData:
 
     def set_orig_center(self) -> None:
         """ Set original map center coordinates. """
-        self.orig_c_w = self.orig_w//2
-        self.orig_c_h = self.orig_h//2
+        self.orig_c_w = self.orig_w // 2
+        self.orig_c_h = self.orig_h // 2
 
     def set_updated_center(self) -> None:
         """ Set updated map center coordinates. """
-        self.up_c_w = self.updated_w//2
-        self.up_c_h = self.updated_h//2
+        self.up_c_w = self.updated_w // 2
+        self.up_c_h = self.updated_h // 2
 
     # def point_to_map(self, x, y) -> tuple[int, int]:
     #     mx = (x - self.wind_w // 2) + self.up_c_w
