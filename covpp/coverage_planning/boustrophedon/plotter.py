@@ -28,21 +28,18 @@ class BoustPlotter:
     def visualize(self, dec_obj: CellDecomposition):
         """ Visualize decomposition results """
 
+        if not PipeLineConfig.do_plot_boust_decomposition:
+            return
+
         self.dec_obj = dec_obj
         self.results_dir = dec_obj.results_dir
 
-        if not (PipeLineConfig.do_save_decomposition_plot or PipeLineConfig.do_plot_decomposition):
-            return
         if self.viz_together:
             self.visualize_together()
         else:
             self.visualize_seperate()
-        if PipeLineConfig.do_plot_decomposition:
-            plt.show()
 
-        # save figures
-        if PipeLineConfig.do_save_decomposition_plot:
-            self.save_figs()
+        self.save_figs()
         plt.close('all')
 
     def visualize_seperate(self):
@@ -129,12 +126,12 @@ class BoustPlotter:
             ax.axis('off')
         ng = len(self.dec_obj.cells_groups)
         cg: CellGroup
-        colors = plt.cm.get_cmap('tab20', 2*ng).colors
+        colors = plt.cm.get_cmap('tab20', 2 * ng).colors
         for i, cg in enumerate(self.dec_obj.cells_groups):
             if i % 2:
                 color = colors[i]
             else:
-                color = colors[i+ng]
+                color = colors[i + ng]
 
             # merged cell
             x, y = cg.merged_cell.poly.exterior.xy

@@ -1073,7 +1073,7 @@ class SkeletonDecomposition:
 
         # save figures
         im_format = 'png'  # 'svg'
-        if PipeLineConfig.do_save_decomposition_plot:
+        if PipeLineConfig.do_plot_segmentation:
             save_dir = self.zmd.segmentation_method_dir
             fig1_path = save_dir + "/skeleton_end_branch_points" + f".{im_format}"
             fig2_path = save_dir + "/skeleton_branches_criticals" + f".{im_format}"

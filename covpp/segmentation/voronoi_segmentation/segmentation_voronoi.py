@@ -107,7 +107,7 @@ class Segmentation(SegmentationBase):
         """Create start and end indices list for polygons in the Voronoi points. """
         # first for the boundary polygon
         poly_start_idxs = [0]
-        poly_end_idxs = [len(b_poly.exterior.coords)-1 - 1]
+        poly_end_idxs = [len(b_poly.exterior.coords) - 1 - 1]
         # then for the obstacle polygons
         for poly in obs_polys:
             n_p = len(poly.exterior.coords)
@@ -256,7 +256,7 @@ class Segmentation(SegmentationBase):
                     idx = ring_cp_idxs.index(new_cp_idx)
                     found_cp_idx = ring_cp_ring_idxs[idx]
                     # cut the ring at the found critical point's base point
-                    ring = ring[:found_cp_idx+1]
+                    ring = ring[:found_cp_idx + 1]
                     self.critical_points[idx_cp].skip = True
                     ring_cp_ring_idxs = ring_cp_ring_idxs[:idx]
                     ring_cp_idxs = ring_cp_idxs[:idx]
@@ -287,7 +287,7 @@ class Segmentation(SegmentationBase):
         # add the last point
         next_p = self.vor.points[next_idx]
         ring.insert(0, next_p)  # insert at the beginning to close the ring
-        ring_cp_ring_idxs = [rcri+1 for rcri in ring_cp_ring_idxs]  # adjust indices
+        ring_cp_ring_idxs = [rcri + 1 for rcri in ring_cp_ring_idxs]  # adjust indices
         ring_cp_ring_idxs[0] = 0
         # ring.append(next_p)
         # ring.append(cp.vp.v)
@@ -317,7 +317,7 @@ class Segmentation(SegmentationBase):
 
         # method 1: using touches
         for i, cell in enumerate(self.cells):
-            for other_cell in self.cells[i+1:]:
+            for other_cell in self.cells[i + 1:]:
                 if cell.poly.touches(other_cell.poly):
                     cell.add_adjacent_id(other_cell.id)
                     other_cell.add_adjacent_id(cell.id)
@@ -357,7 +357,7 @@ class Segmentation(SegmentationBase):
 
     def plot_rings(self) -> None:
         """ Plot the created rings for visualization. """
-        if not (PipeLineConfig.do_plot_decomposition or PipeLineConfig.do_save_decomposition_plot):
+        if not PipeLineConfig.do_plot_segmentation:
             return
 
         fig, ax = plt.subplots(1, 1, figsize=(15, 10), constrained_layout=True)
@@ -372,12 +372,7 @@ class Segmentation(SegmentationBase):
         for i, cp in enumerate(self.critical_points):
             ax.plot(cp.vp.v[0], cp.vp.v[1], 'o', color='red', markersize=5)
             ax.annotate(f"${i}$", (cp.vp.v[0], cp.vp.v[1]), fontsize=6, color='blue')
-        #
-        if PipeLineConfig.do_save_decomposition_plot:
-            save_path = self.zmd.segmentation_method_dir + "/rings.png"
-            fig.savefig(save_path, dpi=PipeLineConfig.dpi)
 
-        #
-        if PipeLineConfig.do_plot_decomposition:
-            plt.show()
+        save_path = self.zmd.segmentation_method_dir + "/rings.png"
+        fig.savefig(save_path, dpi=PipeLineConfig.dpi)
         plt.close('all')

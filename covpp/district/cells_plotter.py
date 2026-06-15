@@ -27,7 +27,7 @@ class CellsPlotter:
         self.visualize_cells_sequence(cells)
 
         # save figures
-        if PipeLineConfig.do_save_decomposition_plot:
+        if PipeLineConfig.do_plot_segmentation:
             self.save_figs()
 
     def visualize_cells_sequence(self, cells: list[PCell]):
@@ -44,12 +44,12 @@ class CellsPlotter:
         ax.axis('off')
 
         ng = len(cells)
-        colors = plt.cm.get_cmap('tab20', 2*ng).colors
+        colors = plt.cm.get_cmap('tab20', 2 * ng).colors
         for i, cell in enumerate(cells):
             if i % 2:
                 color = colors[i]
             else:
-                color = colors[i+ng]
+                color = colors[i + ng]
 
             # cell polygon
             x, y = cell.poly.exterior.xy

@@ -312,7 +312,7 @@ class VoronoiDecomposition:
                 new_points.append(Point(points[i]))
                 if dist > min_dist:
                     n_points = int(np.ceil(dist / min_dist))
-                    for j in range(1, n_points-1):
+                    for j in range(1, n_points - 1):
                         new_point = p1 + (p2 - p1) * (j / n_points)
                         new_points.append(Point(new_point))
             new_points.append(Point(points[-1]))
@@ -331,20 +331,20 @@ class VoronoiDecomposition:
         n_dists = len(dists)
         new_points = []
         idx = 0
-        for dist in dists[1:n_dists-1]:
+        for dist in dists[1:n_dists - 1]:
             idx += 1
             new_points.append(Point(points[idx]))
-            d_prev = dists[idx-1]
-            d_next = dists[idx+1]
+            d_prev = dists[idx - 1]
+            d_next = dists[idx + 1]
             k = 1.2
-            if (dist > k*d_prev) and (dist > k*d_next):
+            if (dist > k * d_prev) and (dist > k * d_next):
                 d_new = (d_prev + d_next) / 2.0
                 n = int(np.ceil(dist / d_new))
                 n = min(n, 4)  # limit the number of new points to 10
                 for j in range(1, n):
-                    new_point = points[idx] + (points[idx+1] - points[idx]) * (j / n)
+                    new_point = points[idx] + (points[idx + 1] - points[idx]) * (j / n)
                     new_points.append(Point(new_point))
-        new_points.append(Point(points[n_dists-1]))
+        new_points.append(Point(points[n_dists - 1]))
         new_poly = Polygon(new_points)
         return new_poly
 
@@ -354,7 +354,7 @@ class VoronoiDecomposition:
 
     def plot_voronoi(self):
         """ Plot Voronoi diagram with relevant features. """
-        if not (PipeLineConfig.do_plot_decomposition or PipeLineConfig.do_save_decomposition_plot):
+        if PipeLineConfig.do_plot_segmentation:
             self.lg.info("Skipping Voronoi plot.")
             return
 
@@ -425,10 +425,9 @@ class VoronoiDecomposition:
         #         ax.fill(*zip(*polygon), alpha=0.3, fc='blue', ec='black', label='Voronoi Region')
 
         #
-        if PipeLineConfig.do_save_decomposition_plot:
-            save_path = self.results_dir + "/voronoi.png"
-            fig.savefig(save_path, dpi=PipeLineConfig.dpi)
-            plt.close('all')
+        save_path = self.results_dir + "/voronoi.png"
+        fig.savefig(save_path, dpi=PipeLineConfig.dpi)
+        plt.close('all')
 
     # ==========================================================================
     # debugging methods
@@ -460,7 +459,7 @@ class VoronoiDecomposition:
         # connect trees
         connections = []
         comp = [bigest_tree_idx]
-        while len(comp) < 2*len(troots):
+        while len(comp) < 2 * len(troots):
             min_dist = np.inf
             min_i = -1
             min_j = -1

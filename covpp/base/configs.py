@@ -41,8 +41,8 @@ class PipeLineConfig:
 
     # plots configs
     do_save_maps = True
-    do_save_decomposition_plot = True
-    do_plot_decomposition = False
+    do_plot_segmentation = True
+    do_plot_boust_decomposition = False
     do_animate = False                         # animate final coverage path in sequence planning
     dpi = 300
 
