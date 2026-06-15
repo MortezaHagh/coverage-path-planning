@@ -54,10 +54,10 @@ class SkeletonDecomposition:
 
         # settings
         # threshold ratio for min distance from ends # [m1-3: 0.05][m4-m10:0.005][m11:0.00]
-        self.end_dist_threshold_ratio: float = 0.05
-        self.max_critical_region_ratio: float = 0.6         # maximum ratio of critical region length to branch length
-        self.min_max_distance_ratio: float = 0.8            # minimum ratio of min distance to max distance in branch to consider critical point
-        self.min_area_thresh_for_contour: int = 10          # minimum area threshold for valid contour
+        self.end_dist_threshold_ratio: float = 0.1  # 0.05   # minimum ratio of distance from branch ends to overall min-max distance in branch to consider critical point
+        self.max_critical_region_ratio: float = 0.4  # 06     # maximum ratio of critical region length to branch length
+        self.min_max_distance_ratio: float = 0.6    # 0.8    # minimum ratio of min distance to max distance in branch to consider critical point
+        self.min_area_thresh_for_contour: int = 10  # 10     # minimum area threshold for valid contour
 
         # attributes
         self.erp_sidep = []                              # for debugging
@@ -214,7 +214,7 @@ class SkeletonDecomposition:
             self.lg.warn(f"Too many contours found in segmented map: {len(filtered_contours)}.")
 
         # fill area with different gray value (used for segment IDs)
-        for i,  cnt in enumerate(filtered_contours):
+        for i, cnt in enumerate(filtered_contours):
             new_id = i + 1
             seg_ids.append(new_id)
             cv.fillPoly(seg_map, pts=[cnt], color=new_id)
@@ -257,9 +257,9 @@ class SkeletonDecomposition:
                 self.lg.warn(f"Less than 2 segments found near critical point at {cp.coord}.")
 
             for i in range(n_ids):
-                for j in range(i+1, n_ids):
-                    adjacency_matrix[unique_ids[i]-1, unique_ids[j]-1] = True
-                    adjacency_matrix[unique_ids[j]-1, unique_ids[i]-1] = True
+                for j in range(i + 1, n_ids):
+                    adjacency_matrix[unique_ids[i] - 1, unique_ids[j] - 1] = True
+                    adjacency_matrix[unique_ids[j] - 1, unique_ids[i] - 1] = True
         return adjacency_matrix
 
     def create_polygons(self, contours: list[np.ndarray]) -> None:
@@ -316,7 +316,7 @@ class SkeletonDecomposition:
             self.lg.warn(f"Too many contours found: {len(contours2)}.")
             skeleton_segmented_map = skeleton_segmented_map.astype(np.uint16)   # use uint16 to support more contours
         for i, cnt in enumerate(contours2):
-            cv.fillPoly(skeleton_segmented_map, pts=[cnt], color=i+1)
+            cv.fillPoly(skeleton_segmented_map, pts=[cnt], color=i + 1)
         skeleton_segmented_map[skeleton_map] = OCCUPIED                         # make skeleton pixels OCCUPIED again
 
         # # visualize skeleton segmented map # debugging # todo
@@ -421,7 +421,7 @@ class SkeletonDecomposition:
             min_indices = np.where(dists == min_dist)[0]
 
             # evaluate length of min_indices
-            if len(min_indices)/branch.length > self.max_critical_region_ratio:
+            if len(min_indices) / branch.length > self.max_critical_region_ratio:
                 continue
 
             # only consider if min_dist is significantly less than max_dist
@@ -466,7 +466,7 @@ class SkeletonDecomposition:
         so the search tends toward walls/contours faster.
         """
 
-        dxy_8c = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1),  (1, 0),  (1, 1)]
+        dxy_8c = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
 
         # find side points
         if not self.find_side_points(cp, n_pts=n_pts):
@@ -552,7 +552,7 @@ class SkeletonDecomposition:
         """
 
         # find neighbors (8-connectivity) of cp
-        dxy_8c = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1),  (1, 0),  (1, 1)]
+        dxy_8c = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
         cp_coord = cp.coord
         cp_sk_segment = self.skelet.skeleton_segmented_map[cp_coord[0], cp_coord[1]]
         sk_segments = [OCCUPIED, cp_sk_segment]  # to ignore skeleton
@@ -799,6 +799,8 @@ class SkeletonDecomposition:
         n_path = len(path)
         # new_ind = n_path // 5
         new_ind = self.skelet.distance_map[gc[0], gc[1]]
+        if new_ind >= n_path:
+            new_ind = n_path // 2
         new_coord = path[new_ind]
         return CriticalPoint(coord=np.array(new_coord))
 
@@ -1001,7 +1003,7 @@ class SkeletonDecomposition:
 
         # scale_m: float = min(zmd.hw)*zmd.resolution/10
         # A4 size: 8.27 x 11.69 inches
-        scale_px = min(self.zmd.hw)/500.0
+        scale_px = min(self.zmd.hw) / 500.0
         marker_size = 50 / scale_px
         colors = plt.cm.get_cmap('hsv', len(branches))
 
@@ -1010,8 +1012,8 @@ class SkeletonDecomposition:
         fig1, ax = plt.subplots(1, 1, constrained_layout=True)
 
         # plot skeleton (medial) axis - endpoints and branchpoints in same plot
-        ax.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=2/scale_px)
-        ax.imshow(FREE-self.skelet.distance_skeleton_map, cmap='bone', alpha=1.0)
+        ax.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=2 / scale_px)
+        ax.imshow(FREE - self.skelet.distance_skeleton_map, cmap='bone', alpha=1.0)
         # endpoints
         ax.scatter(end_pts[:, 1], end_pts[:, 0], color='blue', s=marker_size, label='Endpoints')
         # branchpoints
@@ -1025,14 +1027,14 @@ class SkeletonDecomposition:
         fig2, ax2 = plt.subplots(1, 1, constrained_layout=True)
 
         # Draw contours in the background
-        ax2.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=4/scale_px, zorder=0)
+        ax2.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=4 / scale_px, zorder=0)
         # branches
         for i, branch in enumerate(branches):
             label = "Branch" if i == 0 else None
             yy, xx = branch.points[:, 0], branch.points[:, 1]
             color = 'orange' if branch.end_type == 'skip' else colors(i)
             # Draw branch lines below points
-            ax2.plot(xx, yy, color=color, linewidth=4/scale_px, linestyle='-', label=label, zorder=2)
+            ax2.plot(xx, yy, color=color, linewidth=4 / scale_px, linestyle='-', label=label, zorder=2)
 
         # for all critical points
         for cp in self.cps:
@@ -1048,15 +1050,15 @@ class SkeletonDecomposition:
             # path to base points
             for path in cp.base_paths:
                 path = np.array(path)
-                ax2.plot(path[:, 1], path[:, 0], color='gray', linewidth=4/scale_px, linestyle='-', zorder=1)
+                ax2.plot(path[:, 1], path[:, 0], color='gray', linewidth=4 / scale_px, linestyle='-', zorder=1)
 
         # plot error point if any
         if self.erp_sidep:  # no side points found,  len(side_pts) != 2:
             for ep in self.erp_sidep:
-                ax2.scatter(ep[1], ep[0], color='red', s=marker_size*3, zorder=5)
+                ax2.scatter(ep[1], ep[0], color='red', s=marker_size * 3, zorder=5)
         if self.error_point2:  # less than 2 segments found, not enough to create adjacency
             for ep in self.error_point2:
-                ax2.scatter(ep[1], ep[0], color='cyan', s=marker_size*3, zorder=5)
+                ax2.scatter(ep[1], ep[0], color='cyan', s=marker_size * 3, zorder=5)
 
         # finalize
         configure_ax(ax2, 'Detected Branches with Critical and Base Points', show_title=False, show_legend=True)

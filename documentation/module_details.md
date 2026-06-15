@@ -305,7 +305,7 @@ Optimizes cell visit order and connects paths.
   - `__init__(zmd)`: Initialize with zone map data
   - `run(cells, map_polygons)`: Execute sequencing pipeline
   - `create_sequence()`: Prepare connections and collect paths in order
-  - `optimize(distances=None)`: Find optimal cell order via plugin
+  - `optimize_sequence(distances=None)`: Find optimal cell order via plugin
   - `connect_paths()`: Create connections between consecutive cells
   - `create_full_path()`: Generate complete path bundle
 - **Key Attributes**:
@@ -364,7 +364,7 @@ Computes performance metrics and statistics.
 - **Metrics (ZoneStatsBase)**:
   - `map_name`, `method`, `zone_ind`
   - Travel times: `trav_time_full`, `trav_time_coverage`
-  - Stage times: `pt_segmentation`, `pt_coverage_planning`, `pt_sequencing`, `pt_pipeline`
+  - Stage times: `ptime_segmentation`, `ptime_coverage_planning`, `ptime_sequencing`, `ptime_pipeline`
   - Path metrics: `full_length`, `coverage_length`, `yaw_path_full`, `yaw_path_coverage`
   - Areas: `cleaning_area_px/m`, `cleaned_area_px/m`, `area_uncleaned_m`, `area_overlaped_m`
   - Ratios: `area_coverage_pc`, `area_overlap_pc`

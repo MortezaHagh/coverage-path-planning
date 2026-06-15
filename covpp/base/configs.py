@@ -17,7 +17,7 @@ class MapConfig:
     free_thresh = None      # [not used] Maximum occupancy probability below which a cell is considered free
     occupied_thresh = None  # [not used] Minimum occupancy probability above which a cell is considered occupied
     # directories and paths
-    data_dir = "./maps"          # base directory for maps ./maps/
+    data_dir = "./maps/maps_set_0"  # base directory for maps ./maps/
     map_name = None                 # name of the main map folder
     base_folder = "AMain"           # inside each map folder, contains main map files
     map_dir = None                  # path to main map folder: ./maps/<map_name>/AMain

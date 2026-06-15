@@ -15,9 +15,9 @@ from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.connect_paths import ConnectPaths
 from covpp.sequence.sequence_optimizer_base import SeqOptimizerBase
 from covpp.base.logger import MyLogger
-from covpp.base.configs import PipeLineConfig, PlanningConfig
+from covpp.base.configs import PipeLineConfig
 from covpp.base.geometry import MyPoint, MyPath
-from covpp.base.base_utils import get_n_colors_cv, get_n_colors_plt
+from covpp.base.base_utils import get_n_colors_plt
 from covpp.coverage_planning.coverage_pp_base import CoveragePathPlannerBase
 
 
@@ -87,13 +87,10 @@ class SequenceHandler:
         self.cells: list[PCell] = []
         self.n_cells: int = 0
 
-        # configurations
-        self.colors: list[tuple] = []
-
         # params
         self.resolution: float = zmd.resolution
-        self.plot_scale_px: float = min(zmd.hw)/500
-        self.plot_scale_m: float = min(zmd.hw)*zmd.resolution/10
+        self.plot_scale_px: float = min(zmd.hw) / 500
+        self.plot_scale_m: float = min(zmd.hw) * zmd.resolution / 10
 
         # ----------------------------------------------------------------------
         # sequence optimizer
@@ -141,7 +138,7 @@ class SequenceHandler:
         # **********************
         self.create_sequence()
         self.connect_paths()
-        self.post_planning()
+        self.post_path_planning()
         self.set_sequence_paths()
         self.plot_paths()
         self.update_map_planning()
@@ -173,11 +170,11 @@ class SequenceHandler:
             # distances = cg.dists_m
 
         # create sequence
-        self.optimize(distances=distances)
+        self.optimize_sequence(distances=distances)
         self.paths_m = [cell.path_m for cell in self.s_cells if cell.do_planning]
         self.paths_px = [cell.path_px for cell in self.s_cells if cell.do_planning]
 
-    def optimize(self, distances: np.ndarray = None) -> None:
+    def optimize_sequence(self, distances: np.ndarray = None) -> None:
         """Optimize cell visit sequence using the selected sequencer."""
         if len(self.cells) == 0:
             return
@@ -200,10 +197,10 @@ class SequenceHandler:
     # Post Planning
     # ==================================================================================================================
 
-    def post_planning(self) -> None:
+    def post_path_planning(self) -> None:
         """Filter connection paths and build the final path bundle."""
         if len(self.paths_px) == 0 or len(self.paths_m) == 0:
-            self.lg.error("No paths found. Cannot post_planning.")
+            self.lg.error("No paths found. post_path_planning failed.")
             return
 
         self.apply_distance_filter_all_paths()
@@ -213,7 +210,7 @@ class SequenceHandler:
         """Combine coverage and connection paths into a single full path."""
         n_paths = len(self.paths_px)
         f_path_px = []
-        for i in range(n_paths-1):
+        for i in range(n_paths - 1):
             f_path_px.extend(self.paths_px[i].points)
             f_path_px.extend(self.c_paths_px[i].points)
         f_path_px.extend(self.paths_px[-1].points)
@@ -246,56 +243,7 @@ class SequenceHandler:
         """ update map_planning with paths and cells, save map_planning. """
         if not PipeLineConfig.do_save_maps:
             return
-        n = self.n_cells
-        self.colors = get_n_colors_cv(n)
-        self.add_cells_to_map_planning()
-        self.add_cell_paths_to_map_planning()
         # self.add_connection_paths_to_map_planning()
-
-    def add_cells_to_map_planning(self) -> None:
-        """ Add cells polygons to map_planning and map_segmentation. """
-        for i, cell in enumerate(self.cells):
-            pp = cell.points
-            pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
-            # add cells to map_planning
-            map_p = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(100, 100, 100), thickness=2)
-            map_p_fill = self.zmd.map_planning.copy()
-            cv.fillPoly(map_p_fill, [pp], color=self.colors[i])
-            alpha = 0.1
-            self.zmd.map_planning = cv.addWeighted(map_p_fill, alpha, map_p, 1 - alpha, 0)
-            # add cells to map_segmentation
-            map_s = cv.polylines(self.zmd.map_segmentation, [pp], isClosed=True, color=(100, 100, 100), thickness=5)
-            map_s_fill = self.zmd.map_segmentation.copy()
-            cv.fillPoly(map_s_fill, [pp], color=self.colors[i])
-            alpha = 0.1
-            self.zmd.map_segmentation = cv.addWeighted(map_s_fill, alpha, map_s, 1 - alpha, 0)
-
-            # # add rectangle
-            # if cell.rect_like:
-            #     rp = cell.rectangle_poly.exterior.coords.xy
-            #     rpoints = np.array(list(zip(rp[0], rp[1])), dtype=np.int32)
-            #     self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [rpoints], isClosed=True, color=(0, 0, 0), thickness=2)
-            #     self.zmd.map_segmentation = cv.polylines(self.zmd.map_segmentation, [rpoints], isClosed=True, color=(0, 0, 0), thickness=2)
-
-    def add_cell_paths_to_map_planning(self) -> None:
-        """ Add cell coverage paths to map_planning. """
-        map_planning = self.zmd.map_planning.copy()
-        robot_r_px = int(PlanningConfig.cleaning_r_ov / self.resolution)
-        robot_d_px = robot_r_px * 2
-        p_r = 5  # int(robot_r_px/10)
-        for i, path_px in enumerate(self.paths_px):
-            if path_px:
-                pp = np.array(path_px.xy, dtype=np.int32)  # Ensure pp is a numpy array of integers
-                map_planning = cv.polylines(map_planning, [pp], isClosed=False, color=self.colors[i], thickness=2)
-                # plot cleaning
-                overlay = map_planning.copy()
-                cv.polylines(overlay, [pp], isClosed=False, color=self.colors[i], thickness=robot_d_px)
-                alpha = 0.2  # Adjust transparency (0.0 transparent, 1.0 opaque)
-                map_planning = cv.addWeighted(overlay, alpha, map_planning, 1 - alpha, 0)
-                # # add points
-                # for point in pp:
-                #     cv.circle(map_planning, tuple(point), p_r, self.colors[i], -1)
-        self.zmd.map_planning = map_planning
 
     def add_connection_paths_to_map_planning(self) -> None:
         """ Add connection paths to map_planning. """
@@ -374,13 +322,13 @@ class SequenceHandler:
             ax.plot(x, y, color="black", linewidth=1)
 
         # coverage paths
-        fontsize = 45/scale  # 16
-        markersize = 20/scale  # 6
+        fontsize = 45 / scale  # 16
+        markersize = 20 / scale  # 6
         for i, path in enumerate(self.paths_px):
             if path is None:
                 continue
             pp = np.array(path.xy, dtype=np.int32)
-            ax.plot(pp[:, 0], pp[:, 1], color=colors[i], linewidth=4/scale, linestyle='-')
+            ax.plot(pp[:, 0], pp[:, 1], color=colors[i], linewidth=4 / scale, linestyle='-')
             # start and end points
             ax.plot(pp[0, 0], pp[0, 1], 'o', color=colors[i], markersize=markersize)
             ax.text(pp[0, 0], pp[0, 1], f'$S_{{{i}}}$', fontsize=fontsize, color='k')
@@ -400,7 +348,7 @@ class SequenceHandler:
     def save_path_fig_px(self, fig, is_anim=False):
         """ Save the path ( in pixels) figure. """
         if not is_anim:
-            fig_path = os.path.join(self.zmd.method_results_dir, "paths.svg")
+            fig_path = os.path.join(self.zmd.method_results_dir, "final_paths_px.svg")
             fig.savefig(fig_path, format="svg", dpi=PipeLineConfig.dpi, bbox_inches='tight')
         else:
             self.lg.info(f"saving animation ... n_frames: {self.f_path_px.n}")
@@ -437,11 +385,11 @@ class SequenceHandler:
 
         if self.f_path_m is not None:
             pp = np.array(self.f_path_m.xy, dtype=np.float32)
-            ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2/scale, linestyle='-', markersize=3/scale)
+            ax.plot(pp[:, 0], pp[:, 1], "o", color='blue', linewidth=2 / scale, linestyle='-', markersize=3 / scale)
         # flip y-axis for pixel coordinates
         ax.invert_yaxis()
         fig_path = os.path.join(self.zmd.method_results_dir, "final_path_m")
-        fig.savefig(fig_path+'.svg', format="svg", dpi=PipeLineConfig.dpi)
+        fig.savefig(fig_path + '.svg', format="svg", dpi=PipeLineConfig.dpi)
         plt.close('all')
 
     # Animate path =====================================================================================================

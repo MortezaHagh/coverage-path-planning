@@ -27,11 +27,11 @@ class ZoneStatsBase:
         self.ind: int = None  # zone index
         self.trav_time_full: float = 0.0
         self.trav_time_coverage: float = 0.0
-        #
-        self.pt_segmentation: float = None
-        self.pt_coverage_planning: float = None
-        self.pt_sequencing: float = None
-        self.pt_pipeline: float = None
+        # Processing times for each stage (segmentation, coverage planning, sequencing, total)
+        self.ptime_segmentation: float = None
+        self.ptime_coverage_planning: float = None
+        self.ptime_sequencing: float = None
+        self.ptime_pipeline: float = None
         #
         self.full_length = None
         self.coverage_length = None
@@ -59,10 +59,10 @@ class ZoneStatsBase:
             "zone_ind": self.ind,
             "trav_time_full": round(float(self.trav_time_full), 2),
             "trav_time_coverage": round(float(self.trav_time_coverage), 2),
-            "pt_segmentation": round(float(self.pt_segmentation), 2),
-            "pt_coverage_planning": round(float(self.pt_coverage_planning), 2),
-            "pt_sequencing": round(float(self.pt_sequencing), 2),
-            "pt_pipeline": round(float(self.pt_pipeline), 2),
+            "ptime_segmentation": round(float(self.ptime_segmentation), 2),
+            "ptime_coverage_planning": round(float(self.ptime_coverage_planning), 2),
+            "ptime_sequencing": round(float(self.ptime_sequencing), 2),
+            "ptime_pipeline": round(float(self.ptime_pipeline), 2),
             "full_length": round(float(self.full_length), 2),
             "coverage_length": round(float(self.coverage_length), 2),
             "yaw_path_full": round(float(self.yaw_path_full), 2),

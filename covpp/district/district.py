@@ -146,16 +146,16 @@ class DistrictData:
         h = data["h"]
         w = data["w"]
         rot = data["rot"]
-        dx1 = -np.sin(rot) * (h//4)
-        dy1 = np.cos(rot) * (h//4)
+        dx1 = -np.sin(rot) * (h // 4)
+        dy1 = np.cos(rot) * (h // 4)
         xc1 = int(data["xc"] + dx1)
         yc1 = int(data["yc"] + dy1)
-        dx2 = np.sin(rot) * (h//4)
-        dy2 = -np.cos(rot) * (h//4)
+        dx2 = np.sin(rot) * (h // 4)
+        dy2 = -np.cos(rot) * (h // 4)
         xc2 = int(data["xc"] + dx2)
         yc2 = int(data["yc"] + dy2)
-        data1 = {"xc": xc1, "yc": yc1, "rot": rot, "w": w, "h": h//2}
-        data2 = {"xc": xc2, "yc": yc2, "rot": rot, "w": w, "h": h//2}
+        data1 = {"xc": xc1, "yc": yc1, "rot": rot, "w": w, "h": h // 2}
+        data2 = {"xc": xc2, "yc": yc2, "rot": rot, "w": w, "h": h // 2}
         rect1 = Rectangle(data1)
         rect2 = Rectangle(data2)
         return [rect1, rect2]

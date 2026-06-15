@@ -6,6 +6,7 @@ docs/build/
 maps/
 tools/pyastar2d
 temp/
+# 
 *.zip
 *.png
 # 

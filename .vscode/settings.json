@@ -4,11 +4,16 @@
         120
     ],
     "files.exclude": {
-        "**/*.pyc": true,
+        // "**/*.pyc": true,
         "**/*pycache*": true,
+        ".devcontainer": true,
+        ".github": true,
         "venv": true,
         "covpp.egg-info": true,
-        "dist": true
+        "dist": true,
+        "LICENSE": true,
+        "pyproject.toml": true,
+        "setup.py": true,
     },
     // exclude from search
     "search.exclude": {

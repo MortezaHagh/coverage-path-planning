@@ -114,8 +114,8 @@ class ZoneMapData:
 
         # create zone maps directory
         os.makedirs(self.zone_dir, exist_ok=True)
-        self.maps_dir = os.path.join(self.zone_dir, "maps")
-        os.makedirs(self.maps_dir, exist_ok=True)
+        # self.maps_dir = os.path.join(self.zone_dir, "maps")
+        # os.makedirs(self.maps_dir, exist_ok=True)
 
     # --------------------------------------------------------------------------
     # Setters (called from space analyzer)
@@ -184,6 +184,7 @@ class ZoneMapData:
 
     def save_data(self) -> None:
         """Persist maps (PNG) and a JSON metadata file to disk."""
+        return  # skip saving for now
 
         # Save map images with maximum quality (lossless PNG)
         png_params = [cv.IMWRITE_PNG_COMPRESSION, 0]

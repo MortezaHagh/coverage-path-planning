@@ -4,12 +4,15 @@ This module implements the Handler pattern to dynamically load and execute
 different coverage planning algorithms based on configuration.
 """
 
+import cv2 as cv
+import numpy as np
 from importlib.metadata import entry_points
 from covpp.base.logger import MyLogger
-from covpp.base.configs import PipeLineConfig
+from covpp.base.configs import PipeLineConfig, PlanningConfig
 from covpp.segmentation.cell_planning import PCell
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.coverage_planning.coverage_pp_base import CoveragePathPlannerBase
+from covpp.base.base_utils import get_n_colors_cv
 
 
 class CoveragePPHandler:
@@ -65,6 +68,7 @@ class CoveragePPHandler:
         """
         self.cells = cells
         self.run_covpp_method()
+        self.add_cell_paths_to_map_planning()
 
     def run_covpp_method(self) -> None:
         """Apply coverage path planning algorithm to all cells in the zone.
@@ -106,3 +110,25 @@ class CoveragePPHandler:
                 cell.do_planning = False
                 self.lg.warn(f"Cell {cell.id} has no path after coverage planning.")
                 self.lg.warn(f"Cell {cell.id} set do_planning to False.")
+
+    def add_cell_paths_to_map_planning(self) -> None:
+        """ Add cell coverage paths to map_planning. """
+        colors = get_n_colors_cv(len(self.cells))
+        map_planning = self.zmd.map_planning.copy()
+        robot_r_px = int(PlanningConfig.cleaning_r_ov / self.zmd.resolution)
+        robot_d_px = robot_r_px * 2
+        p_r = 5  # int(robot_r_px/10)
+        for i, cell in enumerate(self.cells):
+            path_px = cell.path_px
+            if cell.do_planning and path_px:
+                pp = np.array(path_px.xy, dtype=np.int32)  # Ensure pp is a numpy array of integers
+                map_planning = cv.polylines(map_planning, [pp], isClosed=False, color=colors[i], thickness=2)
+                # plot cleaning
+                overlay = map_planning.copy()
+                cv.polylines(overlay, [pp], isClosed=False, color=colors[i], thickness=robot_d_px)
+                alpha = 0.2  # Adjust transparency (0.0 transparent, 1.0 opaque)
+                map_planning = cv.addWeighted(overlay, alpha, map_planning, 1 - alpha, 0)
+                # # add points
+                # for point in pp:
+                #     cv.circle(map_planning, tuple(point), p_r, colors[i], -1)
+        self.zmd.map_planning = map_planning

@@ -25,7 +25,7 @@ class InputsProcessor:
         paths (dict): Dictionary of file and directory paths.
     """
 
-    def __init__(self, map_name: str = "Map1"):
+    def __init__(self, map_name: str):
         # logging
         self.lg = MyLogger("InputsProcessor")
         self.lg.info1("Step: processing inputs")
@@ -68,8 +68,8 @@ class InputsProcessor:
     def set_paths(self) -> None:
         """ create required directories. """
         self.paths["data"] = self.mcfg.data_dir  # base data directory [hardcoded]
-        map_folder_dir = os.path.join(self.paths["data"],  self.map_name)
-        self.paths["map"] = os.path.join(map_folder_dir,  self.mcfg.base_folder)
+        map_folder_dir = os.path.join(self.paths["data"], self.map_name)
+        self.paths["map"] = os.path.join(map_folder_dir, self.mcfg.base_folder)
         self.paths["district"] = map_folder_dir
         # self.paths["district"] = os.path.join(map_folder_dir, self.mcfg.district_folder)
         self.paths["yaml"] = os.path.join(self.paths["map"], "merge.yaml")

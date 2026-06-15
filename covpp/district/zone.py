@@ -76,7 +76,7 @@ class ZoneData:
     def initialize(self):
         """Initialize zone data by saving map data and creating initial planning map."""
         self.zmd.save_data()
-        self.create_map_planning()
+        self.create_result_maps()
 
     def zone_planning_pipeline(self):
         """Execute complete coverage planning pipeline for the zone.
@@ -107,8 +107,8 @@ class ZoneData:
         # ************ sequence
         self.lg.info1(f"Step: creating sequence and full path using method '{PipeLineConfig.sequence_method}'")
         self.sequence_hl.run(cells=self.cells, map_polygons=self.segmentation_hl.map_polygons)
-        times['sequencing'] = time.time()
         self.set_zone_complete_path()
+        times['sequencing'] = time.time()
 
         # ************ evaluate statistics
         self.zone_evaluator.evaluate(paths=self.sequence_hl.paths, times=times)
@@ -135,7 +135,7 @@ class ZoneData:
         self.complete_path_px = self.sequence_hl.f_path_px
         self.complete_path_m = self.sequence_hl.f_path_m
 
-    def create_map_planning(self):
+    def create_result_maps(self):
         """ create initial map_planning with zone boundary. """
         map_planning = self.zmd.map_planning
         vertices = self.zmd.vertices
@@ -144,7 +144,7 @@ class ZoneData:
         self.zmd.map_segmentation = map_planning.copy()
 
     def save_map_planning(self):
-        """ save zone map_planning and map_segmentation to files. """
+        """ save zone map_planning to files. """
         if not PipeLineConfig.do_save_maps:
             return
         # PNG parameters for lossless compression
@@ -153,10 +153,6 @@ class ZoneData:
         m_name = "map_planning.png"
         map_hl_path = os.path.join(self.zmd.method_results_dir, m_name)
         cv.imwrite(map_hl_path, self.zmd.map_planning, png_params)
-        # save map segmentation
-        m_name_s = "map_segmentation.png"
-        map_s_path = os.path.join(self.zmd.segmentation_method_dir, m_name_s)
-        cv.imwrite(map_s_path, self.zmd.map_segmentation, png_params)
 
     def save_map_map_cleaned(self):
         """ save map showing cleaned area and uncleaned area. """

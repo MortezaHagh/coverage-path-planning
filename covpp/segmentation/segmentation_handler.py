@@ -3,9 +3,13 @@
 This module implements the Handler pattern to dynamically load and execute
 different segmentation algorithms based on configuration.
 """
+import os
+import cv2 as cv
+import numpy as np
 from importlib.metadata import entry_points
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PipeLineConfig
+from covpp.base.base_utils import get_n_colors_cv
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.cell_planning import PCell
@@ -91,6 +95,10 @@ class SegmentationHandler:
         # validate created cells
         self.validate_cells()
 
+        # plot segmentation results
+        self.add_cells_to_result_maps()
+        self.save_segmentation_map()
+
     def process_cells(self) -> None:
         """ Convert base cells from segmentor into planning PCell objects. """
         # resulting base cells from segmentor
@@ -148,3 +156,39 @@ class SegmentationHandler:
 
     #     ax.set_title("Segmented Polygons")
     #     plt.show()
+
+    def add_cells_to_result_maps(self) -> None:
+        """ Add cell boundaries and fills to the zone's planning and segmentation maps for visualization. """
+        colors = get_n_colors_cv(self.n_cells)
+        for i, cell in enumerate(self.cells):
+            pp = cell.points
+            pp = np.array(pp, dtype=np.int32)  # Ensure pp is a numpy array of integers
+            # add cells to map_planning
+            map_p = cv.polylines(self.zmd.map_planning, [pp], isClosed=True, color=(100, 100, 100), thickness=2)
+            map_p_fill = self.zmd.map_planning.copy()
+            cv.fillPoly(map_p_fill, [pp], color=colors[i])
+            alpha = 0.1
+            self.zmd.map_planning = cv.addWeighted(map_p_fill, alpha, map_p, 1 - alpha, 0)
+            # add cells to map_segmentation
+            map_s = cv.polylines(self.zmd.map_segmentation, [pp], isClosed=True, color=(100, 100, 100), thickness=5)
+            map_s_fill = self.zmd.map_segmentation.copy()
+            cv.fillPoly(map_s_fill, [pp], color=colors[i])
+            alpha = 0.1
+            self.zmd.map_segmentation = cv.addWeighted(map_s_fill, alpha, map_s, 1 - alpha, 0)
+
+            # # add rectangle
+            # if cell.rect_like:
+            #     rp = cell.rectangle_poly.exterior.coords.xy
+            #     rpoints = np.array(list(zip(rp[0], rp[1])), dtype=np.int32)
+            #     self.zmd.map_planning = cv.polylines(self.zmd.map_planning, [rpoints], isClosed=True, color=(0, 0, 0), thickness=2)
+            #     self.zmd.map_segmentation = cv.polylines(self.zmd.map_segmentation, [rpoints], isClosed=True, color=(0, 0, 0), thickness=2)
+
+    def save_segmentation_map(self) -> None:
+        """ Save the segmentation map to file. """
+        if not PipeLineConfig.do_save_maps:
+            return
+        # PNG parameters for lossless compression
+        png_params = [cv.IMWRITE_PNG_COMPRESSION, 0]
+        m_name_s = "map_segmentation.png"
+        map_s_path = os.path.join(self.zmd.segmentation_method_dir, m_name_s)
+        cv.imwrite(map_s_path, self.zmd.map_segmentation, png_params)

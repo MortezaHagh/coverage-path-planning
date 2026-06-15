@@ -18,10 +18,10 @@ class DistrictStatsBase:
         self.trav_time_full: float = None
         self.trav_time_coverage: float = None
         #
-        self.pt_segmentation: float = None
-        self.pt_coverage_planning: float = None
-        self.pt_sequencing: float = None
-        self.pt_pipeline: float = None
+        self.ptime_segmentation: float = None
+        self.ptime_coverage_planning: float = None
+        self.ptime_sequencing: float = None
+        self.ptime_pipeline: float = None
         #
         self.l_path_full: float = None
         self.l_path_coverage: float = None
@@ -43,10 +43,10 @@ class DistrictStatsBase:
             "n_zones": int(self.n_zones),
             "trav_time_full": round(float(self.trav_time_full), 2),
             "trav_time_coverage": round(float(self.trav_time_coverage), 2),
-            "pt_segmentation": round(float(self.pt_segmentation), 2),
-            "pt_coverage_planning": round(float(self.pt_coverage_planning), 2),
-            "pt_sequencing": round(float(self.pt_sequencing), 2),
-            "pt_pipeline": round(float(self.pt_pipeline), 2),
+            "ptime_segmentation": round(float(self.ptime_segmentation), 2),
+            "ptime_coverage_planning": round(float(self.ptime_coverage_planning), 2),
+            "ptime_sequencing": round(float(self.ptime_sequencing), 2),
+            "ptime_pipeline": round(float(self.ptime_pipeline), 2),
             "l_path_full": round(float(self.l_path_full), 2),
             "l_path_coverage": round(float(self.l_path_coverage), 2),
             "yaw_path_full": round(float(self.yaw_path_full), 2),
@@ -86,10 +86,10 @@ class DistrictEvaluationHandler:
         # aggregate statistics from all zones
         self.stats.trav_time_full = sum(zs.trav_time_full for zs in zone_stats)
         self.stats.trav_time_coverage = sum(zs.trav_time_coverage for zs in zone_stats)
-        self.stats.pt_segmentation = sum(zs.pt_segmentation for zs in zone_stats)
-        self.stats.pt_coverage_planning = sum(zs.pt_coverage_planning for zs in zone_stats)
-        self.stats.pt_sequencing = sum(zs.pt_sequencing for zs in zone_stats)
-        self.stats.pt_pipeline = sum(zs.pt_pipeline for zs in zone_stats)
+        self.stats.ptime_segmentation = sum(zs.ptime_segmentation for zs in zone_stats)
+        self.stats.ptime_coverage_planning = sum(zs.ptime_coverage_planning for zs in zone_stats)
+        self.stats.ptime_sequencing = sum(zs.ptime_sequencing for zs in zone_stats)
+        self.stats.ptime_pipeline = sum(zs.ptime_pipeline for zs in zone_stats)
         self.stats.l_path_full = sum(zs.full_length for zs in zone_stats)
         self.stats.l_path_coverage = sum(zs.coverage_length for zs in zone_stats)
         self.stats.yaw_path_full = sum(zs.yaw_path_full for zs in zone_stats)

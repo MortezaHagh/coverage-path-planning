@@ -46,10 +46,10 @@ class ZoneEvaluation(ZoneEvaluationBase):
 
     def calculate_time_statistics(self, times: dict) -> None:
         """Populate time-related statistics from timing checkpoints. """
-        self.stats.pt_segmentation = times['segmentation'] - times['start']
-        self.stats.pt_coverage_planning = times['coverage_planning'] - times['segmentation']
-        self.stats.pt_sequencing = times['sequencing'] - times['coverage_planning']
-        self.stats.pt_pipeline = times['sequencing'] - times['start']
+        self.stats.ptime_segmentation = times['segmentation'] - times['start']
+        self.stats.ptime_coverage_planning = times['coverage_planning'] - times['segmentation']
+        self.stats.ptime_sequencing = times['sequencing'] - times['coverage_planning']
+        self.stats.ptime_pipeline = times['sequencing'] - times['start']
 
     def calculate_path_statistics(self) -> None:
         """Compute path lengths and total yaw changes for full and coverage paths. """
