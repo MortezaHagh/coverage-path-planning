@@ -1,6 +1,7 @@
 """ Custom Logger with Colored Output. """
 # import logging
 from colorama import Fore, Style
+from covpp.base.configs import PipeLineConfig
 
 
 class MyLogger:
@@ -19,27 +20,34 @@ class MyLogger:
         self.name = name
 
     def info1(self, message: str) -> None:
-        print(f"{Fore.WHITE} ======================================================================= {Style.RESET_ALL}")
-        print(f"{Fore.CYAN}[{self.name}]: {message}{Style.RESET_ALL}")
+        if PipeLineConfig.do_print:
+            print(f"{Fore.WHITE} ======================================================================= {Style.RESET_ALL}")
+            print(f"{Fore.CYAN}[{self.name}]: {message}{Style.RESET_ALL}")
 
     def info2(self, message: str) -> None:
-        print(f"{Fore.GREEN}[{self.name}]: {message}{Style.RESET_ALL}")
+        if PipeLineConfig.do_print:
+            print(f"{Fore.GREEN}[{self.name}]: {message}{Style.RESET_ALL}")
 
     def info3(self, message: str) -> None:
-        pass
-        # print(f"{Fore.WHITE}[{self.name}]: {message}{Style.RESET_ALL}")
+        return
+        # if PipeLineConfig.do_print:
+        #     print(f"{Fore.WHITE}[{self.name}]: {message}{Style.RESET_ALL}")
 
     def info(self, message: str) -> None:
-        print(f"{Fore.WHITE}[{self.name}]: {message}{Style.RESET_ALL}")
+        if PipeLineConfig.do_print:
+            print(f"{Fore.WHITE}[{self.name}]: {message}{Style.RESET_ALL}")
 
     def debug(self, message: str) -> None:
-        print(f"{Fore.LIGHTBLACK_EX}[{self.name}]: {message}{Style.RESET_ALL}")
+        if PipeLineConfig.do_print:
+            print(f"{Fore.LIGHTBLACK_EX}[{self.name}]: {message}{Style.RESET_ALL}")
 
     def warn(self, message: str) -> None:
-        print(f"{Fore.YELLOW}[{self.name}]: {message}{Style.RESET_ALL}")
+        if PipeLineConfig.do_print:
+            print(f"{Fore.YELLOW}[{self.name}]: {message}{Style.RESET_ALL}")
 
     def error(self, message: str) -> None:
-        print(f"{Fore.RED}[{self.name}]: {message}{Style.RESET_ALL}")
+        if PipeLineConfig.do_print:
+            print(f"{Fore.RED}[{self.name}]: {message}{Style.RESET_ALL}")
 
 # class ColorFormatter(logging.Formatter):
 #     COLORS = {

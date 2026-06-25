@@ -97,6 +97,8 @@ class SkeletonDecomposition:
         segmentation_improver = SegmentationImprovement(segment_solution=segment_solution,
                                                         bpts_graph=self.bpts_graph,
                                                         map_ws_segmented=self.map_ws_segmented,
+                                                        skelet_distance_map=self.skelet.distance_map,
+                                                        skeleton_graph=self.sk_graph,
                                                         robot_radius_px=self.robot_radius_px)
 
         segmentation_improver.run()

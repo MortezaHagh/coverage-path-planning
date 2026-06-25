@@ -39,7 +39,8 @@ class PipeLineConfig:
     start_cell_ind = 0  # index of starting cell for coverage path planning sequence
     all_cleaned = True  # whether allow small uncleaned areas or not
 
-    # plots configs
+    # log-plots configs
+    do_print = True
     do_save_maps = True
     do_plot_segmentation = True
     do_plot_boust_decomposition = False
@@ -48,7 +49,7 @@ class PipeLineConfig:
 
     # Methods names for main modules: segmentation, coverage path planning, sequence
     segmentation_method = "skeleton"    # simple, voronoi, skeleton
-    covpp_method = "boust"              # simple, boust, contour, grid_energy_min
+    covpp_method = "contour"              # simple, boust, contour, grid_energy_min
     pp_method = "astar"                 # astar
     sequence_method = "milp"            # simple, dfs, milp
 
@@ -56,7 +57,7 @@ class PipeLineConfig:
     method = segmentation_method + '_' + covpp_method + '_' + sequence_method
 
     # segmentation options
-    use_insc_ret = True  # False True # find approx rectangles from initial segmentation cells
+    use_insc_ret = False  # False True # find approx rectangles from initial segmentation cells
 
     # update main method
     if use_insc_ret:
@@ -78,6 +79,11 @@ class PipeLineConfig:
         # update for inscribed rectangles
         if use_insc_ret:
             cls.method = cls.method + "_rect"
+
+    @classmethod
+    def set_print(cls, do_print: bool = True) -> None:
+        """Set printing option."""
+        cls.do_print = do_print
 
 
 @dataclasses.dataclass

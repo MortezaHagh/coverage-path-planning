@@ -12,12 +12,20 @@ FREE = 255
 
 
 class SegmentationImprovement:
-    def __init__(self, segment_solution: SegmentSolution, bpts_graph: Graph, map_ws_segmented: np.ndarray, robot_radius_px: int = 5):
+    def __init__(self, segment_solution: SegmentSolution,
+                 bpts_graph: Graph,
+                 map_ws_segmented: np.ndarray,
+                 skelet_distance_map: np.ndarray,
+                 skeleton_graph: Graph,
+                 robot_radius_px: int = 5):
         self.lg = MyLogger("SegmentationImprovement")
         self.segmented_map = segment_solution.segmented_map
         self.bpts_graph = bpts_graph
         self.map_ws_segmented = map_ws_segmented
+        self.sk_graph = skeleton_graph
+        self.skelet_distance_map = skelet_distance_map
         self.robot_radius_px = robot_radius_px
+
         self.new_cps = []
 
     def run(self):
@@ -335,7 +343,7 @@ class SegmentationImprovement:
         path = shortest_path(self.sk_graph, source=tuple(gc), target=tuple(gg))
         # n_path = len(path)
         # new_ind = n_path // 5
-        new_ind = self.skelet.distance_map[gc[0], gc[1]]
+        new_ind = self.skelet_distance_map[gc[0], gc[1]]
         # new_ind = int(new_ind * 0.7)  # move closer to gc
         new_coord = path[new_ind]
 
@@ -377,7 +385,7 @@ class SegmentationImprovement:
         path = shortest_path(self.sk_graph, source=tuple(gc), target=tuple(gi))
         n_path = len(path)
         # new_ind = n_path // 5
-        new_ind = self.skelet.distance_map[gc[0], gc[1]]
+        new_ind = self.skelet_distance_map[gc[0], gc[1]]
         if new_ind >= n_path:
             new_ind = n_path // 2
         new_coord = path[new_ind]
