@@ -48,6 +48,7 @@ class PipeLineConfig:
     dpi = 300
 
     # Methods names for main modules: segmentation, coverage path planning, sequence
+    name_suffix = ""
     segmentation_method = "skeleton"    # simple, voronoi, skeleton
     covpp_method = "contour"              # simple, boust, contour, grid_energy_min
     pp_method = "astar"                 # astar
@@ -60,12 +61,18 @@ class PipeLineConfig:
     use_insc_ret = False  # False True # find approx rectangles from initial segmentation cells
 
     # update main method
+    if name_suffix:
+        method = method + "_" + name_suffix
     if use_insc_ret:
         method = method + "_rect"
 
     @classmethod
-    def update(cls, segmentation_method: str = 'voronoi', covpp_method: str = 'boust',
-               use_insc_ret: bool = False, sequence_method: str = 'milp', start_cell_idx: int = 0) -> None:
+    def update(cls, segmentation_method: str = 'voronoi',
+               covpp_method: str = 'boust',
+               use_insc_ret: bool = False,
+               sequence_method: str = 'milp',
+               name_suffix: str = '',
+               start_cell_idx: int = 0) -> None:
         """Update pipeline configuration values."""
         cls.segmentation_method = segmentation_method
         cls.covpp_method = covpp_method
@@ -79,6 +86,9 @@ class PipeLineConfig:
         # update for inscribed rectangles
         if use_insc_ret:
             cls.method = cls.method + "_rect"
+
+        if name_suffix:
+            cls.method = cls.method + "_" + name_suffix
 
     @classmethod
     def set_print(cls, do_print: bool = True) -> None:

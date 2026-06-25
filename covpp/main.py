@@ -29,11 +29,11 @@ def run_pipeline(map_name: str) -> None:
 
     #  1. process inputs: configs and map (yaml and pgm)
     inp_processor = InputsProcessor(map_name)
-    orig_map = inp_processor.orig_map
+    orig_map_gs = inp_processor.orig_map_gs
     map_config: MapConfig = inp_processor.map_config
 
     # 2. Initial Process of the map image and create MapData object
-    mp = MapImageProcessor(map_arr=orig_map, map_config=map_config)
+    mp = MapImageProcessor(map_gs=orig_map_gs, map_config=map_config)
     map_data: MapData = mp.map_data
 
     # 3. Select area of interest in the map and create District rectangle
@@ -67,7 +67,7 @@ def main():
     lg = MyLogger(ns)
     if len(sys.argv) < 2:
         lg.error("Usage: python main.py <map_name>")
-        map_name = "MapPaper2"  # Map_fr52 Map2 Map4 MapPaper Map_office_a
+        map_name = "MapT1"  # Map_fr52 Map2 Map4 MapPaper Map_office_a
     else:
         map_name = sys.argv[1]
     run_pipeline(map_name)

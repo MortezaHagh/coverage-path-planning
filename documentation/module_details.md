@@ -26,8 +26,8 @@ Core utilities and data structures used throughout the pipeline.
 
 - **Purpose**: Store map information
 - **Attributes**:
-  - `orig_map`: Original map array
-  - `up_bin_map`: Processed binary map
+  - `orig_map_gs`: Original grayscale map array
+  - `up_bin_map_u8`: Processed binary map
   - `resolution`: Map resolution (m/pixel)
   - `updated_w/h`: Map dimensions
 

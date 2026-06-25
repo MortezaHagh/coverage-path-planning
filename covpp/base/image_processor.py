@@ -11,7 +11,7 @@ class MapImageProcessor:
     """Process grayscale map image and create structured MapData object.
 
     Args:
-        map_arr (np.ndarray): Loaded grayscale map image array (2D numpy array).
+        map_gs (np.ndarray): Loaded grayscale map image array (2D numpy array).
         map_config (MapConfig): Map configuration object with robot and workspace parameters.
 
     Attributes:
@@ -21,7 +21,7 @@ class MapImageProcessor:
         ValueError: If image is not found, not grayscale, or format is unsupported.
     """
 
-    def __init__(self, map_arr: np.ndarray, map_config: MapConfig):
+    def __init__(self, map_gs: np.ndarray, map_config: MapConfig):
 
         # logger
         self.lg = MyLogger("MapImageProcessor")
@@ -29,16 +29,16 @@ class MapImageProcessor:
 
         # read configs and eval original map arr
         self.mcfg: MapConfig = map_config
-        self.__orig_map: np.ndarray = map_arr
-        self.validate_map(map_arr)
+        self.__orig_map_gs: np.ndarray = map_gs
+        self.validate_map(map_gs)
 
         # set map data
         self.__map_data = MapData()
         self.set_map_data()
 
         # initial processes on map image - set binary map
-        processed_map = self.process_map()
-        self.__map_data.set_bin_map(processed_map)
+        processed_map_u8 = self.process_map()
+        self.__map_data.set_bin_map(processed_map_u8)
 
         # add other data to map_data
         self.complete_map_data()
@@ -50,45 +50,45 @@ class MapImageProcessor:
     def map_data(self) -> MapData:
         return copy.deepcopy(self.__map_data)
 
-    def validate_map(self, image: np.ndarray) -> None:
-        """Validate that the map image is properly loaded and formatted.
+    def validate_map(self, map_gs: np.ndarray) -> None:
+        """Validate that the grayscale map image is properly loaded and formatted.
 
         Args:
-            image: Input map image array.
+            map_gs: Input grayscale map image array.
 
         Raises:
             ValueError: If image is None or not grayscale.
         """
-        if image is None or image.size == 0:
+        if map_gs is None or map_gs.size == 0:
             raise ValueError("Image not found or the format is not supported")
-        if len(image.shape) > 2:
+        if len(map_gs.shape) > 2:
             raise ValueError("Image must be grayscale")
 
     def set_map_data(self) -> None:
         """Initialize basic map data attributes: name, origin, and original map."""
-        map_arr = self.__orig_map.copy()
+        map_gs = self.__orig_map_gs.copy()
         self.__map_data.set_basic_configs(self.mcfg, self.mcfg.map_name)
         self.__map_data.set_origin_m(self.mcfg.origin_m)
-        self.__map_data.set_orig_map(map_arr)
+        self.__map_data.set_orig_map(map_gs)
 
     def process_map(self) -> np.ndarray:
         """ create denoised binary map. """
         self.lg.info2("creating binary-denoised map")
-        binary_map = self.convert_to_binary()
-        denoised_map = self.remove_noise(binary_map)
-        return denoised_map
+        binary_map_u8 = self.convert_to_binary()
+        denoised_map_u8 = self.remove_noise(binary_map_u8)
+        return denoised_map_u8
 
     def convert_to_binary(self) -> np.ndarray:
         """ convert grayscale map to binary map. """
         # threshold = self.mcfg.occupied_thresh
-        _, binary_map = cv.threshold(self.__orig_map, 220, 255, cv.THRESH_BINARY)
-        return binary_map
+        _, binary_map_u8 = cv.threshold(self.__orig_map_gs, 220, 255, cv.THRESH_BINARY)
+        return binary_map_u8
 
-    def remove_noise(self, binary_map: np.ndarray, kernel_size=(3, 3)) -> np.ndarray:
+    def remove_noise(self, binary_map_u8: np.ndarray, kernel_size=(3, 3)) -> np.ndarray:
         """ remove noise from binary map using morphological opening. """
         kernel = np.ones(kernel_size, np.uint8)
-        denoised_map = cv.morphologyEx(binary_map, cv.MORPH_OPEN, kernel)
-        return denoised_map
+        denoised_map_u8 = cv.morphologyEx(binary_map_u8, cv.MORPH_OPEN, kernel)
+        return denoised_map_u8
 
     def complete_map_data(self) -> None:
         """ set resolution [and updated resolution] in map data. """
@@ -105,7 +105,7 @@ class MapImageProcessor:
 
         # cv window
         wind_hw = self.__map_data.wind_hw
-        zoom = min(wind_hw[0]/height, wind_hw[1]/width)
+        zoom = min(wind_hw[0] / height, wind_hw[1] / width)
         updated_h = int(height * zoom)
         updated_w = int(width * zoom)
         updated_wh = (updated_w, updated_h)

@@ -21,7 +21,7 @@ class InputsProcessor:
     Attributes:
         map_name (str): Name of the map being processed.
         map_config (MapConfig): Map configuration object containing all map parameters.
-        orig_map (np.ndarray): Original grayscale map image as numpy array.
+        orig_map_gs (np.ndarray): Original grayscale map image as numpy array.
         paths (dict): Dictionary of file and directory paths.
     """
 
@@ -34,7 +34,7 @@ class InputsProcessor:
         # attributes
         self.map_name: str = map_name
         self.mcfg = MapConfig()
-        self.__orig_map: np.ndarray = None
+        self.__orig_map_gs: np.ndarray = None  # cv.IMREAD_GRAYSCALE
 
         # paths (directories and files)
         self.paths: dict = {}
@@ -53,7 +53,7 @@ class InputsProcessor:
 
         # read map image file
         self.load_eval_map_image()
-        # self.visualize_map(self.__orig_map)
+        # self.visualize_map(self.__orig_map_gs)
 
     @property
     def map_config(self) -> MapConfig:
@@ -61,9 +61,9 @@ class InputsProcessor:
         return copy.deepcopy(self.mcfg)
 
     @property
-    def orig_map(self) -> np.ndarray:
+    def orig_map_gs(self) -> np.ndarray:
         """ Return a copy of the original map image as numpy array. """
-        return copy.deepcopy(self.__orig_map)
+        return copy.deepcopy(self.__orig_map_gs)
 
     def set_paths(self) -> None:
         """ create required directories. """
@@ -104,7 +104,7 @@ class InputsProcessor:
         map_image = cv.imread(self.paths["pgm"], cv.IMREAD_GRAYSCALE)
         if map_image is None or map_image.size == 0:
             raise FileNotFoundError("Failed to load PGM file.")
-        self.__orig_map = map_image
+        self.__orig_map_gs = map_image
 
     def write_json(self, file_path: str, data: dict) -> None:
         """ Write data to a JSON file. """

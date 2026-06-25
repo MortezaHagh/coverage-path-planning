@@ -36,12 +36,12 @@ class MapData:
         self.wind_w: int = None                         # window width
         self.wind_center: tuple[int, int] = None        # window center (height, width)
         self.zoom: float = None                         # zoom factor
-        # maps
-        self.orig_map: np.ndarray = None                # original grayscale map
-        self.orig_bin_map: np.ndarray = None            # original binary map
-        self.up_map: np.ndarray = None                  # updated grayscale map
+        # maps - all unit8 binary (OCCUPIED, FREE) or grayscale (0-255)
+        self.orig_map_gs: np.ndarray = None             # original grayscale map
+        self.orig_bin_map_u8: np.ndarray = None         # original binary map
+        self.up_map_gs: np.ndarray = None               # updated grayscale map
+        self.up_bin_map_u8: np.ndarray = None           # updated binary map
         self.up_rgb_map: np.ndarray = None              # updated rgb map
-        self.up_bin_map: np.ndarray = None              # updated binary map
         # resolutions
         self.resolution: float = None                   # original resolution
         self.up_resolution: float = None                # updated resolution
@@ -61,18 +61,18 @@ class MapData:
         self.resolution = res
         self.up_resolution = round(self.resolution / self.zoom, 4)
 
-    def set_bin_map(self, bin_map: np.ndarray) -> None:
+    def set_bin_map(self, bin_map_u8: np.ndarray) -> None:
         """ set binary map data and update related attributes. """
-        if bin_map is None or bin_map.size == 0:
+        if bin_map_u8 is None or bin_map_u8.size == 0:
             raise ValueError("Input binary map is None or empty.")
-        self.orig_bin_map = bin_map
-        self.up_bin_map = cv.resize(self.orig_bin_map, self.updated_wh, interpolation=cv.INTER_AREA)
+        self.orig_bin_map_u8 = bin_map_u8
+        self.up_bin_map_u8 = cv.resize(self.orig_bin_map_u8, self.updated_wh, interpolation=cv.INTER_AREA)
 
-    def set_orig_map(self, map_image: np.ndarray) -> None:
+    def set_orig_map(self, map_gs: np.ndarray) -> None:
         """ set original map and update related attributes. """
-        if map_image is None or map_image.size == 0:
-            raise ValueError("Input map_image is None or empty.")
-        self.orig_map = map_image
+        if map_gs is None or map_gs.size == 0:
+            raise ValueError("Input map_gs is None or empty.")
+        self.orig_map_gs = map_gs
         self.set_map_hw()
         self.resize_map()
         self.create_rgb_map()
@@ -81,7 +81,7 @@ class MapData:
 
     def set_map_hw(self) -> None:
         """ set original map height and width. """
-        height, width = self.orig_map.shape[:2]
+        height, width = self.orig_map_gs.shape[:2]
         self.orig_h = height
         self.orig_w = width
         self.lg.info2(f"Map size [w,h]: {width}x{height}")
@@ -89,7 +89,7 @@ class MapData:
     def resize_map(self) -> None:
         """ resize original map based on window size. """
         self.set_wind_wh()
-        self.up_map = cv.resize(self.orig_map, self.updated_wh, interpolation=cv.INTER_AREA)
+        self.up_map_gs = cv.resize(self.orig_map_gs, self.updated_wh, interpolation=cv.INTER_AREA)
 
     def set_wind_wh(self, wind_hw: tuple[int, int] = None) -> None:
         """ set window height and width. calculate zoom and updated map size. """
@@ -118,7 +118,7 @@ class MapData:
 
     def create_rgb_map(self) -> None:
         """ create updated rgb map from updated grayscale map. """
-        self.up_rgb_map = cv.cvtColor(self.up_map, cv.COLOR_GRAY2BGR)
+        self.up_rgb_map = cv.cvtColor(self.up_map_gs, cv.COLOR_GRAY2BGR)
 
     def set_orig_center(self) -> None:
         """ Set original map center coordinates. """

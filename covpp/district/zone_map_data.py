@@ -65,6 +65,7 @@ class ZoneMapData:
         self.hw_bd: dict = None                         # map hw bound, dict keys: h_min, w_min, h_max, w_max
         self.hw: tuple[int, int] = None                 # height and width of the zone map
         self.global_xy: np.ndarray = None               # global map offset (x_offset, y_offset)
+        # all maps are uint8, binary (OCCUPIED, FREE)
         # maps [fixed, for visualization, planning, and evaluation]
         self.map_orig: np.ndarray = None                # cropped original map based on rectangle
         self.map_ws: np.ndarray = None                  # cropped work space selected free space filtered (map_7_c_ws_sf_f)

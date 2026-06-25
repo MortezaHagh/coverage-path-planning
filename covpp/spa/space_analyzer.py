@@ -54,12 +54,12 @@ class SpaceAnalyzer:
         self.plot_main: bool = True
 
         # inputs
-        self.orig_map_data: MapData = map_data          # original input map data - fixed
-        self.orig_rectangle: Rectangle = rectangle      # Initial district rectangle - won't be changed
-        self.rectangle: Rectangle = rectangle           # Current spa rectangle (updated) for each zone
-        self.rect_data: dict = rectangle.data           # Current rectangle data (updated) keys = {"xc", "yc", "rot", "w", "h"}
+        self.orig_map_data: MapData = map_data                      # original input map data - fixed
+        self.binary_map_0_u8: np.ndarray = map_data.up_bin_map_u8   # original input binary map - fixed
+        self.orig_rectangle: Rectangle = rectangle                  # Initial district rectangle - won't be changed
+        self.rectangle: Rectangle = rectangle                       # Current spa rectangle (updated) for each zone
+        self.rect_data: dict = rectangle.data                       # Current rectangle data (updated) keys = {"xc", "yc", "rot", "w", "h"}
         self.vertices: np.ndarray = np.array(rectangle.vertices_t, dtype=np.int32)  # rectangle vertices - (updated) for each zone
-        self.binary_map_0: np.ndarray = map_data.up_bin_map     # original input binary map - fixed
 
         # attributes
         self.hw_bd: dict[str:int] = None                    # map hw bound dict keys = {"h_min", "w_min", "h_max", "w_max"}
@@ -73,7 +73,7 @@ class SpaceAnalyzer:
         # zone map data - created after space analysis
         self.__zone_map_data: ZoneMapData = None
 
-        # # maps
+        # # maps - all unit8, binary (OCCUPIED, FREE)
         # orig: without dilation/erosion
         # ws: work space
         # cleaning: cleanable area
@@ -124,7 +124,7 @@ class SpaceAnalyzer:
         self.rect_data = rectangle.data
         self.calculate_hw_bounds()
         #
-        self.map_c_orig = self.crop_and_frame(self.binary_map_0)
+        self.map_c_orig = self.crop_and_frame(self.binary_map_0_u8)
         self.map_3_c_dilated_cleaning = self.crop_and_frame(self.map_1_dilated_cleaning)
         self.map_4_c_dilated_ws = self.crop_and_frame(self.map_2_dilated_ws)
         self.map_7_c_ws_sf_f = self.crop_and_frame(self.map_6_ws_sf_f)
@@ -160,21 +160,21 @@ class SpaceAnalyzer:
         """
 
         # crop map and mask
-        binary_map = self.binary_map_0
-        self.map_c_orig = self.crop_map(binary_map)
+        binary_map_u8 = self.binary_map_0_u8
+        self.map_c_orig = self.crop_map(binary_map_u8)
         self.cropped_mask = np.ones_like(self.map_c_orig) * FREE_COST
 
         # detect workspace (based on robot size and distance conditions)
         if self.simple:
             # simple version - dilate obstacles
-            map_1_dilated_cleaning = self.dilate_erode_map(map_i=binary_map, radius_m=self.scfg.uncleaned_dist, erode=True)
-            map_2_dilated_ws = self.dilate_erode_map(map_i=binary_map, radius_m=self.scfg.ws_r_dist, erode=True)
+            map_1_dilated_cleaning = self.dilate_erode_map(map_i=binary_map_u8, radius_m=self.scfg.uncleaned_dist, erode=True)
+            map_2_dilated_ws = self.dilate_erode_map(map_i=binary_map_u8, radius_m=self.scfg.ws_r_dist, erode=True)
             map_3_c_dilated_cleaning = self.crop_map(map_1_dilated_cleaning)
             map_4_c_dilated_ws = self.crop_map(map_2_dilated_ws)
         else:
             # apply distance conditions using distance transform
-            map_3_c_dilated_cleaning = self.distance_filter(map_full=binary_map)
-            map_4_c_dilated_ws = self.distance_filter(map_full=binary_map)
+            map_3_c_dilated_cleaning = self.distance_filter(map_full=binary_map_u8)
+            map_4_c_dilated_ws = self.distance_filter(map_full=binary_map_u8)
         self.map_1_dilated_cleaning = map_1_dilated_cleaning
         self.map_3_c_dilated_cleaning = map_3_c_dilated_cleaning
         self.map_2_dilated_ws = map_2_dilated_ws
@@ -299,7 +299,7 @@ class SpaceAnalyzer:
         """Detect free spaces using distance transform with obstacle clearance.
 
         Args:
-        - map_full: Full binary map; defaults to `self.binary_map_0` when None.
+        - map_full: Full binary map; defaults to `self.binary_map_0_u8` when None.
 
         Returns:
         - np.ndarray: Cropped workspace map meeting distance-to-obstacle threshold.
@@ -324,7 +324,7 @@ class SpaceAnalyzer:
 
         # current map
         if map_full is None:
-            map_full = self.binary_map_0
+            map_full = self.binary_map_0_u8
 
         # Area for appling distance transform - expanding the cropped map - e -> expanded
         # Additional distance is necessary to check if any obstacle isn't just outside of the zone border
@@ -352,7 +352,7 @@ class SpaceAnalyzer:
 
         # eliminate expanded part from dist_trans
         n_h, n_w = self.cropped_mask.shape
-        dist_trans = dist_trans[d_h_min:d_h_min+n_h, d_w_min:d_w_min+n_w]
+        dist_trans = dist_trans[d_h_min:d_h_min + n_h, d_w_min:d_w_min + n_w]
 
         # free map
         map_ws = copy.copy(self.cropped_mask)
@@ -472,7 +472,7 @@ class SpaceAnalyzer:
         hw_limits = {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
         hw_bd = self.apply_hw_limits(hw_limits)
         self.hw_bd = hw_bd
-        self.hw_bd_local = {"h_min": 0, "w_min": 0, "h_max": h_max-h_min, "w_max": w_max-w_min}
+        self.hw_bd_local = {"h_min": 0, "w_min": 0, "h_max": h_max - h_min, "w_max": w_max - w_min}
 
     def crop_and_frame(self, map_i: np.ndarray) -> np.ndarray:
         """Crop the map to `hw_bd` and draw the rectangle frame on top."""
@@ -530,8 +530,8 @@ class SpaceAnalyzer:
         updated_hw = copy.copy(hw_limits)
         w_min = max(0, updated_hw["w_min"])
         h_min = max(0, updated_hw["h_min"])
-        w_max = min(updated_hw["w_max"], self.orig_map_data.updated_w-1)
-        h_max = min(updated_hw["h_max"], self.orig_map_data.updated_h-1)
+        w_max = min(updated_hw["w_max"], self.orig_map_data.updated_w - 1)
+        h_max = min(updated_hw["h_max"], self.orig_map_data.updated_h - 1)
         updated_hw = {"h_min": h_min, "w_min": w_min, "h_max": h_max, "w_max": w_max}
         return updated_hw
 
@@ -549,7 +549,7 @@ class SpaceAnalyzer:
         - np.ndarray: Binary result after morphology.
         """
         radius_px = int(radius_m / self.orig_map_data.up_resolution)
-        kernel_size = 2*radius_px + 1
+        kernel_size = 2 * radius_px + 1
         kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (kernel_size, kernel_size))
         # kernel = np.ones((kernel_size, kernel_size), np.uint8)
         if erode:
@@ -610,7 +610,7 @@ class SpaceAnalyzer:
         free_selected_inds = self.map_3_c_dilated_cleaning == FREE_COST
 
         # create visualization map
-        map_viz = copy.copy(self.binary_map_0[self.hw_bd["h_min"]:self.hw_bd["h_max"], self.hw_bd["w_min"]:self.hw_bd["w_max"]])
+        map_viz = copy.copy(self.binary_map_0_u8[self.hw_bd["h_min"]:self.hw_bd["h_max"], self.hw_bd["w_min"]:self.hw_bd["w_max"]])
         map_viz = cv.cvtColor(map_viz, cv.COLOR_GRAY2BGR)
         # map_viz[occ_cropped_inds] = [0, 0, 0]
         map_viz[free_selected_inds] = [250, 250, 250]
@@ -624,8 +624,8 @@ class SpaceAnalyzer:
         # plot on main map
         if self.plot_main:
             x, y = self.hw_bd["h_min"], self.hw_bd["w_min"]
-            map_main_viz = cv.cvtColor(self.binary_map_0, cv.COLOR_GRAY2BGR)
-            map_main_viz[x:x+h_c, y:y+w_c] = map_viz
+            map_main_viz = cv.cvtColor(self.binary_map_0_u8, cv.COLOR_GRAY2BGR)
+            map_main_viz[x:x + h_c, y:y + w_c] = map_viz
 
             # # plot final rectangle
             # if self.final_vertices is not None:
@@ -640,8 +640,8 @@ class SpaceAnalyzer:
             sh_x = 130
             sh_y = 25
             alpha = 0.5
-            shape_main_viz = self.binary_map_0.shape
-            pose = (shape_main_viz[1]//2+sh_x - sh_y, shape_main_viz[0]//2 + sh_y)
+            shape_main_viz = self.binary_map_0_u8.shape
+            pose = (shape_main_viz[1] // 2 + sh_x - sh_y, shape_main_viz[0] // 2 + sh_y)
             radius_px_1 = int(np.ceil(self.scfg.ws_r_dist / self.orig_map_data.up_resolution))
             radius_px_2 = int(np.ceil(self.scfg.robot_radius / self.orig_map_data.up_resolution))
             radius_px_3 = int(np.ceil(self.scfg.cleaning_r / self.orig_map_data.up_resolution))
