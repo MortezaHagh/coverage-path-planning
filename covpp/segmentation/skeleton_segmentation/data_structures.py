@@ -1,6 +1,7 @@
 """ Data structures for skeleton segmentation."""
 import dataclasses
 import numpy as np
+from shapely.geometry import Polygon  # , LineString
 
 
 @dataclasses.dataclass
@@ -38,6 +39,15 @@ class CriticalPoint:
         self.side_points: list[tuple[int, int]] = []  # side points (y, x)
         self.base_points: list[tuple[int, int]] = []  # base points (y, x)
         self.base_paths: list[tuple[tuple[int, int]]] = []  # paths from base points to critical point
+
+
+class SegmentSolution:
+    """Solution for segmentation."""
+
+    def __init__(self, segmented_map: np.ndarray, seg_ids: list[int], polygons: list[Polygon]):
+        self.segmented_map = segmented_map
+        self.seg_ids = seg_ids
+        self.polygons = polygons
 
 
 def find_level(h, hierarchy):

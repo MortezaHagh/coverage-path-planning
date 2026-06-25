@@ -10,18 +10,18 @@ from covpp.base.configs import PipeLineConfig
 #     'Map_office_a',
 # ]
 # map_names = ["Map_fr52", "Map4"]
-# map_names = ["MapT"+str(i) for i in range(8, 12)]
-# map_names = ["MapT11"]
-map_names = ["MapPaper2"]
+map_names = ["MapT" + str(i) for i in range(1, 12)]
+# map_names = ["MapPaper2"]
+# map_names = ["Map1", "Map5"]
 
 if __name__ == "__main__":
 
     # seg_methods = ["skeleton", "voronoi"]
-    seg_methods = ["skeleton"]
-    covpp_methods = ["boust", "contour", "grid_energy_min"]
-    # covpp_methods = ["boust"]
+    seg_methods = ["skeleton_e2"]
+    # covpp_methods = ["boust", "contour", "grid_energy_min"]
+    covpp_methods = ["contour"]
     # rects = [False, True]
-    rects = [True]
+    rects = [False]
 
     # covpp_method = ["boust"]
 

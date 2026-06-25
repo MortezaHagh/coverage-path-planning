@@ -8,11 +8,12 @@
         "**/*pycache*": true,
         ".devcontainer": true,
         ".github": true,
+        "docs": true,
         "venv": true,
         "covpp.egg-info": true,
         "dist": true,
         "LICENSE": true,
-        "pyproject.toml": true,
+        // "pyproject.toml": true,
         "setup.py": true,
     },
     // exclude from search
