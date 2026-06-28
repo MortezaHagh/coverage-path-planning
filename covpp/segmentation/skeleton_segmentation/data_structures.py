@@ -7,10 +7,9 @@ from shapely.geometry import Polygon  # , LineString
 @dataclasses.dataclass
 class Skelet:
     """ Contains skeletonization results. """
-    skeleton_map: np.ndarray                # dtype=bool
-    distance_map: np.ndarray                # dtype=uint8
-    distance_norm_map: np.ndarray           # dtype=uint8 OCCUPIED-FREE
-    distance_skeleton_map: np.ndarray       # dtype=uint8 OCCUPIED-FREE
+    skeleton_map_b: np.ndarray              # dtype=bool
+    distance_map: np.ndarray           # dtype=uint8 OCCUPIED-FREE
+    skeleton_distance_map: np.ndarray       # dtype=uint8 OCCUPIED-FREE
     skeleton_segmented_map: np.ndarray      # dtype=uint8
     end_points: np.ndarray                  # dtype=uint8 (y, x)
     branch_points: np.ndarray               # dtype=uint8 (y, x)
