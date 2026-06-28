@@ -4,384 +4,225 @@
 
 Core utilities and data structures used throughout the pipeline.
 
-### **InputsProcessor**
+### InputsProcessor
 
-- **Purpose**: Load and validate input data
-- **Key Methods**:
-  - `__init__(map_name)`: Load map and configs
-  - `set_paths()`: Define file paths
-  - `load_yaml_file()`: Read YAML configuration
-  - `update_map_configs()`: Update MapConfig object
+- Purpose: load input map files and configuration
+- Key methods: `__init__(map_name)`, `set_paths()`, `load_yaml_file()`, `update_map_configs()`
 
-### **MapImageProcessor**
+### MapImageProcessor
 
-- **Purpose**: Process raw map images
-- **Key Methods**:
-  - `__init__(map_arr, map_config)`: Initialize with map array and MapConfig
-  - `process_map()`: Apply morphological operations
-  - `set_map_data()`: Create MapData object
-  - `complete_map_data()`: Add metadata
+- Purpose: process the grayscale map into the internal binary representation
+- Key methods: `__init__(map_arr, map_config)`, `process_map()`, `set_map_data()`, `complete_map_data()`
 
-### **MapData**
+### MapData
 
-- **Purpose**: Store map information
-- **Attributes**:
-  - `orig_map_gs`: Original grayscale map array
-  - `up_bin_map_u8`: Processed binary map
-  - `resolution`: Map resolution (m/pixel)
-  - `updated_w/h`: Map dimensions
+- Purpose: store the processed map and metadata
+- Key attributes: `orig_map_gs`, `up_bin_map_u8`, `resolution`, `updated_w`, `updated_h`
 
-### **Configs** (`configs.py`)
+### Configs (`configs.py`)
 
-Configuration classes for different pipeline stages:
+- `MapConfig`: map directories and metadata
+- `PipeLineConfig`: active methods and pipeline switches
+- `PlanningConfig`: waypoint spacing and planning parameters
+- `SpaceConfig`: workspace safety distances and cleaning radius
+- `RobotConfig`: robot motion assumptions
 
-- **MapConfig**: Map-specific configuration (resolution, directories, paths)
-- **PipeLineConfig**: Main pipeline settings (method selection, plotting options)
-- **PlanningConfig**: Path planning parameters (robot dimensions, coverage settings)
-- **SpaceConfig**: Space analysis settings (morphological operations, filtering)
+### Geometry (`geometry.py`)
 
-### **Geometry** (geometry.py)
+- `MyPoint`: point container with x/y coordinates
+- `MyPath`: ordered sequence of points
 
-- **MyPoint**: Point representation with x, y coordinates
-- **MyPath**: Path as sequence of points
-- Other helpers (e.g., polygon edge utilities)
+### Base utilities and logging
 
-### **BaseUtils** (base_utils.py)
+- `get_n_colors_cv()`, `get_n_colors_plt()`: color helpers
+- `MyLogger`: project logger used by most handlers
 
-- `get_n_colors_cv()`: Generate color palette for OpenCV
-- `get_n_colors_plt()`: Generate color palette for matplotlib
+## 2. GUI Module (`covpp/gui/`)
 
-### **Logger** (logger.py)
+Interactive primitives for district selection and visualization.
 
-Custom logging with colored output:
+### Rectangle (`rectangle.py`)
 
-- `info()`, `info1()`, `info2()`: Information messages
-- `warn()`: Warning messages
-- `error()`: Error messages
+- Purpose: represent rotated rectangular regions
+- Attributes: `xc`, `yc`, `w`, `h`, `rot`, `vertices_t`
 
-## 2. GUI / Interaction Module (`covpp/gui/`)
+### RecEventHandler (`rect_event_hl.py`)
 
-Interactive primitives used by district selection and visualization.
+- Purpose: interactive mouse and keyboard rectangle selection
+- Used by `DistrictGen` when the district is not the whole map
 
-### **Rectangle** (rectangle.py)
+### VisualRectangle (`visual_rectangle.py`)
 
-- **Purpose**: Represent rectangular regions
-- **Attributes**:
-  - `xc, yc`: Center coordinates
-  - `w, h`: Width and height
-  - `rot`: Rotation angle
-  - `vertices_t`: Corner vertices
-
-### **RecEventHandler** (rect_event_hl.py)
-
-- **Purpose**: Mouse/keyboard event handler for interactive rectangle selection
-- **Notes**: Used by `DistrictGen` to let users draw/adjust the district.
-
-### **VisualRectangle** (visual_rectangle.py)
-
-- **Purpose**: Rendering helpers for rectangles in OpenCV canvases
-- **Notes**: Provides visual feedback during GUI selection.
+- Purpose: drawing helpers for OpenCV canvases
 
 ## 3. Space Analysis Module (`covpp/spa/`)
 
-Analyzes workspace and creates feasible position maps.
+Analyzes the selected district and builds workspace data.
 
-### **SpaceAnalyzer**
+### SpaceAnalyzer
 
-- **Purpose**: Process selected district into usable workspace
-- **Key Methods**:
-  - `__init__(map_data, rectangle)`: Initialize with map and district
-  - `create_local_map_ws_selection()`: Generate local workspace map
-  - `update_by_rectangle()`: Update for zone-specific analysis
-  - `create_zone_map_data()`: Create ZoneMapData object
-- **Key Attributes**:
-  - `zone_map_data`: Processed zone/district data
-  - `vertices`: Boundary vertices
-  - `binary_map_0`: Input binary map
+- Purpose: convert the selected district into zone-ready map data
+- Key methods: `create_local_map_ws_selection()`, `update_by_rectangle()`, `create_zone_map_data()`
+- Key output: `zone_map_data`
 
-### **spa_rectangles.py**
+### Rectangle helpers (`spa_rectangles.py`)
 
-Utility functions:
-
-- `find_circumscribed_rectangle()`: Find global bounding (min-area) rectangle
-- `find_inscribed_rotated_rectangle()`: Heuristic for maximum-area inscribed rectangle
+- `find_circumscribed_rectangle()`: enclosing rectangle helper
+- `find_inscribed_rotated_rectangle()`: inscribed rectangle heuristic
 
 ## 4. District Module (`covpp/district/`)
 
-Manages district and zone-level operations.
+Coordinates district creation, zone generation, and result aggregation.
 
-### **DistrictGen** (create_district.py)
+### DistrictGen (`create_district.py`)
 
-- **Purpose**: Create a district rectangle via GUI or whole-map fallback
-- **Key Methods**:
-  - `__init__(map_data)`: Initialize and choose GUI vs. full-map
-  - `create_district_gui()`: Interactive selection using `RecEventHandler`
-  - `create_district_whole()`: Non-interactive full-map rectangle
-  - `get_district_rect()`: Return the created `Rectangle`
+- Purpose: create the district rectangle
+- Supports GUI selection or whole-map fallback
 
-### **DistrictData**
+### DistrictData (`district.py`)
 
-- **Purpose**: High-level district management
-- **Key Methods**:
-  - `__init__(spa)`: Initialize with SpaceAnalyzer
-  - `create_zones_hl()`: Create all zones
-  - `run_planning_pipeline()`: Execute planning for all zones
-  - `update_map_planning()`: Merge zone results
-  - `save_map_planning()`: Save output maps
-- **Key Attributes**:
-  - `dmd`: District map data (ZoneMapData)
-  - `zone_datas`: List of ZoneData objects
-  - `stats`: District-level statistics
+- Purpose: create zones, run planning, and merge district outputs
+- Key methods: `create_zones_hl()`, `run_planning_pipeline()`, `update_map_planning()`, `save_map_planning()`
 
-### **ZoneData** (zone.py)
+### ZoneData (`zone.py`)
 
-- **Purpose**: Manage individual zone operations
-- **Key Methods**:
-  - `__init__(ind, zmd)`: Initialize zone with index and map data
-  - `zone_planning_pipeline()`: Run full planning pipeline for zone
-  - `post_planning()`: Update maps and statistics
-- **Key Attributes**:
-  - `zmd`: Zone map data
-  - `cells`: List of segmentation cells
-  - `segmentation_hl`: Segmentation interface
-  - `cov_path_planner`: Coverage planning interface
-  - `sequence`: Path sequencing handler
-  - `stats`: Zone statistics
+- Purpose: run the full planning pipeline for one zone
+- Pipeline: segmentation, coverage planning, sequencing, evaluation
 
-### **ZoneMapData** (zone_map_data.py)
+### ZoneMapData (`zone_map_data.py`)
 
-- **Purpose**: Store zone-specific map data
-- **Attributes**:
-  - `map_sf_orig`: Selected free space (original)
-  - `map_ws`: Workspace map
-  - `map_planning`: Planning visualization
-  - `vertices`: Zone boundary vertices
-  - `resolution`: Map resolution
-  - `method_results_dir`: Output directory path
+- Purpose: store zone-specific maps, directories, and geometry
 
-### **CellsPlotter** (cells_plotter.py)
+### CellsPlotter (`cells_plotter.py`)
 
-- **Purpose**: Visualization of planning results
-- **Key Methods**:
-  - `plot_paths()`: Display coverage paths
-  - `plot_cells()`: Show cell decomposition
+- Purpose: visualize segmentation and coverage paths
 
 ## 5. Segmentation Module (`covpp/segmentation/`)
 
-Decomposes zones into coverage cells.
+Splits each zone into planning cells.
 
-### **SegmentationHandler**
+### SegmentationHandler
 
-- **Purpose**: High-level segmentation interface
-- **Key Methods**:
-  - `__init__(zmd)`: Initialize with zone map data
-  - `run()`: Execute segmentation based on selected method
-- **Key Attributes**:
-  - `segmentor`: Actual segmentation algorithm
-  - `bcells`: Base cells from segmentation
-  - `cells`: Processed cells (PCell objects)
-  - `map_polygons`: Polygon representation of map
+- Purpose: load the configured segmentation plugin and convert base cells into planning cells
+- Key outputs: `bcells`, `cells`, `n_cells`
 
-### **SegmentationBase** (segmentation_base.py)
+### SegmentationBase (`segmentation_base.py`)
 
-- **Purpose**: Base class for segmentation algorithms
-- **Methods to override**:
-  - `run()`: Implement specific segmentation logic
+- Purpose: base interface for segmentation plugins
+- Required method: `run()`
 
-### **Segmentation Methods**
+### Segmentation plugins
 
-Segmentation algorithms are discovered via the `segmentors` entry point group:
+| Name | Entry Point | Description |
+| --- | --- | --- |
+| `simple` | `covpp.segmentation.simple_segmentation.segmentation_simple:Segmentation` | Single-cell zone |
+| `voronoi` | `covpp.segmentation.voronoi_segmentation.segmentation_voronoi:Segmentation` | Voronoi partitioning |
+| `skeleton` | `covpp.segmentation.skeleton_segmentation.segmentation_skeleton:Segmentation` | Skeleton-based decomposition |
 
-| Name      | Entry Point                                                                 | Description                |
-| --------- | --------------------------------------------------------------------------- | -------------------------- |
-| `simple`  | `covpp.segmentation.simple_segmentation.segmentation_simple:Segmentation`   | Single cell (whole zone)   |
-| `voronoi` | `covpp.segmentation.voronoi_segmentation.segmentation_voronoi:Segmentation` | Voronoi-based partitioning |
+### CellBase (`cell_base.py`)
 
-### **CellBase** (cell_base.py)
+- Purpose: geometric cell representation
 
-- **Purpose**: Basic cell representation
-- **Attributes**:
-  - `id`: Cell identifier
-  - `polygon`: Cell boundary polygon
-  - `centroid`: Cell center point
+### PCell (`cell_planning.py`)
 
-### **PCell** (cell_planning.py)
+- Purpose: processed cell with path and sequencing metadata
 
-- **Purpose**: Processed cell with planning information
-- **Extends**: CellBase
-- **Additional Attributes**:
-  - `path_m`: Coverage path in meters
-  - `path_px`: Coverage path in pixels
-  - `adjacent_ids`: Adjacent cell IDs
-  - `do_planning`: Flag for planning requirement
+### MapPolygons (`map_polygons.py`)
 
-### **MapPolygons** (map_polygons.py)
-
-- **Purpose**: Polygon representation of workspace
-- **Attributes**:
-  - `b_poly`: Boundary polygon
-  - `obs_polys`: Obstacle polygons
+- Purpose: polygon representation of the workspace boundary and obstacles
 
 ## 6. Coverage Planning Module (`covpp/coverage_planning/`)
 
-Generates coverage paths for individual cells.
+Generates a coverage path for each cell.
 
-### **CoveragePPHandler**
+### CoveragePPHandler
 
-- **Purpose**: Manage coverage planning for all cells
-- **Key Methods**:
-  - `__init__(zone_map_data)`: Initialize with zone data
-  - `run(cells)`: Run planning for all cells
-  - `run_covpp_method()`: Apply configured planner to each cell
-- **Key Attributes**:
-  - `cells`: Input cells from segmentation
-  - (Planners are loaded per cell; results stored back into each `PCell`)
+- Purpose: load the configured coverage planner and run it for every cell
 
-### **CoveragePathPlannerBase** (coverage_pp_base.py)
+### CoveragePathPlannerBase (`coverage_pp_base.py`)
 
-- **Purpose**: Base class for coverage planners
-- **Key Methods**:
-  - `__init__(cell, zmd)`: Initialize with cell and zone data
-  - `run()`: Execute full planning pipeline (calls `coverage_planning()`)
-  - `coverage_planning()`: Main planning method (to be overridden)
-  - `apply_distance_filter_path()`: Enforce waypoint spacing
-  - `rotate_path()`: Apply rotation transformation
-- **Key Attributes**:
-  - `cell`: Target cell
-  - `path_m`: Result path in meters
-  - `path_px`: Result path in pixels
+- Purpose: base class for cell-level coverage planners
+- Required method: `coverage_planning()`
+- Common helpers: path filtering, rotation, and metric conversion
 
-Coverage planners are discovered via the `coverage_planners` entry point group:
+### Coverage planners
 
-| Name              | Entry Point                                                                                     | Technique                                                    |
-| ----------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `boust`           | `covpp.coverage_planning.boustrophedon.coverage_pp_boust:CoveragePathPlanner`                   | Boustrophedon (sweeping / trapezoids + back-and-forth lines) |
-| `contour`         | `covpp.coverage_planning.contour.coverage_pp_contour:CoveragePathPlanner`                       | Inward contour / distance transform / rectangle hybrid       |
-| `grid_energy_min` | `covpp.coverage_planning.local_energy_minimization.cov_pp_local_energy_min:CoveragePathPlanner` | Grid-based coverage using local energy minimization          |
+| Name | Entry Point | Technique |
+| --- | --- | --- |
+| `boust` | `covpp.coverage_planning.boustrophedon.coverage_pp_boust:CoveragePathPlanner` | Back-and-forth sweeping |
+| `contour` | `covpp.coverage_planning.contour.coverage_pp_contour:CoveragePathPlanner` | Contour-following planning |
+| `grid_energy_min` | `covpp.coverage_planning.local_energy_minimization.cov_pp_local_energy_min:CoveragePathPlanner` | Grid-based local-energy minimization |
 
-Key boustrophedon submodules: `decomposition_bs_mh.py`, `cell_cov_planner.py`, `obstacles.py`, `events.py`, `plotter.py`.
+### Coverage planner notes
 
-One-liners (when to use):
-
-- `boust`: Reliable for large, rectilinear spaces with few obstacles; produces tidy, parallel lanes with predictable turn behavior.
-- `contour`: Best for organic/curvy rooms; iteratively follows inward contours (buffer + distance transform) to hug boundaries.
-- `grid_energy_min`: Simple greedy sweep on a grid that minimizes heading changes; topology-agnostic and robust to noisy maps.
+- `boust`: suited to rectilinear spaces and predictable sweeps.
+- `contour`: suited to irregular rooms and boundary-following coverage.
+- `grid_energy_min`: suited to noisy or cluttered maps where a greedy grid sweep is acceptable.
 
 ## 7. Path Planning Module (`covpp/path_planning/`)
 
-Provides low-level graph search utilities used whenever two points inside a zone
-need to be connected (e.g., ConnectPaths, evaluation overlays).
+Provides low-level path search between two map points.
 
-### **PathPlannerBase** (path_planner_base.py)
+### PathPlannerBase (`path_planner_base.py`)
 
-- **Purpose**: Shared logic for constructing cost maps, validating endpoints, and converting between global/local indices.
-- **Process**:
-  1. Build a float cost map from the workspace slice (free vs. occupied values).
-  2. Convert global pixel coordinates into the planner’s local frame.
-  3. Delegate to the concrete planner implementation via `plan_path()`.
-  4. Lift the resulting local polyline back to global coordinates and wrap it in `MyPath`.
-- **Result**: `find_path()` returns a `MyPath` whose points live in the zone’s global pixel frame, ready for connection or distance measurements.
+- Purpose: build a cost map, validate endpoints, and convert between local and global coordinates
+- Required method: `plan_path(start, end)`
 
-### **Path Planner Plugins** (entry-point group: `path_planners`)
+### Path planner plugins
 
-| Name    | Entry Point                                            | Technique / Use Case                                                                 |
-| ------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| `astar` | `covpp.path_planning.path_planner_pyastar:PathPlanner` | Grid-based A\* search via `pyastar2d`, used by `ConnectPaths` to link cell endpoints |
-
-Adding new planners (e.g., D\* Lite, Jump Point Search) only requires inheriting
-`PathPlannerBase`, implementing `plan_path()`, and registering the class under
-the `path_planners` entry-point group in `pyproject.toml`.
-
----
+| Name | Entry Point | Technique |
+| --- | --- | --- |
+| `astar` | `covpp.path_planning.path_planner_pyastar:PathPlanner` | Grid-based A* search via `pyastar2d` |
 
 ## 8. Sequencing Module (`covpp/sequence/`)
 
-Optimizes cell visit order and connects paths.
+Orders the cells and connects their paths.
 
-### **SequenceHandler**
+### SequenceHandler
 
-- **Purpose**: Create optimal cell traversal sequence
-- **Key Methods**:
-  - `__init__(zmd)`: Initialize with zone map data
-  - `run(cells, map_polygons)`: Execute sequencing pipeline
-  - `create_sequence()`: Prepare connections and collect paths in order
-  - `optimize_sequence(distances=None)`: Find optimal cell order via plugin
-  - `connect_paths()`: Create connections between consecutive cells
-  - `create_full_path()`: Generate complete path bundle
-- **Key Attributes**:
-  - `paths_m`: Coverage paths in meters
-  - `c_paths_m`: Connection paths in meters
-  - `f_path_m`: Full connected path
-  - `seq_idxs`: Optimized cell sequence
+- Purpose: compute cell visitation order and build the full connected path
+- Key outputs: `paths_px`, `paths_m`, `c_paths_px`, `c_paths_m`, `f_path_px`, `f_path_m`
 
-### **ConnectPaths** (connect_paths.py)
+### ConnectPaths (`connect_paths.py`)
 
-- **Purpose**: Generate collision-free paths between cell endpoints
-- **Key Methods**:
-  - `initialize(cells)`: Allocate connection and distance matrices
-  - `find_all_connections(cells)`: Precompute pairwise paths
-  - `find_all_distances()`: Compute pairwise path lengths
-  - `connect_paths(paths_px, seq_idxs=None)`: Build sequence connections
-  - `find_path(start, end)`: Find a single inter-cell path
-  - `update_connection_2_cells(i, j, start, end)`: Refresh one entry
+- Purpose: generate collision-aware paths between consecutive cells
 
-### **SeqOptimizerBase** (`sequence_optimizer_base.py`)
+### SeqOptimizerBase (`sequence_optimizer_base.py`)
 
-- **Purpose**: Provide shared bookkeeping (cell indices, optional distance matrices, start cell) and utility helpers for all sequencing strategies.
-- **Result**: Subclasses implement `create_tour()` to populate `tour_ids` / `tour_idxs`, after which `SequenceHandler` writes `opt_id` / `next_cell_id` back into each `PCell`.
+- Purpose: shared optimizer scaffolding
+- Required method: `create_tour()`
 
-### **Sequence Optimizers** (`sequencers` entry point group)
+### Sequence optimizers
 
-| Name   | Entry Point                                                     | Approach                                                 |
-| ------ | --------------------------------------------------------------- | -------------------------------------------------------- |
-| `dfs`  | `covpp.sequence.dfs_optimizer.sequence_optimizer:SeqOptimizer`  | Depth-first traversal of the cell adjacency graph        |
-| `milp` | `covpp.sequence.milp_optimizer.sequence_optimizer:SeqOptimizer` | Mixed Integer Linear Programming TSP solver via OR-Tools |
+| Name | Entry Point | Approach |
+| --- | --- | --- |
+| `dfs` | `covpp.sequence.dfs_optimizer.sequence_optimizer:SeqOptimizer` | Depth-first traversal |
+| `milp` | `covpp.sequence.milp_optimizer.sequence_optimizer:SeqOptimizer` | OR-Tools MILP solver |
 
-> A simple pass-through optimizer exists in `covpp.sequence.simple_optimizer`, but it is not registered under `sequencers` by default. Add it to `pyproject.toml` if you need the original ordering as a selectable plugin.
+### SequencePaths (`sequence_handler.py`)
 
-### **SequencePaths** (sequence_handler.py)
-
-- **Purpose**: Container for path collections
-- **Attributes**:
-  - `paths_px`: Cell paths in pixels
-  - `paths_m`: Cell paths in meters
-  - `c_paths_px`: Connection paths in pixels
-  - `c_paths_m`: Connection paths in meters
-  - `f_path_px`: Full path in pixels
-  - `f_path_m`: Full path in meters
-  - `n_paths`: Number of coverage paths
+- Purpose: store coverage, connection, and full paths
 
 ## 9. Evaluation Module (`covpp/evaluation/`)
 
-Computes performance metrics and statistics.
+Computes zone and district metrics.
 
-### **ZoneEvaluationHandler**
+### ZoneEvaluationHandler
 
-- **Purpose**: Evaluate zone-level performance
-- **Key Methods**:
-  - `__init__(zmd)`: Initialize with zone data
-  - `evaluate(paths, times)`: Compute metrics and persist results
-- **Metrics (ZoneStatsBase)**:
-  - `map_name`, `method`, `zone_ind`
-  - Travel times: `trav_time_full`, `trav_time_coverage`
-  - Stage times: `ptime_segmentation`, `ptime_coverage_planning`, `ptime_sequencing`, `ptime_pipeline`
-  - Path metrics: `full_length`, `coverage_length`, `yaw_path_full`, `yaw_path_coverage`
-  - Areas: `cleaning_area_px/m`, `cleaned_area_px/m`, `area_uncleaned_m`, `area_overlaped_m`
-  - Ratios: `area_coverage_pc`, `area_overlap_pc`
+- Purpose: evaluate the final zone path bundle
 
-### **DistrictEvaluationHandler**
+### ZoneEvaluationBase (`zone_evaluation_base.py`)
 
-- **Purpose**: Aggregate zone statistics to district level
-- **Key Methods**:
-  - `evaluate(zone_stats)`: Aggregate statistics
-  - Save results to JSON
+- Purpose: base class for zone evaluators and the `ZoneStatsBase` data structure
 
-### **ZoneStatsBase** (zone_evaluation_base.py)
+### DistrictEvaluationHandler (`district_evaluation.py`)
 
-- **Purpose**: Data structure for zone KPIs and serialization
-- **See**: Metrics listed under ZoneEvaluationHandler
+- Purpose: aggregate zone metrics into district metrics
 
-### **DistrictStatsBase** (district_evaluation.py)
+### Typical metrics
 
-- **Purpose**: Aggregated district-level KPIs and serialization
-- **Key Fields**: Mirrors sums/ratios across zones (`l_path_full`, `l_path_coverage`, times, areas, coverage/overlap ratios)
+- Travel time
+- Path length
+- Yaw or heading change
+- Cleaned area and overlap area
+- Planning time per stage

@@ -1,30 +1,43 @@
 # Data
 
-## How planning results are stored
+## How Planning Results Are Stored
 
-In maps directory, there is a folder for each map name.
-It should initially containd a folder called Amain which contains map meta data includeing:
-- todo ...
+Each map has its own directory under `maps/`.
 
-When running, based on pipeline configs, a complete method name is generated, like `skeleton_contour_milp`.
-After running the pipeline, for each zone a new folder is created, like zone_0, zone_1, ...
-Inside each zone folder, all results of the computation and simulation are stored under the methods name. Also a folder named `segmentation` is created which contains the segmentation results for that zone.
-Also, the final planning map with the methods name is created and saved under the map name folder, like `skeleton_contour_milp.png`. This is a visual representation of the final planning results.
-
-So the final structure of the map folder is like this:
+The expected layout is:
 
 ```text
 maps/
     map_name/
-        Amain/
-        zone_0/
-            segmentation/
-            skeleton_contour_milp/
-        zone_1/
-            segmentation/
-            skeleton_contour_milp/
-        zone_2/
-            segmentation/
-            skeleton_contour_milp/
-        skeleton_contour_milp.png
+        AMain/
+        District/
+            result.json
+            mp_<method>.png
+            Zone_0/
+                segmentation/
+                <method>/
+                result.json
+            Zone_1/
+                segmentation/
+                <method>/
+                result.json
 ```
+
+## What Each Folder Contains
+
+- `AMain/`: original map files and map metadata.
+- `District/`: district-level outputs and the final merged planning map.
+- `Zone_<i>/segmentation/`: segmentation artifacts for the zone.
+- `Zone_<i>/<method>/`: method-specific outputs for the zone.
+- `result.json`: serialized zone or district statistics.
+
+## Method Names
+
+The full method name is built from the configured segmentation, coverage planning, and sequence methods.
+
+Example:
+
+- `skeleton_contour_milp`
+- `voronoi_boust_dfs`
+
+The method name is used in file names and output folders so every run stays isolated.

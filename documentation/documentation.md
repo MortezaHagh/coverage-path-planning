@@ -1,262 +1,125 @@
-# Coverage Path Planning Pipeline Documentation
+# Coverage Path Planning Documentation
 
-## Table of content
+## Summary
 
-- [Quick Summary](#quick-summary)
-- [Overview](#overview)
-- [Pipeline Architecture](#pipeline-architecture)
-- [Main Workflow (`covpp/main.py`)](#main-workflow-covppmainpy)
-- [Module Details](#module-details)
-- [Data Flow](#data-flow)
-- [Configuration & Parameters](#configuration--parameters)
-- [Output Artifacts](#output-artifacts)
-- [Plugin-Based Architecture (Entry Points)](#plugin-based-architecture-entry-points)
-- [Adding New Methods (Plugin Development)](#adding-new-methods-plugin-development)
-- [Benefits of the Plugin Architecture](#benefits-of-the-plugin-architecture)
-- [End-to-End Pattern](#end-to-end-pattern)
-- [Dependencies](#dependencies)
-- [Usage Examples](#usage-examples)
-- [References](#references)
+CovPP is a plugin-driven coverage path planning pipeline for occupancy-grid maps. It takes a map, prepares a workspace, creates a district, splits each zone into cells, plans coverage paths, sequences them, and evaluates the final result.
 
-## Quick Summary
+The pipeline is controlled by the entry-point groups defined in `pyproject.toml`:
 
-`covpp` is a modular, plugin-driven coverage path planning pipeline for (grid / occupancy) maps. Starting from a grayscale map + YAML, it selects a district, analyzes free space, segments into cells, plans per–cell coverage paths, sequences them, and evaluates performance. Algorithms for segmentation, coverage planning, low-level path finding, and sequencing are loaded via Python entry points (`segmentors`, `coverage_planners`, `path_planners`, `sequencers`) so you can add new methods based on base interfaces without touching core code.
+- `segmentors`
+- `coverage_planners`
+- `path_planners`
+- `sequencers`
 
-## Overview
-
-This is a comprehensive coverage path planning system that generates optimal paths for robotic coverage of different environments. The pipeline processes map images, performs space segmentation, plans coverage paths, and optimizes the sequence of path execution.
-
-## Pipeline Architecture
-
-The system follows a **modular, plugin-based architecture** where new algorithms can be easily integrated by extending base classes. Each major component (Segmentation, Coverage Planning, Sequence Optimization, path planning, and Evaluation) is designed with abstract base classes that define the interface, allowing developers to add new methods without modifying the core pipeline.
+## End-to-End Flow
 
 ```text
-PGM + YAML → Inputs → Image Processing → District & Space Analysis → Zone(s)
-  → Segmentation (cells) → Coverage Planning (paths)
-    → Sequencing (order + connections) → Evaluation → Results (figures + JSON)
+InputsProcessor -> MapImageProcessor -> DistrictGen -> SpaceAnalyzer
+  -> DistrictData -> ZoneData
+    -> SegmentationHandler -> CoveragePPHandler -> SequenceHandler -> ZoneEvaluationHandler
 ```
 
-**Key Architectural Principles:**
+At the district level, `DistrictData` collects the zone results and writes the merged planning map and aggregated statistics.
 
-- **Extensibility**: Add new methods by inheriting from base classes
-- **Pluggability**: Switch between algorithms via configuration files
-- **Separation of Concerns**: Each module has a clear, single responsibility
-- **Handler Pattern**: High-level handlers dynamically load specific implementations
-- **Configuration-Driven**: Method selection and parameters controlled through config files
+## Main Modules
 
-## Main Workflow (`covpp/main.py`)
+### Base Layer
 
-The pipeline executes in the following sequential steps:
+- `covpp/base/configs.py`: pipeline and robot configuration dataclasses
+- `covpp/base/geometry.py`: point and path helpers
+- `covpp/base/image_processor.py`: map preprocessing
+- `covpp/base/inputs_processor.py`: input loading and validation
+- `covpp/base/logger.py`: project logger
 
-### 1. **Input Processing** (`InputsProcessor`)
+### District and Space Analysis
 
-- Reads map image (PGM format) and configuration files (YAML/JSON)
-- Validates input data and directory structure
-- Initializes base configurations
+- `covpp/district/create_district.py`: district selection and rectangle creation
+- `covpp/district/district.py`: district orchestration and zone creation
+- `covpp/district/zone.py`: zone pipeline controller
+- `covpp/district/zone_map_data.py`: zone-specific data container
+- `covpp/spa/space_analyzer.py`: workspace selection and free-space analysis
 
-### 2. **Map Image Processing** (`MapImageProcessor`)
+### Segmentation
 
-- Converts raw map to binary format (free/occupied space)
-- Applies morphological operations (erosion/dilation)
-- Generates workspace map considering robot dimensions
+- `covpp/segmentation/segmentation_handler.py`: loads the configured segmentation plugin
+- `covpp/segmentation/segmentation_base.py`: base class for segmentation methods
+- `covpp/segmentation/simple_segmentation/`: simple segmentation plugin
+- `covpp/segmentation/voronoi_segmentation/`: Voronoi-based segmentation plugin
+- `covpp/segmentation/skeleton_segmentation/`: skeleton-based segmentation plugin
 
-### 3. **District Generation** (`DistrictGen` – simple version)
+### Coverage Planning
 
-- Defines the coverage area (district) within the map
-- Creates bounding rectangle for the coverage region
-- Supports whole-map or partial-map selection
+- `covpp/coverage_planning/coverage_pp_hl.py`: loads the configured coverage planner
+- `covpp/coverage_planning/coverage_pp_base.py`: base class for cell-level coverage planners
+- `covpp/coverage_planning/boustrophedon/`: boustrophedon planner
+- `covpp/coverage_planning/contour/`: contour planner
+- `covpp/coverage_planning/local_energy_minimization/`: grid and local-energy planner
 
-### 4. **Space Analysis** (`SpaceAnalyzer`)
+### Path Planning and Sequencing
 
-- Analyzes the selected district for feasible robot positions
-- Creates local workspace maps
-- Processes free space and computes accessibility
+- `covpp/path_planning/path_planner_base.py`: shared low-level path planning logic
+- `covpp/path_planning/path_planner_pyastar.py`: A* implementation
+- `covpp/sequence/sequence_handler.py`: sequencing and path connection controller
+- `covpp/sequence/sequence_optimizer_base.py`: sequencing base class
+- `covpp/sequence/dfs_optimizer/`: DFS optimizer
+- `covpp/sequence/milp_optimizer/`: MILP optimizer
+- `covpp/sequence/simple_optimizer/`: legacy simple optimizer, not registered by default
 
-### 5. **District Data Creation** (`DistrictData`)
+### Evaluation
 
-- Initializes district-level data structures
-- Creates zones (subdivisions of the district)
-- Manages zone map data
+- `covpp/evaluation/zone_evaluation_handler.py`: zone-level evaluation entry point
+- `covpp/evaluation/zone_evaluation_base.py`: zone stats and evaluator base classes
+- `covpp/evaluation/district_evaluation.py`: district-level aggregation
 
-### 6. **Zone-Level Coverage Planning** (`ZoneData`) [**Main Planning Step**]
+## Configuration
 
-For each zone in the district:
+The main configuration objects live in `covpp/base/configs.py`.
 
-- **Segmentation**: Divides zone into cells
-- **Coverage Planning**: Generates paths for each cell
-- **Sequencing**: Optimizes cell visit order and connects paths
-- **Evaluation**: Computes statistics and metrics
+- `PipeLineConfig`: selects segmentation, coverage planning, path planning, and sequencing methods
+- `MapConfig`: map directories and metadata
+- `SpaceConfig`: workspace safety distances and cleaning radius
+- `PlanningConfig`: waypoint spacing and cleaning parameters
+- `RobotConfig`: robot motion assumptions
 
-## Module Details
+The full method name is built from the selected segmentation, coverage, and sequencing methods. That name is used in output paths and file names.
 
-For detailed information about each module, please refer to [Module Details](module_details.md).
+## Entry Points
 
-## Data Flow
+| Group | Current Plugins |
+| --- | --- |
+| `segmentors` | `simple`, `voronoi`, `skeleton` |
+| `coverage_planners` | `boust`, `contour`, `grid_energy_min` |
+| `path_planners` | `astar` |
+| `sequencers` | `dfs`, `milp` |
+
+## Output Layout
+
+Planning results are written to the `maps/` tree.
 
 ```text
-main.py
-  ├─> InputsProcessor
-  │     └─> Load map & configs
-  │
-  ├─> MapImageProcessor
-  │     └─> Create MapData
-  │
-  ├─> DistrictGen
-  │     └─> Create Rectangle
-  │
-  ├─> SpaceAnalyzer
-  │     └─> Create ZoneMapData
-  │
-  └─> DistrictData
-        └─> create_zones_hl()
-        │     └─> Create ZoneData for each zone
-        │
-        └─> run_planning_pipeline()
-              └─> For each ZoneData:
-                    ├─> SegmentationHandler.run()
-                    │     └─> Create cells (PCell)
-                    │
-                    ├─> CoveragePPHandler.plan(cells)
-                    │     └─> For each cell:
-                    │           └─> CoveragePathPlanner
-                    │                 └─> Generate path_m, path_px
-                    │
-                    ├─> SequenceHandler.run(cells, map_polygons)
-                    │     ├─> Optimize cell order
-                    │     ├─> Connect paths
-                    │     └─> Create full path
-                    │
-                    └─> ZoneEvaluationHandler.evaluate()
-                          └─> Compute statistics
+maps/<map_name>/
+  AMain/
+  District/
+    result.json
+    mp_<method>.png
+    Zone_<i>/
+      segmentation/
+      <method>/
+      result.json
 ```
 
-## Configuration & Parameters
+Zone result files are serialized from `ZoneStatsBase`. District-level metrics are aggregated from zone statistics and saved by `DistrictEvaluationHandler`.
 
-### Method Selection (`PipeLineConfig`)
+## Adding New Methods
 
-- **Segmentation Methods**:
+To add a new algorithm, implement the matching base class, register it in `pyproject.toml`, and select it through `PipeLineConfig`.
 
-  - `simple`: Single cell (no decomposition)
-  - `voronoi`: Voronoi-based decomposition
+- New segmentation: subclass `SegmentationBase` and register under `segmentors`
+- New coverage planner: subclass `CoveragePathPlannerBase` and register under `coverage_planners`
+- New path planner: subclass `PathPlannerBase` and register under `path_planners`
+- New sequencing method: subclass `SeqOptimizerBase` and register under `sequencers`
 
-- **Coverage Planning Methods**:
-
-  - `boust`: Boustrophedon (back-and-forth)
-  - `contour`: Contour-following
-  - `grid_energy_min`: Grid-based local-energy minimization
-
-- **Path Planner Methods**:
-
-  - `astar`: Grid A\* (pyastar2d)
-  - Custom planners registered under `path_planners`
-
-- **Sequence Optimization Methods**:
-  - `dfs`: Depth-first search (`covpp.sequence.dfs_optimizer`)
-  - `milp`: Mixed-integer linear programming (`covpp.sequence.milp_optimizer`)
-  - `simple`: Legacy order-preserving optimizer (register `covpp.sequence.simple_optimizer` under `sequencers` to enable)
-
-### Robot Parameters (`RobotConfig` & parts of `SpaceConfig` / `PlanningConfig`)
-
-- `robot_radius`: Robot radius in meters
-- `tool_radius`: Coverage tool radius
-- `resolution`: Map resolution (m/pixel)
-
-### Planning Parameters (`PlanningConfig`)
-
-- `min_wp_dist`: Minimum waypoint distance
-- `path_simplification`: Path smoothing options
-
-## Output Artifacts
-
-### Directory Structure
-
-```text
-maps/
-  └─ <map_name>/
-       └─ District/
-            ├─ map_planning_<method>.png
-            ├─ result.json
-            └─ Zone_<i>/
-                 ├─ map_planning.png
-                 ├─ map_segmentation.png
-                 ├─ map_cleaned.png
-                 ├─ result.json
-                 └─ <method>/
-                      ├─ paths visualization
-                      └─ detailed results
-```
-
-### result.json Structure
-
-Saved via `ZoneStatsBase.get_data_dict()`; key fields include:
-
-```json
-{
-  "map_name": "Map2",
-  "method": "boust",
-  "zone_ind": 0,
-  "trav_time_full": 42.1,
-  "trav_time_coverage": 31.0,
-  "ptime_segmentation": 0.5,
-  "ptime_coverage_planning": 1.7,
-  "ptime_sequencing": 0.3,
-  "ptime_pipeline": 2.5,
-  "full_length": 120.55,
-  "coverage_length": 95.2,
-  "yaw_path_full": 12.33,
-  "yaw_path_coverage": 8.76,
-  "cleaning_area_px": 215342,
-  "area_cleaning_m": 53.84,
-  "cleaned_area_px": 210000,
-  "area_cleaned_m": 52.5,
-  "area_uncleaned_m": 1.34,
-  "area_overlaped_m": 4.12,
-  "area_coverage_pc": 97.51,
-  "area_overlap_pc": 7.65
-}
-```
-
-District-level aggregation is saved by `DistrictEvaluationHandler` using the per-zone stats.
-
-## Plugin-Based Architecture (Entry Points)
-
-The system is built on a **plugin-based architecture** that makes it highly extensible and maintainable. Each major component in the pipeline is designed around **abstract base classes** that define the interface contract, allowing developers to implement new algorithms without modifying the existing codebase.
-
-### Core Design Principles
-
-#### 1. **Abstract Base Classes**
-
-Each critical component has a base class that defines the interface:
-
-- **`SegmentationBase`**: Interface for space decomposition algorithms
-- **`CoveragePathPlannerBase`**: Interface for coverage generation inside a cell
-- **`PathPlannerBase`**: Interface for low-level graph search between two map points
-- **`EvaluationBase`**: Interface for performance evaluation methods
-- **`SequenceOptimizer`**: Interface for path sequencing algorithms
-
-These base classes enforce a consistent API, making it easy to swap implementations.
-
-#### 2. **Handler Pattern + Dynamic Loading**
-
-High-level handler classes dynamically load specific implementations based on configuration:
-
-- **`SegmentationHandler`**:
-
-  - Reads `segmentation_method` from config
-  - Dynamically imports appropriate `Segmentation` class (simple/voronoi/custom)
-  - Calls base class methods (`run()`) without knowing implementation details
-
-- **`CoveragePPHandler`**:
-
-  - Reads `covpp_method` from config
-  - Dynamically imports appropriate `CoveragePathPlanner` class (boust/contour/custom)
-  - Applies planning to all cells using consistent interface
-
-- **`FindPathInMap` / `ConnectPaths`**:
-
-  - Read `pp_method` from config
-  - Dynamically load the appropriate low-level path planner (e.g., A\*)
-  - Provide reusable point-to-point connections for coverage validation and sequencing
+Keep plugin names short, stable, and consistent with the method names used in configuration.
 
 - **`ZoneEvaluationHandler`**:
 
@@ -348,7 +211,7 @@ Each stage:
 # Command line
 covpp Map2
 # or
-python main.py Map2
+python -m covpp.main Map2
 ```
 
 ## References
