@@ -16,7 +16,7 @@ from covpp.segmentation.cell_planning import PCell
 from covpp.segmentation.merge_cells import MergeCells
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.segmentation.segmentation_base import SegmentationBase
-from covpp.segmentation.simple_segmentation.segmentation_simple import Segmentation as SegmentationSimple
+from covpp.segmentation.simple_segmentation.segmentation import Segmentation as SegmentationSimple
 from covpp.segmentation.segmentation_improvement.ebpts_graph_segmentation import EspecialBranchPointsSegmentation
 
 

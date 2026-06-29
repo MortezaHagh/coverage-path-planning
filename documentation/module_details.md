@@ -115,9 +115,9 @@ Splits each zone into planning cells.
 
 | Name | Entry Point | Description |
 | --- | --- | --- |
-| `simple` | `covpp.segmentation.simple_segmentation.segmentation_simple:Segmentation` | Single-cell zone |
-| `voronoi` | `covpp.segmentation.voronoi_segmentation.segmentation_voronoi:Segmentation` | Voronoi partitioning |
-| `skeleton` | `covpp.segmentation.skeleton_segmentation.segmentation_skeleton:Segmentation` | Skeleton-based decomposition |
+| `simple` | `covpp.segmentation.simple_segmentation.segmentation:Segmentation` | Single-cell zone |
+| `voronoi` | `covpp.segmentation.voronoi_segmentation.segmentation:Segmentation` | Voronoi partitioning |
+| `skeleton` | `covpp.segmentation.skeleton_segmentation.segmentation:Segmentation` | Skeleton-based decomposition |
 
 ### CellBase (`cell_base.py`)
 

@@ -51,9 +51,9 @@ docs = [
 covpp = "covpp.main:main"
 
 [project.entry-points."segmentors"]
-simple = "covpp.segmentation.simple_segmentation.segmentation_simple:Segmentation"
-voronoi = "covpp.segmentation.voronoi_segmentation.segmentation_voronoi:Segmentation"
-skeleton = "covpp.segmentation.skeleton_segmentation.segmentation_skeleton:Segmentation"
+simple = "covpp.segmentation.simple_segmentation.segmentation:Segmentation"
+voronoi = "covpp.segmentation.voronoi_segmentation.segmentation:Segmentation"
+skeleton = "covpp.segmentation.skeleton_segmentation.segmentation:Segmentation"
 
 [project.entry-points."coverage_planners"]
 boust = "covpp.coverage_planning.boustrophedon.coverage_pp_boust:CoveragePathPlanner"
