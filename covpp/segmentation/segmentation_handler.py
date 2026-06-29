@@ -17,6 +17,7 @@ from covpp.segmentation.merge_cells import MergeCells
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.segmentation.segmentation_base import SegmentationBase
 from covpp.segmentation.simple_segmentation.segmentation_simple import Segmentation as SegmentationSimple
+from covpp.segmentation.segmentation_improvement.ebpts_graph_segmentation import EspecialBranchPointsSegmentation
 
 
 class SegmentationHandler:
@@ -59,6 +60,7 @@ class SegmentationHandler:
         self.segmentor: SegmentationBase = None
 
         # attributes
+        self.cells_l1: list[CellBase] = []      # level 1 cells from segmentation
         self.bcells: list[CellBase] = []        # base cells from segmentation
         self.cells: list[PCell] = []            # planning cells
         self.n_cells: int = 0                   # number of cells
@@ -87,7 +89,11 @@ class SegmentationHandler:
 
         # run segmentation =====================================================
         self.segmentor.run()
+        self.cells_l1 = self.segmentor.cells
         # ======================================================================
+
+        #
+        self.improve_segmentation()
 
         # process and merge resulting cells into PCell objects
         self.process_cells()
@@ -98,6 +104,10 @@ class SegmentationHandler:
         # plot segmentation results
         self.add_cells_to_result_maps()
         self.save_segmentation_map()
+
+    def improve_segmentation(self) -> None:
+        improver = EspecialBranchPointsSegmentation(self.zmd, self.cells_l1)
+        improver.run()
 
     def process_cells(self) -> None:
         """ Convert base cells from segmentor into planning PCell objects. """

@@ -12,18 +12,18 @@ class Skelet:
     skeleton_distance_map: np.ndarray       # dtype=uint8 OCCUPIED-FREE
     skeleton_segmented_map: np.ndarray      # dtype=uint8
     end_points: np.ndarray                  # dtype=uint8 (y, x)
-    branch_points: np.ndarray               # dtype=uint8 (y, x)
-    end_points_filtered: np.ndarray         # dtype=uint8 (y, x)
+    branch_pts: np.ndarray               # dtype=uint8 (y, x)
+    f_end_pts: np.ndarray         # dtype=uint8 (y, x)
 
 
 @dataclasses.dataclass
 class Branch:
-    """ Represents a skeleton branch/path between end_points/branch_points. """
-    length: int                     # length of the branch (number of points)
-    end_type: str                   # 'endpoint' | 'branchpoint' | 'skip'
-    end_point: tuple                # (y, x)
+    """ Represents a skeleton branch/path between end_points/branch_pts. """
     start_point: tuple              # (y, x)
+    end_type: str                   # 'endpoint' | 'branchpoint' | 'skip'
     points: np.ndarray              # shape (N, 2), dtype=int , list of (y, x)
+    length: int                     # length of the branch (number of points)
+    end_point: tuple                # (y, x)
     # cp_idxs: np.ndarray = None      # indices in critical points list
     # cp_coords: np.ndarray = None    # shape (N, 2), dtype=int , list of (y, x)
 
@@ -36,7 +36,7 @@ class CriticalPoint:
         self.cp_skel_segment: int = -1  # skeleton segment of critical point
         self.side_sk_segments: tuple[int] = ()  # skeleton segments of side points
         self.side_points: list[tuple[int, int]] = []  # side points (y, x)
-        self.base_points: list[tuple[int, int]] = []  # base points (y, x)
+        self.base_pts: list[tuple[int, int]] = []  # base points (y, x)
         self.base_paths: list[tuple[tuple[int, int]]] = []  # paths from base points to critical point
 
 

@@ -18,8 +18,8 @@ import cv2 as cv
 import numpy as np
 from covpp.gui.rectangle import Rectangle
 from covpp.base.map_data import MapData
-from covpp.base.configs import PipeLineConfig
 from covpp.base.base_utils import visualize_map_s
+from covpp.base.configs import PipeLineConfig, RobotConfig
 
 
 def convert_to_native(data: dict) -> dict:
@@ -77,6 +77,10 @@ class ZoneMapData:
         self.map_segmentation: np.ndarray = None        # map segmentation visualization
         self.map_ws_segmented: np.ndarray = None        # map with segment lines added
 
+        #
+        self.robot_radius_m: int = RobotConfig.radius  # robot radius in meters
+        self.robot_radius_px: int = None               # robot radius in pixels (computed from resolution)
+
     @property
     def final_rect_data(self) -> dict:
         """Return a shallow copy of the final rectangle data dict."""
@@ -125,6 +129,7 @@ class ZoneMapData:
     def set_orig_map_data(self, map_data: MapData):
         self.orig_map_data = map_data
         self.resolution = map_data.up_resolution
+        self.robot_radius_px = int(RobotConfig.radius / self.resolution)
         self.set_result_path()
 
     def set_orig_rectangle(self, rectangle: Rectangle):
