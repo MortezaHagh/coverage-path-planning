@@ -14,7 +14,7 @@ from covpp.base.plot_styles import set_plot_styles
 from covpp.base.configs import RobotConfig, PipeLineConfig
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.skeleton_segmentation.skelet_branch_graph import SkeletBranchGraph as SBG
-from covpp.segmentation.skeleton_segmentation.data_structures import Skelet, Branch, CriticalPoint, SegmentSolution, is_valid_contour
+from covpp.segmentation.skeleton_segmentation.data_structures import Skelet, Branch, CriticalPoint, SegmentSolution
 
 OCCUPIED = 0
 FREE = 255
@@ -131,7 +131,7 @@ class SkeletonDecomposition:
         for c, h in zip(contours, hierarchy):
 
             # skip contours with children
-            if not is_valid_contour(h, hierarchy):
+            if not self.is_valid_contour(h, hierarchy):
                 continue
 
             # minimum area threshold
@@ -223,7 +223,7 @@ class SkeletonDecomposition:
 
         # Compute medial axis (skeleton) and the distance transform
         medial_axis_map, distance_map = medial_axis(map_ws, return_distance=True)
-        skeleton_map_b = medial_axis_map  # dtype=bool
+        skeleton_map_b = medial_axis_map
 
         # distance transform and normalization
         # values: 0 (OCCUPIED) to max distance (FREE)
@@ -264,8 +264,8 @@ class SkeletonDecomposition:
         self.skelet = Skelet(
             skeleton_map_b=skeleton_map_b,
             distance_map=distance_norm_map,
-            skeleton_distance_map=skeleton_distance_map,
             skeleton_segmented_map=skeleton_segmented_map,
+            skeleton_distance_map=skeleton_distance_map,
             end_points=None,
             branch_pts=None,
             f_end_pts=None
@@ -321,11 +321,12 @@ class SkeletonDecomposition:
 
         # skeletonization data
         self.skelet.end_points = end_points
-        self.skelet.branch_pts = branch_pts
         self.skelet.f_end_pts = f_end_pts
+        self.skelet.branch_pts = branch_pts
 
     def create_branches(self) -> None:
         """ Extract branches from a skeleton as paths between end_points/branch_pts. """
+
         self.create_skeleton_graph()
         self.extract_branches_from_skeleton_graph()
 
@@ -607,7 +608,6 @@ class SkeletonDecomposition:
             self.erp_sidep.append(cp_coord)
             self.lg.warn(f"Expected {n_pts} side points, found {len(side_pts)} for critical point at {cp_coord}.")
             return False
-            # raise ValueError(f"Expected {n_pts} side points, found {len(side_pts)} for critical point at {cp_coord}.")
 
         # store results in cp
         cp.cp_skel_segment = cp_sk_segment
@@ -681,12 +681,10 @@ class SkeletonDecomposition:
 
         # validate results
         if len(base_pts) == 0:
-            # raise ValueError(f"No base points found for critical point at {cp}.")
-            self.lg.error(f"No base points found for critical point at {cp}.")
+            self.lg.error(f"No base points found for critical point at {cp.coord}.")
             return False
         if len(base_pts) != n_pts:
-            # raise ValueError(f"Expected {n_pts} base points, found {len(base_pts)} for critical point at {cp}.")
-            self.lg.error(f"Expected 2 base points, found {len(base_pts)} for critical point at {cp}.")
+            self.lg.error(f"Expected {n_pts} base points, found {len(base_pts)} for critical point at {cp.coord}.")
             return False
 
         # store results
@@ -696,13 +694,33 @@ class SkeletonDecomposition:
         return True
 
     # ==================================================================================================================
-    # utility methods
+    # Utility methods
     # ==================================================================================================================
 
     def is_on_skeleton(self, point: tuple[int, int]) -> bool:
         """Check if a point is on the skeleton."""
         y, x = point
         return self.skelet.skeleton_map_b[y, x] > 0
+
+    @staticmethod
+    def find_level(h, hierarchy):
+        """ Find the level of contour in hierarchy. """
+        level = 0
+        parent = h[3]
+        while parent != -1:
+            level += 1
+            parent = hierarchy[parent][3]
+        return level
+
+    @staticmethod
+    def is_valid_contour(h, hierarchy) -> bool:
+        # if level is odd, it is a hole contour
+        level = SkeletonDecomposition.find_level(h, hierarchy)
+        if level % 2 == 1:
+            return False
+        return True
+        # # Check if contour has both parent and children in hierarchy.
+        # return not(h[3] != -1 and h[2] != -1)
 
     # ==================================================================================================================
     # visualization methods
@@ -726,12 +744,6 @@ class SkeletonDecomposition:
                     borderaxespad=0.0,
                 )
 
-        # data
-        branches = self.branches
-        end_pts = self.skelet.end_points
-        branch_pts = self.skelet.branch_pts
-        f_end_pts = self.skelet.f_end_pts
-
         # professional styles
         fig_w = 8.27  # A4 width in inches
         fig_h = fig_w * self.zmd.hw[0] / self.zmd.hw[1]
@@ -741,7 +753,12 @@ class SkeletonDecomposition:
         # A4 size: 8.27 x 11.69 inches
         scale_px = min(self.zmd.hw) / 500.0
         marker_size = 50 / scale_px
-        colors = plt.cm.get_cmap('hsv', len(branches))
+        colors = plt.cm.get_cmap('hsv', len(self.branches))
+
+        # data
+        end_pts = self.skelet.end_points
+        branch_pts = self.skelet.branch_pts
+        f_end_pts = self.skelet.f_end_pts
 
         # --------------------------------------------------------------------------------------------------------------
         # Figure 1: skeleton and endpoints/branchpoints
@@ -750,12 +767,11 @@ class SkeletonDecomposition:
         # plot skeleton (medial) axis - endpoints and branchpoints in same plot
         ax.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=2 / scale_px)
         ax.imshow(FREE - self.skelet.skeleton_distance_map, cmap='bone', alpha=1.0)
-        # endpoints
-        ax.scatter(end_pts[:, 1], end_pts[:, 0], color='blue', s=marker_size, label='Endpoints')
-        # branchpoints
+        if end_pts.size > 0:
+            ax.scatter(end_pts[:, 1], end_pts[:, 0], color='blue', s=marker_size, label='Endpoints')
         ax.scatter(branch_pts[:, 1], branch_pts[:, 0], color='red', s=marker_size, label='Branchpoints')
-        # filtered endpoints
-        ax.scatter(f_end_pts[:, 1], f_end_pts[:, 0], color='lime', s=marker_size, label='Filtered Endpoints')
+        if len(f_end_pts) > 0:
+            ax.scatter(f_end_pts[:, 1], f_end_pts[:, 0], color='lime', s=marker_size, label='Filtered Endpoints')
         configure_ax(ax, 'Skeleton with Endpoints and Branchpoints', show_title=False)
 
         # --------------------------------------------------------------------------------------------------------------
@@ -765,12 +781,20 @@ class SkeletonDecomposition:
         # Draw contours in the background
         ax2.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=4 / scale_px, zorder=0)
         # branches
-        for i, branch in enumerate(branches):
+        for i, branch in enumerate(self.branches):
             label = "Branch" if i == 0 else None
             yy, xx = branch.points[:, 0], branch.points[:, 1]
             color = 'orange' if branch.end_type == 'skip' else colors(i)
             # Draw branch lines below points
             ax2.plot(xx, yy, color=color, linewidth=4 / scale_px, linestyle='-', label=label, zorder=2)
+
+       # plot error point if any
+        if self.erp_sidep:  # no side points found,  len(side_pts) != 2:
+            for iep, ep in enumerate(self.erp_sidep):
+                ax2.scatter(ep[1], ep[0], color='red', s=marker_size * 3, zorder=1, label='erp_sidep' if iep == 0 else None)
+        if self.error_point_segments:  # less than 2 segments found, not enough to create adjacency
+            for iep, ep in enumerate(self.error_point_segments):
+                ax2.scatter(ep[1], ep[0], color='cyan', s=marker_size * 3, zorder=1, label='error_point_segments' if iep == 0 else None)
 
         # for all critical points
         for cp in self.critical_pts:
@@ -786,15 +810,7 @@ class SkeletonDecomposition:
             # path to base points
             for path in cp.base_paths:
                 path = np.array(path)
-                ax2.plot(path[:, 1], path[:, 0], color='gray', linewidth=4 / scale_px, linestyle='-', zorder=1)
-
-        # plot error point if any
-        if self.erp_sidep:  # no side points found,  len(side_pts) != 2:
-            for iep, ep in enumerate(self.erp_sidep):
-                ax2.scatter(ep[1], ep[0], color='red', s=marker_size * 3, zorder=5, label='erp_sidep' if iep == 0 else None)
-        if self.error_point_segments:  # less than 2 segments found, not enough to create adjacency
-            for iep, ep in enumerate(self.error_point_segments):
-                ax2.scatter(ep[1], ep[0], color='cyan', s=marker_size * 3, zorder=5, label='error_point_segments' if iep == 0 else None)
+                ax2.plot(path[:, 1], path[:, 0], color='gray', linewidth=4 / scale_px, linestyle='-', zorder=2)
 
         # finalize
         configure_ax(ax2, 'Detected Branches with Critical and Base Points', show_title=False, show_legend=True)
@@ -816,7 +832,7 @@ class SkeletonDecomposition:
             fig1.savefig(fig1_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')
             fig2.savefig(fig2_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')
 
-        # plt.show()
+        plt.show()
         plt.close('all')
 
         # # plot division map separately

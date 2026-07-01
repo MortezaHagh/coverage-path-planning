@@ -19,21 +19,32 @@ class SkeletBranchGraph:
         pass
 
     @staticmethod
-    def create_skeleton_graph(map_ws: np.ndarray, method: str = 'medial_axis') -> Graph:
-        """ Create a graph representation of the skeleton of the cell map. """
-
+    def create_maps(map_ws: np.ndarray, method: str = 'medial_axis') -> dict:
         if method == 'medial_axis':
-            medial_axis_map, distance_map = medial_axis(map_ws, return_distance=True)
-            skeleton_map = medial_axis_map.astype(np.uint8) * 255
+            skeleton_map_b, distance_map = medial_axis(map_ws, return_distance=True)
         elif method == 'skeletonize':
-            skeleton_map = skeletonize(map_ws, method='lee').astype(np.uint8) * 255
+            skeleton_map_b = skeletonize(map_ws, method='lee')
+            distance_map = cv.distanceTransform(map_ws, cv.DIST_L2, 5)
+        else:
+            raise ValueError(f"Unknown skeletonization method: {method}")
+        norm_distance_map = (distance_map / distance_map.max() * FREE).astype(np.uint8)
 
         # # debugging
-        # SkeletBranchGraph.viz_img(skeleton_map, "Skeletonized Map")
+        # SkeletBranchGraph.viz_img(skeleton_map_b.astype(np.uint8) * 255, "Skeletonized Map")
+
+        maps = {
+            "skeleton_map_b": skeleton_map_b,
+            "distance_map": norm_distance_map
+        }
+        return maps
+
+    @staticmethod
+    def create_skeleton_graph(skeleton_map_b: np.ndarray) -> Graph:
+        """ Create a graph representation of the skeleton of the cell map. """
 
         # create graph from skeleton
         sk_graph = Graph()
-        ys, xs = np.where(skeleton_map == FREE)
+        ys, xs = np.where(skeleton_map_b)
         nodes = list(zip(ys.tolist(), xs.tolist()))
         node_set = set(nodes)
         sk_graph.add_nodes_from(nodes)
@@ -69,7 +80,7 @@ class SkeletBranchGraph:
         end_pts = especial_pts_dict["end_pts"]
         skipped_end_pts = especial_pts_dict.get("skipped_end_pts", [])
         branch_pts = especial_pts_dict["branch_pts"]
-        special_pts = end_pts + branch_pts
+        special_pts = list(set(end_pts + branch_pts))
 
         # validate
         if len(end_pts) + len(branch_pts) != len(special_pts):
@@ -86,23 +97,21 @@ class SkeletBranchGraph:
         for start in special_pts:
             for nxt in next_nodes(start, None):
 
-                skip = False
-
                 if bpts_graph.has_node(start):
-                    if bpts_graph.degree[start] > sk_graph.degree[start]:
-                        raise ValueError(f"bpts_graph.degree {bpts_graph.degree[start]} > sk_graph.degree {sk_graph.degree[start]} for node {start}.")
+                    if bpts_graph.degree[start] == sk_graph.degree[start]:
+                        continue
 
+                skip = False
                 curr = nxt
                 prev = start
                 path = [start, curr]
 
                 while nxt not in special_pts:
-                    if nxt in skipped_end_pts:
-                        cls.lg.warn(f"Current node {curr} is a skipped endpoint. Skipping this branch.")
+                    if nxt in skipped_end_pts or nxt == start:
                         skip = True
                         break
                     nxts = next_nodes(curr, prev)
-                    if len(nxts) > 1:
+                    if len(nxts) != 1:
                         raise ValueError(f"Multiple next nodes found for current node {curr} with previous node {prev}.")
                     nxt = nxts[0]
                     path.append(nxt)
@@ -112,45 +121,46 @@ class SkeletBranchGraph:
                     continue
 
                 end = nxt
-                path.append(end)
                 if end == start:
                     raise ValueError(f"Loop detected in skeleton graph starting from {start}.")
 
-                if not bpts_graph.has_node(start):
-                    bpts_graph.add_node(start)
-                if not bpts_graph.has_node(end):
-                    bpts_graph.add_node(end)
                 bpts_graph.add_edge(start, end)
                 bpts_graph[start][end]['distance'] = np.linalg.norm(np.array(start) - np.array(end))
 
                 path = np.array(path)
                 if len(path) < len_thresh_px:
-                    cls.lg.warn(f"Edge between {start} and {end} is too short (length {len(path)}). Skipping edge.")
                     continue
 
                 end_type = "branching" if end in branch_pts else "endpoint"
-                branches.append(Branch(start_point=start, end_point=end, points=path, length=len(path), end_type=end_type))
+                branches.append(Branch(start_point=start,
+                                       end_point=end,
+                                       points=path,
+                                       length=len(path),
+                                       end_type=end_type))
 
         return branches, bpts_graph
 
     @staticmethod
-    def plot_branch_graph(branches: list[Branch], bpts_graph: Graph, map_ws: np.ndarray = None) -> None:
+    def plot_branch_graph(branches: list[Branch] = None, bpts_graph: Graph = None, map_ws: np.ndarray = None) -> None:
         _, ax = plt.subplots(1, 1)
+        # map
         if map_ws is not None:
             ax.imshow(map_ws, cmap='gray', alpha=0.5)
         # Branches
-        for i, branch in enumerate(branches):
-            label = "branch" if i == 0 else None
-            points = branch.points
-            xs = [p[1] for p in points]
-            ys = [p[0] for p in points]
-            ax.plot(xs, ys, c='g', linewidth=2, label=label)
+        if branches is not None:
+            for i, branch in enumerate(branches):
+                label = "branch" if i == 0 else None
+                points = branch.points
+                xs = [p[1] for p in points]
+                ys = [p[0] for p in points]
+                ax.plot(xs, ys, c='g', linewidth=2, label=label)
         # bts_graph edges
-        for i, edge in enumerate(bpts_graph.edges):
-            label = "bpts_graph" if i == 0 else None
-            start, end = edge
-            ax.plot([start[1], end[1]], [start[0], end[0]], c='b',
-                    linewidth=1, linestyle='--', marker='o', markersize=5, label=label)
+        if bpts_graph is not None:
+            for i, edge in enumerate(bpts_graph.edges):
+                label = "bpts_graph" if i == 0 else None
+                start, end = edge
+                ax.plot([start[1], end[1]], [start[0], end[0]], c='b',
+                        linewidth=1, linestyle='--', marker='o', markersize=5, label=label)
 
         ax.set_aspect('equal')
         ax.set_title("Skeleton and Branch Points Graph")

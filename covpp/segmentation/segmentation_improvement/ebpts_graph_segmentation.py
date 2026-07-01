@@ -2,6 +2,7 @@
 import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
+from shapely.geometry import Polygon, LineString
 from scipy.ndimage import binary_opening, binary_closing
 from networkx import Graph, cycle_basis, shortest_path
 from covpp.base.logger import MyLogger
@@ -10,95 +11,137 @@ from covpp.base.geometry import find_angle_between_points
 from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.skeleton_segmentation.data_structures import CriticalPoint, Branch
 from covpp.segmentation.skeleton_segmentation.skelet_branch_graph import SkeletBranchGraph as SBG
-
+from covpp.segmentation.skeleton_segmentation.critical_points_operations import CriticalPointOperations
 
 OCCUPIED = 0
 FREE = 255
 
 
 class EspecialBranchPointsSegmentation:
-    # def __init__(self, segment_solution: SegmentSolution,
-    #              bpts_graph: Graph,
-    #              map_ws_segmented: np.ndarray,
-    #              skelet_distance_map: np.ndarray,
-    #              skeleton_graph: Graph,
-    #              robot_radius_px: int = 5):
-    #     self.lg = MyLogger("SegmentationImprovement")
-    #     self.segmented_map = segment_solution.segmented_map
-    #     self.bpts_graph = bpts_graph
-    #     self.map_ws_segmented = map_ws_segmented
-    #     self.sk_graph = skeleton_graph
-    #     self.skelet_distance_map = skelet_distance_map
-    #     self.robot_radius_px = robot_radius_px
-
-    #     self.new_cps = []
 
     def __init__(self, zmd: ZoneMapData, cells: list[CellBase]):
         self.lg = MyLogger("EspecialBranchPointsSegmentation")
 
         # Data
         self.zmd = zmd
-        self.segmented_map: np.ndarray = zmd.map_ws_segmented.astype(np.uint8) * 255
+        self.segmented_map: np.ndarray = None
         self.cells: list[CellBase] = cells
-
-        # Attributes
-        self.bpts_graph: Graph = None
 
         # Parameters
         self.robot_radius_px = zmd.robot_radius_px
         self.min_dist_thresh_branch_px = 4 * self.robot_radius_px
 
     # --------------------------------------------------------------------------
-    # Graph-Based Segmentation
+    # Graph-Based Segmentation Based on current cells and segmented_map
     # --------------------------------------------------------------------------
 
     def run(self):
-        self.created_segmented_map_from_cells()
+        # self.create_maps()
+        # self.create_graphs()
+
+        self.created_segmented_map_from_cells(self.zmd.map_ws_segmented)
         for cell in self.cells:
-            self.create_cell_graphs(cell)
-            self.graph_based_segmentation()
+            # graphs_data keys: sk_graph, bpts_graph, branches
+            # maps keys: skeleton_map_b, distance_map
+            graph_data, maps = self.create_cell_graphs(cell)
+            self.create_critical_points(graph_data, maps)
 
-    def created_segmented_map_from_cells(self):
+    # def create_maps(self):
+    #     sk_map = self.prepare_map_for_skeleton(self.zmd.map_ws)
+    #     seg_map = self.zmd.map_ws_segmented.copy()
+    #     seg_map[sk_map == 0] = 0
+    #     self.segmented_map = seg_map
+    #     # # debuggin, plot the filtered branch points graph
+    #     # SBG.plot_branch_graph(None, None, seg_map)
+
+    # def create_graphs(self):
+    #     maps = SBG.create_maps(self.segmented_map, method='skeletonize')
+    #     sk_graph = SBG.create_skeleton_graph(maps["skeleton_map_b"])
+
+    #     end_pts, branch_pts = SBG.create_especial_points(sk_graph)
+    #     especial_pts_dict = {"end_pts": end_pts, "branch_pts": branch_pts, "skipped_end_pts": []}
+
+    #     branches, bpts_graph = SBG.create_branch_points_graph(sk_graph=sk_graph,
+    #                                                           especial_pts_dict=especial_pts_dict,
+    #                                                           len_thresh_px=self.min_dist_thresh_branch_px)
+    #     data = {
+    #         "sk_graph": sk_graph,
+    #         "bpts_graph": bpts_graph,
+    #         "branches": branches,
+    #     }
+
+    #     # # debugging
+    #     # SBG.plot_branch_graph(branches, bpts_graph, sk_graph)
+    #     return data
+
+    def created_segmented_map_from_cells(self, map_in: np.ndarray) -> np.ndarray:
         """ Create a segmented map where each cell polygon is filled with its unique id. """
-
-        if self.segmented_map is None or self.segmented_map.size == 0:
-            raise ValueError("Segmented map is not initialized.")
 
         # for each cell polygon, fill the segmented map with the cell id
         gxy = self.zmd.global_xy
-        self.segmented_map = np.zeros_like(self.segmented_map, dtype=np.uint8)
+        segmented_map = map_in.copy()
         for cell in self.cells:
             cell_id = self.get_cell_seg_id(cell)
             pts = np.array([[int(p[0] - gxy[0]), int(p[1] - gxy[1])] for p in cell.points], dtype=np.int32)
-            cv.fillPoly(self.segmented_map, pts=[pts], color=cell_id)
-            cv.drawContours(self.segmented_map, [pts], 0, OCCUPIED, thickness=1)
+            cv.fillPoly(segmented_map, pts=[pts], color=cell_id)
+            cv.drawContours(segmented_map, [pts], 0, OCCUPIED, thickness=1)
+        segmented_map[map_in == OCCUPIED] = OCCUPIED
+        self.segmented_map = segmented_map
 
-    def create_cell_graphs(self, cell: CellBase):
+    def create_cell_graphs(self, cell: CellBase) -> tuple[dict, dict]:
+
+        # create a binary map for the cell where the cell is FREE and outside is OCCUPIED
         cell_id = self.get_cell_seg_id(cell)
         cell_map = self.segmented_map.copy()
         cell_map = np.where(self.segmented_map == cell_id, 1, 0).astype(np.uint8) * 255
-
         sk_map = self.prepare_map_for_skeleton(cell_map)
         if sk_map.sum() == 0:
             raise ValueError(f"Cell map for cell id {cell_id} is empty. Check the segmented map and cell polygons.")
 
-        sk_graph = SBG.create_skeleton_graph(sk_map, method='skeletonize')
+        # create skeleton and distance maps, and the skeleton graph
+        maps = SBG.create_maps(sk_map, method='skeletonize')  # maps: skeleton_map_b, distance_map
+        sk_graph = SBG.create_skeleton_graph(maps["skeleton_map_b"])
 
+        # create especial points (end points and branch points) and the branch points graph
         end_pts, branch_pts = SBG.create_especial_points(sk_graph)
         especial_pts_dict = {"end_pts": end_pts, "branch_pts": branch_pts, "skipped_end_pts": []}
-
         branches, bpts_graph = SBG.create_branch_points_graph(sk_graph=sk_graph,
                                                               especial_pts_dict=especial_pts_dict,
                                                               len_thresh_px=self.min_dist_thresh_branch_px)
-        self.bpts_graph = bpts_graph
+        bpts_graph = self.filter_bpts_graph(bpts_graph, maps["distance_map"], self.robot_radius_px)
 
-        SBG.plot_branch_graph(branches, bpts_graph, cell_map)
+        graph_data = {"sk_graph": sk_graph,
+                      "bpts_graph": bpts_graph,
+                      "branches": branches,
+                      }
 
-    # --------------------------------------------------------------------------
-    # Utility Methods
-    # --------------------------------------------------------------------------
+        # # debugging
+        # SBG.plot_branch_graph(branches, bpts_graph, cell_map)
+        return graph_data, maps
 
-    def prepare_map_for_skeleton(self, map_in: np.ndarray) -> np.ndarray:
+    @staticmethod
+    def filter_bpts_graph(bpts_graph: Graph, distance_map: np.ndarray, robot_radius_px: float) -> tuple[list[tuple], list[tuple]]:
+        """ Filter the branch points graph to remove nodes that are too close to obstacles based on the distance map. """
+
+        if bpts_graph is None or bpts_graph.number_of_nodes() == 0:
+            return bpts_graph
+
+        # Create a list of nodes to remove
+        threshold_distance = 4 * robot_radius_px
+        nodes_to_remove = []
+        for node in bpts_graph.nodes:
+            y, x = node
+            dist_to_obstacle = distance_map[y, x]
+            if dist_to_obstacle < threshold_distance:
+                nodes_to_remove.append(node)
+
+        # Remove the identified nodes from the graph
+        bpts_graph.remove_nodes_from(nodes_to_remove)
+
+        return bpts_graph
+
+    @staticmethod
+    def prepare_map_for_skeleton(map_in: np.ndarray) -> np.ndarray:
         """ Create a map for skeletonization where the map_in is FREE and outside is OCCUPIED. """
         structure = np.ones((3, 3), dtype=np.uint8)
         sk_map = binary_closing(map_in, structure=structure, iterations=2).astype(np.uint8) * 255
@@ -110,101 +153,91 @@ class EspecialBranchPointsSegmentation:
         return cell.id + 1  # start from 1
 
     # --------------------------------------------------------------------------
-    # Segmentation Improvement Methods
+    # Find critical points and base points for each cell for improved segmentation
     # --------------------------------------------------------------------------
 
-    def graph_based_segmentation(self):
-        """ Second level segmentation refinement."""
+    def create_critical_points(self, graphs_data: dict, maps: dict):
+        """ Perform graph-based segmentation improvement using the provided graphs data. """
 
-        self.lg.info2("Running segmentation improvement.\n")
-        self.refinement_step = True
+        # graphs_data keys: sk_graph, bpts_graph, branches
+        self.filter_loops_bpts_graph(graphs_data["bpts_graph"])
+        self.filter_short_edges_bpts_graph(graphs_data["bpts_graph"], n_short_neighbors=1)
+        self.filter_short_edges_bpts_graph(graphs_data["bpts_graph"], n_short_neighbors=0)
 
-        self.filter_loops_bpts_graph()
-        self.filter_short_edges_bpts_graph(n_short_neighbors=1)
-        self.filter_short_edges_bpts_graph(n_short_neighbors=0)
+        # # debuggin, plot the filtered branch points graph
+        # SBG.plot_branch_graph(None, graphs_data["bpts_graph"], self.segmented_map)
 
-        # debuggin, plot the filtered branch points graph
-        SBG.plot_branch_graph([], self.bpts_graph, self.zmd.map_ws)
-
-        grpups = self.find_groups_in_bpts_graph()
+        grpups = self.find_groups_in_bpts_graph(graphs_data["bpts_graph"])
 
         # create a new critical points for each group
-        # new cp is between g1 and each other group member
         new_cps: list[CriticalPoint] = []
         for i, m_group in enumerate(grpups):
 
-            # group = self.remove_invalid_edges_bpts_graph(m_group, segment_solution)
+            group = self.remove_invalid_edges_bpts_graph(m_group)
             group = m_group.copy()
             n_g = len(group)
             new_cp = None
 
             if n_g > 3:
-                new_cp = self.find_modified_critical_points_g4(group)
+                new_cp = self.find_modified_critical_points_g4(graphs_data["sk_graph"], group)
                 if new_cp is not None:
                     new_cps.append(new_cp)
             elif n_g == 3:
-                new_cp = self.find_modified_critical_points_g3(group)
+                new_cp = self.find_modified_critical_points_g3(graphs_data["sk_graph"], group)
                 if new_cp is not None:
                     new_cps.append(new_cp)
 
-            # # display group and new critical point for debugging # todo
-            # print(f"Group {i}")
+            # # debugging: plot new critical point
             # if new_cp is None:
             #     continue
             # _, ax = plt.subplots(1, 1)
             # ax.imshow(self.zmd.map_ws, cmap='gray', alpha=0.5)
-            # ax.scatter(m_group[0][1], m_group[0][0], c='purple', marker='s', s=70)  # highlight gc purple
-            # ax.scatter([p[1] for p in m_group], [p[0] for p in m_group], c='k', marker='o', s=60)
+            # ax.scatter(m_group[0][1], m_group[0][0], c='purple', marker='s', s=70, label='GC')  # highlight gc purple
+            # ax.scatter([p[1] for p in m_group], [p[0] for p in m_group], c='k', marker='o', s=60, label='Group Members')
             # if len(group) > 0:
-            #     ax.scatter([p[1] for p in group], [p[0] for p in group], c='r', marker='x', s=40)
-            # # plot new critical point
+            #     ax.scatter([p[1] for p in group], [p[0] for p in group], c='r', marker='x', s=40, label='Group Edges')
             # if new_cp is not None:
-            #     ax.scatter(new_cp.coord[1], new_cp.coord[0], c='g', marker='o', s=30)
+            #     ax.scatter(new_cp.coord[1], new_cp.coord[0], c='g', marker='o', s=30, label='New Critical Point')
             # ax.set_aspect('equal')
+            # ax.legend()
             # plt.show()
 
-        self.new_cps.extend(new_cps)
-        # n_prev_base_pts = len(self.base_pts)
-        # n_new_cps = len(new_cps)
-        # self.lg.info2(f"Found {n_new_cps} new critical points for second level segmentation.")
+        if len(new_cps) == 0:
+            return None, None
 
-        # for cp in new_cps:
-        #     self.get_base_points_by_expand_side_points(cp, n_pts=2)
+        self.lg.info2(f"Found {len(new_cps)} new critical points for second level segmentation.")
 
-        # validate
-        # n_new_base_pts = len(self.base_pts)
-        # self.lg.info2(f"Prev base points: {n_prev_base_pts}")
-        # self.lg.info2(f"New base points: {n_new_base_pts - n_prev_base_pts}.")
+        # todo
+        cpo = CriticalPointOperations(distance_map=maps["distance_map"],
+                                      skeleton_map_b=maps["skeleton_map_b"],
+                                      branches=graphs_data["branches"])
+        cpo.critical_pts = new_cps
+        cpo.find_base_points()
 
-        # # new critical points
-        # # plot for debugging # todo
-        # _, ax = plt.subplots(1, 1)
-        # # display skeleton segmented map with base points and critical points
-        # ax.imshow(self.zmd.map_ws, cmap='gray', alpha=0.5)
-        # for node in self.bpts_graph.nodes:
-        #     neighbors = list(self.bpts_graph.neighbors(node))
-        #     ax.scatter(node[1], node[0], c='b', marker='o')
-        #     ax.text(node[1], node[0], f"{self.bpts_graph.degree[node]}", color='b')
-        #     for neighbor in neighbors:
-        #         ax.plot([node[1], neighbor[1]], [node[0], neighbor[0]], c='g')
-        # # display critical points and base points
-        # for cp in new_cps:
-        #     cp_coord = cp.coord
-        #     ax.scatter(cp_coord[1], cp_coord[0], c='r', marker='x', s=50)
-        # for bps in self.base_pts[n_prev_base_pts:]:
-        #     for bp in bps:
-        #         ax.scatter(bp[1], bp[0], c='b', marker='o', s=25)
-        # ax.imshow(segment_solution.segmented_map, cmap='gray', alpha=0.5)
-        # ax.set_aspect('equal')
-        # plt.show()
-
-        # return self.create_segmented_map()
+        # plot for debugging # todo
+        _, ax = plt.subplots(1, 1)
+        ax.imshow(self.zmd.map_ws, cmap='gray', alpha=0.5)
+        for node in graphs_data["bpts_graph"].nodes:
+            neighbors = list(graphs_data["bpts_graph"].neighbors(node))
+            ax.scatter(node[1], node[0], c='b', marker='o')
+            ax.text(node[1], node[0], f"{graphs_data['bpts_graph'].degree[node]}", color='b')
+            for neighbor in neighbors:
+                ax.plot([node[1], neighbor[1]], [node[0], neighbor[0]], c='g')
+        for cp in new_cps:
+            cp_coord = cp.coord
+            ax.scatter(cp_coord[1], cp_coord[0], c='r', marker='x', s=50)
+        for bps in cpo.base_pts:
+            for bp in bps:
+                ax.scatter(bp[1], bp[0], c='b', marker='o', s=25)
+        ax.imshow(self.segmented_map, cmap='gray', alpha=0.5)
+        ax.set_aspect('equal')
+        plt.show()
 
     # # ==================================================================================================================
     # # second level segmentation methods
     # # ==================================================================================================================
 
-    def filter_loops_bpts_graph(self):
+    def filter_loops_bpts_graph(self, bpts_graph: Graph):
         """ Modify branch ends graph to remove loops by merging loop points into a new point.
 
         Steps:
@@ -214,14 +247,13 @@ class EspecialBranchPointsSegmentation:
         - Remove loop points from the graph.
         """
 
-        bps_graph = self.bpts_graph
-        if bps_graph is None or bps_graph.number_of_nodes() == 0:
+        if bpts_graph is None or bpts_graph.number_of_nodes() == 0:
             return
 
         # Recompute cycles on the current graph and guard against overlapping cycles
-        loops = list(cycle_basis(bps_graph))
+        loops = list(cycle_basis(bpts_graph))
         for loop in loops:
-            loop_nodes = [p for p in loop if bps_graph.has_node(p)]
+            loop_nodes = [p for p in loop if bpts_graph.has_node(p)]
 
             if len(loop_nodes) not in [3, 4]:
                 continue
@@ -231,8 +263,8 @@ class EspecialBranchPointsSegmentation:
             for i in range(len(loop_nodes)):
                 p1 = loop_nodes[i]
                 p2 = loop_nodes[(i + 1) % len(loop_nodes)]
-                if bps_graph.has_edge(p1, p2):
-                    edge_cost += bps_graph[p1][p2].get('distance', 1.0)
+                if bpts_graph.has_edge(p1, p2):
+                    edge_cost += bpts_graph[p1][p2].get('distance', 1.0)
             if edge_cost > 3.0 * self.robot_radius_px:
                 continue
 
@@ -241,239 +273,144 @@ class EspecialBranchPointsSegmentation:
                 if p == keep_node:
                     continue
                 # Reconnect all neighbors of p (outside the loop) to keep_node
-                neighbors = list(bps_graph.neighbors(p))
+                neighbors = list(bpts_graph.neighbors(p))
                 for neighbor in neighbors:
                     if neighbor not in loop and neighbor != keep_node:
-                        bps_graph.add_edge(keep_node, neighbor)
+                        bpts_graph.add_edge(keep_node, neighbor)
                         dist = np.linalg.norm(np.array(keep_node) - np.array(neighbor))
-                        bps_graph[keep_node][neighbor]['distance'] = dist
-                        # bps_graph[keep_node][neighbor]['type'] = ''
+                        bpts_graph[keep_node][neighbor]['distance'] = dist
+                        # bpts_graph[keep_node][neighbor]['type'] = ''
                 # Remove the merged node
-                if bps_graph.has_node(p):
-                    bps_graph.remove_node(p)
+                if bpts_graph.has_node(p):
+                    bpts_graph.remove_node(p)
             # Remove any edges in the loop except those connected to keep_node
             for p in loop_nodes[1:]:
-                if bps_graph.has_edge(keep_node, p):
-                    bps_graph.remove_edge(keep_node, p)
+                if bpts_graph.has_edge(keep_node, p):
+                    bpts_graph.remove_edge(keep_node, p)
 
-        self.bpts_graph = bps_graph
-
-    def filter_short_edges_bpts_graph(self, n_short_neighbors: int = 1):
+    def filter_short_edges_bpts_graph(self, bpts_graph: Graph, n_short_neighbors: int = 1):
         """ Remove short edges in the branch points graph by merging nodes. """
 
-        bps_graph = self.bpts_graph
-        if bps_graph is None or bps_graph.number_of_nodes() == 0:
+        if bpts_graph is None or bpts_graph.number_of_nodes() == 0:
             return
 
         # For each node, collect all neighbors connected by short edges
         dist_thresh = 4.0 * self.robot_radius_px
-        nodes = list(bps_graph.nodes)
+        nodes = list(bpts_graph.nodes)
         for u in nodes:
-            if not bps_graph.has_node(u):
+            if not bpts_graph.has_node(u):
                 continue
             short_neighbors = []
-            for v in list(bps_graph.neighbors(u)):
-                if not bps_graph.has_edge(u, v):
+            for v in list(bpts_graph.neighbors(u)):
+                if not bpts_graph.has_edge(u, v):
                     continue
-                dist = bps_graph[u][v].get('distance', 1.0)
+                dist = bpts_graph[u][v].get('distance', 1.0)
                 if dist < dist_thresh:
                     short_neighbors.append(v)
             if len(short_neighbors) > n_short_neighbors:
                 for v in short_neighbors:
-                    if not bps_graph.has_node(v):
+                    if not bpts_graph.has_node(v):
                         continue
-                    neighbors_v = list(bps_graph.neighbors(v))
+                    neighbors_v = list(bpts_graph.neighbors(v))
                     for neighbor in neighbors_v:
                         if neighbor != u:
-                            bps_graph.add_edge(u, neighbor)
+                            bpts_graph.add_edge(u, neighbor)
                             new_dist = np.linalg.norm(np.array(u) - np.array(neighbor))
-                            bps_graph[u][neighbor]['distance'] = new_dist
+                            bpts_graph[u][neighbor]['distance'] = new_dist
                     # Remove the merged node
-                    if bps_graph.has_node(v):
-                        bps_graph.remove_node(v)
+                    if bpts_graph.has_node(v):
+                        bpts_graph.remove_node(v)
 
-        self.bpts_graph = bps_graph
-
-    def find_groups_in_bpts_graph(self) -> list[list[tuple[int, int]]]:
-
+    def find_groups_in_bpts_graph(self, bpts_graph: Graph) -> list[list[tuple[int, int]]]:
         groups = []
-        for node in self.bpts_graph.nodes:
-            deg = self.bpts_graph.degree[node]
+        for node in bpts_graph.nodes:
+            deg = bpts_graph.degree[node]
             if deg < 2:
                 continue
             group = [node]
-            group.extend(list(self.bpts_graph.neighbors(node)))
+            group.extend(list(bpts_graph.neighbors(node)))
             if len(group) < 3:
                 continue
             groups.append(group)
-
-        # groups
-        # plot for debugging # todo
-        _, ax = plt.subplots(1, 1)
-        ax.imshow(self.segmented_map, cmap='gray', alpha=0.5)
-        for i, group in enumerate(groups):
-            ys = [p[0] for p in group]
-            xs = [p[1] for p in group]
-            ax.scatter(xs, ys, c='g', marker='o', s=25)
-            # first point
-            ax.scatter(group[0][1], group[0][0], c='r', marker='x', s=50)
-            ax.text(group[0][1], group[0][0], f"{i}", color='r')
-        ax.set_aspect('equal')
-        ax.set_title("Groups in Branch Points Graph")
-        plt.show()
-
         return groups
 
-    # def remove_invalid_edges_bpts_graph(self, group, segment_solution) -> list[tuple[int, int]]:
-    #     """ remove edgew s connected to gc if it crosses the contour polygon"""
+    def remove_invalid_edges_bpts_graph(self, group) -> list[tuple[int, int]]:
+        """ remove edgew s connected to gc if it crosses the contour polygon"""
+        gc = group[0]
+        new_group = [gc]
+        invalid_group = []
+        for g in group[1:]:
+            # if line crosses the segmentation map (i.e., crosses any occupied pixel)
+            if self.check_if_line_crosses_segmentation_map(g, gc):
+                invalid_group.append(g)
+                continue
+            new_group.append(g)
 
-    #     # find segment id of gc
-    #     gc = group[0]
-    #     gc_seg_id = segment_solution.segmented_map[gc[0], gc[1]]
-    #     gc_seg_idx = segment_solution.seg_ids.index(gc_seg_id)
-    #     cc = segment_solution.polygons[gc_seg_idx].reshape(-1, 2)
-    #     gc_poly = Polygon(cc)
+        return new_group
 
-    #     new_group = [gc]
-    #     invalid_group = []
-    #     for g in group[1:]:
-    #         # if line actually crosses the polygon
-    #         line_gi = LineString([(g[1], g[0]), (gc[1], gc[0])])
-    #         if line_gi.crosses(gc_poly):
-    #             invalid_group.append(g)
-    #             continue
-    #         new_group.append(g)
+    def find_modified_critical_points_g3(self, sk_graph: Graph, group: list[tuple[int, int]]) -> CriticalPoint:
+        """ Find modified critical point for group of 3 branch points."""
 
-    #     # # check each edge
-    #     # # create combination of non-repeating pairs of points in group
-    #     # invalid_group = []
-    #     # new_group = []
-    #     # crossed_lines = []
-    #     # n = len(group)
-    #     # idxs = list(range(1, n))
-    #     # pair_idxs = list(combinations(idxs, 2))
-    #     # valid = [True for _ in range(n)]
-    #     # for i, j in pair_idxs:
-    #     #     if valid[i] and valid[j]:
-    #     #         g1 = group[i]
-    #     #         g2 = group[j]
-    #     #         line_gi = LineString([(g1[1], g1[0]), (g2[1], g2[0])])
-    #     #         if line_gi.crosses(gc_poly):
-    #     #             crossed_lines.append((g1, g2))
-    #     #             valid[i] = False
-    #     #             valid[j] = False
-    #     #             invalid_group.append((g1, g2))
-    #     # new_group = [group[i] for i in range(n) if valid[i]]
+        gc = group[0]
+        g1 = group[1]
+        g2 = group[2]
 
-    #     # # plot the polygon and group for debugging # todo
-    #     # _, ax = plt.subplots(1, 1)
-    #     # ax.imshow(self.map_ws_segmented, cmap='gray', alpha=0.5)
-    #     # ax.scatter([p[1] for p in group], [p[0] for p in group], c='r', marker='x', s=60)
-    #     # x_poly = gc_poly.exterior.xy[0]
-    #     # y_poly = gc_poly.exterior.xy[1]
-    #     # ax.plot(x_poly, y_poly, c='b')
-    #     # ax.scatter(gc[1], gc[0], c='purple', marker='s', s=100)  # highlight gc purple
-    #     # # plot invalid group
-    #     # if len(invalid_group) > 0:
-    #     #     ax.scatter([p[1] for p in invalid_group], [p[0] for p in invalid_group], c='y', marker='s', s=25)
-    #     # # plot new group
-    #     # if len(new_group) > 0:
-    #     #     ax.scatter([p[1] for p in new_group], [p[0] for p in new_group], c='g', marker='o', s=25)
-    #     # ax.set_aspect('equal')
-    #     # plt.show()
-    #     return new_group
+        if not self.check_if_line_crosses_segmentation_map(g1, g2):
+            return None
 
-    # def find_modified_critical_points_g3(self, group: list[tuple[int, int]]) -> CriticalPoint:
-    #     """ Find modified critical point for group of 3 branch points."""
+        angle = find_angle_between_points(g1, gc, g2)
+        if angle > np.deg2rad(120):
+            return None
 
-    #     gc = group[0]
-    #     g1 = group[1]
-    #     g2 = group[2]
+        d1 = np.linalg.norm(np.array(gc) - np.array(g1))
+        d2 = np.linalg.norm(np.array(gc) - np.array(g2))
 
-    #     if not self.check_if_line_crosses_segmentation_map(g1, g2):
-    #         return None
+        if d1 < d2:
+            gg = g2
+        else:
+            gg = g1
 
-    #     angle = find_angle_between_points(g1, gc, g2)
-    #     if angle > np.deg2rad(120):
-    #         return None
+        path = shortest_path(sk_graph, source=tuple(gc), target=tuple(gg))
+        n_path = len(path)
+        new_ind = n_path - n_path // 5
+        # new_ind = self.skelet_distance_map[gc[0], gc[1]]
+        # new_ind = int(new_ind * 0.7)  # move closer to gc
+        new_coord = path[new_ind]
+        return CriticalPoint(coord=np.array(new_coord))
 
-    #     d1 = np.linalg.norm(np.array(gc) - np.array(g1))
-    #     d2 = np.linalg.norm(np.array(gc) - np.array(g2))
+    def find_modified_critical_points_g4(self, sk_graph: Graph, group: list[tuple[int, int]]) -> CriticalPoint:
+        gc = group.pop(0)
+        n = len(group)
+        hits = [0 for _ in group]
+        for i in range(n):
+            j = (i + 1) % n
+            if self.check_if_line_crosses_segmentation_map(group[i], group[j]):
+                hits[i] += 1
+                hits[j] += 1
 
-    #     if d1 < d2:
-    #         gg = g2
-    #     else:
-    #         gg = g1
+        max_hit_idx = np.argmax(hits)
+        if hits[max_hit_idx] == 0:
+            return None
+        gi = group[max_hit_idx]
+        path = shortest_path(sk_graph, source=tuple(gc), target=tuple(gi))
+        n_path = len(path)
+        new_ind = n_path // 5
+        # new_ind = self.skelet_distance_map[gc[0], gc[1]]
+        if new_ind >= n_path:
+            new_ind = n_path // 2
+        new_coord = path[new_ind]
+        return CriticalPoint(coord=np.array(new_coord))
 
-    #     path = shortest_path(self.sk_graph, source=tuple(gc), target=tuple(gg))
-    #     # n_path = len(path)
-    #     # new_ind = n_path // 5
-    #     new_ind = self.skelet_distance_map[gc[0], gc[1]]
-    #     # new_ind = int(new_ind * 0.7)  # move closer to gc
-    #     new_coord = path[new_ind]
-
-    #     # # plot for debugging
-    #     # _, ax = plt.subplots(1, 1)
-    #     # ax.imshow(self.map_ws_segmented, cmap='gray', alpha=0.5)
-    #     # # plot gc, g1, g2
-    #     # ax.scatter(gc[1], gc[0], c='purple', marker='s', s=100)  # highlight gc purple
-    #     # ax.scatter(g1[1], g1[0], c='r', marker='x', s=60)
-    #     # ax.scatter(g2[1], g2[0], c='r', marker='x', s=60)
-    #     # # plot new_coord
-    #     # ax.scatter(new_coord[1], new_coord[0], c='g', marker='o', s=40)
-    #     # ax.set_aspect('equal')
-    #     # ax.set_title("Modified Critical Point for Group of 3 Branch Points")
-    #     # plt.show()
-
-    #     return CriticalPoint(coord=np.array(new_coord))
-
-    # def find_modified_critical_points_g4(self, group: list[tuple[int, int]]) -> CriticalPoint:
-    #     gc = group.pop(0)
-    #     n = len(group)
-    #     hits = [0 for _ in group]
-    #     for i in range(n):
-    #         j = (i + 1) % n
-    #         if self.check_if_line_crosses_segmentation_map(group[i], group[j]):
-    #             hits[i] += 1
-    #             hits[j] += 1
-
-    #         # # check if line between gi and gj is inside polygon
-    #         # line_ij = LineString([(group[i][1], group[i][0]), (group[j][1], group[j][0])])
-    #         # if not gc_poly.contains(line_ij):
-    #         #     hits[i] += 1
-    #         #     hits[j] += 1
-
-    #     max_hit_idx = np.argmax(hits)
-    #     if hits[max_hit_idx] == 0:
-    #         return None
-    #     gi = group[max_hit_idx]
-    #     path = shortest_path(self.sk_graph, source=tuple(gc), target=tuple(gi))
-    #     n_path = len(path)
-    #     # new_ind = n_path // 5
-    #     new_ind = self.skelet_distance_map[gc[0], gc[1]]
-    #     if new_ind >= n_path:
-    #         new_ind = n_path // 2
-    #     new_coord = path[new_ind]
-    #     return CriticalPoint(coord=np.array(new_coord))
-
-    # def check_if_line_crosses_segmentation_map(self, p1: tuple[int, int], p2: tuple[int, int]) -> bool:
-    #     """ Check if line between p1 and p2 crosses any segmentation lines in segmented map."""
-    #     # line = LineString([(p1[1], p1[0]), (p2[1], p2[0])]) # todo
-    #     num_points = int(np.linalg.norm(np.array(p2) - np.array(p1))) * 2  # sample points along the line
-    #     dy = abs(p2[0] - p1[0])
-    #     dx = abs(p2[1] - p1[1])
-    #     num_points = max(dx, dy)  # DDA: ensures we step one pixel along the dominant axis
-    #     for i in range(num_points + 1):
-    #         t = i / num_points
-    #         x = int(round(p1[1] + t * (p2[1] - p1[1])))
-    #         y = int(round(p1[0] + t * (p2[0] - p1[0])))
-    #         if self.map_ws_segmented[y, x] == OCCUPIED:
-    #             return True
-    #     return False
-
-    # @staticmethod
-    # def viz_img(img: np.ndarray, name: str):
-    #     cv.namedWindow(name, cv.WINDOW_NORMAL)
-    #     cv.imshow(name, img)
-    #     cv.waitKey(0)
-    #     cv.destroyAllWindows()
+    def check_if_line_crosses_segmentation_map(self, p1: tuple[int, int], p2: tuple[int, int]) -> bool:
+        """ Check if line between p1 and p2 crosses any segmentation lines in segmented map."""
+        num_points = int(np.linalg.norm(np.array(p2) - np.array(p1))) * 2  # sample points along the line
+        dy = abs(p2[0] - p1[0])
+        dx = abs(p2[1] - p1[1])
+        num_points = max(dx, dy)  # DDA: ensures we step one pixel along the dominant axis
+        for i in range(num_points + 1):
+            t = i / num_points
+            x = int(round(p1[1] + t * (p2[1] - p1[1])))
+            y = int(round(p1[0] + t * (p2[0] - p1[0])))
+            if self.segmented_map[y, x] == OCCUPIED:
+                return True
+        return False

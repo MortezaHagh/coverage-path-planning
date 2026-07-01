@@ -5,6 +5,15 @@ from shapely.geometry import Polygon  # , LineString
 
 
 @dataclasses.dataclass
+class Configs:
+    """Configuration parameters for skeleton decomposition."""
+    end_dist_threshold_ratio: float = 0.0  # minimum ratio of distance from branch ends to overall min-max distance in branch to consider critical point
+    max_critical_region_ratio: float = 0.6  # maximum ratio of critical region length to branch length
+    min_max_distance_ratio: float = 0.6     # minimum ratio of min distance to max distance in branch to consider critical point
+    min_area_thresh_for_contour: int = 10   # minimum area threshold for valid contour
+
+
+@dataclasses.dataclass
 class Skelet:
     """ Contains skeletonization results. """
     skeleton_map_b: np.ndarray              # dtype=bool
@@ -47,23 +56,3 @@ class SegmentSolution:
         self.segmented_map = segmented_map
         self.seg_ids = seg_ids
         self.polygons = polygons
-
-
-def find_level(h, hierarchy):
-    """ Find the level of contour in hierarchy. """
-    level = 0
-    parent = h[3]
-    while parent != -1:
-        level += 1
-        parent = hierarchy[parent][3]
-    return level
-
-
-def is_valid_contour(h, hierarchy) -> bool:
-    # if level is odd, it is a hole contour
-    level = find_level(h, hierarchy)
-    if level % 2 == 1:
-        return False
-    return True
-    # # Check if contour has both parent and children in hierarchy.
-    # return not(h[3] != -1 and h[2] != -1)

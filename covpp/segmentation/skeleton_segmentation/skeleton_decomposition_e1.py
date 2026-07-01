@@ -571,6 +571,30 @@ class SkeletonDecomposition:
         return self.skelet.skeleton_map_b[y, x] > 0
 
     # ==================================================================================================================
+    # Utility methods
+    # ==================================================================================================================
+
+    @staticmethod
+    def find_level(h, hierarchy):
+        """ Find the level of contour in hierarchy. """
+        level = 0
+        parent = h[3]
+        while parent != -1:
+            level += 1
+            parent = hierarchy[parent][3]
+        return level
+
+    @staticmethod
+    def is_valid_contour(h, hierarchy) -> bool:
+        # if level is odd, it is a hole contour
+        level = SkeletonDecomposition.find_level(h, hierarchy)
+        if level % 2 == 1:
+            return False
+        return True
+        # # Check if contour has both parent and children in hierarchy.
+        # return not(h[3] != -1 and h[2] != -1)
+
+    # ==================================================================================================================
     # visualization methods
     # ==================================================================================================================
 
