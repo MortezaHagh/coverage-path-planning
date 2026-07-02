@@ -12,9 +12,9 @@ from covpp.base.plot_styles import set_plot_styles
 from covpp.base.configs import RobotConfig, PipeLineConfig
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.skeleton_segmentation.skelet_branch_graph import SkeletBranchGraph as SBG
+from covpp.segmentation.skeleton_segmentation.segmented_solution import CreateSegmentationSolution
+from covpp.segmentation.skeleton_segmentation.data_structures import Skelet, Branch, CriticalPoint
 from covpp.segmentation.skeleton_segmentation.critical_points_operations import CriticalPointOperations
-from covpp.segmentation.skeleton_segmentation.data_structures import Configs, Skelet, Branch, CriticalPoint, SegmentSolution
-
 OCCUPIED = 0
 FREE = 255
 
@@ -40,9 +40,6 @@ class SkeletonDecomposition:
         self.zmd = zmd
         self.robot_radius_px = int(RobotConfig.radius / zmd.resolution)
         self.map_ws: np.ndarray = None   # uint8 binary map (OCCUPIED, FREE)
-
-        # settings
-        self.cfgs = Configs()
 
         # attributes
         self.skelet: Skelet = None                          # skeletonization data
@@ -72,133 +69,18 @@ class SkeletonDecomposition:
         self.critical_pts = critical_operator.critical_pts
         self.base_pts = critical_operator.base_pts
 
-        # create segmented map
-        segment_solution = self.create_segmented_map()
+        # create segmented solution
+        css = CreateSegmentationSolution(map_in=self.zmd.map_ws.copy(),
+                                         robot_radius_px=self.robot_radius_px,
+                                         origin_coord=self.zmd.global_xy)
+        css.run_by_critical_points(base_pts=self.base_pts, critical_pts=self.critical_pts)
+        self.polygons = css.polygons
+        self.map_ws_segmented = css.map_ws_segmented
+        self.adjacency_matrix = css.adjacency_matrix
+        self.error_point_segments = css.error_point_segments
 
-        # create adjacency matrix and polygons
-        self.adjacency_matrix = self.create_adjacency_matrix(segment_solution)
-        self.create_polygons(segment_solution.polygons)
         self.lg.debug(f"Extracted {len(self.polygons)} polygons.")
-
         self.plot_segmentation()
-
-    # ==================================================================================================================
-    # segmentation map, polygons and adjacency matrix creation
-    # ==================================================================================================================
-
-    def create_segmented_map(self) -> SegmentSolution:
-        """ Create segmented map based on base points.
-
-        Steps:
-        - Connect each two base points with a line.
-        - Find contours and fill areas to create segmented map.
-        - Each area will have a unique gray value. (later used in creating cells)
-        """
-
-        seg_map = self.map_ws.copy()
-
-        # create a line connecting each two base points consecutively
-        for bases in self.base_pts:
-            n_bases = len(bases)
-            for i in range(n_bases):
-                j = (i + 1) % n_bases
-                base1 = bases[i]
-                base2 = bases[j]
-                cv.line(seg_map, (base1[1], base1[0]), (base2[1], base2[0]), OCCUPIED, thickness=2)
-
-        # create map_ws_segmented ----------------------------------------------
-        self.map_ws_segmented = seg_map.copy()
-
-        seg_ids = []
-
-        # find contours and fill areas
-        contours, hierarchy = cv.findContours(seg_map, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-        hierarchy = hierarchy[0]
-        self.lg.debug(f"Found {len(contours)} contours in segmented map.")
-
-        # filter contours: remove those with children and small areas
-        filtered_contours = []
-        it = 0
-        for c, h in zip(contours, hierarchy):
-
-            # skip contours with children
-            if not self.is_valid_contour(h, hierarchy):
-                continue
-
-            # minimum area threshold
-            area = cv.contourArea(c)
-            if area >= self.cfgs.min_area_thresh_for_contour:
-                filtered_contours.append(c)
-                it += 1
-
-        # check too many contours
-        self.lg.debug(f"Found {len(filtered_contours)} filtered contours in segmented map.")
-        if len(filtered_contours) > 254:
-            self.lg.warn(f"Too many contours found in segmented map: {len(filtered_contours)}.")
-
-        # fill area with different gray value (used for segment IDs)
-        for i, cnt in enumerate(filtered_contours):
-            new_id = i + 1
-            seg_ids.append(new_id)
-            cv.fillPoly(seg_map, pts=[cnt], color=new_id)
-            cv.drawContours(seg_map, [cnt], 0, FREE, thickness=1)
-
-        # # debugging
-        # self.viz_img(seg_map, "create_segmented_map")
-
-        if not seg_ids:
-            raise ValueError("No segments found in segmented map.")
-        return SegmentSolution(seg_map, seg_ids, filtered_contours)
-
-    def create_adjacency_matrix(self, segment_solution: SegmentSolution) -> np.ndarray:
-        """ Create adjacency matrix between segments based on critical points.
-
-        Method:
-        - For each critical point, find the segments around it by checking a small canvas.
-        - Mark those segments as adjacent in the adjacency matrix.
-        """
-
-        adjacency_matrix = np.zeros((len(segment_solution.seg_ids), len(segment_solution.seg_ids)), dtype=np.bool)
-        h, w = segment_solution.segmented_map.shape
-        # canvas_size = 40 // 2
-        canvas_size = 4 * self.robot_radius_px  # canvas size based on robot radius
-
-        for cp in self.critical_pts:
-            y, x = cp.coord
-            y_min = max(0, y - canvas_size)
-            y_max = min(h, y + canvas_size)
-            x_min = max(0, x - canvas_size)
-            x_max = min(w, x + canvas_size)
-            canvas = segment_solution.segmented_map[y_min:y_max, x_min:x_max]
-            unique_ids = np.unique(canvas)
-            # remove OCCUPIED and FREE
-            unique_ids = unique_ids[(unique_ids != OCCUPIED) & (unique_ids != FREE)]
-            n_ids = len(unique_ids)
-            if n_ids < 2:
-                self.error_point_segments.append(cp.coord)
-                self.lg.warn(f"Less than 2 segments found near critical point at {cp.coord}.")
-
-            for i in range(n_ids):
-                for j in range(i + 1, n_ids):
-                    adjacency_matrix[unique_ids[i] - 1, unique_ids[j] - 1] = True
-                    adjacency_matrix[unique_ids[j] - 1, unique_ids[i] - 1] = True
-        return adjacency_matrix
-
-    def create_polygons(self, contours: list[np.ndarray]) -> None:
-
-        # create shapely polygons for each contour
-        from shapely.geometry import Polygon
-        polygons = []
-        for i, cnt in enumerate(contours):
-            pts = cnt.reshape(-1, 2)
-            if len(pts) < 3:
-                self.lg.error(f"Contour {i} has less than 3 points, cannot create polygon.")
-                continue
-            # add global coordinate conversion
-            g_pts = self.zmd.global_xy + pts
-            poly = Polygon(g_pts)
-            polygons.append(poly)
-        self.polygons = polygons
 
     # ==================================================================================================================
     # skeletonization and special points extraction
@@ -302,31 +184,6 @@ class SkeletonDecomposition:
                 final_end_pts.append(pt)
         self.skelet.f_end_pts = np.array(final_end_pts)
         return final_end_pts, skipped_end_pts
-
-    # ==================================================================================================================
-    # Utility methods
-    # ==================================================================================================================
-
-    @staticmethod
-    def find_level(h, hierarchy):
-        """ Find the level of contour in hierarchy. """
-        level = 0
-        parent = h[3]
-        while parent != -1:
-            level += 1
-            parent = hierarchy[parent][3]
-        return level
-
-    @staticmethod
-    def is_valid_contour(h, hierarchy) -> bool:
-        """ Check if contour is valid based on its hierarchy. A valid contour should not have both parent and children. """
-        # if level is odd, it is a hole contour
-        level = SkeletonDecomposition.find_level(h, hierarchy)
-        if level % 2 == 1:
-            return False
-        return True
-        # # Check if contour has both parent and children in hierarchy.
-        # return not(h[3] != -1 and h[2] != -1)
 
     # ==================================================================================================================
     # visualization methods

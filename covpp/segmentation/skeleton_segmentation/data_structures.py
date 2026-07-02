@@ -49,10 +49,10 @@ class CriticalPoint:
         self.base_paths: list[tuple[tuple[int, int]]] = []  # paths from base points to critical point
 
 
-class SegmentSolution:
-    """Solution for segmentation."""
+# class SegmentSolution:
+#     """Solution for segmentation."""
 
-    def __init__(self, segmented_map: np.ndarray, seg_ids: list[int], polygons: list[Polygon]):
-        self.segmented_map = segmented_map
-        self.seg_ids = seg_ids
-        self.polygons = polygons
+#     def __init__(self, segmented_map: np.ndarray, seg_ids: list[int], polygons: list[Polygon]):
+#         self.segmented_map = segmented_map
+#         self.seg_ids = seg_ids
+#         self.polygons = polygons

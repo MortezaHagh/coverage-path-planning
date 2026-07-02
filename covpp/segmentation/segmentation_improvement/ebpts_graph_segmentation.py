@@ -40,7 +40,7 @@ class EspecialBranchPointsSegmentation:
     def run_whole(self):
         self.create_maps()
         graph_data, maps = self.create_graphs()
-        cpts, base_pts = self.create_critical_points(graph_data, maps)
+        cr_pts, base_pts = self.create_critical_points(graph_data, maps)
 
     def run_cell_based(self):
         self.created_segmented_map_from_cells(self.zmd.map_ws_segmented)
@@ -48,7 +48,7 @@ class EspecialBranchPointsSegmentation:
         # maps keys: skeleton_map_b, distance_map
         for cell in self.cells:
             graph_data, maps = self.create_cell_graphs(cell)
-            cpts, base_pts = self.create_critical_points(graph_data, maps)
+            cr_pts, base_pts = self.create_critical_points(graph_data, maps)
 
     # ==================================================================================================================
     # Create maps and graphs for the current segmented map
@@ -198,7 +198,7 @@ class EspecialBranchPointsSegmentation:
         grpups = self.find_groups_in_bpts_graph(graphs_data["bpts_graph"])
 
         # create a new critical points for each group
-        new_cps: list[CriticalPoint] = []
+        cr_pts: list[CriticalPoint] = []
         for i, m_group in enumerate(grpups):
 
             group = self.remove_invalid_edges_bpts_graph(m_group)
@@ -210,11 +210,11 @@ class EspecialBranchPointsSegmentation:
             if n_g > 3:
                 new_cp = self.find_modified_critical_points_g4(graphs_data["sk_graph"], group)
                 if new_cp is not None:
-                    new_cps.append(new_cp)
+                    cr_pts.append(new_cp)
             elif n_g == 3:
                 new_cp = self.find_modified_critical_points_g3(graphs_data["sk_graph"], group)
                 if new_cp is not None:
-                    new_cps.append(new_cp)
+                    cr_pts.append(new_cp)
 
             # # debugging: plot new critical point
             # if new_cp is None:
@@ -231,22 +231,22 @@ class EspecialBranchPointsSegmentation:
             # ax.legend()
             # plt.show()
 
-        if len(new_cps) == 0:
+        if len(cr_pts) == 0:
             return None, None
 
-        self.lg.info2(f"Found {len(new_cps)} new critical points for second level segmentation.")
+        self.lg.info2(f"Found {len(cr_pts)} new critical points for second level segmentation.")
 
         # Create a CriticalPointOperations instance to find base points for the new critical points
         cpo = CriticalPointOperations(distance_map=maps["distance_map"],
                                       skeleton_map_b=maps["skeleton_map_b"],
                                       branches=graphs_data["branches"])
-        cpo.critical_pts = new_cps
+        cpo.critical_pts = cr_pts
         cpo.find_base_points()
 
         # # debuggin, plot the filtered branch points graph
         # SBG.plot_branch_graph(graphs_data["branches"], graphs_data["bpts_graph"], self.segmented_map)
 
-        # plot for debugging # todo
+        # debugging
         _, ax = plt.subplots(1, 1)
         ax.imshow(self.zmd.map_ws, cmap='gray', alpha=0.5)
         for node in graphs_data["bpts_graph"].nodes:
@@ -255,7 +255,7 @@ class EspecialBranchPointsSegmentation:
             ax.text(node[1], node[0], f"{graphs_data['bpts_graph'].degree[node]}", color='b')
             for neighbor in neighbors:
                 ax.plot([node[1], neighbor[1]], [node[0], neighbor[0]], c='g')
-        for cp in new_cps:
+        for cp in cr_pts:
             cp_coord = cp.coord
             ax.scatter(cp_coord[1], cp_coord[0], c='r', marker='x', s=50)
         for bps in cpo.base_pts:
@@ -265,7 +265,7 @@ class EspecialBranchPointsSegmentation:
         ax.set_aspect('equal')
         plt.show()
 
-        return new_cps, cpo.base_pts
+        return cr_pts, cpo.base_pts
 
     # ==================================================================================================================
     # filtering and graph operations for finding new critical points
@@ -284,6 +284,8 @@ class EspecialBranchPointsSegmentation:
         if bpts_graph is None or bpts_graph.number_of_nodes() == 0:
             return
 
+        dist_thresh = 3.0 * self.robot_radius_px  # param
+
         # Recompute cycles on the current graph and guard against overlapping cycles
         loops = list(cycle_basis(bpts_graph))
         for loop in loops:
@@ -299,7 +301,7 @@ class EspecialBranchPointsSegmentation:
                 p2 = loop_nodes[(i + 1) % len(loop_nodes)]
                 if bpts_graph.has_edge(p1, p2):
                     edge_cost += bpts_graph[p1][p2].get('distance', 1.0)
-            if edge_cost > 3.0 * self.robot_radius_px:  # param
+            if edge_cost > dist_thresh:
                 continue
 
             keep_node = loop_nodes[0]
@@ -313,7 +315,6 @@ class EspecialBranchPointsSegmentation:
                         bpts_graph.add_edge(keep_node, neighbor)
                         dist = np.linalg.norm(np.array(keep_node) - np.array(neighbor))
                         bpts_graph[keep_node][neighbor]['distance'] = dist
-                        # bpts_graph[keep_node][neighbor]['type'] = ''
                 # Remove the merged node
                 if bpts_graph.has_node(p):
                     bpts_graph.remove_node(p)
@@ -448,3 +449,20 @@ class EspecialBranchPointsSegmentation:
             if self.segmented_map[y, x] == OCCUPIED:
                 return True
         return False
+
+    # ==================================================================================================================
+    # updated segmentation map
+    # ==================================================================================================================
+
+    def updates_segmentation_map_with_cr_pts(self, base_pts: list[list[tuple[int, int]]]):
+        """ Update the segmentation map with new critical points and base points. """
+        seg_map = self.segmented_map.copy()
+
+        # create a line connecting each two base points consecutively
+        for bases in base_pts:
+            n_bases = len(bases)
+            for i in range(n_bases):
+                j = (i + 1) % n_bases
+                b1 = bases[i]
+                b2 = bases[j]
+                cv.line(seg_map, (b1[1], b1[0]), (b2[1], b2[0]), OCCUPIED, thickness=2)
