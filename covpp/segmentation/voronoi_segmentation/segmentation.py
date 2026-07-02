@@ -48,8 +48,8 @@ class Segmentation(SegmentationBase):
         self.cp_base2_idxs: list[int] = []                  # indices of the second basis points in self.vor.points
         self.rings: list[Ring] = []                         # segments created from critical points
 
-    def run(self) -> None:
-        """Execute Voronoi-based decomposition and segmentation process."""
+    def segment_map(self) -> None:
+        """ Perform segmentation of the workspace map using Voronoi decomposition and critical point analysis."""
 
         # voronoi processing
         vor_dec = VoronoiDecomposition(self.zmd, self.map_polygons)
@@ -60,13 +60,6 @@ class Segmentation(SegmentationBase):
         # # # # segmentation (creating rings)
         if self.check_critical_points(vor_dec.b_poly):
             self.main_segmentation(vor_dec.b_poly, vor_dec.obs_polys)
-
-        # create cells
-        self.create_cells()
-        self.set_cell_adjacents()
-        self.process_cells()
-        self.n_cells = len(self.cells)
-        self.create_map_ws_segmented()
 
         # plotting
         self.plot_rings()
@@ -88,6 +81,9 @@ class Segmentation(SegmentationBase):
         self.find_skip_cps()
         # rings
         self.create_all_segments()
+
+    def post_process_segmentation(self):
+        pass
 
     # ==================================================================================================================
     # Preprocess
@@ -307,6 +303,15 @@ class Segmentation(SegmentationBase):
             cell = Cell(ind=i, ring=ring, resolution=self.zmd.resolution)
             self.cells.append(cell)
 
+        self.process_cells()
+        self.n_cells = len(self.cells)
+
+    def process_cells(self) -> None:
+        """processing cells. """
+        self.lg.info("Processing cells")
+        for cell in self.cells:
+            cell.process_cell()
+
     def set_cell_adjacents(self) -> None:
         """
         Set adjacent cells for each cell based on touching polygons.
@@ -329,13 +334,11 @@ class Segmentation(SegmentationBase):
         #             cell.add_adjacent_id(j)
         #             other_cell.add_adjacent_id(i)
 
-    def process_cells(self) -> None:
-        """processing cells. """
-        self.lg.info("Processing cells")
-        for cell in self.cells:
-            cell.process_cell()
+    # =================================================================================================================
+    # Segmented map creation
+    # =================================================================================================================
 
-    def create_map_ws_segmented(self):
+    def create_map_ws_segmented(self) -> None:
         """Create a map based on map_ws with segmentation lines drawn."""
         map_ws_segmented = self.zmd.map_ws.copy()
 
@@ -348,7 +351,6 @@ class Segmentation(SegmentationBase):
             bs2 = cp.bs2_vp - self.zmd.global_xy
             # draw line
             cv.line(map_ws_segmented, (int(bs1[0]), int(bs1[1])), (int(bs2[0]), int(bs2[1])), 0, thickness=2)  # 0: OCCUPIED
-
         self.zmd.map_ws_segmented = map_ws_segmented
 
     # ==================================================================================================================

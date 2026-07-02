@@ -12,6 +12,7 @@
 ## Coding improvements
 - check and update docstrings to reflect the current implementation.
 - Check and update the input output types in type hints. 
+- Check and update the log messages to reflect the current implementation.
 
 ## Credit-saving workflow
 

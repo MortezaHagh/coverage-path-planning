@@ -3,13 +3,15 @@
 This module defines the abstract interface that all segmentation methods
 must implement, enabling a plugin-based architecture.
 """
+from abc import ABC, abstractmethod
+
 from covpp.base.logger import MyLogger
 from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
 
 
-class SegmentationBase:
+class SegmentationBase(ABC):
     """Abstract base class for zone segmentation algorithms.
 
     Process expected from subclasses:
@@ -56,8 +58,34 @@ class SegmentationBase:
         Returns:
         - None
         """
-        raise NotImplementedError("Segmentation subclasses must implement run() method")
 
+        self.segment_map()
+        self.post_process_segmentation()
+        self.create_cells()
+        self.set_cell_adjacents()
+        self.create_map_ws_segmented()
+
+        # raise NotImplementedError("Segmentation subclasses must implement run() method")
+
+    @abstractmethod
+    def segment_map(self):
+        """Perform the segmentation of the workspace map.
+
+        Returns:
+        - None
+        """
+        raise NotImplementedError("Segmentation subclasses must implement segment_map() method")
+
+    @abstractmethod
+    def post_process_segmentation(self):
+        """Post-process the segmented map.
+
+        Returns:
+        - None
+        """
+        raise NotImplementedError("Segmentation subclasses must implement post_process_segmentation() method")
+
+    @abstractmethod
     def create_cells(self):
         """Create ``CellBase`` objects for each segmented cell.
 
@@ -66,6 +94,7 @@ class SegmentationBase:
         """
         raise NotImplementedError("Segmentation subclasses must implement run() method")
 
+    @abstractmethod
     def set_cell_adjacents(self):
         """Set adjacency relationships between cells (shared boundaries, etc.).
 
@@ -74,6 +103,11 @@ class SegmentationBase:
         """
         raise NotImplementedError("Segmentation subclasses must implement set_cell_adjacents() method")
 
-    def create_map_ws_segmented(self):
-        """Render segmentation lines over the workspace map for visualization."""
+    @abstractmethod
+    def create_map_ws_segmented(self) -> None:
+        """Create a segmented workspace map with segmentation lines drawn.
+
+        Returns:
+        - None
+        """
         raise NotImplementedError("Segmentation subclasses must implement create_map_ws_segmented() method")

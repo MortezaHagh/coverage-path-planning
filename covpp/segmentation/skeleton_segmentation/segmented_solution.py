@@ -10,14 +10,14 @@ FREE = 255
 
 
 class CreateSegmentationSolution:
-    def __init__(self, map_in, robot_radius_px: int, origin_coord: tuple[int, int]):
+    def __init__(self, map_ws: np.ndarray, map_ws_segmented: np.ndarray, robot_radius_px: int, origin_coord: tuple[int, int]):
         self.lg = MyLogger(name="CreateSegmentationSolution")
-        self.seg_map: np.ndarray = map_in.copy()
+        self.map_ws: np.ndarray = map_ws
+        self.map_ws_segmented: np.ndarray = map_ws_segmented
         self.robot_radius_px: int = robot_radius_px
         self.origin_coord: tuple[int, int] = origin_coord
 
         # attributes
-        self.map_ws_segmented: np.ndarray = None
         self.segmented_map: np.ndarray = None
         self.seg_ids: list[int] = None
         self.local_polygons: list[Polygon] = None
@@ -28,6 +28,11 @@ class CreateSegmentationSolution:
     def run_by_critical_points(self, base_pts: list[list[tuple[int, int]]], critical_pts: list[CriticalPoint]):
         self.create_segmented_map(base_pts)
         self.create_adjacency_matrix_by_critical_points(critical_pts)
+        self.create_polygons()
+
+    def run_by_map(self, base_pts: list[list[tuple[int, int]]]):
+        self.create_segmented_map(base_pts)
+        self.create_adjacency_matrix_by_segmented_map()
         self.create_polygons()
 
     # ==================================================================================================================
@@ -43,7 +48,7 @@ class CreateSegmentationSolution:
         - Each area will have a unique gray value. (later used in creating cells)
         """
 
-        seg_map = self.seg_map
+        seg_map = self.map_ws_segmented.copy()
 
         # create a line connecting each two base points consecutively
         for bases in base_pts:
@@ -133,6 +138,36 @@ class CreateSegmentationSolution:
                 for j in range(i + 1, n_ids):
                     adjacency_matrix[unique_ids[i] - 1, unique_ids[j] - 1] = True
                     adjacency_matrix[unique_ids[j] - 1, unique_ids[i] - 1] = True
+        self.adjacency_matrix = adjacency_matrix
+
+    def create_adjacency_matrix_by_segmented_map(self) -> None:
+        # go through all contour (local polygon) points
+        # for each point, check a canvas around it
+        # if there are more than 1 unique segment IDs, mark them as adjacent in the adjacency matrix
+        adjacency_matrix = np.zeros((len(self.seg_ids), len(self.seg_ids)), dtype=np.bool)
+        h, w = self.seg_map.shape
+        # canvas_size = 40 // 2
+        canvas_size = 4 * self.robot_radius_px  # param
+
+        # for each local polygon (contour)
+        for cnt in self.local_polygons:
+            for pt in cnt:
+                y, x = pt[0][1], pt[0][0]
+                y_min = max(0, y - canvas_size)
+                y_max = min(h, y + canvas_size)
+                x_min = max(0, x - canvas_size)
+                x_max = min(w, x + canvas_size)
+                canvas = self.seg_map[y_min:y_max, x_min:x_max]
+                unique_ids = np.unique(canvas)
+                # remove OCCUPIED and FREE
+                unique_ids = unique_ids[(unique_ids != OCCUPIED) & (unique_ids != FREE)]
+                n_ids = len(unique_ids)
+                if n_ids < 2:
+                    continue
+                for i in range(n_ids):
+                    for j in range(i + 1, n_ids):
+                        adjacency_matrix[unique_ids[i] - 1, unique_ids[j] - 1] = True
+                        adjacency_matrix[unique_ids[j] - 1, unique_ids[i] - 1] = True
         self.adjacency_matrix = adjacency_matrix
 
     def create_polygons(self) -> None:

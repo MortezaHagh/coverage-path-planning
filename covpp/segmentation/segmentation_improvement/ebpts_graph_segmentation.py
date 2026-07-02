@@ -1,6 +1,7 @@
 
 import cv2 as cv
 import numpy as np
+from shapely import Polygon
 from matplotlib import pyplot as plt
 from networkx import Graph, cycle_basis, shortest_path
 from scipy.ndimage import binary_opening, binary_closing
@@ -10,6 +11,7 @@ from covpp.base.geometry import find_angle_between_points
 from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.skeleton_segmentation.data_structures import CriticalPoint
 from covpp.segmentation.skeleton_segmentation.skelet_branch_graph import SkeletBranchGraph as SBG
+from covpp.segmentation.skeleton_segmentation.segmented_solution import CreateSegmentationSolution
 from covpp.segmentation.skeleton_segmentation.critical_points_operations import CriticalPointOperations
 
 OCCUPIED = 0
@@ -18,36 +20,53 @@ FREE = 255
 
 class EspecialBranchPointsSegmentation:
 
-    def __init__(self, zmd: ZoneMapData, cells: list[CellBase]):
+    def __init__(self, zmd: ZoneMapData, polygons_in: list[Polygon]):
         self.lg = MyLogger("EspecialBranchPointsSegmentation")
 
         # Data
         self.zmd = zmd
         self.segmented_map: np.ndarray = None
-        self.cells: list[CellBase] = cells
+        self.polygons_in: list[Polygon] = polygons_in
 
         # Parameters
         self.robot_radius_px = zmd.robot_radius_px
         self.min_dist_thresh_branch_px = 4 * self.robot_radius_px
 
+        #
+        self.polygons: list[Polygon] = None
+        self.map_ws_segmented: np.ndarray = None
+        self.adjacency_matrix: np.ndarray = None
+
     # --------------------------------------------------------------------------
     # Graph-Based Segmentation Based on current cells and segmented_map
     # --------------------------------------------------------------------------
 
-    def run(self):
-        self.run_whole()
+    def run(self) -> bool:
+        return self.run_whole()
 
-    def run_whole(self):
+    def run_whole(self) -> bool:
         self.create_maps()
         graph_data, maps = self.create_graphs()
         cr_pts, base_pts = self.create_critical_points(graph_data, maps)
+        if base_pts is None or len(base_pts) == 0:
+            return False
+        # create segmented solution
+        css = CreateSegmentationSolution(map_ws=self.zmd.map_ws.copy(),
+                                         map_ws_segmented=self.zmd.map_ws_segmented.copy(),
+                                         robot_radius_px=self.robot_radius_px,
+                                         origin_coord=self.zmd.global_xy)
+        css.run_by_map(base_pts=base_pts)
+        self.polygons = css.polygons
+        self.map_ws_segmented = css.map_ws_segmented
+        self.adjacency_matrix = css.adjacency_matrix
+        return True
 
     def run_cell_based(self):
         self.created_segmented_map_from_cells(self.zmd.map_ws_segmented)
         # graphs_data keys: sk_graph, bpts_graph, branches
         # maps keys: skeleton_map_b, distance_map
-        for cell in self.cells:
-            graph_data, maps = self.create_cell_graphs(cell)
+        for i, poly in enumerate(self.polygons_in):
+            graph_data, maps = self.create_cell_graphs(poly=poly, id=i + 1)
             cr_pts, base_pts = self.create_critical_points(graph_data, maps)
 
     # ==================================================================================================================
@@ -56,8 +75,7 @@ class EspecialBranchPointsSegmentation:
 
     def create_maps(self):
         # sk_map = self.prepare_map_for_skeleton(self.zmd.map_ws)
-        seg_map = self.zmd.map_ws_segmented.copy()
-        self.segmented_map = seg_map
+        self.segmented_map = self.zmd.map_ws_segmented.copy()
 
         # # debugging, plot the filtered branch points graph
         # SBG.plot_branch_graph(None, None, seg_map)
@@ -96,23 +114,22 @@ class EspecialBranchPointsSegmentation:
         # for each cell polygon, fill the segmented map with the cell id
         gxy = self.zmd.global_xy
         segmented_map = map_in.copy()
-        for cell in self.cells:
-            cell_id = self.get_cell_seg_id(cell)
-            pts = np.array([[int(p[0] - gxy[0]), int(p[1] - gxy[1])] for p in cell.points], dtype=np.int32)
-            cv.fillPoly(segmented_map, pts=[pts], color=cell_id)
+        for i, poly in enumerate(self.polygons_in):
+            id = i + 1  # Assign unique ID to each polygon
+            pts = np.array([[int(p[0] - gxy[0]), int(p[1] - gxy[1])] for p in poly.exterior.coords], dtype=np.int32)
+            cv.fillPoly(segmented_map, pts=[pts], color=id)
             cv.drawContours(segmented_map, [pts], 0, OCCUPIED, thickness=1)
         segmented_map[map_in == OCCUPIED] = OCCUPIED
         self.segmented_map = segmented_map
 
-    def create_cell_graphs(self, cell: CellBase) -> tuple[dict, dict]:
+    def create_cell_graphs(self, poly: Polygon, id: int) -> tuple[dict, dict]:
 
-        # create a binary map for the cell where the cell is FREE and outside is OCCUPIED
-        cell_id = self.get_cell_seg_id(cell)
+        # create a binary map for the polygon where the polygon is FREE and outside is OCCUPIED
         cell_map = self.segmented_map.copy()
-        cell_map = np.where(self.segmented_map == cell_id, 1, 0).astype(np.uint8) * 255
+        cell_map = np.where(self.segmented_map == id, 1, 0).astype(np.uint8) * 255
         # cell_map = self.prepare_map_for_skeleton(cell_map)
         if cell_map.sum() == 0:
-            raise ValueError(f"Cell map for cell id {cell_id} is empty. Check the segmented map and cell polygons.")
+            raise ValueError(f"Cell map for cell id {id} is empty. Check the segmented map and cell polygons.")
 
         # create skeleton and distance maps, and the skeleton graph
         maps = SBG.create_skeletonized_maps(cell_map, method='medial_axis')  # maps: skeleton_map_b, distance_map
@@ -246,24 +263,24 @@ class EspecialBranchPointsSegmentation:
         # # debuggin, plot the filtered branch points graph
         # SBG.plot_branch_graph(graphs_data["branches"], graphs_data["bpts_graph"], self.segmented_map)
 
-        # debugging
-        _, ax = plt.subplots(1, 1)
-        ax.imshow(self.zmd.map_ws, cmap='gray', alpha=0.5)
-        for node in graphs_data["bpts_graph"].nodes:
-            neighbors = list(graphs_data["bpts_graph"].neighbors(node))
-            ax.scatter(node[1], node[0], c='b', marker='o')
-            ax.text(node[1], node[0], f"{graphs_data['bpts_graph'].degree[node]}", color='b')
-            for neighbor in neighbors:
-                ax.plot([node[1], neighbor[1]], [node[0], neighbor[0]], c='g')
-        for cp in cr_pts:
-            cp_coord = cp.coord
-            ax.scatter(cp_coord[1], cp_coord[0], c='r', marker='x', s=50)
-        for bps in cpo.base_pts:
-            for bp in bps:
-                ax.scatter(bp[1], bp[0], c='b', marker='o', s=25)
-        ax.imshow(self.segmented_map, cmap='gray', alpha=0.5)
-        ax.set_aspect('equal')
-        plt.show()
+        # # debugging
+        # _, ax = plt.subplots(1, 1)
+        # ax.imshow(self.zmd.map_ws, cmap='gray', alpha=0.5)
+        # for node in graphs_data["bpts_graph"].nodes:
+        #     neighbors = list(graphs_data["bpts_graph"].neighbors(node))
+        #     ax.scatter(node[1], node[0], c='b', marker='o')
+        #     ax.text(node[1], node[0], f"{graphs_data['bpts_graph'].degree[node]}", color='b')
+        #     for neighbor in neighbors:
+        #         ax.plot([node[1], neighbor[1]], [node[0], neighbor[0]], c='g')
+        # for cp in cr_pts:
+        #     cp_coord = cp.coord
+        #     ax.scatter(cp_coord[1], cp_coord[0], c='r', marker='x', s=50)
+        # for bps in cpo.base_pts:
+        #     for bp in bps:
+        #         ax.scatter(bp[1], bp[0], c='b', marker='o', s=25)
+        # ax.imshow(self.segmented_map, cmap='gray', alpha=0.5)
+        # ax.set_aspect('equal')
+        # plt.show()
 
         return cr_pts, cpo.base_pts
 

@@ -20,13 +20,21 @@ class Segmentation(SegmentationBase):
         super().__init__(zmd, map_polygons)
         self.lg.update_name("SegmentationSimple")
 
-    def run(self) -> None:
+    def segment_map(self) -> None:
         """Execute simple segmentation by creating a single cell.
 
         Returns:
         - None
         """
-        self.create_cells()
+        pass
+
+    def post_process_segmentation(self) -> None:
+        """No post-processing needed for single-cell segmentation.
+
+        Returns:
+        - None
+        """
+        pass
 
     def create_cells(self) -> None:
         """Instantiate a single ``CellBase`` for the whole zone polygon.
@@ -41,3 +49,11 @@ class Segmentation(SegmentationBase):
     def set_cell_adjacents(self):
         """No-op because a lone cell has no neighbours."""
         return
+
+    def create_map_ws_segmented(self) -> None:
+        """Create a segmented map with a single cell.
+
+        Returns:
+        - None
+        """
+        pass

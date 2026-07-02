@@ -6,7 +6,6 @@ from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
 from skimage.morphology import medial_axis  # , skeletonize
 # from scipy.ndimage import binary_opening, binary_closing
-#
 from covpp.base.logger import MyLogger
 from covpp.base.plot_styles import set_plot_styles
 from covpp.base.configs import RobotConfig, PipeLineConfig
@@ -15,6 +14,7 @@ from covpp.segmentation.skeleton_segmentation.skelet_branch_graph import SkeletB
 from covpp.segmentation.skeleton_segmentation.segmented_solution import CreateSegmentationSolution
 from covpp.segmentation.skeleton_segmentation.data_structures import Skelet, Branch, CriticalPoint
 from covpp.segmentation.skeleton_segmentation.critical_points_operations import CriticalPointOperations
+
 OCCUPIED = 0
 FREE = 255
 
@@ -70,7 +70,8 @@ class SkeletonDecomposition:
         self.base_pts = critical_operator.base_pts
 
         # create segmented solution
-        css = CreateSegmentationSolution(map_in=self.zmd.map_ws.copy(),
+        css = CreateSegmentationSolution(map_ws=self.zmd.map_ws.copy(),
+                                         map_ws_segmented=self.zmd.map_ws_segmented.copy(),
                                          robot_radius_px=self.robot_radius_px,
                                          origin_coord=self.zmd.global_xy)
         css.run_by_critical_points(base_pts=self.base_pts, critical_pts=self.critical_pts)
@@ -280,12 +281,6 @@ class SkeletonDecomposition:
         ax2.invert_yaxis()
 
         # # --------------------------------------------------------------------------------------------------------------
-        # # Figure 3: division map
-        # _, ax3 = plt.subplots(1, 1, constrained_layout=True)
-        # ax3.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=2/scale_px)
-        # ax3.imshow(self.skelet.skeleton_segmented_map, cmap='tab20', alpha=1.0)
-        # configure_ax(ax3, 'Division Map based on Skeleton', show_legend=False)
-
         # save figures
         im_format = 'png'  # 'svg'
         if PipeLineConfig.do_plot_segmentation:
@@ -297,37 +292,6 @@ class SkeletonDecomposition:
 
         # plt.show()
         plt.close('all')
-
-        # # plot division map separately
-        # fig, ax = plt.subplots(1, 1, constrained_layout=True)
-        # ax.imshow(self.skelet.skeleton_segmented_map, cmap='nipy_spectral', alpha=1.0)  # nipy_spectral tab20
-        # ax.set_aspect('equal')
-        # ax.axis('off')
-        # fig3_path = save_dir + "/skeleton_division_map.pdf"
-        # plt.show()
-        # fig.savefig(fig3_path, format='pdf', dpi=600, bbox_inches='tight')
-
-        # # cv.imshow("Division Map", self.skelet.skeleton_segmented_map)
-        # # show critical points
-        # viz_map = self.skelet.skeleton_segmented_map.copy()
-        # viz_map[self.skelet.skeleton_map_b] = 0  # hide skeleton for better visualization
-        # # ti uint8 for visualization
-        # if viz_map.dtype != np.uint8:
-        #     viz_map = viz_map.astype(np.uint8)
-        # skel_div_map_cp = cv.cvtColor(viz_map, cv.COLOR_GRAY2BGR)
-        # for cp in self.critical_pts:
-        #     y, x = cp.coord
-        #     skel_div_map_cp[y, x] = (0, 0, 255)
-        # # show error points
-        # for ep in self.erp_sidep:
-        #     y, x = ep
-        #     skel_div_map_cp[y, x] = (255, 0, 0)  # error points in blue
-        # for ep in self.error_point_segments:
-        #     y, x = ep
-        #     skel_div_map_cp[y, x] = (255, 255, 0)  # error points in cyan
-        # cv.imshow("Division Map with Critical Points", skel_div_map_cp)
-        # cv.waitKey(0)
-        # cv.destroyAllWindows()
 
     @staticmethod
     def viz_img(img: np.ndarray, name: str):
