@@ -1,16 +1,15 @@
 
 import heapq
 import numpy as np
-from matplotlib import pyplot as plt
 from covpp.base.logger import MyLogger
 from covpp.segmentation.skeleton_segmentation.data_structures import Branch, CriticalPoint, Configs
 
 
 class CriticalPointOperations:
+    """ Class for finding critical points and base points in the skeleton of a map. """
+
     def __init__(self, distance_map: np.ndarray, skeleton_map_b: np.ndarray, branches: list[Branch]):
         self.lg = MyLogger("CriticalPointOperations")
-
-        # Data
         self.cfgs = Configs()
         self.distance_map: np.ndarray = distance_map
         self.skeleton_map_b: np.ndarray = skeleton_map_b
@@ -19,10 +18,6 @@ class CriticalPointOperations:
         # attributes
         self.critical_pts: list[CriticalPoint] = []
         self.base_pts: list[tuple[int, int]] = []
-
-        # ==================================================================================================================
-        # find critical points and base points
-        # ==================================================================================================================
 
     def run(self):
         self.find_critical_points()
@@ -102,10 +97,6 @@ class CriticalPointOperations:
             self.lg.warn(f"N base points {len(self.base_pts)} != N critical points {len(self.critical_pts)}.")
             # raise ValueError("Base points and critical points count mismatch.")
 
-    # ==================================================================================================================
-    # find side points and base points
-    # ==================================================================================================================
-
     def find_side_points_simple(self, cp: CriticalPoint, n_pts: int = 2) -> bool:
         ''' Find side points for a critical point using a simple method.'''
 
@@ -132,76 +123,12 @@ class CriticalPointOperations:
         cp.side_points = side_pts
         return True
 
-    # def find_side_points(self, cp: CriticalPoint, n_pts: int = 2) -> bool:
-    #     """ Find side points for a critical point.
-
-    #     Side points are found by expanding from the critical point to neighboring pixels.
-    #     Side points must be in different skeleton segments than each other and the critical point.
-
-    #     Steps:
-    #     - Start from the critical point and explore its 8-connectivity neighbors.
-    #     - For each neighbor, check its skeleton segment.
-    #     - If the neighbor's skeleton segment is different from the critical point's segment and not already found,
-    #       add it to the side points list.
-    #     - Continue exploring until the required number of side points is found.
-    #     """
-
-    #     # find neighbors (8-connectivity) of cp
-    #     dxy_8c = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
-    #     cp_coord = cp.coord
-    #     cp_sk_segment = self.skelet.skeleton_segmented_map[cp_coord[0], cp_coord[1]]
-    #     sk_segments = [OCCUPIED, cp_sk_segment]  # to ignore skeleton
-    #     open = [cp_coord]
-    #     visited: set[tuple] = set()
-    #     side_pts: list[tuple[int, int]] = []
-
-    #     while open and len(side_pts) < n_pts:
-    #         p = open.pop(0)
-    #         cy, cx = p
-    #         if (cy, cx) in visited:
-    #             continue
-    #         visited.add((cy, cx))
-    #         for dy, dx in dxy_8c:
-    #             y = cy + dy
-    #             x = cx + dx
-    #             sk_seg = self.skelet.skeleton_segmented_map[y, x]
-
-    #             # had to add this check to find side points in cases where cp more surrounded by skeleton
-    #             # add skeleton segment to open list to explore further around it
-    #             if sk_seg == OCCUPIED:
-    #                 open.append((y, x))
-    #                 continue
-
-    #             if sk_seg in sk_segments:
-    #                 continue
-
-    #             sk_segments.append(sk_seg)
-    #             side_pts.append((y, x))
-
-    #         # only want to explore a few layers away from cp
-    #         if len(open) > 4:
-    #             break
-
-    #     # validate
-    #     if len(side_pts) != n_pts:
-    #         self.erp_sidep.append(cp_coord)
-    #         self.lg.warn(f"Expected {n_pts} side points, found {len(side_pts)} for critical point at {cp_coord}.")
-    #         return False
-
-    #     # store results in cp
-    #     cp.cp_skel_segment = cp_sk_segment
-    #     cp.side_sk_segments = sk_segments[2:]
-    #     cp.side_points = side_pts
-    #     return True
-
     def get_base_points_by_expand_side_points(self, cp: CriticalPoint, n_pts: int = 2) -> bool:
         """ Find two side points for a critical point and expand until finding base points.
 
         Expansion is guided by `distance_map`: neighbors with lower distance are explored first,
         so the search tends toward walls/contours faster.
         """
-
-        dxy_8c = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
 
         # find side points
         if not self.find_side_points_simple(cp, n_pts=n_pts):
@@ -211,6 +138,7 @@ class CriticalPointOperations:
         visited: set[tuple] = set()
         base_pts: list[tuple[int, int]] = []            # base points
         base_paths: list[tuple[tuple[int, int]]] = []   # base paths
+        dxy_8c = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
 
         # for each side point, expand until hitting contour or occupied space
         # for side_pt, sk_segment in zip(cp.side_points, cp.side_sk_segments):

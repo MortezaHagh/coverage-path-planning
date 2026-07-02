@@ -5,7 +5,6 @@ from networkx import Graph
 from matplotlib import pyplot as plt
 from skimage.morphology import medial_axis, skeletonize
 from covpp.base.logger import MyLogger
-from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.skeleton_segmentation.data_structures import Branch
 
 OCCUPIED = 0
@@ -13,13 +12,17 @@ FREE = 255
 
 
 class SkeletBranchGraph:
+    """ Class for creating a graph representation of the skeleton of map. """
+
     lg = MyLogger("SkeletBranchGraph")
 
     def __init__(self):
         pass
 
     @staticmethod
-    def create_maps(map_ws: np.ndarray, method: str = 'medial_axis') -> dict:
+    def create_skeletonized_maps(map_ws: np.ndarray, method: str = 'medial_axis') -> dict:
+        """ Create skeleton and distance maps from the workspace map. """
+
         if method == 'medial_axis':
             skeleton_map_b, distance_map = medial_axis(map_ws, return_distance=True)
         elif method == 'skeletonize':
@@ -61,6 +64,7 @@ class SkeletBranchGraph:
     @classmethod
     def create_especial_points(cls, sk_graph: Graph) -> tuple[list[tuple], list[tuple]]:
         """ Create a list of special points (endpoints and branch points) from the skeleton graph. """
+
         end_pts = [node for node in sk_graph.nodes if sk_graph.degree[node] == 1]
         branch_pts = [node for node in sk_graph.nodes if sk_graph.degree[node] > 2]
         return end_pts, branch_pts
@@ -80,10 +84,10 @@ class SkeletBranchGraph:
         end_pts = especial_pts_dict["end_pts"]
         skipped_end_pts = especial_pts_dict.get("skipped_end_pts", [])
         branch_pts = especial_pts_dict["branch_pts"]
-        special_pts = list(set(end_pts + branch_pts))
+        special_pts = end_pts + branch_pts
 
         # validate
-        if len(end_pts) + len(branch_pts) != len(special_pts):
+        if len(end_pts) + len(branch_pts) != len(set(special_pts)):
             raise ValueError("Duplicate special points found in skeleton graph.")
 
         def next_nodes(curr, prev):
@@ -140,6 +144,10 @@ class SkeletBranchGraph:
 
         return branches, bpts_graph
 
+    # ==================================================================================================================
+    # Visualization methods
+    # ==================================================================================================================
+
     @staticmethod
     def plot_branch_graph(branches: list[Branch] = None, bpts_graph: Graph = None, map_ws: np.ndarray = None) -> None:
         _, ax = plt.subplots(1, 1)
@@ -148,12 +156,13 @@ class SkeletBranchGraph:
             ax.imshow(map_ws, cmap='gray', alpha=0.5)
         # Branches
         if branches is not None:
+            colors = plt.cm.get_cmap('tab10', len(branches))
             for i, branch in enumerate(branches):
                 label = "branch" if i == 0 else None
                 points = branch.points
                 xs = [p[1] for p in points]
                 ys = [p[0] for p in points]
-                ax.plot(xs, ys, c='g', linewidth=2, label=label)
+                ax.plot(xs, ys, c=colors(i), linewidth=2, label=label)
         # bts_graph edges
         if bpts_graph is not None:
             for i, edge in enumerate(bpts_graph.edges):

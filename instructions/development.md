@@ -9,6 +9,10 @@
 ## Code structure and naming
 - Follow the existing package structure and naming conventions.
 
+## Coding improvements
+- check and update docstrings to reflect the current implementation.
+- Check and update the input output types in type hints. 
+
 ## Credit-saving workflow
 
 - Start from the nearest owning file, handler, or base class.

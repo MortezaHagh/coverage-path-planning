@@ -1,7 +1,7 @@
 """ Data structures for skeleton segmentation."""
 import dataclasses
 import numpy as np
-from shapely.geometry import Polygon  # , LineString
+from shapely.geometry import Polygon
 
 
 @dataclasses.dataclass

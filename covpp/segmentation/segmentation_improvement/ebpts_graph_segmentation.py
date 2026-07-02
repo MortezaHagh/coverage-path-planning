@@ -2,14 +2,13 @@
 import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
-from shapely.geometry import Polygon, LineString
-from scipy.ndimage import binary_opening, binary_closing
 from networkx import Graph, cycle_basis, shortest_path
+from scipy.ndimage import binary_opening, binary_closing
 from covpp.base.logger import MyLogger
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.base.geometry import find_angle_between_points
 from covpp.segmentation.cell_base import CellBase
-from covpp.segmentation.skeleton_segmentation.data_structures import CriticalPoint, Branch
+from covpp.segmentation.skeleton_segmentation.data_structures import CriticalPoint
 from covpp.segmentation.skeleton_segmentation.skelet_branch_graph import SkeletBranchGraph as SBG
 from covpp.segmentation.skeleton_segmentation.critical_points_operations import CriticalPointOperations
 
@@ -36,43 +35,60 @@ class EspecialBranchPointsSegmentation:
     # --------------------------------------------------------------------------
 
     def run(self):
-        # self.create_maps()
-        # self.create_graphs()
+        self.run_whole()
 
+    def run_whole(self):
+        self.create_maps()
+        graph_data, maps = self.create_graphs()
+        cpts, base_pts = self.create_critical_points(graph_data, maps)
+
+    def run_cell_based(self):
         self.created_segmented_map_from_cells(self.zmd.map_ws_segmented)
+        # graphs_data keys: sk_graph, bpts_graph, branches
+        # maps keys: skeleton_map_b, distance_map
         for cell in self.cells:
-            # graphs_data keys: sk_graph, bpts_graph, branches
-            # maps keys: skeleton_map_b, distance_map
             graph_data, maps = self.create_cell_graphs(cell)
-            self.create_critical_points(graph_data, maps)
+            cpts, base_pts = self.create_critical_points(graph_data, maps)
 
-    # def create_maps(self):
-    #     sk_map = self.prepare_map_for_skeleton(self.zmd.map_ws)
-    #     seg_map = self.zmd.map_ws_segmented.copy()
-    #     seg_map[sk_map == 0] = 0
-    #     self.segmented_map = seg_map
-    #     # # debuggin, plot the filtered branch points graph
-    #     # SBG.plot_branch_graph(None, None, seg_map)
+    # ==================================================================================================================
+    # Create maps and graphs for the current segmented map
+    # ==================================================================================================================
 
-    # def create_graphs(self):
-    #     maps = SBG.create_maps(self.segmented_map, method='skeletonize')
-    #     sk_graph = SBG.create_skeleton_graph(maps["skeleton_map_b"])
+    def create_maps(self):
+        # sk_map = self.prepare_map_for_skeleton(self.zmd.map_ws)
+        seg_map = self.zmd.map_ws_segmented.copy()
+        self.segmented_map = seg_map
 
-    #     end_pts, branch_pts = SBG.create_especial_points(sk_graph)
-    #     especial_pts_dict = {"end_pts": end_pts, "branch_pts": branch_pts, "skipped_end_pts": []}
+        # # debugging, plot the filtered branch points graph
+        # SBG.plot_branch_graph(None, None, seg_map)
 
-    #     branches, bpts_graph = SBG.create_branch_points_graph(sk_graph=sk_graph,
-    #                                                           especial_pts_dict=especial_pts_dict,
-    #                                                           len_thresh_px=self.min_dist_thresh_branch_px)
-    #     data = {
-    #         "sk_graph": sk_graph,
-    #         "bpts_graph": bpts_graph,
-    #         "branches": branches,
-    #     }
+    def create_graphs(self):
 
-    #     # # debugging
-    #     # SBG.plot_branch_graph(branches, bpts_graph, sk_graph)
-    #     return data
+        maps = SBG.create_skeletonized_maps(self.segmented_map, method='medial_axis')  # maps: skeleton_map_b, distance_map
+        sk_graph = SBG.create_skeleton_graph(maps["skeleton_map_b"])
+
+        end_pts, branch_pts = SBG.create_especial_points(sk_graph)
+        especial_pts_dict = {"end_pts": end_pts, "branch_pts": branch_pts, "skipped_end_pts": []}
+
+        branches, bpts_graph = SBG.create_branch_points_graph(sk_graph=sk_graph,
+                                                              especial_pts_dict=especial_pts_dict,
+                                                              len_thresh_px=self.min_dist_thresh_branch_px)
+
+        bpts_graph = self.filter_bpts_graph(bpts_graph, maps["distance_map"], self.robot_radius_px)
+
+        graph_data = {
+            "sk_graph": sk_graph,
+            "bpts_graph": bpts_graph,
+            "branches": branches,
+        }
+
+        # # debugging
+        # SBG.plot_branch_graph(branches, bpts_graph, sk_graph)
+        return graph_data, maps
+
+    # ==================================================================================================================
+    # Cell level graph creation
+    # ==================================================================================================================
 
     def created_segmented_map_from_cells(self, map_in: np.ndarray) -> np.ndarray:
         """ Create a segmented map where each cell polygon is filled with its unique id. """
@@ -94,12 +110,12 @@ class EspecialBranchPointsSegmentation:
         cell_id = self.get_cell_seg_id(cell)
         cell_map = self.segmented_map.copy()
         cell_map = np.where(self.segmented_map == cell_id, 1, 0).astype(np.uint8) * 255
-        sk_map = self.prepare_map_for_skeleton(cell_map)
-        if sk_map.sum() == 0:
+        # cell_map = self.prepare_map_for_skeleton(cell_map)
+        if cell_map.sum() == 0:
             raise ValueError(f"Cell map for cell id {cell_id} is empty. Check the segmented map and cell polygons.")
 
         # create skeleton and distance maps, and the skeleton graph
-        maps = SBG.create_maps(sk_map, method='skeletonize')  # maps: skeleton_map_b, distance_map
+        maps = SBG.create_skeletonized_maps(cell_map, method='medial_axis')  # maps: skeleton_map_b, distance_map
         sk_graph = SBG.create_skeleton_graph(maps["skeleton_map_b"])
 
         # create especial points (end points and branch points) and the branch points graph
@@ -108,6 +124,7 @@ class EspecialBranchPointsSegmentation:
         branches, bpts_graph = SBG.create_branch_points_graph(sk_graph=sk_graph,
                                                               especial_pts_dict=especial_pts_dict,
                                                               len_thresh_px=self.min_dist_thresh_branch_px)
+
         bpts_graph = self.filter_bpts_graph(bpts_graph, maps["distance_map"], self.robot_radius_px)
 
         graph_data = {"sk_graph": sk_graph,
@@ -119,6 +136,10 @@ class EspecialBranchPointsSegmentation:
         # SBG.plot_branch_graph(branches, bpts_graph, cell_map)
         return graph_data, maps
 
+    # =================================================================================================================
+    # maps and graph utilities
+    # =================================================================================================================
+
     @staticmethod
     def filter_bpts_graph(bpts_graph: Graph, distance_map: np.ndarray, robot_radius_px: float) -> tuple[list[tuple], list[tuple]]:
         """ Filter the branch points graph to remove nodes that are too close to obstacles based on the distance map. """
@@ -126,8 +147,19 @@ class EspecialBranchPointsSegmentation:
         if bpts_graph is None or bpts_graph.number_of_nodes() == 0:
             return bpts_graph
 
+        # find max 'distance' from the graph nodes
+        max_distance = 0.0
+        for node in bpts_graph.nodes:
+            (y, x) = node
+            dist_to_obstacle = distance_map[y, x]
+            if dist_to_obstacle > max_distance:
+                max_distance = dist_to_obstacle
+
+        # todo
+        # threshold_distance = max_distance // 4  # param
+        threshold_distance = 4 * robot_radius_px  # param
+
         # Create a list of nodes to remove
-        threshold_distance = 4 * robot_radius_px
         nodes_to_remove = []
         for node in bpts_graph.nodes:
             y, x = node
@@ -152,21 +184,17 @@ class EspecialBranchPointsSegmentation:
     def get_cell_seg_id(cell: CellBase) -> int:
         return cell.id + 1  # start from 1
 
-    # --------------------------------------------------------------------------
+    # ==================================================================================================================
     # Find critical points and base points for each cell for improved segmentation
-    # --------------------------------------------------------------------------
+    # ==================================================================================================================
 
-    def create_critical_points(self, graphs_data: dict, maps: dict):
+    def create_critical_points(self, graphs_data: dict, maps: dict) -> tuple[list[CriticalPoint], list[list[tuple[int, int]]]]:
         """ Perform graph-based segmentation improvement using the provided graphs data. """
 
         # graphs_data keys: sk_graph, bpts_graph, branches
         self.filter_loops_bpts_graph(graphs_data["bpts_graph"])
         self.filter_short_edges_bpts_graph(graphs_data["bpts_graph"], n_short_neighbors=1)
         self.filter_short_edges_bpts_graph(graphs_data["bpts_graph"], n_short_neighbors=0)
-
-        # # debuggin, plot the filtered branch points graph
-        # SBG.plot_branch_graph(None, graphs_data["bpts_graph"], self.segmented_map)
-
         grpups = self.find_groups_in_bpts_graph(graphs_data["bpts_graph"])
 
         # create a new critical points for each group
@@ -174,7 +202,8 @@ class EspecialBranchPointsSegmentation:
         for i, m_group in enumerate(grpups):
 
             group = self.remove_invalid_edges_bpts_graph(m_group)
-            group = m_group.copy()
+            # group = m_group.copy()
+
             n_g = len(group)
             new_cp = None
 
@@ -207,12 +236,15 @@ class EspecialBranchPointsSegmentation:
 
         self.lg.info2(f"Found {len(new_cps)} new critical points for second level segmentation.")
 
-        # todo
+        # Create a CriticalPointOperations instance to find base points for the new critical points
         cpo = CriticalPointOperations(distance_map=maps["distance_map"],
                                       skeleton_map_b=maps["skeleton_map_b"],
                                       branches=graphs_data["branches"])
         cpo.critical_pts = new_cps
         cpo.find_base_points()
+
+        # # debuggin, plot the filtered branch points graph
+        # SBG.plot_branch_graph(graphs_data["branches"], graphs_data["bpts_graph"], self.segmented_map)
 
         # plot for debugging # todo
         _, ax = plt.subplots(1, 1)
@@ -233,9 +265,11 @@ class EspecialBranchPointsSegmentation:
         ax.set_aspect('equal')
         plt.show()
 
-    # # ==================================================================================================================
-    # # second level segmentation methods
-    # # ==================================================================================================================
+        return new_cps, cpo.base_pts
+
+    # ==================================================================================================================
+    # filtering and graph operations for finding new critical points
+    # ==================================================================================================================
 
     def filter_loops_bpts_graph(self, bpts_graph: Graph):
         """ Modify branch ends graph to remove loops by merging loop points into a new point.
@@ -265,7 +299,7 @@ class EspecialBranchPointsSegmentation:
                 p2 = loop_nodes[(i + 1) % len(loop_nodes)]
                 if bpts_graph.has_edge(p1, p2):
                     edge_cost += bpts_graph[p1][p2].get('distance', 1.0)
-            if edge_cost > 3.0 * self.robot_radius_px:
+            if edge_cost > 3.0 * self.robot_radius_px:  # param
                 continue
 
             keep_node = loop_nodes[0]
@@ -295,7 +329,7 @@ class EspecialBranchPointsSegmentation:
             return
 
         # For each node, collect all neighbors connected by short edges
-        dist_thresh = 4.0 * self.robot_radius_px
+        dist_thresh = 4.0 * self.robot_radius_px  # param
         nodes = list(bpts_graph.nodes)
         for u in nodes:
             if not bpts_graph.has_node(u):
@@ -372,7 +406,7 @@ class EspecialBranchPointsSegmentation:
 
         path = shortest_path(sk_graph, source=tuple(gc), target=tuple(gg))
         n_path = len(path)
-        new_ind = n_path - n_path // 5
+        new_ind = n_path // 5
         # new_ind = self.skelet_distance_map[gc[0], gc[1]]
         # new_ind = int(new_ind * 0.7)  # move closer to gc
         new_coord = path[new_ind]

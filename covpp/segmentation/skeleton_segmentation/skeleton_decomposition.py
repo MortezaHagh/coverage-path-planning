@@ -3,7 +3,7 @@ import cv2 as cv
 import numpy as np
 from networkx import Graph
 from matplotlib import pyplot as plt
-from shapely.geometry import Polygon  # , LineString
+from shapely.geometry import Polygon
 from skimage.morphology import medial_axis  # , skeletonize
 # from scipy.ndimage import binary_opening, binary_closing
 #
@@ -78,7 +78,7 @@ class SkeletonDecomposition:
         # create adjacency matrix and polygons
         self.adjacency_matrix = self.create_adjacency_matrix(segment_solution)
         self.create_polygons(segment_solution.polygons)
-        self.lg.info2(f"Extracted {len(self.polygons)} polygons.")
+        self.lg.debug(f"Extracted {len(self.polygons)} polygons.")
 
         self.plot_segmentation()
 
@@ -106,7 +106,7 @@ class SkeletonDecomposition:
                 base2 = bases[j]
                 cv.line(seg_map, (base1[1], base1[0]), (base2[1], base2[0]), OCCUPIED, thickness=2)
 
-        # # # create map_ws_segmented
+        # create map_ws_segmented ----------------------------------------------
         self.map_ws_segmented = seg_map.copy()
 
         seg_ids = []
@@ -161,7 +161,7 @@ class SkeletonDecomposition:
         adjacency_matrix = np.zeros((len(segment_solution.seg_ids), len(segment_solution.seg_ids)), dtype=np.bool)
         h, w = segment_solution.segmented_map.shape
         # canvas_size = 40 // 2
-        canvas_size = 2 * self.robot_radius_px  # canvas size based on robot radius
+        canvas_size = 4 * self.robot_radius_px  # canvas size based on robot radius
 
         for cp in self.critical_pts:
             y, x = cp.coord
@@ -261,7 +261,7 @@ class SkeletonDecomposition:
     def create_branches(self) -> None:
         """ Extract branches from a skeleton as paths between end_points/branch_pts. """
 
-        # maps = SBG.create_maps(self.zmd.map_ws, method='medial_axis')
+        # maps = SBG.create_skeletonized_maps(self.zmd.map_ws, method='medial_axis')
         sk_graph = SBG.create_skeleton_graph(self.skelet.skeleton_map_b)
 
         # update skeletonization data with special points
@@ -269,12 +269,10 @@ class SkeletonDecomposition:
         self.skelet.end_points = np.array(end_pts)
         self.skelet.f_end_pts = np.array(end_pts)
         self.skelet.branch_pts = np.array(branch_pts)
-
         f_end_pts, skipped_end_pts = self.filter_end_points(end_pts)
-
-        min_dist_thresh_branch_px = 4 * self.robot_radius_px
         especial_pts_dict = {"end_pts": f_end_pts, "branch_pts": branch_pts, "skipped_end_pts": skipped_end_pts}
 
+        min_dist_thresh_branch_px = 4 * self.robot_radius_px
         branches, bpts_graph = SBG.create_branch_points_graph(sk_graph=sk_graph,
                                                               especial_pts_dict=especial_pts_dict,
                                                               len_thresh_px=min_dist_thresh_branch_px)
@@ -292,6 +290,7 @@ class SkeletonDecomposition:
 
     def filter_end_points(self, end_points: list[tuple]) -> tuple[list[tuple], list[tuple]]:
         """ Filter end points based on their distance_map values. Keep only those that have distance_map values greater than a threshold. """
+
         threshold = 2 * self.robot_radius_px
         final_end_pts = []
         skipped_end_pts = []
@@ -320,6 +319,7 @@ class SkeletonDecomposition:
 
     @staticmethod
     def is_valid_contour(h, hierarchy) -> bool:
+        """ Check if contour is valid based on its hierarchy. A valid contour should not have both parent and children. """
         # if level is odd, it is a hole contour
         level = SkeletonDecomposition.find_level(h, hierarchy)
         if level % 2 == 1:
@@ -404,19 +404,19 @@ class SkeletonDecomposition:
 
         # for all critical points
         for cp in self.critical_pts:
-
             # critical point
             y, x = cp.coord
             ax2.scatter(x, y, color='red', alpha=1, s=marker_size, zorder=4, label='Critical Point' if cp == self.critical_pts[0] else None)
-
             # base points
             for bp in cp.base_pts:
                 ax2.scatter(bp[1], bp[0], color='blue', alpha=1, s=marker_size, zorder=4, label='Base Point' if cp == self.critical_pts[0] else None)
-
             # path to base points
             for path in cp.base_paths:
                 path = np.array(path)
                 ax2.plot(path[:, 1], path[:, 0], color='gray', linewidth=4 / scale_px, linestyle='-', zorder=2)
+
+        # branch points
+        ax2.scatter(branch_pts[:, 1], branch_pts[:, 0], color='k', s=marker_size // 2, label='Branchpoints')
 
         # finalize
         configure_ax(ax2, 'Detected Branches with Critical and Base Points', show_title=False, show_legend=True)

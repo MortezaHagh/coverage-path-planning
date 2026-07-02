@@ -2,20 +2,19 @@
 import numpy as np
 from shapely import Polygon
 from covpp.district.zone_map_data import ZoneMapData
+from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.segmentation.segmentation_base import SegmentationBase
-from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.skeleton_segmentation.skeleton_decomposition import SkeletonDecomposition
 
 
 class Segmentation(SegmentationBase):
-    """ """
+    """ Segmentation class for workspace decomposition using skeletonization-based segmentation."""
 
     def __init__(self, zmd: ZoneMapData, map_polygons: MapPolygons):
         super().__init__(zmd, map_polygons)
         self.lg.update_name("SegmentationSkeleton")
 
-        #
         self.polygons: list = [Polygon]                             # shapely polygons for each segment
         self.adjacency_matrix: np.ndarray = np.ndarray              # adjacency matrix between segments
 
