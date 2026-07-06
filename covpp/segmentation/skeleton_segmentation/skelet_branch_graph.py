@@ -98,12 +98,18 @@ class SkeletBranchGraph:
             return neighbors
 
         # for traversing the skeleton graph, start from endpoints, then branch points
+        visited = set()
         for start in special_pts:
             for nxt in next_nodes(start, None):
 
-                if bpts_graph.has_node(start):
-                    if bpts_graph.degree[start] == sk_graph.degree[start]:
-                        continue
+                # if bpts_graph.has_node(start):
+                #     if bpts_graph.degree[start] == sk_graph.degree[start]:
+                #         continue
+
+                if (nxt, start) in visited or (start, nxt) in visited:
+                    continue
+                visited.add((start, nxt))
+                visited.add((nxt, start))
 
                 skip = False
                 curr = nxt
@@ -127,6 +133,9 @@ class SkeletBranchGraph:
                 end = nxt
                 if end == start:
                     raise ValueError(f"Loop detected in skeleton graph starting from {start}.")
+
+                visited.add((prev, end))
+                visited.add((end, prev))
 
                 bpts_graph.add_edge(start, end)
                 bpts_graph[start][end]['distance'] = np.linalg.norm(np.array(start) - np.array(end))

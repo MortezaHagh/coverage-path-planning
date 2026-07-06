@@ -21,7 +21,7 @@ class CriticalPointOperations:
 
     def run(self):
         self.find_critical_points()
-        self.find_base_points()
+        self.base_pts = self.find_base_points(critical_pts=self.critical_pts)
 
     def find_critical_points(self):
         """ Find local minimum distance points in each branch.
@@ -86,16 +86,20 @@ class CriticalPointOperations:
         # update critical points list
         self.critical_pts.extend(cps)
 
-    def find_base_points(self):
+    def find_base_points(self, critical_pts: list[CriticalPoint]) -> list[tuple[int, int]]:
         """Find base points for all critical points."""
 
-        for cp in self.critical_pts:
-            self.get_base_points_by_expand_side_points(cp)
+        base_pts = []
+        for cp in critical_pts:
+            base_pt = self.get_base_points_by_expand_side_points(cp)
+            if base_pt:
+                base_pts.append(base_pt)
 
         # validate
-        if len(self.base_pts) != len(self.critical_pts):
-            self.lg.warn(f"N base points {len(self.base_pts)} != N critical points {len(self.critical_pts)}.")
+        if len(base_pts) != len(critical_pts):
+            self.lg.warn(f"N base points {len(base_pts)} != N critical points {len(critical_pts)}.")
             # raise ValueError("Base points and critical points count mismatch.")
+        return base_pts
 
     def find_side_points_simple(self, cp: CriticalPoint, n_pts: int = 2) -> bool:
         ''' Find side points for a critical point using a simple method.'''
@@ -123,7 +127,7 @@ class CriticalPointOperations:
         cp.side_points = side_pts
         return True
 
-    def get_base_points_by_expand_side_points(self, cp: CriticalPoint, n_pts: int = 2) -> bool:
+    def get_base_points_by_expand_side_points(self, cp: CriticalPoint, n_pts: int = 2) -> list[tuple[int, int]]:
         """ Find two side points for a critical point and expand until finding base points.
 
         Expansion is guided by `distance_map`: neighbors with lower distance are explored first,
@@ -132,7 +136,7 @@ class CriticalPointOperations:
 
         # find side points
         if not self.find_side_points_simple(cp, n_pts=n_pts):
-            return False
+            return []
 
         # expand like graph search side points until hitting contour or occupied space (stop expansion if reached skeleton)
         visited: set[tuple] = set()
@@ -189,16 +193,15 @@ class CriticalPointOperations:
         # validate results
         if len(base_pts) == 0:
             self.lg.error(f"No base points found for critical point at {cp.coord}.")
-            return False
+            return []
         if len(base_pts) != n_pts:
             self.lg.error(f"Expected {n_pts} base points, found {len(base_pts)} for critical point at {cp.coord}.")
-            return False
+            return []
 
         # store results
         cp.base_pts = base_pts
         cp.base_paths = base_paths
-        self.base_pts.append(tuple(base_pts))
-        return True
+        return base_pts
 
     # ==================================================================================================================
     # utility methods

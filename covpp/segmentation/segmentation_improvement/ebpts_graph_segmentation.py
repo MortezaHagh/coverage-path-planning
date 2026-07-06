@@ -258,7 +258,7 @@ class EspecialBranchPointsSegmentation:
                                       skeleton_map_b=maps["skeleton_map_b"],
                                       branches=graphs_data["branches"])
         cpo.critical_pts = cr_pts
-        cpo.find_base_points()
+        base_pts = cpo.find_base_points(critical_pts=cr_pts)
 
         # # debuggin, plot the filtered branch points graph
         # SBG.plot_branch_graph(graphs_data["branches"], graphs_data["bpts_graph"], self.segmented_map)
@@ -282,7 +282,7 @@ class EspecialBranchPointsSegmentation:
         # ax.set_aspect('equal')
         # plt.show()
 
-        return cr_pts, cpo.base_pts
+        return cr_pts, base_pts
 
     # ==================================================================================================================
     # filtering and graph operations for finding new critical points
