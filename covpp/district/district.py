@@ -84,10 +84,10 @@ class DistrictData:
             zone_stats.append(zd.zone_stats)  # collect zone stats
 
         # temp
-        # # stats
-        # self.lg.info1("Step: evaluating district statistics from all zones")
-        # self.district_evaluator.evaluate(zone_stats)
-        # self.district_stats = self.district_evaluator.stats
+        # stats
+        self.lg.info1("Step: evaluating district statistics from all zones")
+        self.district_evaluator.evaluate(zone_stats)
+        self.district_stats = self.district_evaluator.stats
 
         # final map planning
         self.update_map_planning()

@@ -6,8 +6,10 @@ from matplotlib import pyplot as plt
 from networkx import Graph, cycle_basis, shortest_path
 from scipy.ndimage import binary_opening, binary_closing
 from covpp.base.logger import MyLogger
-from covpp.district.zone_map_data import ZoneMapData
+from covpp.base.configs import PipeLineConfig
 from covpp.base.geometry import find_angle_between_points
+from covpp.base.plot_styles import set_plot_styles, configure_ax
+from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.skeleton_segmentation.data_structures import CriticalPoint
 from covpp.segmentation.skeleton_segmentation.skelet_branch_graph import SkeletBranchGraph as SBG
@@ -59,6 +61,8 @@ class EspecialBranchPointsSegmentation:
         self.polygons = css.polygons
         self.map_ws_segmented = css.map_ws_segmented
         self.adjacency_matrix = css.adjacency_matrix
+
+        self.plot_new_critical_points(cr_pts=cr_pts, base_pts=base_pts)
         return True
 
     def run_cell_based(self):
@@ -483,3 +487,41 @@ class EspecialBranchPointsSegmentation:
                 b1 = bases[i]
                 b2 = bases[j]
                 cv.line(seg_map, (b1[1], b1[0]), (b2[1], b2[0]), OCCUPIED, thickness=2)
+
+    def plot_new_critical_points(self, cr_pts: list[CriticalPoint], base_pts: list[list[tuple[int, int]]]):
+        """ Plot the new critical points and base points on the workspace map. """
+        if not PipeLineConfig.do_plot_segmentation:
+            return
+
+        fig_w = 8.27  # A4 width in inches
+        fig_h = fig_w * self.zmd.hw[0] / self.zmd.hw[1]
+        set_plot_styles(fig_w, fig_h)
+
+        scale_px = min(self.zmd.hw) / 500.0
+        marker_size = 20 / scale_px
+        fig, ax = plt.subplots(1, 1, constrained_layout=True)
+
+        temp = True
+        ax.contour(self.zmd.map_ws, levels=[0.5], colors='black', linewidths=4 / scale_px, zorder=0)
+        for cp in cr_pts:
+            cp_coord = cp.coord
+            ax.scatter(cp_coord[1], cp_coord[0], c='r', marker='x', s=marker_size, label='New Critical Point' if temp else None)
+            temp = False
+        temp = True
+        for bps in base_pts:
+            for bp in bps:
+                ax.scatter(bp[1], bp[0], c='b', marker='o', s=marker_size // 2, label='Base Point' if temp else None)
+                temp = False
+
+        ax.set_aspect('equal')
+        ax.legend()
+        ax.invert_yaxis()
+        configure_ax(ax, '', show_title=False)
+
+        im_format = 'png'
+        save_dir = self.zmd.segmentation_dir + "/improvement"
+        fig_path = save_dir + "/ebps" + f".{im_format}"
+        fig.savefig(fig_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')
+
+        # plt.show()
+        plt.close('all')

@@ -116,6 +116,8 @@ class ZoneMapData:
             os.makedirs(self.segmentation_method_dir, exist_ok=True)
             self.method_results_dir = os.path.join(self.zone_dir, PipeLineConfig.method)
             os.makedirs(self.method_results_dir, exist_ok=True)
+            seg_improve_dir = os.path.join(self.segmentation_dir, "improvement")
+            os.makedirs(seg_improve_dir, exist_ok=True)
 
         # create zone maps directory
         os.makedirs(self.zone_dir, exist_ok=True)

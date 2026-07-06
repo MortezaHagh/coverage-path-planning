@@ -7,7 +7,7 @@ from shapely.geometry import Polygon
 from skimage.morphology import medial_axis  # , skeletonize
 # from scipy.ndimage import binary_opening, binary_closing
 from covpp.base.logger import MyLogger
-from covpp.base.plot_styles import set_plot_styles
+from covpp.base.plot_styles import set_plot_styles, configure_ax
 from covpp.base.configs import RobotConfig, PipeLineConfig
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.segmentation.skeleton_segmentation.skelet_branch_graph import SkeletBranchGraph as SBG
@@ -247,21 +247,6 @@ class SkeletonDecomposition:
     def plot_segmentation(self) -> None:
         """Visualize skeletonization results."""
 
-        def configure_ax(ax, title, show_legend=True, show_title=True):
-            ax.set_aspect('equal', adjustable='box')
-            ax.axis('off')
-            if show_title:
-                ax.set_title(title, fontsize='medium')
-            if show_legend:
-                ax.legend(
-                    frameon=True,
-                    edgecolor='black',
-                    fontsize=10,
-                    loc='upper left',
-                    bbox_to_anchor=(1.0, 1),
-                    borderaxespad=0.0,
-                )
-
         # professional styles
         fig_w = 8.27  # A4 width in inches
         fig_h = fig_w * self.zmd.hw[0] / self.zmd.hw[1]
@@ -298,7 +283,7 @@ class SkeletonDecomposition:
             ax.scatter(branch_cr_pts_coords[:, 1], branch_cr_pts_coords[:, 0], color='k', s=marker_size // 1.5, label='Branch Critical Points')
         # add a circle around the robot radius for reference
         xc, yc = self.zmd.hw[1] // 2, self.zmd.hw[0] // 2
-        circle = plt.Circle((xc, yc), self.robot_radius_px, color='green', fill=False, linewidth=2 / scale_px, label='Robot Radius')
+        circle = plt.Circle((xc, yc), self.robot_radius_px, color='green', fill=False, linewidth=2 / scale_px)
         ax.add_artist(circle)
         configure_ax(ax, 'Skeleton with Endpoints and Branchpoints', show_title=False)
 
@@ -325,13 +310,15 @@ class SkeletonDecomposition:
                 ax2.scatter(ep[1], ep[0], color='cyan', s=marker_size * 3, zorder=1, label='error_point_segments' if iep == 0 else None)
 
         # for all critical points
+        temp = True
         for cp in self.critical_pts:
             # critical point
             y, x = cp.coord
-            ax2.scatter(x, y, color='red', alpha=1, s=marker_size, zorder=4, label='Critical Point' if cp == self.critical_pts[0] else None)
+            ax2.scatter(x, y, color='red', alpha=1, s=marker_size, zorder=4, label='Critical Point' if temp else None)
             # base points
             for bp in cp.base_pts:
-                ax2.scatter(bp[1], bp[0], color='blue', alpha=1, s=marker_size // 3, zorder=4, label='Base Point' if cp == self.critical_pts[0] else None)
+                ax2.scatter(bp[1], bp[0], color='blue', alpha=1, s=marker_size // 3, zorder=4, label='Base Point' if temp else None)
+                temp = False
             # path to base points
             for path in cp.base_paths:
                 path = np.array(path)

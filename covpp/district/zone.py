@@ -99,13 +99,13 @@ class ZoneData:
         self.cells = self.segmentation_hl.cells
         times['segmentation'] = time.time()
 
-        # temp
-        return  # temporary return
-
         # ************ coverage planning
         self.lg.info1(f"Step: running coverage path planning using method '{PipeLineConfig.covpp_method}'")
         self.cov_path_planner.run(cells=self.cells)
         times['coverage_planning'] = time.time()
+
+        # # temp
+        # return  # temporary return
 
         # ************ sequence
         self.lg.info1(f"Step: creating sequence and full path using method '{PipeLineConfig.sequence_method}'")

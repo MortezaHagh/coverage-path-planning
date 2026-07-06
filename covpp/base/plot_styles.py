@@ -4,6 +4,22 @@ import matplotlib.pyplot as plt
 from covpp.base.configs import PipeLineConfig
 
 
+def configure_ax(ax, title, show_legend=True, show_title=True):
+    ax.set_aspect('equal', adjustable='box')
+    ax.axis('off')
+    if show_title:
+        ax.set_title(title, fontsize='medium')
+    if show_legend:
+        ax.legend(
+            frameon=True,
+            edgecolor='black',
+            fontsize=10,
+            loc='upper left',
+            bbox_to_anchor=(1.0, 1),
+            borderaxespad=0.0,
+        )
+
+
 def set_plot_styles(fig_w=None, fig_h=None) -> None:
     """ Set plot styles for CovPP visualizations. """
     # professional styles
