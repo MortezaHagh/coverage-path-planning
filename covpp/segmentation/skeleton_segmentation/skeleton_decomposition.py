@@ -43,7 +43,7 @@ class SkeletonDecomposition:
 
         # attributes
         self.skelet: Skelet = None                          # skeletonization data
-        self.skeleton_graph: Graph = None                         # skeleton graph
+        self.skeleton_graph: Graph = None                   # skeleton graph
         self.branches: list[Branch] = []                    # skeleton branches
         self.bpts_graph: Graph = None                       # graph of branch points
         self.critical_pts: list[CriticalPoint] = []         # critical points data
@@ -58,7 +58,7 @@ class SkeletonDecomposition:
         self.adjacency_matrix: np.ndarray = np.ndarray      # adjacency matrix between segments
         self.map_ws_segmented: np.ndarray = np.ndarray      # map_ws with segmentation lines drawn
 
-    def skeleton_decomposition(self) -> None:
+    def run(self) -> None:
         """Run skeletonization-based segmentation pipeline."""
 
         # create skeleton and extract special points and branches

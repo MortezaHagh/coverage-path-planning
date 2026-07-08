@@ -53,7 +53,7 @@ class Segmentation(SegmentationBase):
 
         # voronoi processing
         vor_dec = VoronoiDecomposition(self.zmd, self.map_polygons)
-        vor_dec.voronoi_decomposition()
+        vor_dec.run()
         self.vor = vor_dec.vor
         self.critical_points = vor_dec.critical_points
 

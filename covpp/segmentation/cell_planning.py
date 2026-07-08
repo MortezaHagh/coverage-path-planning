@@ -93,11 +93,11 @@ class PCell(CellBase):
         y_min = int(self.y_min_p - zone_rectangle.y_min)
         x_max = int(self.x_max_p - zone_rectangle.x_min)
         y_max = int(self.y_max_p - zone_rectangle.y_min)
-        n = 5 + 2*self.robot_r_px  # margin
-        x_min = max(x_min-n, 0)
-        y_min = max(y_min-n, 0)
-        x_max = min(x_max+n, zone_rectangle.x_max)
-        y_max = min(y_max+n, zone_rectangle.y_max)
+        n = 5 + 2 * self.robot_r_px  # margin
+        x_min = max(x_min - n, 0)
+        y_min = max(y_min - n, 0)
+        x_max = min(x_max + n, zone_rectangle.x_max)
+        y_max = min(y_max + n, zone_rectangle.y_max)
         self.global_xy = np.array([x_min + zone_rectangle.x_min, y_min + zone_rectangle.y_min], dtype=np.int32)
 
         # crop map_ws to bounding box
@@ -165,7 +165,7 @@ class PCell(CellBase):
 
         edge_prop = find_longest_edge_poly(self.rectangle_poly)
         longest_angle = edge_prop['angle']
-        return (longest_angle + np.pi/2) % np.pi
+        return (longest_angle + np.pi / 2) % np.pi
 
     def cell_main_direction(self) -> float:
         """Find main direction of the cell via probabilistic Hough lines.
@@ -185,7 +185,7 @@ class PCell(CellBase):
             lines_p = cv.HoughLinesP(
                 edges,
                 rho=1,
-                theta=np.pi/180,
+                theta=np.pi / 180,
                 threshold=80,      # tune for your maps
                 minLineLength=20,  # minimum segment length
                 maxLineGap=10      # allowable gap
@@ -197,12 +197,12 @@ class PCell(CellBase):
             lengths = []
             for x1, y1, x2, y2 in lines_p[:, 0]:
                 dx, dy = x2 - x1, y2 - y1
-                lengths.append((dx*dx + dy*dy, (x1, y1, x2, y2)))
+                lengths.append((dx * dx + dy * dy, (x1, y1, x2, y2)))
             _, (x1, y1, x2, y2) = max(lengths, key=lambda t: t[0])
 
             # Angle of longest line segment
             angle = np.arctan2(y2 - y1, x2 - x1)  # [-π, π]
-            major_direction = (angle + np.pi/2) % np.pi
+            major_direction = (angle + np.pi / 2) % np.pi
         else:
             major_direction = 0.0
 
@@ -222,7 +222,7 @@ class PCell(CellBase):
         lines = None
 
         while threshold >= min_threshold and lines is None:
-            lines = cv.HoughLines(edges, 1, np.pi/180, threshold)
+            lines = cv.HoughLines(edges, 1, np.pi / 180, threshold)
             if lines is None:
                 threshold -= 20  # decrease threshold step-by-step
 
@@ -249,7 +249,7 @@ class PCell(CellBase):
         # visualization
         # Draw arrow from center of map in free-space direction
         h, w = self.map.shape
-        center = (w//2, h//2)
+        center = (w // 2, h // 2)
         length = min(w, h) // 3  # arrow length
 
         dx = int(length * np.cos(major_direction))

@@ -18,14 +18,14 @@ class Segmentation(SegmentationBase):
 
         self.polygons: list = [Polygon]                             # shapely polygons for each segment
         self.adjacency_matrix: np.ndarray = np.ndarray              # adjacency matrix between segments
-        self.map_ws_segmented: np.ndarray = np.ndarray             # segmented workspace map with segmentation lines drawn
+        self.map_ws_segmented: np.ndarray = np.ndarray              # segmented workspace map with segmentation lines drawn
 
     def segment_map(self) -> None:
         """ Perform segmentation of the workspace map using skeletonization-based decomposition."""
 
         # skeleton decomposition
         skelet_de = SkeletonDecomposition(self.zmd)
-        skelet_de.skeleton_decomposition()
+        skelet_de.run()
         self.polygons = skelet_de.polygons
         self.adjacency_matrix = skelet_de.adjacency_matrix
         self.map_ws_segmented = skelet_de.map_ws_segmented
@@ -35,16 +35,16 @@ class Segmentation(SegmentationBase):
         """ Post-process the segmentation results to fix potential issues and improve segmentation quality."""
         self.post_process_polygons()
 
-        self.zmd.map_ws_segmented = self.map_ws_segmented
-        improver = EspecialBranchPointsSegmentation(self.zmd, self.polygons)
-        if improver.run():
-            print("Segmentation improved using Especial Branch Points Segmentation.")
-            # update solution with improved polygons and adjacency matrix
-            self.polygons = improver.polygons
-            self.adjacency_matrix = improver.adjacency_matrix
-            self.map_ws_segmented = improver.map_ws_segmented
+        # self.zmd.map_ws_segmented = self.map_ws_segmented
+        # improver = EspecialBranchPointsSegmentation(self.zmd, self.polygons)
+        # if improver.run():
+        #     print("Segmentation improved using Especial Branch Points Segmentation.")
+        #     # update solution with improved polygons and adjacency matrix
+        #     self.polygons = improver.polygons
+        #     self.adjacency_matrix = improver.adjacency_matrix
+        #     self.map_ws_segmented = improver.map_ws_segmented
 
-        self.post_process_polygons()
+        # self.post_process_polygons()
 
     def post_process_polygons(self) -> None:
         """ Post-process polygons to fix potential issues such as MultiPolygons. """

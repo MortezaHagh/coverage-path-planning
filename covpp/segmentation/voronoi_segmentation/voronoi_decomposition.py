@@ -56,7 +56,7 @@ class VoronoiDecomposition:
         self.critical_idxs: list[int] = []              # indices of critical Voronoi vertices
         self.critical_points: list[CriticalPoint] = []  # critical points
 
-    def voronoi_decomposition(self) -> None:
+    def run(self) -> None:
         """ Main method to perform Voronoi decomposition. """
         self.process_polygons()
         self.find_voronoi()
