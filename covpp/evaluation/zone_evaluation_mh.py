@@ -152,33 +152,22 @@ class ZoneEvaluation(ZoneEvaluationBase):
         # version 1: only coverage paths
         paths = self.paths.paths_px
         for path in paths:
-            # create buffered area around path
-            path_points = path.xy - g_xy
-            line = LineString(path_points)
-            buffered_poly = line.buffer(cleaning_r_px, cap_style=2)
-            buffered_poly = np.array(buffered_poly.exterior.coords).astype(int)
+            # # create buffered area around path
+            # path_points = path.xy - g_xy
+            # line = LineString(path_points)
+            # buffered_poly = line.buffer(cleaning_r_px, cap_style=2)
+            # buffered_poly = np.array(buffered_poly.exterior.coords).astype(int)
 
-            # Draw filled polygon onto image
-            cleaned_acc = cv.fillPoly(cleaned_acc, [buffered_poly], color=1)
+            # # Draw filled polygon onto image
+            # cleaned_acc = cv.fillPoly(cleaned_acc, [buffered_poly], color=1)
 
-            # consider only free space pixels
-            cleaned_acc = cleaned_acc * mask_free
-
-        # # ----------------------------------------------------------------------
-        # # version 2: complete path at once
-        # # paths: from sequence paths (full path in pixels)
-        # f_path = self.paths.f_path_px
-
-        # # create buffered area around path
-        # # cap_style=1 gives flat ends
-        # # cap_style=2 gives round ends
-        # path_points = f_path.xy - g_xy
-        # line = LineString(path_points)
-        # buffered_poly = line.buffer(cleaning_r_px, cap_style=2)
-        # buffered_poly = np.array(buffered_poly.exterior.coords).astype(int)
-
-        # # Draw filled polygon onto image
-        # cleaned_acc = cv.fillPoly(cleaned_acc, [buffered_poly], color=2)
+            for i in range(path.n - 1):
+                pt1 = tuple(map(int, path.point(i).xy - g_xy))
+                pt2 = tuple(map(int, path.point(i + 1).xy - g_xy))
+                cv.line(cleaned_acc, pt1, pt2, color=1, thickness=2 * cleaning_r_px)
+                # add circle at the end of the line segment to ensure coverage
+                cv.circle(cleaned_acc, pt1, cleaning_r_px, color=1, thickness=-1)
+                cv.circle(cleaned_acc, pt2, cleaning_r_px, color=1, thickness=-1)
 
         # consider only free space pixels
         cleaned_acc = cleaned_acc * mask_free
