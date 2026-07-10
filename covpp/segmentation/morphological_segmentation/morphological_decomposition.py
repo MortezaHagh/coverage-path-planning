@@ -25,7 +25,11 @@ class MorphologicalSegmentation:
         # parameters
         erosion_kernel_size = 3
         self.kernel = np.ones((erosion_kernel_size, erosion_kernel_size), np.uint8)
-        self.min_area = 50
+
+        # max min area based on robot size
+        robot_radius_px = zmd.robot_radius_px
+        robot_area_px = int(np.pi * (robot_radius_px ** 2))
+        self.min_area = robot_area_px * 5
         self.max_area_factor = 4
 
         # attributes

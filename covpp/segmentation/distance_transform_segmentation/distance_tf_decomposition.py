@@ -23,8 +23,10 @@ class DistanceTransformSegmentation:
         self.zmd = zmd
 
         # parameters
-        self.threshold_step: int = 5
-        self.min_room_size: int = 30
+        robot_radius_px = zmd.robot_radius_px
+        robot_area_px = int(np.pi * (robot_radius_px ** 2))
+        self.threshold_step: int = robot_radius_px
+        self.min_room_size: int = robot_area_px * 5
 
         # attributes
         self.polygons: list[Polygon] = []                   # list of polygons for each segment
@@ -35,7 +37,7 @@ class DistanceTransformSegmentation:
         binary_map, labels_map = self.distance_tf_decomposition()
         labels_map = self.wavefront_propagation(binary_map=binary_map, best_labels=labels_map)
         self.create_segmentation_map_polygons(labels_map)
-        self.plot()
+        # self.plot()
 
     def distance_tf_decomposition(self) -> tuple[np.ndarray, np.ndarray]:
 
@@ -64,10 +66,12 @@ class DistanceTransformSegmentation:
 
             label = 1
 
+            # assign unique labels to each connected component and count the number of rooms
             for i in range(1, num + 1):
 
                 component = cc == i
 
+                # Skip small components
                 if np.count_nonzero(component) < self.min_room_size:
                     continue
 
