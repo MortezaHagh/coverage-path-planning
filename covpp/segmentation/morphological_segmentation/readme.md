@@ -11,8 +11,8 @@ Finally grow all rooms back using wavefront propagation.
 ## Inputs
 
 Binary occupancy map
-    1 = free
-    0 = obstacle
+1 = free
+0 = obstacle
 
 ## Parameters
 

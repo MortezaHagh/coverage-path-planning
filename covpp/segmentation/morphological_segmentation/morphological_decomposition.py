@@ -41,25 +41,26 @@ class MorphologicalSegmentation:
 
     def morphological_decomposition(self) -> np.ndarray:
 
-        map_erosion = self.zmd.map_ws.astype(np.uint8)
-        labels_map = np.zeros(map_erosion.shape, np.int32)
+        free_map = self.zmd.map_ws.astype(np.uint8)
+        labels_map = np.zeros(free_map.shape, np.int32)
+
+        # Distance to the closest obstacle gives the erosion depth of each pixel.
+        erosion_depth = cv.distanceTransform(free_map, cv.DIST_C, 3)
+        remaining_depth = erosion_depth.copy()
 
         room_id = 1
-        erosion_step = 0
 
-        while np.any(map_erosion):
+        max_depth = int(np.floor(erosion_depth.max()))
+        connectivity_8 = np.ones((3, 3), dtype=np.int8)
 
-            erosion_step += 1
+        for erosion_step in range(1, max_depth + 1):
 
-            ##############################################################
-            # Erode free space
-            ##############################################################
-            map_erosion = cv.erode(map_erosion, self.kernel, iterations=1,)
+            if not np.any(remaining_depth >= erosion_step):
+                continue
 
-            ##############################################################
-            # Connected components
-            ##############################################################
-            cc, num = ndimage.label(map_erosion)
+            # Thresholding the distance transform reproduces the erosion layers
+            # without repeated morphological operations.
+            cc, num = ndimage.label(remaining_depth >= erosion_step, structure=connectivity_8)
 
             max_area = (self.max_area_factor * erosion_step * self.min_area)
 
@@ -73,8 +74,8 @@ class MorphologicalSegmentation:
                     labels_map[mask] = room_id
                     room_id += 1
 
-                    # remove from map_erosion image
-                    map_erosion[mask] = 0
+                    # Remove accepted components so they are not reconsidered at shallower depths.
+                    remaining_depth[mask] = 0
 
         return labels_map
 
@@ -88,20 +89,13 @@ class MorphologicalSegmentation:
         n_labels = np.max(labels_map) - 1  # -1 because labels start from 1
         adjacency_matrix = np.zeros((n_labels + 1, n_labels + 1), dtype=np.int32)
 
-        ##############################################################
         # Initialize queue
-        ##############################################################
-
         ys, xs = np.where(labels_map > 0)
         for y, x in zip(ys, xs):
             queue.append((y, x))
 
-        ##############################################################
         # BFS
-        ##############################################################
-
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-
         while queue:
 
             y, x = queue.popleft()
