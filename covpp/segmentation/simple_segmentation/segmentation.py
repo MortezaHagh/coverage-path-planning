@@ -26,15 +26,8 @@ class Segmentation(SegmentationBase):
         Returns:
         - None
         """
-        pass
-
-    def post_process_segmentation(self) -> None:
-        """No post-processing needed for single-cell segmentation.
-
-        Returns:
-        - None
-        """
-        pass
+        self.polygons = [self.map_polygons.b_poly]
+        self.map_ws_segmented = self.zmd.map_ws.copy()  # No segmentation lines, just the original map
 
     def create_cells(self) -> None:
         """Instantiate a single ``CellBase`` for the whole zone polygon.
@@ -49,11 +42,3 @@ class Segmentation(SegmentationBase):
     def set_cell_adjacents(self):
         """No-op because a lone cell has no neighbours."""
         return
-
-    def create_map_ws_segmented(self) -> None:
-        """Create a segmented map with a single cell.
-
-        Returns:
-        - None
-        """
-        pass

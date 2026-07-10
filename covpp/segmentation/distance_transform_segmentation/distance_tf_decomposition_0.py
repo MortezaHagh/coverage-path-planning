@@ -31,7 +31,6 @@ class DistanceTransformSegmentation:
         # attributes
         self.polygons: list[Polygon] = []                   # list of polygons for each segment
         self.adjacency_matrix: np.ndarray = np.ndarray      # adjacency matrix between segments
-        self.map_ws_segmented: np.ndarray = np.ndarray      # map_ws with segmentation lines
 
     def run(self) -> None:
         binary_map, labels_map = self.distance_tf_decomposition()

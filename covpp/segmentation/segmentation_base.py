@@ -4,11 +4,13 @@ This module defines the abstract interface that all segmentation methods
 must implement, enabling a plugin-based architecture.
 """
 from abc import ABC, abstractmethod
-
+import numpy as np
+from shapely.geometry import Polygon
 from covpp.base.logger import MyLogger
 from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
+from covpp.segmentation.segmentation_improvement.ebpts_graph_segmentation import EspecialBranchPointsSegmentation
 
 
 class SegmentationBase(ABC):
@@ -43,7 +45,9 @@ class SegmentationBase(ABC):
         # map polygons
         self.map_polygons: MapPolygons = map_polygons
 
-        # cells
+        # attributes
+        self.map_ws_segmented: np.ndarray = np.ndarray      # map_ws with segmentation lines
+        self.polygons: list[Polygon] = []
         self.cells: list[CellBase] = []
         self.n_cells: int = 0
 
@@ -76,14 +80,36 @@ class SegmentationBase(ABC):
         """
         raise NotImplementedError("Segmentation subclasses must implement segment_map() method")
 
-    @abstractmethod
     def post_process_segmentation(self):
-        """Post-process the segmented map.
+        """Post-process the segmented map."""
+        self.post_process_polygons()
 
-        Returns:
-        - None
-        """
-        raise NotImplementedError("Segmentation subclasses must implement post_process_segmentation() method")
+        self.zmd.map_ws_segmented = self.map_ws_segmented
+        improver = EspecialBranchPointsSegmentation(self.zmd, self.polygons)
+        if improver.run():
+            print("Segmentation improved using Especial Branch Points Segmentation.")
+            # update solution with improved polygons and adjacency matrix
+            self.polygons = improver.polygons
+            self.adjacency_matrix = improver.adjacency_matrix
+            self.map_ws_segmented = improver.map_ws_segmented
+
+        self.post_process_polygons()
+
+    def post_process_polygons(self) -> None:
+        """ Post-process polygons to fix potential issues such as MultiPolygons. """
+        new_polys = []
+        for poly in self.polygons:
+
+            # fix potential invalid polygon issues
+            poly = poly.buffer(0)
+
+            # if it is multi polygon, take the largest one
+            if poly.geom_type == 'MultiPolygon':
+                self.lg.warn("Found MultiPolygon during post-processing. Taking the largest polygon.")
+                poly = max(poly.geoms, key=lambda a: a.area)
+
+            new_polys.append(poly)
+        self.polygons = new_polys
 
     @abstractmethod
     def create_cells(self):
@@ -103,11 +129,6 @@ class SegmentationBase(ABC):
         """
         raise NotImplementedError("Segmentation subclasses must implement set_cell_adjacents() method")
 
-    @abstractmethod
     def create_map_ws_segmented(self) -> None:
-        """Create a segmented workspace map with segmentation lines drawn.
-
-        Returns:
-        - None
-        """
-        raise NotImplementedError("Segmentation subclasses must implement create_map_ws_segmented() method")
+        """Create a map based on map_ws with segmentation lines drawn."""
+        self.zmd.map_ws_segmented = self.map_ws_segmented

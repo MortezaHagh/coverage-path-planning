@@ -64,6 +64,9 @@ class Segmentation(SegmentationBase):
         # plotting
         self.plot_rings()
 
+        self.create_map_ws_segmented()
+        self.polygons = [ring.poly for ring in self.rings]
+
     def main_segmentation(self, b_poly: Polygon, obs_polys: list[Polygon]) -> None:
         """Create segmentation rings from critical points.
 
@@ -81,9 +84,6 @@ class Segmentation(SegmentationBase):
         self.find_skip_cps()
         # rings
         self.create_all_segments()
-
-    def post_process_segmentation(self):
-        pass
 
     # ==================================================================================================================
     # Preprocess
@@ -351,7 +351,7 @@ class Segmentation(SegmentationBase):
             bs2 = cp.bs2_vp - self.zmd.global_xy
             # draw line
             cv.line(map_ws_segmented, (int(bs1[0]), int(bs1[1])), (int(bs2[0]), int(bs2[1])), 0, thickness=2)  # 0: OCCUPIED
-        self.zmd.map_ws_segmented = map_ws_segmented
+        self.map_ws_segmented = map_ws_segmented
 
     # ==================================================================================================================
     # Plotting
