@@ -121,10 +121,27 @@ class PCell(CellBase):
         # mask with free space in the original map
         map_cell = cv.bitwise_and(map_cell, map_ws)
 
-        # checking segmentation map fot inner contours
+        # checking segmentation map for inner contours
         map_seg = self.zmd.map_ws_segmented[y_min: y_max, x_min: x_max]
         map_seg = cv.bitwise_and(map_seg, map_cell)
         contours, hierarchy = cv.findContours(map_seg, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+
+        # if True:
+
+        #     # visualize for debugging
+        #     import matplotlib.pyplot as plt
+        #     plt.imshow(map_cell_copy, cmap='gray')
+        #     plt.plot(poly_pts[:, 0], poly_pts[:, 1], 'r-', linewidth=2)
+        #     plt.show()
+
+        #     plt.imshow(map_ws, cmap='gray')
+        #     plt.plot(poly_pts[:, 0], poly_pts[:, 1], 'r-', linewidth=2)
+        #     plt.show()
+
+        #     plt.imshow(map_seg_copy, cmap='gray')
+        #     plt.plot(poly_pts[:, 0], poly_pts[:, 1], 'r-', linewidth=2)
+        #     plt.show()
+        #     # raise
 
         for h, cnt in zip(hierarchy[0], contours):
             level = find_cnt_level(h, hierarchy)

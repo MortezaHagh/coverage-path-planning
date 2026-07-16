@@ -170,10 +170,11 @@ class MorphologicalSegmentation:
     def plot(self):
 
         # plot polygons
+        colors = plt.cm.get_cmap('tab20', len(self.polygons))
         fig, ax = plt.subplots(figsize=(8, 8))
-        for polygon in self.polygons:
+        for i, polygon in enumerate(self.polygons):
             x, y = polygon.exterior.xy
-            ax.fill(x, y, alpha=0.5, fc='r', ec='black')
+            ax.fill(x, y, alpha=0.5, fc=colors(i), ec='black')
             # id at center
             ax.text(polygon.centroid.x, polygon.centroid.y, str(self.polygons.index(polygon)), fontsize=12, ha='center')
 

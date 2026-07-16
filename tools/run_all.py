@@ -5,12 +5,12 @@ from covpp.base.configs import PipeLineConfig
 map_names = ["MapT" + str(i) for i in range(1, 12)]
 map_names += ["map_u1", "map_u3", "map_u4"]
 # map_names = ["Map_fr52", "Map4"]
-# map_names = ["Map1", "Map5"]
+# map_names = ["MapT6"]
 
 if __name__ == "__main__":
 
-    # seg_methods = ["skeleton", "voronoi"]
-    seg_methods = ["skeleton"]
+    # seg_methods = ["simple", "skeleton", "morphological", "distance_tf"]
+    seg_methods = ["morphological"]
     # covpp_methods = ["boust", "contour", "grid_energy_min"]
     covpp_methods = ["contour"]
     # rects = [False, True]
@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     dcfg = PipeLineConfig()
     dcfg.set_print(False)
-    name_suffix = ""  # e1
+    name_suffix = ""  # e1 e2
 
     # run for all maps
     for map_name in map_names:

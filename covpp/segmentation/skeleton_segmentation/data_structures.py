@@ -40,13 +40,14 @@ class Branch:
 class CriticalPoint:
     """Critical point data structure."""
 
-    def __init__(self, coord: np.ndarray):
+    def __init__(self, coord: np.ndarray, type: str = ''):
         self.coord = coord  # (y, x)
         self.cp_skel_segment: int = -1  # skeleton segment of critical point
         self.side_sk_segments: tuple[int] = ()  # skeleton segments of side points
         self.side_points: list[tuple[int, int]] = []  # side points (y, x)
         self.base_pts: list[tuple[int, int]] = []  # base points (y, x)
         self.base_paths: list[tuple[tuple[int, int]]] = []  # paths from base points to critical point
+        self.type: str = ''
 
 
 # class SegmentSolution:

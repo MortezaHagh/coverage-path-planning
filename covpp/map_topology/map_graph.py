@@ -19,6 +19,14 @@ class MapSearchGraph:
 
         # check if point is free
         x, y = point[0], point[1]
+
+        # check bounds
+        w, h = self.cost_map.shape[1], self.cost_map.shape[0]
+        if not (0 <= x < w and 0 <= y < h):
+            self.lg.warn(f"Point {point} is out of bounds for map of size ({w}, {h}). Clamping to bounds.")
+            x = min(max(x, 0), w - 1)
+            y = min(max(y, 0), h - 1)
+
         if self.cost_map[y, x] == self.free:
             return np.array([x, y], dtype=int)
         self.lg.debug(f"Point {point} is not free, finding closest free cell")
@@ -28,8 +36,8 @@ class MapSearchGraph:
         max_y, max_x = self.cost_map.shape
         visited = set()
         queue = deque()
-        queue.append((point[0], point[1]))
-        visited.add((point[0], point[1]))
+        queue.append((x, y))
+        visited.add((x, y))
 
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 

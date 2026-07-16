@@ -5,7 +5,7 @@ from networkx import Graph
 from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
 from skimage.morphology import medial_axis  # , skeletonize
-# from scipy.ndimage import binary_opening, binary_closing
+from scipy.ndimage import binary_opening, binary_closing
 from covpp.base.logger import MyLogger
 from covpp.base.plot_styles import set_plot_styles, configure_ax
 from covpp.base.configs import RobotConfig, PipeLineConfig
@@ -101,10 +101,10 @@ class SkeletonDecomposition:
         """Create Skelet object. """
 
         map_ws = self.zmd.map_ws.copy()
-        self.map_ws = map_ws.astype(np.uint8) * 255
-        # map_ws = binary_closing(map_ws, iterations=2).astype(np.uint8) * 255
-        # map_ws = binary_opening(map_ws, iterations=2).astype(np.uint8) * 255
-        # self.map_ws = map_ws
+        # self.map_ws = map_ws.astype(np.uint8) * 255
+        map_ws = binary_closing(map_ws, iterations=2).astype(np.uint8) * 255
+        map_ws = binary_opening(map_ws, iterations=2).astype(np.uint8) * 255
+        self.map_ws = map_ws
 
         # Compute medial axis (skeleton) and the distance transform
         medial_axis_map, distance_map = medial_axis(map_ws, return_distance=True)
@@ -341,7 +341,7 @@ class SkeletonDecomposition:
             fig1.savefig(fig1_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')
             fig2.savefig(fig2_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')
 
-        # plt.show()
+        plt.show()
         plt.close('all')
 
     @staticmethod
