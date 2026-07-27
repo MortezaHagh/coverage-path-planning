@@ -53,7 +53,7 @@ class SegmentationHandler:
         self.zmd: ZoneMapData = zmd
 
         # create map polygons object for the zone
-        self.map_polygons = MapPolygons(map_ws=self.zmd.map_ws, xy=self.zmd.global_xy)
+        self.map_polygons = MapPolygons(map_ws=self.zmd.map_ws, xy=self.zmd.global_xy, robot_radius_px=zmd.robot_radius_px)
 
         # main segmentor (to be created in the run method based on configs)
         self.segmentor: SegmentationBase = None

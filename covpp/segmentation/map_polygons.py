@@ -13,6 +13,7 @@ import cv2 as cv
 import numpy as np
 # from shapely import affinity
 from shapely import Polygon, Point
+from scipy.ndimage import gaussian_filter1d
 from covpp.base.logger import MyLogger
 from covpp.base.geometry import evaluate_polygon
 
@@ -29,7 +30,7 @@ class MapPolygons:
         dec_mid_dist (int): Minimum distance to keep contour points.
     """
 
-    def __init__(self, map_ws: np.ndarray, xy: np.ndarray, dec_mid_dist: int = 10):
+    def __init__(self, map_ws: np.ndarray, xy: np.ndarray, dec_mid_dist: int = 10, robot_radius_px: int = 5):
         self.lg = MyLogger("MapPolygons")
 
         # polygons
@@ -37,8 +38,9 @@ class MapPolygons:
         self.obs_polys: list[Polygon] = []  # obstacle polygons (in global coordinates (pixels))
         self.success: bool = True
 
-        # map workspace
+        # data
         self.map_ws = map_ws
+        self.robot_radius_px = robot_radius_px
 
         # starting coordinates (offset in global map)
         self.s_x: int = xy[0]
@@ -54,6 +56,33 @@ class MapPolygons:
 
         # set obstacle polygons
         self.create_obstacle_polygons()
+
+        # self.smooth_polygons()
+
+    def smooth_polygons(self) -> None:
+        # Smooth the bounding polygon
+        if self.b_poly is not None:
+            self.b_poly = self.smooth_polygon(self.b_poly)
+
+        # Smooth obstacle polygons
+        smoothed_obs_polys = []
+        for poly in self.obs_polys:
+            smoothed_poly = self.smooth_polygon(poly)
+            smoothed_obs_polys.append(smoothed_poly)
+        self.obs_polys = smoothed_obs_polys
+
+    def smooth_polygon(self, poly: Polygon) -> Polygon:
+        smoothing_factor = self.robot_radius_px * 4
+        coords = np.array(poly.exterior.coords)
+        x, y = coords[:, 0], coords[:, 1]
+
+        x_smooth = gaussian_filter1d(x, sigma=smoothing_factor)
+        y_smooth = gaussian_filter1d(y, sigma=smoothing_factor)
+
+        smoothed_coords = np.column_stack((x_smooth, y_smooth))
+        smoothed_poly = Polygon(smoothed_coords)
+
+        return smoothed_poly
 
     def create_bounding(self) -> bool:
         """Extract workspace boundary polygon from binary map.
@@ -79,7 +108,7 @@ class MapPolygons:
             return False
 
         # shift points by starting coordinates
-        self.b_poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
+        self.b_poly = Polygon([Point(self.s_x + p[0][0], self.s_y + p[0][1]) for p in filtered_c])
 
         # check validity
         is_valid, status = evaluate_polygon(self.b_poly)
@@ -119,7 +148,7 @@ class MapPolygons:
             if len(filtered_c) < 3:
                 self.lg.warn("Not enough points to create polygon for an obstacle, skipping.")
                 continue
-            poly = Polygon([Point(self.s_x+p[0][0], self.s_y+p[0][1]) for p in filtered_c])
+            poly = Polygon([Point(self.s_x + p[0][0], self.s_y + p[0][1]) for p in filtered_c])
 
             # check validity
             is_valid, status = evaluate_polygon(poly)
@@ -143,7 +172,7 @@ class MapPolygons:
         for i, p1 in enumerate(contour):
             if i in skip:
                 continue
-            for j in range(i+1, len(contour)):
+            for j in range(i + 1, len(contour)):
                 if i in skip:
                     continue
                 dist = np.linalg.norm(p1 - contour[j])

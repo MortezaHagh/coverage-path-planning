@@ -88,7 +88,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
         """ Create MapPolygons object for the cell area in the map"""
 
         # create MapPolygons object
-        self.map_polygons = MapPolygons(map_ws=self.cell.map, xy=self.cell.global_xy, dec_mid_dist=30)
+        self.map_polygons = MapPolygons(map_ws=self.cell.map, xy=self.cell.global_xy, dec_mid_dist=30, robot_radius_px=self.zmd.robot_radius_px)
         if not self.map_polygons.success:
             self.lg.error(f"Failed to create map polygons for the cell {self.cell.id}.")
             return False
@@ -204,7 +204,7 @@ class CoveragePathPlanner(CoveragePathPlannerBase):
     def create_full_path(self, paths_px: list[MyPath], c_paths_px: list[MyPath]) -> None:
         """ Create full path by combining cell paths and connection paths. """
         f_path_px = []
-        for i in range(len(paths_px)-1):
+        for i in range(len(paths_px) - 1):
             f_path_px.extend(paths_px[i].points)
             f_path_px.extend(c_paths_px[i].points)
         f_path_px.extend(paths_px[-1].points)

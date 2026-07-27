@@ -28,6 +28,7 @@ class Skelet:
 @dataclasses.dataclass
 class Branch:
     """ Represents a skeleton branch/path between end_points/branch_pts. """
+    id: int                         # branch id
     start_point: tuple              # (y, x)
     end_type: str                   # 'endpoint' | 'branchpoint' | 'skip'
     points: np.ndarray              # shape (N, 2), dtype=int , list of (y, x)

@@ -98,6 +98,7 @@ class SkeletBranchGraph:
             return neighbors
 
         # for traversing the skeleton graph, start from endpoints, then branch points
+        i_branch = 0
         visited = set()
         for start in special_pts:
             for nxt in next_nodes(start, None):
@@ -145,11 +146,13 @@ class SkeletBranchGraph:
                     continue
 
                 end_type = "branching" if end in branch_pts else "endpoint"
-                branches.append(Branch(start_point=start,
+                branches.append(Branch(id=i_branch,
+                                       start_point=start,
                                        end_point=end,
                                        points=path,
                                        length=len(path),
                                        end_type=end_type))
+                i_branch += 1
 
         return branches, bpts_graph
 
