@@ -37,7 +37,8 @@ class SkeletBranchGraph:
 
         maps = {
             "skeleton_map_b": skeleton_map_b,
-            "distance_map": norm_distance_map
+            "distance_map": distance_map,
+            "distance_map_norm": norm_distance_map
         }
         return maps
 

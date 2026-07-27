@@ -45,13 +45,13 @@ class SkeletonDecomposition:
         self.map_ws: np.ndarray = None   # uint8 binary map (OCCUPIED, FREE)
 
         # attributes
+        self.critical_operator: CriticalPointOperations = None
         self.skelet: Skelet = None                          # skeletonization data
         self.skeleton_graph: Graph = None                   # skeleton graph
         self.branches: list[Branch] = []                    # skeleton branches
         self.bpts_graph: Graph = None                       # graph of branch points
         self.critical_pts: list[CriticalPoint] = []         # critical points data
         self.base_pts: list[list[tuple, tuple]] = []       # base points for critical points (n_cp * 2)
-        self.branch_cr_pts: list[list[CriticalPoint]] = []  # critical points for each branch
         self.local_min_cr_pts: list[CriticalPoint] = []     # additional critical points based on local minimum distance to obstacles
         self.erp_sidep = []                                 # for debugging
         self.error_point_segments = []                      # for debugging
@@ -74,6 +74,7 @@ class SkeletonDecomposition:
         # self.critical_pts = critical_operator.critical_pts
         # self.base_pts = critical_operator.base_pts
         # self.branch_cr_pts = self.critical_pts.copy()
+        self.critical_operator = critical_operator
 
         # additional critical points and base points based on local minimum distance to obstacles
         new_cr_pts = self.find_min_dist_critical_points()
@@ -148,7 +149,8 @@ class SkeletonDecomposition:
         # final skeletonization data
         self.skelet = Skelet(
             skeleton_map_b=skeleton_map_b,
-            distance_map=distance_norm_map,
+            distance_map=distance_map,
+            distance_map_norm=distance_norm_map,
             skeleton_segmented_map=skeleton_segmented_map,
             skeleton_distance_map=skeleton_distance_map,
             end_points=None,
@@ -215,20 +217,10 @@ class SkeletonDecomposition:
     def find_min_dist_critical_points(self) -> list[CriticalPoint]:
 
         critical_pts = []
-        ep_thresh = 2 * self.robot_radius_px
-        space_thresh = 4 * self.robot_radius_px
 
-        # from scipy.signal import savgol_filter, find_peaks
-        # mins, props = find_peaks(-smooth, prominence=1, width=self.robot_radius_px * 2, distance=self.robot_radius_px * 2)
-        # from sklearn.tree import DecisionTreeRegressor
-
-        print("robot radius px:", self.robot_radius_px)
-
-        #
-        sigma = max(int(self.robot_radius_px * 2.0), 5)
-        # #
-        # window_length = self.robot_radius_px * 1.0
-        # window_length = max(21, 2 * (sigma // 2) + 1)  # window length must be odd and greater than polyorder
+        grad_ep_thresh = 2 * self.robot_radius_px       # threshold for endpoint distance to consider gradient for critical point detection
+        space_thresh = 4 * self.robot_radius_px         # threshold for minimum distance between critical points along the branch
+        sigma_smooth = max(int(self.robot_radius_px * 2.0), 5)     # smoothing parameter for Gaussian filter
 
         for i, branch in enumerate(self.branches):
 
@@ -237,77 +229,62 @@ class SkeletonDecomposition:
                 self.lg.error(f"Branch {i} is too short ({n} points). Skipping critical point detection.")
                 continue
 
-            if 1730 < n < 1750:
-                pass
-
-            dists = self.skelet.distance_map[branch.points[:, 0], branch.points[:, 1]].astype(float)
+            dists = self.skelet.distance_map_norm[branch.points[:, 0], branch.points[:, 1]].astype(float)
             dist_in = dists
-            sigma_ = sigma
-
-            # n_ds = int(n // (self.robot_radius_px))
-            # idxs_ds = np.linspace(0, n - 1, num=n_ds, dtype=int)
-            # dists_ds = dists[idxs_ds]  # downsample for smoothing
-            # dist_in = dists_ds
-            # sigma_ = int(sigma / n_ds) + 1
+            sigma_ = sigma_smooth
 
             # filter
             f_d = gaussian_filter1d(dist_in, sigma=sigma_, radius=sigma_ * 2)
             f_d = gaussian_filter1d(f_d, sigma=sigma_)
-            # f_d_sv_p2 = savgol_filter(dists, window_length=window_length, polyorder=2)
-
-            # # filter even wide segments with small change in distance to obstacles using decision tree regressor
-            # model = DecisionTreeRegressor(max_depth=5, min_samples_leaf=max(2 * self.robot_radius_px, 5))
-            # model.fit(np.arange(len(f_d_gaus_2)).reshape(-1, 1), f_d_gaus_2)
-            # d_pca = model.predict(np.arange(len(f_d_gaus_2)).reshape(-1, 1))
 
             smooth = f_d
-            smooth = self.process_dists(smooth)
-            smooth_nor = smooth / np.max(smooth)
-            grad = np.gradient(smooth_nor)
-            curv = np.gradient(grad)
+            smooth = self.filtar_branch_distances(smooth)
+            # grad = np.gradient(smooth)
 
-            # grads_tr = grad[ep_thresh:-ep_thresh]
-            # if all(grads_tr > 0) or all(grads_tr < 0):
-            #     continue
-
+            # Find critical points based on corridors (flat regions) in the distance profile
             cpts = self.find_corridors(branch.points, smooth, space_thresh)
-            # cpts = self.find_branch_critical_points_rel_grad(branch.points, f_d_gaus, space_thresh)
-            # cpts = self.find_branch_critical_points_changepoint(branch.points, f_d_gaus)
-            # cpts = self.find_critical_points_gradient(branch.points, f_d_gaus)
-            # cpts = self.find_min_dist_cri00000.tical_points_global(branch.points, smooth)
-            # cpts = self.find_min_dist_critical_points_local(branch.points, f_d_gaus)
+            if len(cpts) == 0:
+
+                # # Check if the gradient is monotonic in the middle part of the branch (excluding endpoints)
+                # grads_tr = grad[grad_ep_thresh:-grad_ep_thresh]
+                # if all(grads_tr > 0) or all(grads_tr < 0):
+                #     continue
+
+                # Find critical points based on other methods (global or local minimum distance to obstacles)
+                # cpts = self.find_min_dist_critical_points_global(branch.points, smooth)
+                cpts = self.find_min_dist_critical_points_local(branch.points, smooth)
+
             critical_pts.extend(cpts)
 
-            if 600 < n < 606:
-                _, axs = plt.subplots(2, 1, constrained_layout=True)
-                ax1 = axs[0]
-                ax1.plot(dists, label='Original')
-                # ax1.plot(idxs_ds, dists_ds, label='Downsampled', linewidth=2.5)
-                ax1.plot(smooth, label='Smoothed', linewidth=2.5)
-                #
-                if len(cpts) > 0:
-                    cpt_indices = [np.where((branch.points == cp.coord).all(axis=1))[0][0] for cp in cpts]
-                    ax1.scatter(cpt_indices, f_d[cpt_indices], color='red', label='Critical Points')
-                ax1.set_title(f'Distance to Obstacles along Branch {i}')
-                ax1.set_xlabel('Point Index along Branch')
-                ax1.set_ylabel('Distance to Obstacles (pixels)')
-                ax1.legend()
-                ax1.grid()
-                #
-                # plot gradient and curvature
-                ax2 = axs[1]
-                ax2.plot(grad, label='Gradient', color='orange')
-                ax2.plot(curv, label='Curvature', color='purple')
-                ax2.set_title(f'Gradient and Curvature along Branch {i}')
-                ax2.set_xlabel('Point Index along Branch')
-                ax2.set_ylabel('Value')
-                ax2.legend()
-                ax2.grid()
-                plt.show()
+            # if 1745 < n < 1755:
+            #     _, axs = plt.subplots(2, 1, constrained_layout=True)
+            #     ax1 = axs[0]
+            #     ax1.plot(dists, label='Original')
+            #     # ax1.plot(idxs_ds, dists_ds, label='Downsampled', linewidth=2.5)
+            #     ax1.plot(smooth, label='Smoothed', linewidth=2.5)
+            #     #
+            #     if len(cpts) > 0:
+            #         cpt_indices = [np.where((branch.points == cp.coord).all(axis=1))[0][0] for cp in cpts]
+            #         ax1.scatter(cpt_indices, f_d[cpt_indices], color='red', label='Critical Points')
+            #     ax1.set_title(f'Distance to Obstacles along Branch {i}')
+            #     ax1.set_xlabel('Point Index along Branch')
+            #     ax1.set_ylabel('Distance to Obstacles (pixels)')
+            #     ax1.legend()
+            #     ax1.grid()
+            #     #
+            #     # plot gradient and curvature
+            #     ax2 = axs[1]
+            #     ax2.plot(grad, label='Gradient', color='orange')
+            #     ax2.set_title(f'Gradient and Curvature along Branch {i}')
+            #     ax2.set_xlabel('Point Index along Branch')
+            #     ax2.set_ylabel('Value')
+            #     ax2.legend()
+            #     ax2.grid()
+            #     plt.show()
 
         return critical_pts
 
-    def process_dists(self, dists: np.ndarray) -> np.ndarray:
+    def filtar_branch_distances(self, dists: np.ndarray) -> np.ndarray:
         n = len(dists)
         thresh = max(2, n / 100)
         space_thresh = 2
@@ -331,22 +308,30 @@ class SkeletonDecomposition:
 
         n = len(dists)
         d_min = np.min(dists)
+        # d_max = np.max(dists)
+        # dl = max(0.1 * (d_max - d_min), 1)
+        # d_corr = d_min + dl
         if d_min > (0.2 * n):
             return []
 
         min_cor_len = int(max(8 * self.robot_radius_px, n * 0.45))
-        thresh = max(2, n / 200)
+
+        # dists = dists / np.max(dists)  # normalize distances to [0, 1]
+        # grads = np.gradient(dists)
+
+        dist_diff_thresh = max(2, n / 200)
 
         cors = []
         start_d = dists[1]
         start = 1
         i = 1
         while i < n - 1:
-            if abs(dists[i] - start_d) > thresh:
+            # if dists[i] < d_corr:
+            # if abs(grads[i]) < 0.004:
+            if abs(dists[i] - start_d) > dist_diff_thresh:
                 end = i
                 if end - start + 1 >= min_cor_len:
                     start_d = np.mean(dists[start:end])
-
                     cors.append((start, end))
                 start_d = dists[i]
                 start = i
@@ -354,191 +339,63 @@ class SkeletonDecomposition:
         if i - 1 - start >= min_cor_len:
             cors.append((start, i - 1))
 
+        def compute_angle(p1, p2, p3):
+            """Compute the angle at p2 formed by the line segments p1-p2 and p2-p3."""
+            v1 = np.array(p1) - np.array(p2)
+            v2 = np.array(p3) - np.array(p2)
+            cos_theta = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+            angle = np.arccos(np.clip(cos_theta, -1.0, 1.0))  # clip to avoid numerical issues
+            return np.degrees(angle)
+
+        # now for each start point of corridor, find the two base points by and checking if b1-cp-b2 angle is close to 180 degrees
+        k = 5  # degree
+        new_cors = []
+        for start, end in cors:
+            new_start = start
+            new_end = end
+            while new_start < end:
+                temp_cp = CriticalPoint(coord=bpts[new_start], type='corridor')
+                bases = self.critical_operator.find_base_points(critical_pts=[temp_cp])
+                if len(bases) > 0:
+                    bases = bases[0]
+                    theta = compute_angle(bases[0], temp_cp.coord, bases[1])
+                    if abs(theta - 180) < k:
+                        break
+                new_start += 1
+            while new_end > start:
+                temp_cp = CriticalPoint(coord=bpts[new_end], type='corridor')
+                bases = self.critical_operator.find_base_points(critical_pts=[temp_cp])
+                if len(bases) > 0:
+                    bases = bases[0]
+                    theta = compute_angle(bases[0], temp_cp.coord, bases[1])
+                    if abs(theta - 180) < k:
+                        break
+                new_end -= 1
+            if new_end - new_start + 1 >= min_cor_len:
+                new_cors.append((new_start, new_end))
+
+        # # nor for each corridor, find mean and std
+        # # then update start and end to be the points where the distance is within mean +/- std
+        # new_cors = []
+        # for start, end in cors:
+        #     mean_d = np.mean(dists[start:end + 1])
+        #     std_d = np.std(dists[start:end + 1])
+        #     d_thresh = max(2, std_d / 2)
+        #     new_start = start
+        #     new_end = end
+        #     while new_start < end and abs(dists[new_start] - mean_d) > d_thresh:
+        #         new_start += 1
+        #     while new_end > start and abs(dists[new_end] - mean_d) > d_thresh:
+        #         new_end -= 1
+        #     if new_end - new_start + 1 >= min_cor_len:
+        #         new_cors.append((new_start, new_end))
+
         cps = []
-        for cor in cors:
+        for cor in new_cors:
             start, end = cor
             cps.append(CriticalPoint(coord=bpts[start], type='corridor'))
             cps.append(CriticalPoint(coord=bpts[end], type='corridor'))
         return cps
-
-    # def find_corridors(self, bpts: list[tuple], dists: np.ndarray, space_thresh: int):
-
-    #     n = len(dists)
-
-    #     d_min = np.min(dists)
-    #     d_max = np.max(dists)
-    #     dl = max(0.1 * (d_max - d_min), 1)
-    #     d_corr = d_min + dl
-
-    #     if d_min > (0.3 * n):
-    #         return []
-
-    #     min_cor_len = int(max(8 * self.robot_radius_px, n * 0.6))
-
-    #     cors = []
-    #     start = None
-    #     end = None
-    #     i = 1
-    #     while i < n - 1:
-    #         if dists[i] < d_corr:  # threshold for corridor detection # param
-    #             if start is None:
-    #                 start = i
-    #         else:
-    #             if start is not None:
-    #                 end = i
-    #                 if end - start + 1 >= min_cor_len:
-    #                     cors.append((start, end))
-    #                 start = None
-    #         i += 1
-    #     if start is not None and end is None:
-    #         end = n - 2
-    #         if end - start + 1 >= min_cor_len:
-    #             cors.append((start, end))
-
-    #     cps = []
-    #     for cor in cors:
-    #         start, end = cor
-    #         cps.append(CriticalPoint(coord=bpts[start], type='corridor'))
-    #         cps.append(CriticalPoint(coord=bpts[end], type='corridor'))
-    #     return cps
-
-    # def find_corridors(self, bpts: list[tuple], dists: np.ndarray, space_thresh: int):
-
-    #     dists = dists / np.max(dists)  # normalize distances to [0, 1]
-    #     grads = np.gradient(dists)
-
-    #     n = len(grads)
-    #     min_cor_len = max(8 * self.robot_radius_px, n // 2)
-
-    #     cors = []
-    #     start = None
-    #     end = None
-    #     i = 0
-    #     while i < n:
-    #         if abs(grads[i]) < 0.002:  # threshold for corridor detection # param
-    #             if start is None:
-    #                 start = i
-    #         else:
-    #             if start is not None:
-    #                 end = i
-    #                 if end - start + 1 >= min_cor_len:
-    #                     cors.append((start, end))
-    #                 start = None
-    #         i += 1
-    #     if start is not None and end is None:
-    #         end = n - 1
-    #         if end - start + 1 >= min_cor_len:
-    #             cors.append((start, end))
-
-    #     cps = []
-    #     for cor in cors:
-    #         start, end = cor
-    #         cps.append(CriticalPoint(coord=bpts[start], type='corridor'))
-    #         cps.append(CriticalPoint(coord=bpts[end], type='corridor'))
-    #     return cps
-
-    def find_branch_critical_points_rel_grad(self, bpts: list[tuple], dists: np.ndarray, space_thresh: int) -> list[CriticalPoint]:
-
-        # dowmn sample the distance array to reduce noise and computation
-        n = len(dists)
-        n1 = int(n // (self.robot_radius_px / 2))
-        idxs_ds = np.linspace(0, n - 1, num=n1, dtype=int)
-        dists_ds = dists[idxs_ds]
-
-        # Parameters for corridor width change detection
-        width_change_thresh = 0.1  # relative width change threshold
-
-        # Calculate relative width changes
-        rel_width_change = np.gradient(dists_ds) / dists_ds
-
-        # Identify candidate critical points based on width change threshold
-        candid_idx_ds = np.where(np.abs(rel_width_change) > width_change_thresh)[0]
-
-        if len(candid_idx_ds) == 0:
-            return cpts
-
-        candid_idxs_real = idxs_ds[candid_idx_ds]
-
-        # Filter candidates based on minimum spacing
-        keep_indices = []
-        for idx in candid_idxs_real:
-            if len(keep_indices) == 0 or idx - keep_indices[-1] > space_thresh:
-                keep_indices.append(idx)
-
-        # Create CriticalPoint objects for the filtered indices
-        for idx in keep_indices:
-            cpts.append(CriticalPoint(coord=bpts[idx]))
-
-        return cpts
-
-    def find_branch_critical_points_changepoint(self, bpts: list[tuple], dists: np.ndarray) -> list[CriticalPoint]:
-        import ruptures as rpt
-
-        cpts = []
-        if len(dists) < 12:
-            return cpts
-
-        dists = dists.reshape(-1, 1)
-        min_size = max(5, self.robot_radius_px * 1)
-        jump = max(1, self.robot_radius_px * 1)
-
-        model = "rbf"  # "rbf"  # "linear"
-        algo = rpt.Pelt(model=model, min_size=min_size, jump=jump).fit(dists)
-        bkps = algo.predict(pen=self.robot_radius_px * 4)
-
-        new_cps = []
-        for idx in bkps[:-1]:
-
-            if idx < self.robot_radius_px:
-                continue
-
-            if idx > len(dists) - self.robot_radius_px:
-                continue
-
-            new_cps.append(idx)
-            cpts.append(CriticalPoint(coord=bpts[idx]))
-
-        return cpts
-
-    def find_critical_points_gradient(self, bpts: list[tuple], dists: np.ndarray) -> list[CriticalPoint]:
-        """Detect significant radius transitions along each branch."""
-
-        cpts = []
-
-        min_spacing = 2 * self.robot_radius_px
-        grad_thresh = 0.25      # relative radius change, bigger than this threshold is considered significant
-        curv_thresh = 0.06      # recommended
-
-        if len(dists) < 6:
-            return cpts
-
-        grad = np.gradient(dists)
-        curv = np.gradient(grad)
-        mean_radius = np.mean(dists)
-        candidate = np.where(np.abs(grad) > grad_thresh)[0]
-
-        if len(candidate) == 0:
-            return cpts
-
-        keep = []
-        for idx in candidate:
-
-            if idx < self.robot_radius_px:
-                continue
-            if idx > len(dists) - self.robot_radius_px:
-                continue
-
-            if len(keep) == 0:
-                keep.append(idx)
-                continue
-
-            if idx - keep[-1] > min_spacing:
-                keep.append(idx)
-
-        for idx in keep:
-            cpts.append(CriticalPoint(coord=bpts[idx]))
-
-        return cpts
 
     def find_min_dist_critical_points_global(self, bpts: list[tuple], dists: np.ndarray) -> list[CriticalPoint]:
         """Find critical points based on local minimum distance to obstacles along branches."""
@@ -547,9 +404,11 @@ class SkeletonDecomposition:
         search_r_px = 4 * robot_radius_px  # param # search radius for local minimum distance
         # search_r_px_2 = search_r_px // 2
 
-        mean_dist = np.mean(dists)
         min_dist_idx = np.argmin(dists)
         min_dist = dists[min_dist_idx]
+        max_dist = np.max(dists)
+
+        mean_dist = np.mean(dists)
 
         # skip endpoints and branchpoints
         if min_dist_idx in [0, len(dists) - 1]:
@@ -567,14 +426,11 @@ class SkeletonDecomposition:
     def find_min_dist_critical_points_local(self, bpts: list[tuple], dists: np.ndarray) -> list[CriticalPoint]:
         """Find critical points based on local minimum distance to obstacles along branches."""
         cr_pts = []
-        search_r = 4 * self.robot_radius_px  # param # search radius for local minimum distance
-        search_d = search_r * 2
 
         n = len(bpts)
+        search_r = max(8 * self.robot_radius_px, n // 4)  # param # search radius for local minimum distance
         i_skip = self.robot_radius_px
 
-        if n < 2 * i_skip + 1:
-            return cr_pts
         if n < search_r:
             search_r = n // 2
 
@@ -591,7 +447,7 @@ class SkeletonDecomposition:
             mean_dist_local = np.mean(local_window)
             min_dist_local = np.min(local_window)
 
-            if min_dist_local > 0.96 * mean_dist_local:  # param
+            if min_dist_local > 0.85 * mean_dist_local:  # param
                 continue
 
             if dist == np.min(local_window):
@@ -637,10 +493,7 @@ class SkeletonDecomposition:
             ax.scatter(f_end_pts[:, 1], f_end_pts[:, 0], color='lime', s=marker_size, label='Filtered Endpoints')
         if len(self.local_min_cr_pts) > 0:
             local_min_cp_coords = np.array([cp.coord for cp in self.local_min_cr_pts])
-            ax.scatter(local_min_cp_coords[:, 1], local_min_cp_coords[:, 0], color='orange', s=marker_size, label='Local Min Critical Points')
-        if len(self.branch_cr_pts) > 0:
-            branch_cr_pts_coords = np.array([cp.coord for cp in self.branch_cr_pts])
-            ax.scatter(branch_cr_pts_coords[:, 1], branch_cr_pts_coords[:, 0], color='k', s=marker_size // 1.5, label='Branch Critical Points')
+            ax.scatter(local_min_cp_coords[:, 1], local_min_cp_coords[:, 0], color='orange', s=marker_size, label='Critical Points')
         # add a circle around the robot radius for reference
         xc, yc = self.zmd.hw[1] // 2, self.zmd.hw[0] // 2
         circle = plt.Circle((xc, yc), self.robot_radius_px, color='green', fill=False, linewidth=2 / scale_px)
@@ -660,7 +513,7 @@ class SkeletonDecomposition:
             color = 'orange' if branch.end_type == 'skip' else colors(i)
             # Draw branch lines below points
             ax2.plot(xx, yy, color=color, linewidth=4 / scale_px, linestyle='-', label=label, zorder=2)
-            ax2.text(xx[len(xx) // 2], yy[len(yy) // 2], f'B{i}/{len(branch.points)}', color='black', fontsize=8, ha='center', va='center', zorder=3)
+            ax2.text(xx[len(xx) // 2], yy[len(yy) // 2], f'B{i}', color='black', fontsize=8, ha='center', va='center', zorder=3)
 
         # plot error point if any
         if self.erp_sidep:  # no side points found,  len(side_pts) != 2:
@@ -702,7 +555,7 @@ class SkeletonDecomposition:
             fig1.savefig(fig1_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')
             fig2.savefig(fig2_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')
 
-        plt.show()
+        # plt.show()
         plt.close('all')
 
     @staticmethod

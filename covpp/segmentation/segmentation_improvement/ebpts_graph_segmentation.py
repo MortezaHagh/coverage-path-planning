@@ -178,7 +178,7 @@ class EspecialBranchPointsSegmentation:
 
         # todo
         # threshold_distance = max_distance // 4  # param
-        threshold_distance = 4 * robot_radius_px  # param
+        threshold_distance = 1 * robot_radius_px  # param 4 *
 
         # Create a list of nodes to remove
         nodes_to_remove = []
@@ -227,13 +227,14 @@ class EspecialBranchPointsSegmentation:
 
             n_g = len(group)
             new_cp = None
+            gc_dist = maps["distance_map"][m_group[0][0], m_group[0][1]]
 
             if n_g > 3:
-                new_cp = self.find_modified_critical_points_g4(graphs_data["sk_graph"], group)
+                new_cp = self.find_modified_critical_points_g4(graphs_data["sk_graph"], group, gc_dist)
                 if new_cp is not None:
                     cr_pts.append(new_cp)
             elif n_g == 3:
-                new_cp = self.find_modified_critical_points_g3(graphs_data["sk_graph"], group)
+                new_cp = self.find_modified_critical_points_g3(graphs_data["sk_graph"], group, gc_dist)
                 if new_cp is not None:
                     cr_pts.append(new_cp)
 
@@ -258,7 +259,7 @@ class EspecialBranchPointsSegmentation:
         self.lg.info2(f"Found {len(cr_pts)} new critical points for second level segmentation.")
 
         # Create a CriticalPointOperations instance to find base points for the new critical points
-        cpo = CriticalPointOperations(distance_map=maps["distance_map"],
+        cpo = CriticalPointOperations(distance_map=maps["distance_map_norm"],
                                       skeleton_map_b=maps["skeleton_map_b"],
                                       branches=graphs_data["branches"])
         cpo.critical_pts = cr_pts
@@ -404,7 +405,7 @@ class EspecialBranchPointsSegmentation:
 
         return new_group
 
-    def find_modified_critical_points_g3(self, sk_graph: Graph, group: list[tuple[int, int]]) -> CriticalPoint:
+    def find_modified_critical_points_g3(self, sk_graph: Graph, group: list[tuple[int, int]], gc_dist: int) -> CriticalPoint:
         """ Find modified critical point for group of 3 branch points."""
 
         gc = group[0]
@@ -428,13 +429,15 @@ class EspecialBranchPointsSegmentation:
 
         path = shortest_path(sk_graph, source=tuple(gc), target=tuple(gg))
         n_path = len(path)
-        new_ind = n_path // 5
-        # new_ind = self.skelet_distance_map[gc[0], gc[1]]
-        # new_ind = int(new_ind * 0.7)  # move closer to gc
+        # new_ind = n_path // 5
+        new_ind = gc_dist
+        new_ind = int(new_ind * 0.7)  # move closer to gc
+        if new_ind >= n_path:
+            new_ind = n_path // 2
         new_coord = path[new_ind]
         return CriticalPoint(coord=np.array(new_coord))
 
-    def find_modified_critical_points_g4(self, sk_graph: Graph, group: list[tuple[int, int]]) -> CriticalPoint:
+    def find_modified_critical_points_g4(self, sk_graph: Graph, group: list[tuple[int, int]], gc_dist: int) -> CriticalPoint:
         gc = group.pop(0)
         n = len(group)
         hits = [0 for _ in group]
@@ -450,8 +453,9 @@ class EspecialBranchPointsSegmentation:
         gi = group[max_hit_idx]
         path = shortest_path(sk_graph, source=tuple(gc), target=tuple(gi))
         n_path = len(path)
-        new_ind = n_path // 5
-        # new_ind = self.skelet_distance_map[gc[0], gc[1]]
+        # new_ind = n_path // 5
+        new_ind = gc_dist
+        new_ind = int(new_ind * 0.7)  # move closer to gc
         if new_ind >= n_path:
             new_ind = n_path // 2
         new_coord = path[new_ind]

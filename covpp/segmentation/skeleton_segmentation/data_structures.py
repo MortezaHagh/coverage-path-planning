@@ -18,6 +18,7 @@ class Skelet:
     """ Contains skeletonization results. """
     skeleton_map_b: np.ndarray              # dtype=bool
     distance_map: np.ndarray           # dtype=uint8 OCCUPIED-FREE
+    distance_map_norm: np.ndarray      # dtype=uint8 OCCUPIED-FREE
     skeleton_distance_map: np.ndarray       # dtype=uint8 OCCUPIED-FREE
     skeleton_segmented_map: np.ndarray      # dtype=uint8
     end_points: np.ndarray                  # dtype=uint8 (y, x)
