@@ -52,7 +52,6 @@ class SkeletonDecomposition:
         self.bpts_graph: Graph = None                       # graph of branch points
         self.critical_pts: list[CriticalPoint] = []         # critical points data
         self.base_pts: list[list[tuple, tuple]] = []       # base points for critical points (n_cp * 2)
-        self.local_min_cr_pts: list[CriticalPoint] = []     # additional critical points based on local minimum distance to obstacles
         self.erp_sidep = []                                 # for debugging
         self.error_point_segments = []                      # for debugging
 
@@ -79,7 +78,6 @@ class SkeletonDecomposition:
         # additional critical points and base points based on local minimum distance to obstacles
         new_cr_pts = self.find_min_dist_critical_points()
         new_base_pts = critical_operator.find_base_points(critical_pts=new_cr_pts)
-        self.local_min_cr_pts = new_cr_pts
         self.critical_pts += new_cr_pts
         self.base_pts += new_base_pts
 
@@ -162,7 +160,7 @@ class SkeletonDecomposition:
         """ Extract branches from a skeleton as paths between end_points/branch_pts. """
 
         # maps = SBG.create_skeletonized_maps(self.zmd.map_ws, method='medial_axis')
-        sk_graph = SBG.create_skeleton_graph(self.skelet.skeleton_map_b)
+        sk_graph = SBG.create_skeleton_graph(self.skelet.skeleton_map_b, self.skelet.distance_map)
 
         # update skeletonization data with special points
         end_pts, branch_pts = SBG.create_especial_points(sk_graph)
@@ -229,7 +227,8 @@ class SkeletonDecomposition:
                 self.lg.error(f"Branch {i} is too short ({n} points). Skipping critical point detection.")
                 continue
 
-            dists = self.skelet.distance_map_norm[branch.points[:, 0], branch.points[:, 1]].astype(float)
+            # dists = self.skelet.distance_map_norm[branch.points[:, 0], branch.points[:, 1]].astype(float)
+            dists = branch.dists.astype(float)
             dist_in = dists
             sigma_ = sigma_smooth
 
@@ -491,9 +490,9 @@ class SkeletonDecomposition:
         ax.scatter(branch_pts[:, 1], branch_pts[:, 0], color='red', s=marker_size, label='Branchpoints')
         if len(f_end_pts) > 0:
             ax.scatter(f_end_pts[:, 1], f_end_pts[:, 0], color='lime', s=marker_size, label='Filtered Endpoints')
-        if len(self.local_min_cr_pts) > 0:
-            local_min_cp_coords = np.array([cp.coord for cp in self.local_min_cr_pts])
-            ax.scatter(local_min_cp_coords[:, 1], local_min_cp_coords[:, 0], color='orange', s=marker_size, label='Critical Points')
+        if len(self.critical_pts) > 0:
+            cp_coords = np.array([cp.coord for cp in self.critical_pts])
+            ax.scatter(cp_coords[:, 1], cp_coords[:, 0], color='orange', s=marker_size, label='Critical Points')
         # add a circle around the robot radius for reference
         xc, yc = self.zmd.hw[1] // 2, self.zmd.hw[0] // 2
         circle = plt.Circle((xc, yc), self.robot_radius_px, color='green', fill=False, linewidth=2 / scale_px)

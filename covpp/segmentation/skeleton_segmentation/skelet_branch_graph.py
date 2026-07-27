@@ -43,7 +43,7 @@ class SkeletBranchGraph:
         return maps
 
     @staticmethod
-    def create_skeleton_graph(skeleton_map_b: np.ndarray) -> Graph:
+    def create_skeleton_graph(skeleton_map_b: np.ndarray, distance_map: np.ndarray) -> Graph:
         """ Create a graph representation of the skeleton of the cell map. """
 
         # create graph from skeleton
@@ -56,6 +56,7 @@ class SkeletBranchGraph:
         # Only scan forward 8-connected neighbors so each undirected edge is added once.
         dxy_forward = [(0, 1), (1, -1), (1, 0), (1, 1)]
         for y, x in nodes:
+            sk_graph.nodes[(y, x)]['distance'] = distance_map[y, x]
             for dy, dx in dxy_forward:
                 neighbor = (y + dy, x + dx)
                 if neighbor in node_set:
@@ -140,19 +141,24 @@ class SkeletBranchGraph:
                 visited.add((end, prev))
 
                 bpts_graph.add_edge(start, end)
-                bpts_graph[start][end]['distance'] = np.linalg.norm(np.array(start) - np.array(end))
+                bpts_graph[start][end]['dist_eps'] = np.linalg.norm(np.array(start) - np.array(end))
 
-                path = np.array(path)
                 if len(path) < len_thresh_px:
                     continue
+                path_arr = np.array(path)
+
+                dists = [sk_graph.nodes[node]['distance'] for node in path]
+                max_dist = max(dists)
 
                 end_type = "branching" if end in branch_pts else "endpoint"
                 branches.append(Branch(id=i_branch,
                                        start_point=start,
                                        end_point=end,
-                                       points=path,
+                                       points=path_arr,
                                        length=len(path),
-                                       end_type=end_type))
+                                       end_type=end_type,
+                                       dists=np.array(dists),
+                                       max_dist=max_dist))
                 i_branch += 1
 
         return branches, bpts_graph

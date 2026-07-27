@@ -87,7 +87,7 @@ class EspecialBranchPointsSegmentation:
     def create_graphs(self):
 
         maps = SBG.create_skeletonized_maps(self.segmented_map, method='medial_axis')  # maps: skeleton_map_b, distance_map
-        sk_graph = SBG.create_skeleton_graph(maps["skeleton_map_b"])
+        sk_graph = SBG.create_skeleton_graph(skeleton_map_b=maps["skeleton_map_b"], distance_map=maps["distance_map"])
 
         end_pts, branch_pts = SBG.create_especial_points(sk_graph)
         especial_pts_dict = {"end_pts": end_pts, "branch_pts": branch_pts, "skipped_end_pts": []}
@@ -137,7 +137,7 @@ class EspecialBranchPointsSegmentation:
 
         # create skeleton and distance maps, and the skeleton graph
         maps = SBG.create_skeletonized_maps(cell_map, method='medial_axis')  # maps: skeleton_map_b, distance_map
-        sk_graph = SBG.create_skeleton_graph(maps["skeleton_map_b"])
+        sk_graph = SBG.create_skeleton_graph(maps["skeleton_map_b"], maps["distance_map"])
 
         # create especial points (end points and branch points) and the branch points graph
         end_pts, branch_pts = SBG.create_especial_points(sk_graph)
@@ -322,7 +322,7 @@ class EspecialBranchPointsSegmentation:
                 p1 = loop_nodes[i]
                 p2 = loop_nodes[(i + 1) % len(loop_nodes)]
                 if bpts_graph.has_edge(p1, p2):
-                    edge_cost += bpts_graph[p1][p2].get('distance', 1.0)
+                    edge_cost += bpts_graph[p1][p2].get('dist_eps', 1.0)
             if edge_cost > dist_thresh:
                 continue
 
@@ -336,7 +336,7 @@ class EspecialBranchPointsSegmentation:
                     if neighbor not in loop and neighbor != keep_node:
                         bpts_graph.add_edge(keep_node, neighbor)
                         dist = np.linalg.norm(np.array(keep_node) - np.array(neighbor))
-                        bpts_graph[keep_node][neighbor]['distance'] = dist
+                        bpts_graph[keep_node][neighbor]['dist_eps'] = dist
                 # Remove the merged node
                 if bpts_graph.has_node(p):
                     bpts_graph.remove_node(p)
@@ -361,7 +361,7 @@ class EspecialBranchPointsSegmentation:
             for v in list(bpts_graph.neighbors(u)):
                 if not bpts_graph.has_edge(u, v):
                     continue
-                dist = bpts_graph[u][v].get('distance', 1.0)
+                dist = bpts_graph[u][v].get('dist_eps', 1.0)
                 if dist < dist_thresh:
                     short_neighbors.append(v)
             if len(short_neighbors) > n_short_neighbors:
@@ -373,7 +373,7 @@ class EspecialBranchPointsSegmentation:
                         if neighbor != u:
                             bpts_graph.add_edge(u, neighbor)
                             new_dist = np.linalg.norm(np.array(u) - np.array(neighbor))
-                            bpts_graph[u][neighbor]['distance'] = new_dist
+                            bpts_graph[u][neighbor]['dist_eps'] = new_dist
                     # Remove the merged node
                     if bpts_graph.has_node(v):
                         bpts_graph.remove_node(v)

@@ -37,6 +37,8 @@ class Branch:
     end_point: tuple                # (y, x)
     # cp_idxs: np.ndarray = None      # indices in critical points list
     # cp_coords: np.ndarray = None    # shape (N, 2), dtype=int , list of (y, x)
+    dists: np.ndarray = None          # shape (N, ), dtype=float , distances from occupied cells to skeleton points along the branch
+    max_dist: float = None              # maximum distance from occupied cells to skeleton points along the branch
 
 
 class CriticalPoint:
