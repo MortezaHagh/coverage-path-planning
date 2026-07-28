@@ -56,6 +56,7 @@ voronoi = "covpp.segmentation.voronoi_segmentation.segmentation:Segmentation"
 skeleton = "covpp.segmentation.skeleton_segmentation.segmentation:Segmentation"
 morphological = "covpp.segmentation.morphological_segmentation.segmentation:Segmentation"
 distance_tf = "covpp.segmentation.distance_transform_segmentation.segmentation:Segmentation"
+sweep_skeleton = "covpp.segmentation.sweep_skeleton_decomposition.segmentation:Segmentation"
 
 [project.entry-points."coverage_planners"]
 boust = "covpp.coverage_planning.boustrophedon.coverage_pp_boust:CoveragePathPlanner"

@@ -49,7 +49,7 @@ class PipeLineConfig:
 
     # Methods names for main modules: segmentation, coverage path planning, sequence
     name_suffix = ""
-    segmentation_method = "morphological"       # simple, voronoi, skeleton, morphological, distance_tf
+    segmentation_method = "skeleton"            # simple, voronoi, skeleton, morphological, distance_tf, sweep_skeleton
     covpp_method = "contour"                    # simple, boust, contour, grid_energy_min
     pp_method = "astar"                         # astar
     sequence_method = "milp"                    # simple, dfs, milp

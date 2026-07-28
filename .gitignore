@@ -12,3 +12,4 @@ temp/
 # 
 !devcontainer.json
 !settings.json
+todo.md
