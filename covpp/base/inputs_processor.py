@@ -53,6 +53,8 @@ class InputsProcessor:
 
         # read map image file
         self.load_eval_map_image()
+
+        self.write_json(map_yaml_data)
         # self.visualize_map(self.__orig_map_gs)
 
     @property
@@ -86,7 +88,6 @@ class InputsProcessor:
         """ read map yaml file and return data as dictionary. Also write json file. """
         with open(file_path, 'r', encoding='utf-8') as file:
             map_yaml_data = yaml.safe_load(file)
-        self.write_json(self.paths["json"], map_yaml_data)
         return map_yaml_data
 
     def update_map_configs(self, yaml_data: dict) -> None:
@@ -106,10 +107,14 @@ class InputsProcessor:
             raise FileNotFoundError("Failed to load PGM file.")
         self.__orig_map_gs = map_image
 
-    def write_json(self, file_path: str, data: dict) -> None:
-        """ Write data to a JSON file. """
-        with open(file_path, 'w', encoding='utf-8') as file:
-            json.dump(data, file, indent=4)
+    def write_json(self, map_yaml_data) -> None:
+        w, h = self.__orig_map_gs.shape[::-1]
+        map_yaml_data["width_px"] = w
+        map_yaml_data["height_px"] = h
+        map_yaml_data["width_m"] = round(w * map_yaml_data["resolution"], 1)
+        map_yaml_data["height_m"] = round(h * map_yaml_data["resolution"], 1)
+        with open(self.paths["json"], 'w', encoding='utf-8') as file:
+            json.dump(map_yaml_data, file, indent=4)
 
     def visualize_map(self, pgm_data: np.ndarray) -> None:
         """ Visualize the loaded PGM map image using OpenCV. """

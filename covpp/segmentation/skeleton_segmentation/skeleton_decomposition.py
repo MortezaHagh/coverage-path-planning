@@ -76,7 +76,7 @@ class SkeletonDecomposition:
         self.critical_operator = critical_operator
 
         # additional critical points and base points based on local minimum distance to obstacles
-        new_cr_pts = self.find_min_dist_critical_points()
+        new_cr_pts = self.find_branch_critical_points()
         new_base_pts = critical_operator.find_base_points(critical_pts=new_cr_pts)
         self.critical_pts += new_cr_pts
         self.base_pts += new_base_pts
@@ -185,7 +185,10 @@ class SkeletonDecomposition:
         # update class attributes
         self.skeleton_graph = sk_graph
         self.branches = branches
-        self.bpts_graph = bpts_graph
+        # self.bpts_graph = bpts_graph
+
+        # bpts_graph = SBG.filter_bpts_graph(bpts_graph=bpts_graph, robot_radius_px=self.robot_radius_px)
+        # SBG.find_straight_bpts_graph(map=self.map_ws, bpts_graph=bpts_graph)
 
         # SBG.plot_branch_graph(branches, bpts_graph, self.map_ws)
 
@@ -212,7 +215,7 @@ class SkeletonDecomposition:
     # Critical points based on local minimum distance to obstacles along branches
     # ==================================================================================================================
 
-    def find_min_dist_critical_points(self) -> list[CriticalPoint]:
+    def find_branch_critical_points(self) -> list[CriticalPoint]:
 
         critical_pts = []
 
@@ -242,6 +245,7 @@ class SkeletonDecomposition:
 
             # Find critical points based on corridors (flat regions) in the distance profile
             cpts = self.find_corridors(branch.points, smooth, space_thresh)
+
             if len(cpts) == 0:
 
                 # # Check if the gradient is monotonic in the middle part of the branch (excluding endpoints)
@@ -313,7 +317,9 @@ class SkeletonDecomposition:
         if d_min > (0.2 * n):
             return []
 
-        min_cor_len = int(max(8 * self.robot_radius_px, n * 0.45))
+        # param # todo
+        thresh_1 = min(max(self.map_ws.shape) // 4, 40 * self.robot_radius_px)
+        min_cor_len = int(max(thresh_1, n * 0.45))  # param
 
         # dists = dists / np.max(dists)  # normalize distances to [0, 1]
         # grads = np.gradient(dists)

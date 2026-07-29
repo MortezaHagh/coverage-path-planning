@@ -69,8 +69,12 @@ class SweepSkeletonDecomposition:
         # self.branch_cr_pts = self.critical_pts.copy()
         self.critical_operator = critical_operator
 
-        new_cr_pts = self.sweep_skeleton()
+        new_cr_pts = self.find_min_dist_critical_points()
         new_base_pts = critical_operator.find_base_points(critical_pts=new_cr_pts)
+        self.critical_pts += new_cr_pts
+        self.base_pts += new_base_pts
+
+        new_cr_pts, new_base_pts = self.sweep_skeleton()
         self.critical_pts += new_cr_pts
         self.base_pts += new_base_pts
 
@@ -205,7 +209,7 @@ class SweepSkeletonDecomposition:
     # Sweep Operation
     # ==================================================================================================================
 
-    def sweep_skeleton(self) -> None:
+    def sweep_skeleton(self) -> tuple[list[CriticalPoint], list[list[tuple, tuple]]]:
         '''
 
         Steps:
@@ -214,10 +218,16 @@ class SweepSkeletonDecomposition:
         - find sudden changes in the distance profile, mark as critical points
         '''
 
+        for bpts in self.base_pts:
+            base1 = bpts[0]
+            base2 = bpts[1]
+            cv.line(self.sweep_seg_map, (base1[1], base1[0]), (base2[1], base2[0]), OCCUPIED, thickness=2)
+
         critical_pts = []
-        p_dist_thresh = max(5, 2 * self.robot_radius_px)    # threshold for sudden change in perpendicular distance to obstacles
-        # ds_step = max(2, self.robot_radius_px // 4)         # downsample step for branches
-        ds_step = 2                                         # downsample step for branches
+        base_pts = []
+
+        p_dist_thresh = max(5, 4 * self.robot_radius_px)    # threshold for sudden change in perpendicular distance to obstacles
+        ds_step = max(2, self.robot_radius_px // 4)         # downsample step for branches
         l_init = max(4, self.robot_radius_px)               # initial and final length to ignore for each branch (to avoid endpoints)
         space_thresh = 4 * self.robot_radius_px             # threshold for minimum distance between critical points along the branch
 
@@ -251,30 +261,23 @@ class SweepSkeletonDecomposition:
             cp_pts = []
             last_cp = None
             prev_d = None
-            c_space_thresh = max(space_thresh, n // 20)
-            # c_p_dist_thresh = max(p_dist_thresh, p_dist_min_ep / 2)
+            c_space_thresh = max(space_thresh, n // 2)
             for i, p1 in enumerate(pts[:-1]):
                 if last_cp is not None:
                     if np.linalg.norm(np.array(p1) - np.array(last_cp)) < c_space_thresh:
                         continue
                 p2 = pts[i + 1]
                 p_d = self.find_max_obst_dist_point(p1, p2)
+                if p_d == 0:
+                    continue
                 if p_d is not None:
                     if prev_d is not None:
-                        if abs(p_d - prev_d) > max(p_dist_thresh, max(prev_d, p_d) / 2):  # sudden change in distance (critical point)
-                            cp_pts.append(pts[i])
-                            last_cp = p1
+                        # if abs(p_d - prev_d) > max(p_dist_thresh, max(prev_d, p_d) / 2):  # sudden change in distance (critical point)
+                        if abs(p_d - prev_d) > max(p_dist_thresh, max(prev_d, p_d) / 3):
+                            if (min(p_d, prev_d)) / max(p_d, prev_d) < 0.6:  # ****
+                                cp_pts.append(pts[i])
+                                last_cp = p1
                     prev_d = p_d
-
-            # # find sudden changes in the perpendicular distance profile and mark as critical points
-            # p_dist_min_ep = min(p_dists[0], p_dists[-1])
-            # p_dists = np.array(p_dists)
-            # c_p_dist_thresh = max(p_dist_thresh, p_dist_min_ep / 2)
-            # grad = np.diff(p_dists)
-            # cpis = np.where(np.abs(grad) > c_p_dist_thresh)
-            # cpis = cpis[0]
-            # if len(cpis) == 0:
-            #     continue
 
             cpts = []
             if len(cp_pts) > 0:
@@ -282,10 +285,11 @@ class SweepSkeletonDecomposition:
                 cpts = [CriticalPoint(coord=p, type='sweep') for p in cp_pts]
                 critical_pts.extend(cpts)
                 for cp in cpts:
-                    base_pts = self.critical_operator.find_base_points(critical_pts=[cp])
-                    if len(base_pts) > 0:
-                        base1 = base_pts[0][0]
-                        base2 = base_pts[0][1]
+                    bpts = self.critical_operator.find_base_points(critical_pts=[cp])
+                    if len(bpts) > 0:
+                        base_pts.append(bpts[0])
+                        base1 = bpts[0][0]
+                        base2 = bpts[0][1]
                         cv.line(self.sweep_seg_map, (base1[1], base1[0]), (base2[1], base2[0]), OCCUPIED, thickness=2)
 
             # # debug
@@ -301,7 +305,7 @@ class SweepSkeletonDecomposition:
             # ax.legend()
             # plt.show()
 
-        return critical_pts
+        return critical_pts, base_pts
 
     def find_max_obst_dist_point(self, p1: tuple[int, int], p2: tuple[int, int]) -> tuple[int, int]:
         ''' Given points p1 and p2, find the distances of occupied points in the line on p1 and perpendicular to p1-p2.
@@ -313,7 +317,11 @@ class SweepSkeletonDecomposition:
         th_p12 = np.arctan2(p2[1] - p1[1], p2[0] - p1[0])  # angle of line p1-p2
         max_l = max(self.sweep_seg_map.shape)         # maximum length to check
         dists = []
-        for th in [th_p12 + np.pi / 2, th_p12 - np.pi / 2]:
+        # thetas = np.array([np.deg2rad(88), np.deg2rad(90), np.deg2rad(92)])
+        thetas = np.array([np.deg2rad(90)])
+        thetas = np.concatenate((thetas, -thetas))
+        thetas += th_p12
+        for th in thetas:
             for d in range(0, max_l):
                 x = int(p1[0] + d * np.cos(th))
                 y = int(p1[1] + d * np.sin(th))
@@ -324,11 +332,11 @@ class SweepSkeletonDecomposition:
                 if self.sweep_seg_map[x, y] == OCCUPIED:
                     dists.append(d)
                     break
-        if len(dists) < 2:
+        if len(dists) < len(thetas):
             # self.lg.error(f"Not enough occupied points found")
             # return None
             raise ValueError(f"Not enough occupied points.")
-        return max(dists)
+        return sum(dists)
 
     def smooth_path(self, path: np.ndarray, smoothing_factor: float = 1.0, samples=None) -> np.ndarray:
 
