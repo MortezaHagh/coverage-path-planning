@@ -2,15 +2,17 @@
 from covpp.base.configs import PipeLineConfig
 
 
+map_names = []
 map_names = ["MapT" + str(i) for i in range(1, 12)]
-map_names += ["map_u1", "map_u3", "map_u4"]
+# map_names += ["map_u1"]
+map_names += ["map_u1", "map_u2", "map_u3", "map_u4"]
 # map_names = ["Map_fr52", "Map4"]
-# map_names = ["MapT6"]
+# map_names = ["map_u4"]
 
 if __name__ == "__main__":
 
-    # seg_methods = ["simple", "skeleton", "morphological", "distance_tf"]
-    seg_methods = ["morphological"]
+    # seg_methods = ["skeleton", "morphological", "distance_tf", "sweep_skeleton"]
+    seg_methods = ["skeleton"]
     # covpp_methods = ["boust", "contour", "grid_energy_min"]
     covpp_methods = ["contour"]
     # rects = [False, True]
@@ -48,10 +50,14 @@ if __name__ == "__main__":
                                 name_suffix=name_suffix,
                                 start_cell_idx=0)
 
-                    print(f"\n Running pipeline for method [{dcfg.method}] on map [{map_name}].")
-                    # print(" --------------------------------------------------------------")
+                    print(f"Running pipeline for method [{dcfg.method}] on map [{map_name}].")
+                    print(" ------------------------- ")
                     from covpp.main import run_pipeline
-                    run_pipeline(map_name)
+                    try:
+                        run_pipeline(map_name)
+                    except Exception as e:
+                        print(f"Error processing [{map_name}] with method [{dcfg.method}]")
+                        continue
 
         print(" \n ====================================================== ")
         print(f"Finished processing {map_name}.")

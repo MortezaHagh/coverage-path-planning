@@ -32,6 +32,7 @@ class SequencePaths:
         f_path_px: Final complete connected path in pixels.
         f_path_m: Final complete connected path in meters.
         n_paths: Number of coverage paths.
+        n_cells: Number of all cells (with and without coverage paths).
     """
 
     def __init__(self):
@@ -42,6 +43,7 @@ class SequencePaths:
         self.f_path_px: MyPath = None
         self.f_path_m: MyPath = None
         self.n_paths: int = 0
+        self.n_cells: int = 0
 
 
 class SequenceHandler:
@@ -234,6 +236,7 @@ class SequenceHandler:
         self.paths.f_path_px = self.f_path_px
         self.paths.f_path_m = self.f_path_m
         self.paths.n_paths = len(self.paths_px)
+        self.paths.n_cells = len(self.cells)
 
     # ==================================================================================================================
     # update map planning

@@ -295,7 +295,7 @@ class SkeletBranchGraph:
         return bpts_graph
 
     # ==================================================================================================================
-    # Inline branches detection
+    # connected straight branches detection
     # ==================================================================================================================
 
     @classmethod
@@ -319,7 +319,11 @@ class SkeletBranchGraph:
                 v1 = np.array(node2) - np.array(node1)
                 cur = node2
                 found = True
+
                 while found:
+                    if bpts_graph.degree[cur] != 2:  # ***************
+                        break
+
                     found = False
                     for next in bpts_graph.neighbors(cur):
                         if next not in conn:

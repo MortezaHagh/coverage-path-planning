@@ -32,6 +32,9 @@ class ZoneEvaluation(ZoneEvaluationBase):
             self.save_result()
             raise ValueError("Data not valid for evaluation. Evaluation aborted.")
 
+        self.stats.n_cells = self.paths.n_cells
+        self.stats.n_cov_cells = self.paths.n_paths
+
         # calculate statistics
         self.calculate_time_statistics(times)
         self.calculate_path_statistics()

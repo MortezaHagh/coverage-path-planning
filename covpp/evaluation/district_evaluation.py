@@ -15,6 +15,8 @@ class DistrictStatsBase:
         self.map_name: str = None
         self.method: str = None
         self.n_zones: int = None
+        self.n_cells: int = None
+        self.n_cov_cells: int = None
         self.trav_time_full: float = None
         self.trav_time_coverage: float = None
         #
@@ -41,6 +43,8 @@ class DistrictStatsBase:
             "map_name": self.map_name,
             "method": self.method,
             "n_zones": int(self.n_zones),
+            "n_cells": int(self.n_cells),
+            "n_cov_cells": int(self.n_cov_cells),
             "trav_time_full": round(float(self.trav_time_full), 2),
             "trav_time_coverage": round(float(self.trav_time_coverage), 2),
             "ptime_segmentation": round(float(self.ptime_segmentation), 2),
@@ -84,6 +88,8 @@ class DistrictEvaluationHandler:
             raise ValueError("No zone statistics provided for district evaluation.")
 
         # aggregate statistics from all zones
+        self.stats.n_cells = sum(zs.n_cells for zs in zone_stats)
+        self.stats.n_cov_cells = sum(zs.n_cov_cells for zs in zone_stats)
         self.stats.trav_time_full = sum(zs.trav_time_full for zs in zone_stats)
         self.stats.trav_time_coverage = sum(zs.trav_time_coverage for zs in zone_stats)
         self.stats.ptime_segmentation = sum(zs.ptime_segmentation for zs in zone_stats)

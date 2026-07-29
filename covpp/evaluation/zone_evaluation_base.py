@@ -25,6 +25,8 @@ class ZoneStatsBase:
         self.map_name: str = None
         self.method: str = None
         self.ind: int = None  # zone index
+        self.n_cells: int = None  # number of cells in zone
+        self.n_cov_cells: int = None  # number of cells with coverage paths
         self.trav_time_full: float = 0.0
         self.trav_time_coverage: float = 0.0
         # Processing times for each stage (segmentation, coverage planning, sequencing, total)
@@ -57,6 +59,8 @@ class ZoneStatsBase:
             "map_name": self.map_name,
             "method": self.method,
             "zone_ind": self.ind,
+            "n_cells": self.n_cells,
+            "n_cov_cells": self.n_cov_cells,
             "trav_time_full": round(float(self.trav_time_full), 2),
             "trav_time_coverage": round(float(self.trav_time_coverage), 2),
             "ptime_segmentation": round(float(self.ptime_segmentation), 2),
