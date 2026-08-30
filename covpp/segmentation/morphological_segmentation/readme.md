@@ -11,19 +11,21 @@ Finally grow all rooms back using wavefront propagation.
 ## Inputs
 
 Binary occupancy map
-1 = free
-0 = obstacle
+
+- 1 = free
+- 0 = obstacle
 
 ## Parameters
 
-erosion_kernel = 3x3
-min_room_area(step)
-max_room_area(step)
+- erosion_kernel = 3x3
+- min_room_area(step)
+- max_room_area(step)
 
 The thresholds depend on erosion depth.
 
 ## Pseudocode
 
+```pseudocode
 FUNCTION MorphologicalSegmentation(binary_map):
 
     M1 ← copy(binary_map)          // working map
@@ -91,6 +93,7 @@ FUNCTION MorphologicalSegmentation(binary_map):
     END WHILE
 
     RETURN M2
+```
 
 ## Complexity
 

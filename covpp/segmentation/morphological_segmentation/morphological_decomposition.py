@@ -59,6 +59,8 @@ class MorphologicalSegmentation:
 
         for erosion_step in range(1, max_depth + 1):
 
+            # Skip if no pixels have remaining depth greater than or equal to the current erosion step
+            # this happens when all remaining pixels have been assigned to rooms in previous iterations
             if not np.any(remaining_depth >= erosion_step):
                 continue
 
@@ -66,6 +68,7 @@ class MorphologicalSegmentation:
             # without repeated morphological operations.
             cc, num = ndimage.label(remaining_depth >= erosion_step, structure=connectivity_8)
 
+            # max area is a factor of the min area, scaled by the erosion depth. This allows for larger rooms to be segmented at deeper erosion levels.
             max_area = (self.max_area_factor * erosion_step * self.min_area)
 
             for component_id in range(1, num + 1):

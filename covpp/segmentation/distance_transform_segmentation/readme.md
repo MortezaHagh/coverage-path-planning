@@ -16,6 +16,7 @@ Binary occupancy map
 
 ## Pseudocode
 
+```pseudocode
 FUNCTION DistanceTransformSegmentation(binary_map):
 
     distance ← DistanceTransform(binary_map)
@@ -78,6 +79,7 @@ FUNCTION DistanceTransformSegmentation(binary_map):
                     push
 
     RETURN label_map
+```
 
 ## Complexity
 

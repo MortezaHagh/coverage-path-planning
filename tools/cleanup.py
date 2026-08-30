@@ -22,6 +22,6 @@ def cleanup_district_folders(base_dir: str) -> None:
 
 if __name__ == "__main__":
     # base_directory = os.getcwd()  # or specify your base directory
-    base_directory = "/home/morteza/Documents/00-CovPP/covpp/maps/maps_set_0"
+    base_directory = "/home/morteza/Documents/00-CovPP/covpp/maps/maps_set_2"
     cleanup_district_folders(base_directory)
     print("Cleanup completed.")
