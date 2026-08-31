@@ -52,13 +52,13 @@ class ZoneData:
         self.cells: list[PCell] = []
 
         # # # coverage path planner
-        self.cov_path_planner = CoveragePPHandler(self.zmd)
+        self.cov_path_planner_hl = CoveragePPHandler(self.zmd)
 
         # # # sequence
         self.sequence_hl = SequenceHandler(self.zmd)
 
         # # # evaluator
-        self.zone_evaluator = ZoneEvaluationHandler(self.zmd)
+        self.zone_evaluator_hl = ZoneEvaluationHandler(self.zmd)
 
         # plotter
         self.cells_plotter = CellsPlotter(zmd.method_results_dir, zmd.segmentation_method_dir)
@@ -101,7 +101,7 @@ class ZoneData:
 
         # ************ coverage planning
         self.lg.info1(f"Step: running coverage path planning using method '{PipeLineConfig.covpp_method}'")
-        self.cov_path_planner.run(cells=self.cells)
+        self.cov_path_planner_hl.run(cells=self.cells)
         times['coverage_planning'] = time.time()
 
         # # temp
@@ -114,8 +114,8 @@ class ZoneData:
         times['sequencing'] = time.time()
 
         # ************ evaluate statistics
-        self.zone_evaluator.evaluate(paths=self.sequence_hl.paths, times=times)
-        self.zone_stats = self.zone_evaluator.stats
+        self.zone_evaluator_hl.evaluate(paths=self.sequence_hl.paths, segmentation_metrics=self.segmentation_hl.metrics, times=times)
+        self.zone_stats = self.zone_evaluator_hl.get_stats()
 
         # ************
         self.lg.info1("Step: zone post planning")

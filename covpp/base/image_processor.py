@@ -73,7 +73,7 @@ class MapImageProcessor:
 
     def process_map(self) -> np.ndarray:
         """ create denoised binary map. """
-        self.lg.info2("creating binary-denoised map")
+        self.lg.info3("creating binary-denoised map")
         binary_map_u8 = self.convert_to_binary()
         denoised_map_u8 = self.remove_noise(binary_map_u8)
         return denoised_map_u8

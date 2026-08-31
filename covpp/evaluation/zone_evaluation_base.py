@@ -7,6 +7,7 @@ import json
 from covpp.base.logger import MyLogger
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.sequence_handler import SequencePaths
+from covpp.segmentation.segmentation_metrics import SegmentationMetrics
 
 
 class ZoneStatsBase:
@@ -25,20 +26,32 @@ class ZoneStatsBase:
         self.map_name: str = None
         self.method: str = None
         self.ind: int = None  # zone index
+
         self.n_cells: int = None  # number of cells in zone
         self.n_cov_cells: int = None  # number of cells with coverage paths
+
         self.trav_time_full: float = 0.0
         self.trav_time_coverage: float = 0.0
+
         # Processing times for each stage (segmentation, coverage planning, sequencing, total)
         self.ptime_segmentation: float = None
         self.ptime_coverage_planning: float = None
         self.ptime_sequencing: float = None
         self.ptime_pipeline: float = None
+
+        # Segmentation Metrics
+        self.seg_avg_area: float = None
+        self.seg_avg_perimeter: float = None
+        self.seg_avg_free_perimeter: float = None
+        self.seg_avg_compactness_a: float = None
+        self.seg_avg_compactness_b: float = None
+
         #
         self.full_length = None
         self.coverage_length = None
         self.yaw_path_full = None
         self.yaw_path_coverage = None
+
         #
         self.cleaning_area_px = None
         self.area_cleaning_m = None
@@ -55,6 +68,7 @@ class ZoneStatsBase:
         Returns:
         - dict: JSON-serializable payload of KPIs and metadata.
         """
+
         return {
             "map_name": self.map_name,
             "method": self.method,
@@ -67,6 +81,11 @@ class ZoneStatsBase:
             "ptime_coverage_planning": round(float(self.ptime_coverage_planning), 2),
             "ptime_sequencing": round(float(self.ptime_sequencing), 2),
             "ptime_pipeline": round(float(self.ptime_pipeline), 2),
+            "seg_avg_area": round(float(self.seg_avg_area), 2),
+            "seg_avg_perimeter": round(float(self.seg_avg_perimeter), 2),
+            "seg_avg_free_perimeter": round(float(self.seg_avg_free_perimeter), 2),
+            "seg_avg_compactness_a": round(float(self.seg_avg_compactness_a), 2),
+            "seg_avg_compactness_b": round(float(self.seg_avg_compactness_b), 2),
             "full_length": round(float(self.full_length), 2),
             "coverage_length": round(float(self.coverage_length), 2),
             "yaw_path_full": round(float(self.yaw_path_full), 2),
@@ -95,11 +114,14 @@ class ZoneEvaluationBase:
         ``evaluate`` completes successfully.
     """
 
-    def __init__(self, zmd: ZoneMapData, paths: SequencePaths):
+    def __init__(self, zmd: ZoneMapData, paths: SequencePaths, segmentation_metrics: SegmentationMetrics):
         self.lg = MyLogger("ZoneStatsBase")
+
         # attributes
         self.zmd: ZoneMapData = zmd
         self.paths: SequencePaths = paths
+        self.segmentation_metrics: SegmentationMetrics = segmentation_metrics
+
         # statistics
         self.stats: ZoneStatsBase = None
 

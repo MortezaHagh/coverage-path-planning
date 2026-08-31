@@ -34,13 +34,6 @@ class PCell(CellBase):
         # zone map data
         self.zmd: ZoneMapData = zmd
 
-        # # cell classification - in the base class
-        # self.size_type: str = "normal"      # small, normal, large
-        # self.slim_type: str = "normal"      # slim, normal
-
-        # # major direction - defined in base cell
-        # self.major_direction: float = 0.0
-
         # cell map
         # map boundary is either original cell polygon or inscribed rectangle.
         self.map: np.ndarray = None                 # map of the cell area (free = 255, occupied = 0)

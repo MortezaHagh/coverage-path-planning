@@ -5,7 +5,7 @@ from shapely.geometry import Polygon
 from shapely import maximum_inscribed_circle  # , concave_hull
 from covpp.base.logger import MyLogger
 from covpp.base.configs import PlanningConfig
-from covpp.base.geometry import MyPoint, MyPath
+from covpp.base.geometry import MyPoint, MyPath, get_line_points
 
 
 class CellBase:
@@ -48,17 +48,20 @@ class CellBase:
 
     def __init__(self, idx: int, poly: Polygon, resolution: float, simplify: bool = True):
         self.lg = MyLogger(f"CellBase-{idx}")
-        self.id: int = idx
-
-        # optimization attributes
-        self.opt_id: int = None                 # optimized id after sequencing
-        self.next_cell_id: int = None       # next cell id in the sequence
 
         # settings
         self.resolution: float = resolution
         self.robot_r_px = int(PlanningConfig.cleaning_r_ov / resolution)
+
+        # thresholds
         self.small_cell_thresh_c = 12.0         # small cell threshold coefficient
         self.slim_cell_thresh_c = 2.0           # slim cell threshold coefficient
+
+        # --------------------------------------------------------------------------------------------------------------
+
+        self.id: int = idx
+        self.opt_id: int = None             # optimized id after sequencing
+        self.next_cell_id: int = None       # next cell id in the sequence
 
         # polygon and points
         if simplify:
@@ -69,26 +72,29 @@ class CellBase:
             self.lg.error(f"Invalid polygon for cell {self.id}.")
             raise ValueError(f"Invalid polygon for cell {self.id}.")
 
+        # --------------------------------------------------------------------------------------------------------------
+
+        # polygon and points
         self.base_poly: Polygon = deepcopy(poly)                # original cell polygon before any modifications
         self.poly: Polygon = poly                               # cell polygon
         self.points: np.ndarray = np.array([], dtype=np.int32)  # cell polygon points
 
-        # cell specs
-        self.cxy: tuple[float, float] = None  # center x,y
-        self.x_min_p: float = None
-        self.x_max_p: float = None
-        self.y_min_p: float = None
-        self.y_max_p: float = None
-        self.x_mid_p: float = None
-        self.y_mid_p: float = None
-        self.width: float = None
-        self.height: float = None
+        # --------------------------------------------------------------------------------------------------------------
+
+        # properties
         self.area: float = None
+        self.area_bb: float = None          # area of bounding box
+        self.perimeter: float = None
+        self.free_perimeter: float = None
+        self.compactness_a: float = None    # area / perimeter^2 (higher is better)
+        self.compactness_b: float = None    # area / area of bounding box (higher is better)
 
         # cell classification
         self.size_type: str = "normal"      # small, normal, large
         self.slim_type: str = "normal"      # slim, normal
         self.types: list[str] = []
+
+        # --------------------------------------------------------------------------------------------------------------
 
         # cell specs
         self.major_direction: float = 0.0   # main direction angle of the cell (free space) - radians
@@ -97,6 +103,8 @@ class CellBase:
         # adjacency
         self.adjacent_ids: list[int] = []   # adjacent cell ids
 
+        # --------------------------------------------------------------------------------------------------------------
+
         # cell paths (to be set later)
         self.path_m: MyPath = None          # path in meters
         self.path_px: MyPath = None         # path in pixels
@@ -104,6 +112,19 @@ class CellBase:
         # start-end points (based on cell path)
         self.start_point: MyPoint = None
         self.end_point: MyPoint = None
+
+        # ----------------------------------------------------------------------
+
+        # cell specs
+        self.cxy: tuple[float, float] = None
+        self.x_min_p: float = None
+        self.x_max_p: float = None
+        self.y_min_p: float = None
+        self.y_max_p: float = None
+        self.x_mid_p: float = None
+        self.y_mid_p: float = None
+        self.width: float = None
+        self.height: float = None
 
         # ----------------------------------------------------------------------
         # calculate cell specs
@@ -116,12 +137,10 @@ class CellBase:
             raise ValueError(f"Invalid polygon for cell {self.id}.")
 
         self.poly = polygon
-        # recalculate specs
         self.calculate_cell_specs()
+        self.create_cell_points()
         self.evaluate_cell_area()
         self.eval_cell_slimness()
-        # recreate cell points
-        self.create_cell_points()
 
     def set_optim_id(self, ind: int, next_cell_idx: int = None):
         """Set optimized sequence ID and next cell reference after sequencing."""
@@ -147,6 +166,24 @@ class CellBase:
         self.height = maxy - miny
         # area
         self.area = self.poly.area
+        # perimeter
+        self.perimeter = self.poly.length
+        if self.perimeter <= 0:
+            raise ValueError(f"[CellBase][ERROR] Cell {self.id}: Perimeter is negative.")
+
+        # compactness
+        self.compactness_a = self.area / (self.perimeter ** 2)
+        poly_bb = self.poly.minimum_rotated_rectangle
+        self.area_bb = poly_bb.area
+        self.compactness_b = self.area / self.area_bb
+
+    def create_cell_points(self):
+        """Extract integer coordinate points from cell polygon boundary."""
+        if self.poly:
+            points = [[int(p[0]), int(p[1])] for p in self.poly.exterior.coords]
+            self.points = np.array(points, dtype=np.int32)
+        else:
+            self.points = []
 
     def evaluate_cell_area(self) -> None:
         """ Evaluate cell area and classify size. """
@@ -174,18 +211,28 @@ class CellBase:
         #     print(f"[WARN] cell is too slim: {self.id}")
         #     self.do_planning = False
 
-    def create_cell_points(self):
-        """Extract integer coordinate points from cell polygon boundary."""
-        if self.poly:
-            points = [[int(p[0]), int(p[1])] for p in self.poly.exterior.coords]
-            self.points = np.array(points, dtype=np.int32)
-        else:
-            self.points = []
-
     def simplify_cell_poly(self, polygon: Polygon, tolerance: float = 1.0) -> Polygon:
         """ Simplify cell polygon to reduce complexity. """
         poly = polygon.simplify(tolerance, preserve_topology=True)
         return poly
+
+    def calculate_free_perimeter(self, b_map: np.ndarray, global_xy: np.ndarray) -> None:
+        """ Calculate the free perimeter of the cell based on the binary map. """
+        free_perimeter = 0
+        for i in range(len(self.points) - 1):
+            p1 = tuple(self.points[i])
+            p2 = tuple(self.points[i + 1])
+            line_points = get_line_points(p1, p2)
+            for point in line_points:
+                x, y = point - global_xy
+                try:
+                    if b_map[y, x] == 255:  # 255 is free space
+                        free_perimeter += 1
+                except:
+                    print(p1, p2, point)
+                    raise
+
+        self.free_perimeter = free_perimeter
 
     # --------------------------------------------------------------------------
     # setters

@@ -204,3 +204,29 @@ def evaluate_polygon(polygon: Polygon) -> tuple[bool, str]:
         status = "multi_polygon"
 
     return is_valid, status
+
+
+def get_line_points(p1: tuple[int, int], p2: tuple[int, int]) -> list[tuple[int, int]]:
+    """ Bresenham's line algorithm to get points between two coordinates. """
+    points = []
+    x1, y1 = p1
+    x2, y2 = p2
+    dx = abs(x2 - x1)
+    dy = abs(y2 - y1)
+    sx = 1 if x1 < x2 else -1
+    sy = 1 if y1 < y2 else -1
+    err = dx - dy
+
+    while True:
+        points.append((x1, y1))
+        if (x1, y1) == (x2, y2):
+            break
+        err2 = err * 2
+        if err2 > -dy:
+            err -= dy
+            x1 += sx
+        if err2 < dx:
+            err += dx
+            y1 += sy
+
+    return points

@@ -19,16 +19,26 @@ class DistrictStatsBase:
         self.n_cov_cells: int = None
         self.trav_time_full: float = None
         self.trav_time_coverage: float = None
+
         #
         self.ptime_segmentation: float = None
         self.ptime_coverage_planning: float = None
         self.ptime_sequencing: float = None
         self.ptime_pipeline: float = None
+
+        #
+        self.seg_avg_area: float = None
+        self.seg_avg_perimeter: float = None
+        self.seg_avg_free_perimeter: float = None
+        self.seg_avg_compactness_a: float = None
+        self.seg_avg_compactness_b: float = None
+
         #
         self.l_path_full: float = None
         self.l_path_coverage: float = None
         self.yaw_path_full: float = None
         self.yaw_path_coverage: float = None
+
         #
         self.area_cleaning_m: float = None
         self.area_cleaned_m: float = None
@@ -51,6 +61,11 @@ class DistrictStatsBase:
             "ptime_coverage_planning": round(float(self.ptime_coverage_planning), 2),
             "ptime_sequencing": round(float(self.ptime_sequencing), 2),
             "ptime_pipeline": round(float(self.ptime_pipeline), 2),
+            "seg_avg_area": round(float(self.seg_avg_area), 2),
+            "seg_avg_perimeter": round(float(self.seg_avg_perimeter), 2),
+            "seg_avg_free_perimeter": round(float(self.seg_avg_free_perimeter), 2),
+            "seg_avg_compactness_a": round(float(self.seg_avg_compactness_a), 2),
+            "seg_avg_compactness_b": round(float(self.seg_avg_compactness_b), 2),
             "l_path_full": round(float(self.l_path_full), 2),
             "l_path_coverage": round(float(self.l_path_coverage), 2),
             "yaw_path_full": round(float(self.yaw_path_full), 2),
@@ -96,6 +111,11 @@ class DistrictEvaluationHandler:
         self.stats.ptime_coverage_planning = sum(zs.ptime_coverage_planning for zs in zone_stats)
         self.stats.ptime_sequencing = sum(zs.ptime_sequencing for zs in zone_stats)
         self.stats.ptime_pipeline = sum(zs.ptime_pipeline for zs in zone_stats)
+        self.stats.seg_avg_area = sum(zs.seg_avg_area for zs in zone_stats) / self.stats.n_zones
+        self.stats.seg_avg_perimeter = sum(zs.seg_avg_perimeter for zs in zone_stats) / self.stats.n_zones
+        self.stats.seg_avg_free_perimeter = sum(zs.seg_avg_free_perimeter for zs in zone_stats) / self.stats.n_zones
+        self.stats.seg_avg_compactness_a = sum(zs.seg_avg_compactness_a for zs in zone_stats) / self.stats.n_zones
+        self.stats.seg_avg_compactness_b = sum(zs.seg_avg_compactness_b for zs in zone_stats) / self.stats.n_zones
         self.stats.l_path_full = sum(zs.full_length for zs in zone_stats)
         self.stats.l_path_coverage = sum(zs.coverage_length for zs in zone_stats)
         self.stats.yaw_path_full = sum(zs.yaw_path_full for zs in zone_stats)

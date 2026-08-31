@@ -77,9 +77,9 @@ class DistrictData:
 
         zone_stats = []
         for zd in self.zone_datas:
-            self.lg.info(" ------------------------------------------------ ")
-            self.lg.info(f" ---------- Planning on Zone: {zd.ind} ------------- ")
-            self.lg.info(" ------------------------------------------------ ")
+            # self.lg.info(" ------------------------------------------------ ")
+            # self.lg.info(f" ---------- Planning on Zone: {zd.ind} ------------- ")
+            # self.lg.info(" ------------------------------------------------ ")
             zd.zone_planning_pipeline()  # run full planning pipeline on zone
             zone_stats.append(zd.zone_stats)  # collect zone stats
 

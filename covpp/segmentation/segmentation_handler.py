@@ -17,6 +17,7 @@ from covpp.segmentation.merge_cells import MergeCells
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.segmentation.segmentation_base import SegmentationBase
 from covpp.segmentation.simple_segmentation.segmentation import Segmentation as SegmentationSimple
+from covpp.segmentation.segmentation_metrics import EvaluateSegmentationMetrics, SegmentationMetrics
 
 
 class SegmentationHandler:
@@ -59,10 +60,10 @@ class SegmentationHandler:
         self.segmentor: SegmentationBase = None
 
         # attributes
-        self.cells_l1: list[CellBase] = []      # level 1 cells from segmentation
         self.bcells: list[CellBase] = []        # base cells from segmentation
         self.cells: list[PCell] = []            # planning cells
         self.n_cells: int = 0                   # number of cells
+        self.metrics: SegmentationMetrics = None  # segmentation metrics
 
     def run(self) -> None:
         """Execute segmentation pipeline using configured method.
@@ -88,7 +89,6 @@ class SegmentationHandler:
 
         # run segmentation =====================================================
         self.segmentor.run()
-        self.cells_l1 = self.segmentor.cells
         # ======================================================================
 
         # process and merge resulting cells into PCell objects
@@ -96,6 +96,9 @@ class SegmentationHandler:
 
         # validate created cells
         self.validate_cells()
+
+        # evaluate segmentation metrics
+        self.metrics = EvaluateSegmentationMetrics(b_map=self.zmd.map_ws, cells=self.cells, gloabl_xy=self.zmd.global_xy).get_metrics()
 
         # plot segmentation results
         self.add_cells_to_result_maps()

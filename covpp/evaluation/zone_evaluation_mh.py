@@ -7,13 +7,14 @@ from covpp.base.geometry import MyPath
 from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.sequence_handler import SequencePaths
 from covpp.evaluation.zone_evaluation_base import ZoneStatsBase, ZoneEvaluationBase
+from covpp.segmentation.segmentation_metrics import SegmentationMetrics
 
 
 class ZoneEvaluation(ZoneEvaluationBase):
     """Concrete zone evaluation that computes timing, path, and area KPIs. """
 
-    def __init__(self, zmd: ZoneMapData, paths: SequencePaths):
-        super().__init__(zmd, paths)
+    def __init__(self, zmd: ZoneMapData, paths: SequencePaths, segmentation_metrics: SegmentationMetrics):
+        super().__init__(zmd, paths, segmentation_metrics)
         self.lg = MyLogger("ZoneEvaluation")
 
     def evaluate(self, times: dict = None):
@@ -32,13 +33,13 @@ class ZoneEvaluation(ZoneEvaluationBase):
             self.save_result()
             raise ValueError("Data not valid for evaluation. Evaluation aborted.")
 
-        self.stats.n_cells = self.paths.n_cells
-        self.stats.n_cov_cells = self.paths.n_paths
+        self.set_segmentation_metrics(self.segmentation_metrics)
 
         # calculate statistics
         self.calculate_time_statistics(times)
         self.calculate_path_statistics()
         self.calculate_travel_times()
+
         # calculate cleaned area statistics
         cleaned_acc = self.calculate_cleaned_accumulated_area()
         self.calculate_cleaning_area()
@@ -46,6 +47,15 @@ class ZoneEvaluation(ZoneEvaluationBase):
         self.update_map_planning(cleaned_acc)
 
         self.save_result()
+
+    def set_segmentation_metrics(self, segmentation_metrics: SegmentationMetrics):
+        self.stats.n_cells = self.paths.n_cells
+        self.stats.n_cov_cells = self.paths.n_paths
+        self.stats.seg_avg_area = segmentation_metrics.average_area
+        self.stats.seg_avg_perimeter = segmentation_metrics.average_perimeter
+        self.stats.seg_avg_free_perimeter = segmentation_metrics.average_free_perimeter
+        self.stats.seg_avg_compactness_a = segmentation_metrics.average_compactness_a
+        self.stats.seg_avg_compactness_b = segmentation_metrics.average_compactness_b
 
     def calculate_time_statistics(self, times: dict) -> None:
         """Populate time-related statistics from timing checkpoints. """

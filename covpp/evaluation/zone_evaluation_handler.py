@@ -3,6 +3,7 @@ from covpp.district.zone_map_data import ZoneMapData
 from covpp.sequence.sequence_handler import SequencePaths
 from covpp.evaluation.zone_evaluation_mh import ZoneEvaluation
 from covpp.evaluation.zone_evaluation_base import ZoneStatsBase, ZoneEvaluationBase
+from covpp.segmentation.segmentation_metrics import SegmentationMetrics
 
 
 class ZoneEvaluationHandler:
@@ -24,10 +25,14 @@ class ZoneEvaluationHandler:
         self.stats: ZoneStatsBase = None
         self.evaluator: ZoneEvaluationBase = None
 
-    def evaluate(self, paths: SequencePaths, times: dict = None):
+    def evaluate(self, paths: SequencePaths, segmentation_metrics: SegmentationMetrics, times: dict = None):
         """Compute zone coverage statistics based on generated paths."""
 
         # evaluate zone statistics based on the evaluator (currently only one evaluator)
-        self.evaluator = ZoneEvaluation(self.zmd, paths)
+        self.evaluator = ZoneEvaluation(self.zmd, paths, segmentation_metrics)
         self.evaluator.evaluate(times=times)
         self.stats = self.evaluator.stats
+
+    def get_stats(self) -> ZoneStatsBase:
+        """Return the computed zone statistics."""
+        return self.stats
