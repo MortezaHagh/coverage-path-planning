@@ -5,7 +5,7 @@ CovPP uses entry points plus base classes so new methods can be added without ch
 ## Segmentation Plugin
 
 1. Create a module under `covpp/segmentation/<your_method>/`.
-2. Subclass `SegmentationBase` and implement `run()`.
+2. Subclass `SegmentationBase` and implement `segment_map()`, `create_cells()`, and `set_cell_adjacents()`. The inherited `run()` method coordinates the standard lifecycle.
 3. Register the class under the `segmentors` entry-point group in `pyproject.toml`.
 4. Set `PipeLineConfig.segmentation_method` to the new name.
 
@@ -16,10 +16,21 @@ from covpp.segmentation.segmentation_base import SegmentationBase
 
 
 class Segmentation(SegmentationBase):
-    def run(self):
-        self.cells = []
-        self.n_cells = 0
+    def segment_map(self):
+        self.polygons = ...
+        self.map_ws_segmented = ...
+
+    def create_cells(self):
+        self.cells = ...
+        self.n_cells = len(self.cells)
+
+    def set_cell_adjacents(self):
+        ...
 ```
+
+The registered class must accept `(zmd, map_polygons)`. `segment_map()` must
+populate `polygons` and `map_ws_segmented`; the remaining hooks populate cells
+and adjacency data consumed by `SegmentationHandler`.
 
 ## Coverage Planner Plugin
 

@@ -13,6 +13,10 @@ class CellBase:
 
     This class provides the fundamental structure for cells created during
     space segmentation, storing geometric properties and adjacency information.
+    Polygon coordinates and derived geometry are in global pixel coordinates;
+    ``resolution`` is measured in metres per pixel and is used to convert
+    planning thresholds to pixels. Paths and sequence IDs are populated by
+    later coverage-planning and sequencing stages.
 
     Args:
         idx (int): Unique identifier for the cell.
@@ -31,9 +35,9 @@ class CellBase:
         cxy (tuple[float, float]): Center coordinates of the cell.
         x_min_p, x_max_p, y_min_p, y_max_p (float): Cell boundary extents.
         x_mid_p, y_mid_p (float): Midpoint coordinates of the cell.
-        width (float): Width of the cell.
-        height (float): Height of the cell.
-        area (float): Area of the cell.
+        width (float): Axis-aligned bounding-box width in pixels.
+        height (float): Axis-aligned bounding-box height in pixels.
+        area (float): Polygon area in square pixels.
         size_type (str): Size classification ("small", "normal", "large").
         slim_type (str): Slimness classification ("slim", "normal").
         major_direction (float): Main direction angle of the cell in radians.
@@ -131,7 +135,7 @@ class CellBase:
         self.update_polygon(self.poly)
 
     def update_polygon(self, polygon: Polygon):
-        """Update the cell polygon and recalculate specifications."""
+        """Replace the polygon and recalculate points, geometry, and classifications."""
         if not self.validate_polygon(polygon):
             self.lg.error(f"Invalid polygon for cell {self.id}.")
             raise ValueError(f"Invalid polygon for cell {self.id}.")
@@ -151,7 +155,7 @@ class CellBase:
             self.next_cell_id = None
 
     def calculate_cell_specs(self):
-        """Calculate geometric properties: bounds, center, dimensions, and area."""
+        """Calculate pixel-coordinate bounds, center, dimensions, area, and compactness."""
         # center
         self.cxy = self.poly.centroid.coords[0]
         # bounds
@@ -186,7 +190,7 @@ class CellBase:
             self.points = []
 
     def evaluate_cell_area(self) -> None:
-        """ Evaluate cell area and classify size. """
+        """Classify cell size and disable planning for cells too small for the robot."""
         # classify small cells
         robot_area_px = np.pi * (self.robot_r_px ** 2)
         if self.area < self.small_cell_thresh_c * robot_area_px:
@@ -199,7 +203,7 @@ class CellBase:
             self.do_planning = False
 
     def eval_cell_slimness(self) -> None:
-        """ Evaluate cell slimness based on maximum inscribed circle. """
+        """Classify cells whose maximum inscribed-circle radius is comparatively small."""
         insc_circle_poly = maximum_inscribed_circle(self.poly)
         insc_circle_center, circle_insc_boundary = insc_circle_poly.coords
         insc_circle_radius = np.linalg.norm(np.array(insc_circle_center) - np.array(circle_insc_boundary))

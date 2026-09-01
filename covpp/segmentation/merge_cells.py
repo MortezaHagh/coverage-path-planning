@@ -7,7 +7,13 @@ from covpp.base.logger import MyLogger
 
 
 class MergeCells:
-    """ Class to merge adjacent cells based on certain criteria.
+    """Merge eligible adjacent cells into larger planning cells.
+
+    Merge groups are computed during construction. A candidate merge requires
+    adjacency, both cells to be classified as ``small`` or ``slim``, and the
+    centroid-connecting line to be contained in the candidate union. Disconnected
+    unions are skipped. Successful merges receive sequential IDs and rewritten
+    adjacency references.
 
     Args:
         cells (list[CellBase]): List of CellBase objects to be merged.
@@ -67,8 +73,8 @@ class MergeCells:
             merge_groups.append(groups_ids)
         return merge_groups
 
-    def create_merge_groups(self, groups_ids: list[set[int]], id_cell_map: dict[int, CellBase]) -> None:
-        """ Merge cells in each group and update ids and adjacent ids. """
+    def create_merge_groups(self, groups_ids: list[set[int]], id_cell_map: dict[int, CellBase]) -> tuple[list[CellBase], list[set[int]]]:
+        """Merge each eligible group and return cells plus their source-ID groups."""
 
         # create merged cells
         merged_ids = []
@@ -129,8 +135,7 @@ class MergeCells:
 
         # check if new_poly is MultiPolygon
         if merged_poly.geom_type == 'MultiPolygon':
-            # raise ValueError("Merged polygon is still MultiPolygon after buffering.")
-            self.lg.error("Merged polygon is still MultiPolygon after buffering. Taking convex hull as fallback.")
+            self.lg.error("Merged polygon is still MultiPolygon after buffering. Skipping merge.")
             return None
 
         return merged_poly

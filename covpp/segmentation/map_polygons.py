@@ -25,8 +25,8 @@ class MapPolygons:
     polygon representations of the coverage boundary and internal obstacles.
 
     Args:
-        map_ws (np.ndarray): Binary map of the workspace (1: free, 0: occupied).
-        xy (np.ndarray): Starting coordinates (offset) in the global map.
+        map_ws (np.ndarray): 8-bit workspace mask (255: free, 0: occupied).
+        xy (np.ndarray): Local-map origin as ``[x, y]`` in the global map.
         dec_mid_dist (int): Minimum distance to keep contour points.
     """
 
@@ -204,7 +204,8 @@ class MapPolygons:
         - origin_t: Optional origin ``[x, y]``; defaults to polygon centroid.
 
         Returns:
-        - Polygon: Rotated polygon (not re-shifted back to global origin).
+                - Polygon: Rotated polygon in coordinates relative to ``origin_t``;
+                    it is not translated back to global coordinates.
         """
         # rotate bounding polygon
         if origin_t is None:

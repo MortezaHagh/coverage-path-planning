@@ -16,14 +16,13 @@ from covpp.segmentation.segmentation_improvement.ebpts_graph_segmentation import
 class SegmentationBase(ABC):
     """Abstract base class for zone segmentation algorithms.
 
-    Process expected from subclasses:
-        1. Inspect ``self.zmd`` and ``self.map_polygons`` to decide how to split the zone.
-        2. Populate ``self.cells`` with ``CellBase`` instances.
-        3. Set adjacency information and ``self.n_cells`` for downstream planners.
+    ``run`` is the template method used by the handler. Subclasses implement
+    ``segment_map``, ``create_cells``, and ``set_cell_adjacents``; the base
+    class performs polygon cleanup and creates the segmented-map result.
 
     Result:
-        ``cells`` (list[CellBase]) fully describing the decomposition ready to be
-        wrapped into ``PCell`` objects.
+        ``cells`` (list[CellBase]) describing the decomposition, ready to be
+        wrapped into ``PCell`` objects by ``SegmentationHandler``.
 
     Args:
         zmd (ZoneMapData): Zone map data object.
@@ -52,15 +51,17 @@ class SegmentationBase(ABC):
         self.n_cells: int = 0
 
     def run(self):
-        """Execute the segmentation algorithm.
+        """Run the standard segmentation lifecycle.
 
-        Steps (expected from subclasses):
-        - Generate raw cell polygons from workspace/obstacles
-        - Call ``create_cells`` to build ``CellBase`` objects
-        - Optionally call ``set_cell_adjacents`` and ``create_map_ws_segmented``
+        The lifecycle is ``segment_map``, polygon post-processing,
+        ``create_cells``, ``set_cell_adjacents``, and segmented-map creation.
+        A plugin should override the individual hooks rather than this method
+        unless it intentionally replaces the complete lifecycle.
 
-        Returns:
-        - None
+        Plugins are expected to populate ``polygons`` and
+        ``map_ws_segmented`` in ``segment_map``, ``cells`` and ``n_cells`` in
+        ``create_cells``, and each cell's ``adjacent_ids`` in
+        ``set_cell_adjacents``.
         """
 
         self.segment_map()
@@ -69,19 +70,13 @@ class SegmentationBase(ABC):
         self.set_cell_adjacents()
         self.create_map_ws_segmented()
 
-        # raise NotImplementedError("Segmentation subclasses must implement run() method")
-
     @abstractmethod
     def segment_map(self):
-        """Perform the segmentation of the workspace map.
-
-        Returns:
-        - None
-        """
+        """Populate raw cell polygons and the map showing segmentation lines."""
         raise NotImplementedError("Segmentation subclasses must implement segment_map() method")
 
     def post_process_segmentation(self):
-        """Post-process the segmented map."""
+        """Repair polygon geometry and apply the optional branch-point improvement."""
         self.post_process_polygons()
 
         self.zmd.map_ws_segmented = self.map_ws_segmented
@@ -96,7 +91,7 @@ class SegmentationBase(ABC):
         self.post_process_polygons()
 
     def post_process_polygons(self) -> None:
-        """ Post-process polygons to fix potential issues such as MultiPolygons. """
+        """Repair invalid polygons and keep the largest part of a MultiPolygon."""
         new_polys = []
         for poly in self.polygons:
 
@@ -113,20 +108,12 @@ class SegmentationBase(ABC):
 
     @abstractmethod
     def create_cells(self):
-        """Create ``CellBase`` objects for each segmented cell.
-
-        Returns:
-        - None
-        """
-        raise NotImplementedError("Segmentation subclasses must implement run() method")
+        """Create one ``CellBase`` for each polygon and set ``n_cells``."""
+        raise NotImplementedError("Segmentation subclasses must implement create_cells() method")
 
     @abstractmethod
     def set_cell_adjacents(self):
-        """Set adjacency relationships between cells (shared boundaries, etc.).
-
-        Returns:
-        - None
-        """
+        """Populate each cell's adjacent-cell IDs."""
         raise NotImplementedError("Segmentation subclasses must implement set_cell_adjacents() method")
 
     def create_map_ws_segmented(self) -> None:

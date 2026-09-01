@@ -44,7 +44,11 @@ class SegmentationHandler:
     Supported Methods:
         - "simple": Single cell covering entire zone
         - "voronoi": Voronoi-based decomposition
-        - Custom methods can be added by extending SegmentationBase
+        - "skeleton": Skeleton-based decomposition
+        - "morphological": Erosion-based room detection
+        - "distance_tf": Distance-transform decomposition
+        - "sweep_skeleton": Sweep-based skeleton decomposition
+        - Custom methods can be added by extending SegmentationBase and registering an entry point.
     """
 
     def __init__(self, zmd: ZoneMapData):
@@ -71,8 +75,10 @@ class SegmentationHandler:
         This method:
             1. Loads the segmentation algorithm based on configuration
             2. Executes the segmentation to create base cells
-            3. Converts base cells to planning cells (PCell objects) by processing and merging
-            4. Validates the created cells for planning readiness
+            3. Falls back to simple segmentation if the configured method creates no cells
+            4. Merges eligible base cells and converts them to ``PCell`` objects
+            5. Validates cells and computes segmentation metrics
+            6. Updates visualization maps and optionally saves the segmentation image
 
         Raises:
             ValueError: If segmentation method is not recognized.
@@ -105,7 +111,12 @@ class SegmentationHandler:
         self.save_segmentation_map()
 
     def process_cells(self) -> None:
-        """ Convert base cells from segmentor into planning PCell objects. """
+        """Convert segmentor cells to planning cells, merging eligible neighbors first.
+
+        If the configured segmentor produces no cells, the simple segmentor is
+        tried before processing continues. Merging also rewrites cell IDs and
+        adjacency IDs so the resulting ``PCell`` list is sequentially indexed.
+        """
         # resulting base cells from segmentor
         bcells = self.segmentor.cells
         n_bcells = self.segmentor.n_cells
@@ -136,7 +147,7 @@ class SegmentationHandler:
         self.n_cells = len(self.bcells)
 
     def validate_cells(self) -> None:
-        """ Validate the created cells for planning readiness. """
+        """Raise ``ValueError`` if no planning cells exist or any cell is invalid."""
 
         if len(self.cells) == 0 or self.cells is None:
             raise ValueError("No processed cells available for validation.")

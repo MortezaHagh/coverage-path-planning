@@ -87,7 +87,7 @@ The full method name is built from the selected segmentation, coverage, and sequ
 
 | Group | Current Plugins |
 | --- | --- |
-| `segmentors` | `simple`, `voronoi`, `skeleton`, `distance_transform`, `morphological` |
+| `segmentors` | `simple`, `voronoi`, `skeleton`, `morphological`, `distance_tf`, `sweep_skeleton` |
 | `coverage_planners` | `boust`, `contour`, `grid_energy_min` |
 | `path_planners` | `astar` |
 | `sequencers` | `dfs`, `milp`, `simple` |
