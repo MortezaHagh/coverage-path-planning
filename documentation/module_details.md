@@ -118,6 +118,8 @@ Splits each zone into planning cells.
 | `simple` | `covpp.segmentation.simple_segmentation.segmentation:Segmentation` | Single-cell zone |
 | `voronoi` | `covpp.segmentation.voronoi_segmentation.segmentation:Segmentation` | Voronoi partitioning |
 | `skeleton` | `covpp.segmentation.skeleton_segmentation.segmentation:Segmentation` | Skeleton-based decomposition |
+| `distance_transform` | `covpp.segmentation.distance_transform_segmentation` | Distance transform with thresholding |
+| `morphological` | `covpp.segmentation.morphological_segmentation` | Erosion-based room detection |
 
 ### CellBase (`cell_base.py`)
 

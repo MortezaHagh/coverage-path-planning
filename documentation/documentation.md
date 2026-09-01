@@ -87,10 +87,36 @@ The full method name is built from the selected segmentation, coverage, and sequ
 
 | Group | Current Plugins |
 | --- | --- |
-| `segmentors` | `simple`, `voronoi`, `skeleton` |
+| `segmentors` | `simple`, `voronoi`, `skeleton`, `distance_transform`, `morphological` |
 | `coverage_planners` | `boust`, `contour`, `grid_energy_min` |
 | `path_planners` | `astar` |
-| `sequencers` | `dfs`, `milp` |
+| `sequencers` | `dfs`, `milp`, `simple` |
+
+## Algorithm Documentation
+
+Detailed algorithm descriptions and pseudocode are provided in the module-specific README files:
+
+### Segmentation Methods
+
+- **Simple**: Single-cell zone decomposition
+- **Voronoi**: Balanced spatial partitioning
+- **Skeleton**: Structure-aware medial axis decomposition (see [skeleton_segmentation/readme.md](../covpp/segmentation/skeleton_segmentation/readme.md))
+- **Distance Transform**: Accessibility-based thresholding (see [distance_transform_segmentation/readme.md](../covpp/segmentation/distance_transform_segmentation/readme.md))
+- **Morphological**: Erosion-based room detection (see [morphological_segmentation/readme.md](../covpp/segmentation/morphological_segmentation/readme.md))
+
+### Coverage Planning Methods
+
+- **Boustrophedon**: Back-and-forth parallel sweeping (see [boustrophedon/readme.md](../covpp/coverage_planning/boustrophedon/readme.md))
+- **Contour**: Inward spiraling boundary-following (see [contour/readme.md](../covpp/coverage_planning/contour/readme.md))
+- **Grid Energy Minimization**: Grid-based greedy nearest-neighbor (see [local_energy_minimization/readme.md](../covpp/coverage_planning/local_energy_minimization/readme.md))
+
+### Sequencing Methods
+
+- **DFS**: Depth-first traversal heuristic
+- **MILP**: Mixed Integer Linear Programming optimization (via OR-Tools)
+- **Simple**: Nearest-neighbor greedy approach
+
+Additional algorithm details including pseudocode, complexity analysis, and usage recommendations are available in [module_details.md](module_details.md).
 
 ## Output Layout
 

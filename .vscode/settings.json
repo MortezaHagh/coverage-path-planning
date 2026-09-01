@@ -71,5 +71,11 @@
         "-l"
     ],
     "latex-workshop.latex.autoBuild.run": "onSave",
-    "latex-workshop.view.pdf.viewer": "tab"
+    "latex-workshop.view.pdf.viewer": "tab",
+    "mermaidChart.aiSkills.enabled": false,
+    "mermaidChart.aiSkills.promptOnDetect": false,
+    "mermaidChart.createDiagramFromStage.enabled": false,
+    "mermaidChart.preCommitSync.enabled": false,
+    "mermaidChart.showGenerateDiagramCodeLens": false,
+    "python.languageServer": "Pylance"
 }

@@ -1,6 +1,6 @@
 # Main Context
 
-CovPP is a plugin-driven coverage path planning pipeline for occupancy-grid maps. It loads a map, prepares a safe workspace, creates a district, decomposes each zone into cells, plans coverage paths, sequences those paths, and evaluates the result.
+CovPP is a plugin-driven coverage path planning pipeline for occupancy-grid maps. It loads a map, prepares a safe workspace, creates a district, decomposes each zone into cells (segmentation), plans coverage paths, sequences those paths, and evaluates the result.
 
 ## Main Flow
 
@@ -16,10 +16,10 @@ CovPP is a plugin-driven coverage path planning pipeline for occupancy-grid maps
 - `covpp/base/`: configuration dataclasses, image handling, geometry, logging, and shared helpers
 - `covpp/district/`: district creation, zone management, and district-level aggregation
 - `covpp/spa/`: workspace analysis and rectangle helpers
-- `covpp/segmentation/`: cell decomposition and merge logic
-- `covpp/coverage_planning/`: coverage planners for each cell
+- `covpp/segmentation/`: cell decomposition and merge logic (includes several segmentation methods)
+- `covpp/coverage_planning/`: coverage planners for each cell (includes several coverage methods)
 - `covpp/path_planning/`: local path planners used to connect paths
-- `covpp/sequence/`: path ordering and connection logic
+- `covpp/sequence/`: path ordering and connection logic (includes several sequencing methods)
 - `covpp/evaluation/`: zone and district metrics
 - `covpp/gui/`: interactive rectangle selection and drawing helpers
 
@@ -29,7 +29,7 @@ CovPP is a plugin-driven coverage path planning pipeline for occupancy-grid maps
 - `setup.py`: legacy setuptools wrapper for editable installs
 - `README.md`: short project overview and quick start
 - `documentation/`: detailed architecture and module references
-- `instructions/`: concise guidance for AI-assisted edits
+- `instructions/`: concise guidance for AI-assisted edits and also for developing new modules
 
 ## Notes
 

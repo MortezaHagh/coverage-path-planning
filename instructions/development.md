@@ -3,7 +3,7 @@
 ## Comments and docstrings
 - Use docstrings for all public classes and methods, following the Google style guide.
 - Use comments for non-obvious code, especially for algorithms and data flow.
-- Each class and method should have a docstring describing its purpose, what it calculates, important parameters and outputs.
+- Each class and method should have a docstring describing its purpose, what it calculates, 'important' parameters and outputs.
 - For functions which include algorithms, provide a description of the algorithm and its steps, but avoid repeating the code itself (like a pseudocode).
 
 ## Code structure and naming

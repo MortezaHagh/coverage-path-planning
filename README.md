@@ -26,14 +26,19 @@ Map + Data -> Space Analysis -> Generate District -> Create Zones -> Segmentatio
 
   - Simple segmentation (single cell)
   - Voronoi-based decomposition
+  - Skeleton-based structure-aware decomposition
+  - Distance transform accessibility-based decomposition
+  - Morphological erosion-based room detection
   - Extensible plugin architecture for custom methods
+  - See [covpp/segmentation/readme.md](covpp/segmentation/readme.md) for details
 
 - 🎯 **Coverage Planning Algorithms**
 
-  - Boustrophedon (back-and-forth sweeping)
-  - Contour-following coverage
-  - Grid / local-energy minimization sweeps for cluttered rooms
+  - Boustrophedon (back-and-forth parallel sweeping) - see [covpp/coverage_planning/boustrophedon/readme.md](covpp/coverage_planning/boustrophedon/readme.md)
+  - Contour-following inward spirals - see [covpp/coverage_planning/contour/readme.md](covpp/coverage_planning/contour/readme.md)
+  - Grid with local-energy minimization for cluttered environments - see [covpp/coverage_planning/local_energy_minimization/readme.md](covpp/coverage_planning/local_energy_minimization/readme.md)
   - Plugin-based design for adding new planners
+  - See [covpp/coverage_planning/readme.md](covpp/coverage_planning/readme.md) for overview
 
 - 🧭 **Path Planning & Connections**
 
@@ -43,10 +48,11 @@ Map + Data -> Space Analysis -> Generate District -> Create Zones -> Segmentatio
 
 - 🔄 **Path Sequencing Optimization**
 
-  - Depth-first search (`sequencers: dfs` → `covpp.sequence.dfs_optimizer`)
-  - MILP TSP solver (`sequencers: milp` → `covpp.sequence.milp_optimizer`)
-  - Optional simple ordering plugin (register `covpp.sequence.simple_optimizer` if needed)
+  - Depth-first search heuristic (`sequencers: dfs`)
+  - MILP TSP solver via OR-Tools (`sequencers: milp`)
+  - Simple nearest-neighbor greedy optimizer (`sequencers: simple`)
   - `sequencers` entry points make it straightforward to add custom optimizers
+  - See [covpp/sequence/readme.md](covpp/sequence/readme.md) for details
 
 - 📊 **Evaluation & Metrics**
   - Path length analysis
