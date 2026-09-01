@@ -401,7 +401,7 @@ class EspecialBranchPointsSegmentation:
         configure_ax(ax, '', show_title=False)
 
         im_format = 'png'
-        save_dir = self.zmd.segmentation_dir + "/improvement"
+        save_dir = self.zmd.segmentation_method_dir
         fig_path = save_dir + "/ebps" + f".{im_format}"
         fig.savefig(fig_path, format=im_format, dpi=PipeLineConfig.dpi, bbox_inches='tight')
 

@@ -33,6 +33,8 @@ class PipeLineConfig:
     sequencing modules are used together with plotting and debugging options.
     """
 
+    only_seg = False
+
     # Main configs
     whole_map = True    # Select whole map as district (True) or select rectangle (False)
     method = ""         # full method name (to be completed based on other configs)

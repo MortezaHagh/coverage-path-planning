@@ -104,8 +104,9 @@ class ZoneData:
         self.cov_path_planner_hl.run(cells=self.cells)
         times['coverage_planning'] = time.time()
 
-        # # temp
-        # return  # temporary return
+        #
+        if PipeLineConfig.only_seg:
+            return
 
         # ************ sequence
         self.lg.info1(f"Step: creating sequence and full path using method '{PipeLineConfig.sequence_method}'")

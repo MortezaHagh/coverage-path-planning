@@ -51,7 +51,7 @@ class ZoneMapData:
         self.result_file: str = None                # path to zone result file ./maps/<map_name>/District/Zone_i/<method>/result.json
         self.method_results_dir: str = None         # path to zone result directory ./maps/<map_name>/District/Zone_i/<method>
         self.segmentation_dir: str = None           # path to zone segmentation directory ./maps/<map_name>/District/Zone_i/segmentation
-        self.segmentation_method_dir: str = None           # path to zone segmentation directory ./maps/<map_name>/District/Zone_i/segmentation
+        self.segmentation_method_dir: str = None    # path to zone segmentation directory ./maps/<map_name>/District/Zone_i/segmentation
         #
         self.resolution: float = None
         self.orig_map_data: MapData = None
@@ -116,8 +116,6 @@ class ZoneMapData:
             os.makedirs(self.segmentation_method_dir, exist_ok=True)
             self.method_results_dir = os.path.join(self.zone_dir, PipeLineConfig.method)
             os.makedirs(self.method_results_dir, exist_ok=True)
-            seg_improve_dir = os.path.join(self.segmentation_dir, "improvement")
-            os.makedirs(seg_improve_dir, exist_ok=True)
 
         # create zone maps directory
         os.makedirs(self.zone_dir, exist_ok=True)
