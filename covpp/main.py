@@ -27,6 +27,8 @@ def run_pipeline(map_name: str) -> None:
     lg = MyLogger(ns)
     start_time = np.datetime64('now')
 
+    lg.info1(f"full method: {PipeLineConfig().method}")
+
     #  1. process inputs: configs and map (yaml and pgm)
     inp_processor = InputsProcessor(map_name)
     orig_map_gs = inp_processor.orig_map_gs

@@ -50,17 +50,17 @@ class EvaluateSegmentationMetrics:
         return total_area / self.n_cells
 
     def average_perimeter(self):
-        total_perimeter = sum(cell.perimeter for cell in self.cells)
+        total_perimeter = sum(cell.metric.perimeter for cell in self.cells)
         return total_perimeter / self.n_cells
 
     def average_free_perimeter(self):
-        total_free_perimeter = sum(cell.free_perimeter for cell in self.cells)
+        total_free_perimeter = sum(cell.metric.free_perimeter for cell in self.cells)
         return total_free_perimeter / self.n_cells
 
     def average_compactness_a(self):
-        total_compactness_a = sum(cell.compactness_a for cell in self.cells)
+        total_compactness_a = sum(cell.metric.compactness_a for cell in self.cells)
         return total_compactness_a / self.n_cells
 
     def average_compactness_b(self):
-        total_compactness_b = sum(cell.compactness_b for cell in self.cells)
+        total_compactness_b = sum(cell.metric.compactness_b for cell in self.cells)
         return total_compactness_b / self.n_cells

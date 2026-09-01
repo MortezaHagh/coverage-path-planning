@@ -8,6 +8,33 @@ from covpp.base.configs import PlanningConfig
 from covpp.base.geometry import MyPoint, MyPath, get_line_points
 
 
+class CellMetrics:
+    """Class to hold cell metrics.
+
+    Attributes:
+        area: Area of the cell.
+        perimeter: Perimeter of the cell.
+        free_perimeter: Free perimeter of the cell.
+        compactness_a: Compactness (area / perimeter^2) of the cell.
+        compactness_b: Compactness (area / area of bounding box) of the cell.
+    """
+
+    def __init__(self):
+        self.area = None
+        self.area_bb = None
+        self.perimeter = None
+        self.free_perimeter = None
+        self.compactness_a = None
+        self.compactness_b = None
+
+    def set_metrics(self, area, perimeter, free_perimeter, compactness_a, compactness_b):
+        self.area = area
+        self.perimeter = perimeter
+        self.free_perimeter = free_perimeter
+        self.compactness_a = compactness_a
+        self.compactness_b = compactness_b
+
+
 class CellBase:
     """Base cell representation for decomposed workspace regions.
 
@@ -87,11 +114,7 @@ class CellBase:
 
         # properties
         self.area: float = None
-        self.area_bb: float = None          # area of bounding box
-        self.perimeter: float = None
-        self.free_perimeter: float = None
-        self.compactness_a: float = None    # area / perimeter^2 (higher is better)
-        self.compactness_b: float = None    # area / area of bounding box (higher is better)
+        self.metric = CellMetrics()
 
         # cell classification
         self.size_type: str = "normal"      # small, normal, large
@@ -171,15 +194,16 @@ class CellBase:
         # area
         self.area = self.poly.area
         # perimeter
-        self.perimeter = self.poly.length
-        if self.perimeter <= 0:
+        perimeter = self.poly.length
+        if perimeter <= 0:
             raise ValueError(f"[CellBase][ERROR] Cell {self.id}: Perimeter is negative.")
 
         # compactness
-        self.compactness_a = self.area / (self.perimeter ** 2)
+        compactness_a = self.area / (perimeter ** 2)
         poly_bb = self.poly.minimum_rotated_rectangle
-        self.area_bb = poly_bb.area
-        self.compactness_b = self.area / self.area_bb
+        area_bb = poly_bb.area
+        compactness_b = self.area / area_bb
+        self.metric.set_metrics(self.area, perimeter, None, compactness_a, compactness_b)
 
     def create_cell_points(self):
         """Extract integer coordinate points from cell polygon boundary."""
@@ -222,10 +246,15 @@ class CellBase:
 
     def calculate_free_perimeter(self, b_map: np.ndarray, global_xy: np.ndarray) -> None:
         """ Calculate the free perimeter of the cell based on the binary map. """
+
+        # first expand the polygon by 1 pixel to ensure we capture the boundary correctly
+        expanded_poly = self.poly.buffer(1)
+        points = np.array(expanded_poly.exterior.coords, dtype=np.int32)
+
         free_perimeter = 0
-        for i in range(len(self.points) - 1):
-            p1 = tuple(self.points[i])
-            p2 = tuple(self.points[i + 1])
+        for i in range(len(points) - 1):
+            p1 = tuple(points[i])
+            p2 = tuple(points[i + 1])
             line_points = get_line_points(p1, p2)
             for point in line_points:
                 x, y = point - global_xy
@@ -236,7 +265,7 @@ class CellBase:
                     print(p1, p2, point)
                     raise
 
-        self.free_perimeter = free_perimeter
+        self.metric.free_perimeter = free_perimeter
 
     # --------------------------------------------------------------------------
     # setters
