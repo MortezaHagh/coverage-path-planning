@@ -2,6 +2,8 @@
 
 Post-processing module for refining segmentation results.
 
+<!-- todo doc -->
+
 ## Operations
 
 - **Boundary smoothing**: Reduces noise from algorithm artifacts

@@ -13,6 +13,7 @@ A comprehensive, plugin-based coverage path planning system for robotic applicat
 ## Pipeline
 
 Map + Data -> Space Analysis -> Generate District -> Create Zones -> Segmentation -> Coverage path planning -> sequence optimization -> evaluation
+<!-- todo create diagram -->
 
 ## Features
 
@@ -34,9 +35,9 @@ Map + Data -> Space Analysis -> Generate District -> Create Zones -> Segmentatio
 
 - 🎯 **Coverage Planning Algorithms**
 
-  - Boustrophedon (back-and-forth parallel sweeping) - see [covpp/coverage_planning/boustrophedon/readme.md](covpp/coverage_planning/boustrophedon/readme.md)
-  - Contour-following inward spirals - see [covpp/coverage_planning/contour/readme.md](covpp/coverage_planning/contour/readme.md)
-  - Grid with local-energy minimization for cluttered environments - see [covpp/coverage_planning/local_energy_minimization/readme.md](covpp/coverage_planning/local_energy_minimization/readme.md)
+  - Boustrophedon (back-and-forth parallel sweeping)
+  - Contour-following inward spirals
+  - Grid with local-energy minimization for cluttered environments
   - Plugin-based design for adding new planners
   - See [covpp/coverage_planning/readme.md](covpp/coverage_planning/readme.md) for overview
 

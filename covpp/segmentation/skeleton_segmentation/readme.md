@@ -2,6 +2,8 @@
 
 Skeleton-based segmentation decomposes a zone using the medial axis (skeleton) of the free space.
 
+<!-- todo doc -->
+
 ## Algorithm
 
 1. Compute distance transform of free space (distance to nearest obstacle)

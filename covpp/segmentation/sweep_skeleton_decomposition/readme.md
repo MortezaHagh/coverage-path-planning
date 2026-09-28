@@ -2,6 +2,8 @@
 
 Hybrid segmentation combining sweeping patterns with skeleton-based structure detection.
 
+<!-- todo doc -->
+
 ## Algorithm
 
 1. Compute distance transform and skeleton
