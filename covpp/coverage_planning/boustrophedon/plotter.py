@@ -16,7 +16,7 @@ class BoustPlotter:
         self.dec_obj: CellDecomposition = None
         self.results_dir: str = None
 
-        self.viz_together = True
+        self.viz_together = False
 
         #
         self.ax_cell_event = None
@@ -72,7 +72,7 @@ class BoustPlotter:
         # self.visualize_events()
 
         # plot contours
-        self.plot_contours()
+        self.plot_contours(ax=self.ax_cell_event)
 
         # plot cells
         for cell in self.dec_obj.cells:
@@ -107,15 +107,17 @@ class BoustPlotter:
             text1 = e.name
             self.ax_cell_event.text(e.xy[0], e.xy[1], text1, fontsize=10, color='blue')
 
-    def plot_contours(self):
+    def plot_contours(self, ax):
         """ Plot obstacles contours """
         for obs in self.dec_obj.obstacles:
+            x, y = obs.poly.exterior.xy
             if obs.ind == 0:
                 color = 'blue'
             else:
                 color = 'red'
-            x, y = obs.poly.exterior.xy
-            self.ax_cell_event.plot(x, y, color=color, linewidth=1)
+                # fill
+                ax.fill(x, y, alpha=0.5, fc='gray')
+            ax.plot(x, y, color=color, linewidth=1)
 
     def visualize_cells_groups(self, ax=None):
         """ Plot merged cells and their groups """
@@ -124,6 +126,10 @@ class BoustPlotter:
             fig, ax = plt.subplots(1, 1, constrained_layout=True)
             ax.set_aspect('equal', adjustable='box')
             ax.axis('off')
+
+        # plot contours
+        self.plot_contours(ax=ax)
+
         ng = len(self.dec_obj.cells_groups)
         cg: CellGroup
         colors = plt.cm.get_cmap('tab20', 2 * ng).colors
@@ -134,17 +140,25 @@ class BoustPlotter:
                 color = colors[i + ng]
 
             # merged cell
-            x, y = cg.merged_cell.poly.exterior.xy
+            merged_poly = cg.merged_cell.poly
+
+            # # buffer to shrink the polygon for better visualization
+            # dist = -6  # negative for shrinking
+            # merged_poly = merged_poly.buffer(dist)
+
+            x, y = merged_poly.exterior.xy
             cx, cy = cg.merged_cell.cxy
             text = f"g{i}"
-            ax.text(cx, cy, text, color='black', fontsize=8)
+            # ax.text(cx, cy, text, color='black', fontsize=8)
             ax.plot(cx, cy, 'o', color='purple', markersize=6)
-            ax.plot(x, y, color=color, linewidth=4, linestyle='-')
+            ax.plot(x, y, color=color, linewidth=2, linestyle='-')
+            ax.fill(x, y, alpha=0.2, fc=color, linewidth=1, linestyle='--', edgecolor='gray')
+
             #
-            for cell in cg.cells:
-                # fill
-                x, y = cell.poly.exterior.xy
-                ax.fill(x, y, alpha=0.2, fc=color, linewidth=1, linestyle='--', edgecolor='gray')
+            # for cell in cg.cells:
+            #     # fill
+            #     x, y = cell.poly.exterior.xy
+            #     ax.fill(x, y, alpha=0.2, fc=color, linewidth=1, linestyle='--', edgecolor='gray')
 
             # adjacents
             # m1

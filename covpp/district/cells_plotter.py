@@ -67,10 +67,10 @@ class CellsPlotter:
         from matplotlib.lines import Line2D
         legend_elements = [Line2D([0], [0], color='black', lw=2, linestyle='-', label='Cell Polygon'),
                            Line2D([0], [0], color='black', lw=2, linestyle='--', label='Inscribed Rectangle')]
-        ax.legend(handles=legend_elements, loc='upper right', frameon=True, fontsize=12,
-                  edgecolor='black',
-                  bbox_to_anchor=(1.1, 1.05),
-                  borderaxespad=0.0,)
+        # ax.legend(handles=legend_elements, loc='upper right', frameon=True, fontsize=12,
+        #           edgecolor='black',
+        #           bbox_to_anchor=(1.1, 1.05),
+        #           borderaxespad=0.0,)
         ax.invert_yaxis()
         return fig, ax
 
@@ -78,7 +78,7 @@ class CellsPlotter:
         """ Visualize the sequencing path on the cells figure. """
         for i, cell in enumerate(cells):
             x1, y1 = cell.cxy
-            ax.text(x1, y1, f"${i}$", color='black', fontsize=8)
+            # ax.text(x1, y1, f"${i}$", color='black', fontsize=8)
 
             # connection line
             next_ind = cell.next_cell_id

@@ -36,8 +36,8 @@ class DistrictStatsBase:
         #
         self.l_path_full: float = None
         self.l_path_coverage: float = None
-        self.yaw_path_full: float = None
-        self.yaw_path_coverage: float = None
+        self.path_yaw_full: float = None
+        self.path_yaw_coverage: float = None
 
         #
         self.area_cleaning_m: float = None
@@ -68,8 +68,8 @@ class DistrictStatsBase:
             "seg_avg_compactness_b": round(float(self.seg_avg_compactness_b), 2),
             "l_path_full": round(float(self.l_path_full), 2),
             "l_path_coverage": round(float(self.l_path_coverage), 2),
-            "yaw_path_full": round(float(self.yaw_path_full), 2),
-            "yaw_path_coverage": round(float(self.yaw_path_coverage), 2),
+            "path_yaw_full": round(float(self.path_yaw_full), 2),
+            "path_yaw_coverage": round(float(self.path_yaw_coverage), 2),
             "area_cleaning_m": round(float(self.area_cleaning_m), 2),
             "area_cleaned_m": round(float(self.area_cleaned_m), 2),
             "area_uncleaned_m": round(float(self.area_uncleaned_m), 2),
@@ -116,10 +116,10 @@ class DistrictEvaluationHandler:
         self.stats.seg_avg_free_perimeter = sum(zs.seg_avg_free_perimeter for zs in zone_stats) / self.stats.n_zones
         self.stats.seg_avg_compactness_a = sum(zs.seg_avg_compactness_a for zs in zone_stats) / self.stats.n_zones
         self.stats.seg_avg_compactness_b = sum(zs.seg_avg_compactness_b for zs in zone_stats) / self.stats.n_zones
-        self.stats.l_path_full = sum(zs.full_length for zs in zone_stats)
-        self.stats.l_path_coverage = sum(zs.coverage_length for zs in zone_stats)
-        self.stats.yaw_path_full = sum(zs.yaw_path_full for zs in zone_stats)
-        self.stats.yaw_path_coverage = sum(zs.yaw_path_coverage for zs in zone_stats)
+        self.stats.l_path_full = sum(zs.path_full_length for zs in zone_stats)
+        self.stats.l_path_coverage = sum(zs.path_coverage_length for zs in zone_stats)
+        self.stats.path_yaw_full = sum(zs.path_yaw_full for zs in zone_stats)
+        self.stats.path_yaw_coverage = sum(zs.path_yaw_coverage for zs in zone_stats)
         self.stats.area_cleaning_m = sum(zs.area_cleaning_m for zs in zone_stats)
         self.stats.area_cleaned_m = sum(zs.area_cleaned_m for zs in zone_stats)
         self.stats.area_uncleaned_m = sum(zs.area_uncleaned_m for zs in zone_stats)

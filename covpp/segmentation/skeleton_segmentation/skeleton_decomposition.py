@@ -103,7 +103,7 @@ class SkeletonDecomposition:
         """Create Skelet object. """
 
         map_ws = self.zmd.map_ws.copy()
-        # self.map_ws = map_ws.astype(np.uint8) * 255
+        # map_ws = map_ws.astype(np.uint8) * 255
         # n = max(2 * self.robot_radius_px // 4 + 1, 3)
         # structure = np.ones((n, n), dtype=np.uint8)
         map_ws = binary_closing(map_ws, iterations=3).astype(np.uint8) * 255
@@ -219,11 +219,12 @@ class SkeletonDecomposition:
 
         critical_pts = []
 
-        grad_ep_thresh = 2 * self.robot_radius_px       # threshold for endpoint distance to consider gradient for critical point detection
+        # grad_ep_thresh = 2 * self.robot_radius_px       # threshold for endpoint distance to consider gradient for critical point detection
         space_thresh = 4 * self.robot_radius_px         # threshold for minimum distance between critical points along the branch
         sigma_smooth = max(int(self.robot_radius_px * 2.0), 5)     # smoothing parameter for Gaussian filter
 
         for i, branch in enumerate(self.branches):
+            cpts = []
 
             n = len(branch.points)
             if n < (4 * self.robot_radius_px + 1):
@@ -232,11 +233,10 @@ class SkeletonDecomposition:
 
             # dists = self.skelet.distance_map_norm[branch.points[:, 0], branch.points[:, 1]].astype(float)
             dists = branch.dists.astype(float)
-            dist_in = dists
             sigma_ = sigma_smooth
 
             # filter
-            f_d = gaussian_filter1d(dist_in, sigma=sigma_, radius=sigma_ * 2)
+            f_d = gaussian_filter1d(dists, sigma=sigma_, radius=sigma_ * 2)
             f_d = gaussian_filter1d(f_d, sigma=sigma_)
 
             smooth = f_d
@@ -488,9 +488,19 @@ class SkeletonDecomposition:
         # Figure 1: skeleton and endpoints/branchpoints
         fig1, ax = plt.subplots(1, 1, constrained_layout=True)
 
-        # plot skeleton (medial) axis - endpoints and branchpoints in same plot
-        ax.contour(self.map_ws, levels=[0.5], colors='black', linewidths=2 / scale_px)
-        ax.imshow(FREE - self.skelet.skeleton_distance_map, cmap='bone', alpha=1.0)
+        map_ws = self.map_ws.copy()
+        # turn into colored image for better visualization
+        map_ws = cv.cvtColor(map_ws, cv.COLOR_GRAY2RGB)
+
+        # ax.contour(self.map_ws, levels=[0.5], colors='black', linewidths=2 / scale_px)
+        # ax.imshow(FREE - self.skelet.skeleton_distance_map, cmap='bone', alpha=1.0)
+
+        ax.imshow(map_ws, alpha=0.5)
+
+        # x, y of the skeleton points
+        skelet_y, skelet_x = np.where(self.skelet.skeleton_map_b)
+        ax.scatter(skelet_x, skelet_y, color='gray', s=marker_size * 0.1, alpha=0.5)
+
         if end_pts.size > 0:
             ax.scatter(end_pts[:, 1], end_pts[:, 0], color='blue', s=marker_size, label='Endpoints')
         ax.scatter(branch_pts[:, 1], branch_pts[:, 0], color='red', s=marker_size, label='Branchpoints')
@@ -508,6 +518,8 @@ class SkeletonDecomposition:
         # --------------------------------------------------------------------------------------------------------------
         # Figure 2: plot branches with critical points and base points
         fig2, ax2 = plt.subplots(1, 1, constrained_layout=True)
+
+        ax2.imshow(map_ws, alpha=0.5)
 
         # Draw contours in the background
         ax2.contour(self.map_ws, levels=[0.5], colors='black', linewidths=4 / scale_px, zorder=0)
@@ -548,7 +560,7 @@ class SkeletonDecomposition:
 
         # finalize
         configure_ax(ax2, 'Detected Branches with Critical and Base Points', show_title=False, show_legend=True)
-        ax2.invert_yaxis()
+        # ax2.invert_yaxis()
 
         # # --------------------------------------------------------------------------------------------------------------
         # save figures

@@ -20,14 +20,14 @@ class EvalRectangles:
         4. Set rectangle-like property based on evaluation results
     """
 
-    def __init__(self, cell_id: int, poly: Polygon, r_px: int) -> None:
+    def __init__(self, cell_id: int, poly: Polygon, radius_px: int) -> None:
 
         # args
         self.id = cell_id
         self.poly = poly
         self.spoly = deepcopy(poly)
         self.area = poly.area
-        self.r_px = r_px
+        self.radius_px = radius_px
 
         # settings
         self.k_circum = 0.8
@@ -98,28 +98,28 @@ class EvalRectangles:
         # circle_circum_poly = minimum_bounding_circle(self.poly)
         # circle_circum_area = circle_circum_poly.area
 
-        rect_polys = []
+        insc_rect_polys = []
         angles.append(0)
         poly_center = self.poly.centroid.coords[0]
         centers = [insc_circle_center, insc_circle_center, poly_center]
 
         for angle_, center_ in zip(angles, centers):
             # create base inscribed rectangle
-            base_inscribed_rect_poly = self.create_base_inscribed_rectangle(angle_, center_, insc_circle_radius*0.8)
+            base_inscribed_rect_poly = self.create_base_inscribed_rectangle(angle_, center_, insc_circle_radius * 0.8)
             # calculate steps for expansion
             self.find_steps(base_inscribed_rect_poly, circum_rect_poly)
 
             # ----------------------------------------------------------------------
             # # eval rectangle-like based on
-            rectangle_poly = self.eval_by_expand_inscribed_rectangle(base_inscribed_rect_poly, center_)
-            rect_polys.append(rectangle_poly)
+            insc_rect_poly = self.eval_by_expand_inscribed_rectangle(base_inscribed_rect_poly, center_)
+            insc_rect_polys.append(insc_rect_poly)
             # ----------------------------------------------------------------------
 
         # choose the best rectangle polygon based on area
-        areas = [rect_poly.area for rect_poly in rect_polys]
+        areas = [rect_poly.area for rect_poly in insc_rect_polys]
         max_area_idx = np.argmax(areas)
-        rectangle_poly = rect_polys[max_area_idx]
-        self.rect_insc_like = areas[max_area_idx]/self.area >= self.k_inscr
+        rectangle_poly = insc_rect_polys[max_area_idx]
+        self.rect_insc_like = areas[max_area_idx] / self.area >= self.k_inscr
         self.rect_like = self.rect_insc_like
 
         # start rectangle from closest point to the start of the original polygon
@@ -153,7 +153,7 @@ class EvalRectangles:
     def find_steps(self, base_inscribed_rect_poly: Polygon, circum_rect_poly: Polygon) -> None:
         """ Find expansion steps based on cell properties. """
         steps = {}
-        steps['robot_r'] = self.r_px
+        steps['robot_r'] = self.radius_px
         steps['base_insc_rect'] = find_shortest_edge_poly(base_inscribed_rect_poly)['length'] / 8
         steps['circum_rect'] = find_shortest_edge_poly(circum_rect_poly)['length'] / 10
         steps['scale_factor'] = 0.08  # 0.08 # [m1:0.9]
@@ -161,7 +161,7 @@ class EvalRectangles:
 
     def eval_by_circumscribed_rect(self) -> None:
         """ Evaluate if the cell is rectangle-like based on the area ratio of the cell and the circumscribed rectangle. """
-        cell_rect_circum_area_ratio = self.area/self.circum_rectangle_poly.area
+        cell_rect_circum_area_ratio = self.area / self.circum_rectangle_poly.area
         self.rect_circum_like = cell_rect_circum_area_ratio >= self.k_circum
 
     def create_base_inscribed_rectangle(self, angle: float, insc_circle_center, insc_circle_radius) -> Polygon:

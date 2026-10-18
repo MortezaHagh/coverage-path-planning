@@ -16,7 +16,7 @@ OCCUPIED = 0
 
 
 class PCell(CellBase):
-    """Enhanced cell with geometric analysis for optimal coverage planning.
+    """Planning cell with geometric analysis for optimal coverage planning.
 
     Extends the base Cell class to include:
     - Binary map representation of the cell area
@@ -27,9 +27,6 @@ class PCell(CellBase):
     def __init__(self, cell: CellBase, zmd: ZoneMapData) -> None:
         super().__init__(cell.id, cell.poly, zmd.resolution)
         self.lg = MyLogger(f"PCell-{self.id}")
-
-        # adjacent ids
-        self.adjacent_ids = cell.adjacent_ids
 
         # zone map data
         self.zmd: ZoneMapData = zmd
@@ -118,23 +115,6 @@ class PCell(CellBase):
         map_seg = self.zmd.map_ws_segmented[y_min: y_max, x_min: x_max]
         map_seg = cv.bitwise_and(map_seg, map_cell)
         contours, hierarchy = cv.findContours(map_seg, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-
-        # if True:
-
-        #     # visualize for debugging
-        #     import matplotlib.pyplot as plt
-        #     plt.imshow(map_cell_copy, cmap='gray')
-        #     plt.plot(poly_pts[:, 0], poly_pts[:, 1], 'r-', linewidth=2)
-        #     plt.show()
-
-        #     plt.imshow(map_ws, cmap='gray')
-        #     plt.plot(poly_pts[:, 0], poly_pts[:, 1], 'r-', linewidth=2)
-        #     plt.show()
-
-        #     plt.imshow(map_seg_copy, cmap='gray')
-        #     plt.plot(poly_pts[:, 0], poly_pts[:, 1], 'r-', linewidth=2)
-        #     plt.show()
-        #     # raise
 
         for h, cnt in zip(hierarchy[0], contours):
             level = find_cnt_level(h, hierarchy)

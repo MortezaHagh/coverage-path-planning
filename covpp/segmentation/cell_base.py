@@ -203,7 +203,8 @@ class CellBase:
         poly_bb = self.poly.minimum_rotated_rectangle
         area_bb = poly_bb.area
         compactness_b = self.area / area_bb
-        self.metric.set_metrics(self.area, perimeter, None, compactness_a, compactness_b)
+        self.metric.set_metrics(area=self.area, perimeter=perimeter, free_perimeter=None,
+                                compactness_a=compactness_a, compactness_b=compactness_b)
 
     def create_cell_points(self):
         """Extract integer coordinate points from cell polygon boundary."""

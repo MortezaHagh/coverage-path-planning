@@ -212,9 +212,7 @@ If you use this software in your research, please cite:
 
 ## Roadmap
 
-- [ ] Implement additional planners (spiral, random)
 - [ ] Path tracking module
-- [ ] Add more segmentation methods (grid-based, skeleton-based)
 - [ ] Performance benchmarking suite
 - [ ] ROS integration
 - [ ] Web-based visualization

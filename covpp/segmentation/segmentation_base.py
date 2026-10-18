@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 from shapely.geometry import Polygon
 from covpp.base.logger import MyLogger
+from covpp.base.configs import PipeLineConfig
 from covpp.segmentation.cell_base import CellBase
 from covpp.segmentation.map_polygons import MapPolygons
 from covpp.district.zone_map_data import ZoneMapData
@@ -78,6 +79,9 @@ class SegmentationBase(ABC):
     def post_process_segmentation(self):
         """Repair polygon geometry and apply the optional branch-point improvement."""
         self.post_process_polygons()
+
+        # if not segmentation improvement:
+        #     return
 
         self.zmd.map_ws_segmented = self.map_ws_segmented
         improver = EspecialBranchPointsSegmentation(self.zmd, self.polygons)

@@ -71,15 +71,15 @@ class ZoneEvaluation(ZoneEvaluationBase):
         # full path length
         dxy = np.diff(full_path.xy, axis=0)
         segment_lengths = np.sqrt((dxy ** 2).sum(axis=1))
-        self.stats.full_length = float(np.sum(segment_lengths))
+        self.stats.path_full_length = float(np.sum(segment_lengths))
 
         # coverage path length
-        coverage_length = 0.0
+        path_coverage_length = 0.0
         for path in self.paths.paths_m:
             dxy = np.diff(path.xy, axis=0)
             segment_lengths = np.sqrt((dxy ** 2).sum(axis=1))
-            coverage_length += np.sum(segment_lengths)
-        self.stats.coverage_length = float(coverage_length)
+            path_coverage_length += np.sum(segment_lengths)
+        self.stats.path_coverage_length = float(path_coverage_length)
 
         # full yaw changes
         dxy = np.diff(full_path.xy, axis=0)
@@ -88,7 +88,7 @@ class ZoneEvaluation(ZoneEvaluationBase):
         angle_diffs = np.diff(angles)
         angle_diffs = np.abs((angle_diffs + np.pi) % (2 * np.pi) - np.pi)
         yaw_changes = np.sum(np.abs(angle_diffs))
-        self.stats.yaw_path_full = float(yaw_changes)
+        self.stats.path_yaw_full = float(yaw_changes)
 
         # coverage yaw changes
         yaw_changes = 0.0
@@ -102,17 +102,17 @@ class ZoneEvaluation(ZoneEvaluationBase):
             angle_diffs = np.abs((angle_diffs + np.pi) % (2 * np.pi) - np.pi)
             yaw_changes += np.sum(np.abs(angle_diffs))
         yaw_changes = float(yaw_changes)
-        self.stats.yaw_path_coverage = yaw_changes
+        self.stats.path_yaw_coverage = yaw_changes
 
     def calculate_travel_times(self):
         """Estimate travel times from path lengths and robot kinematic limits. """
         # full travel time
-        t_lin = self.stats.full_length / RobotConfig.v_lin_avg
-        t_ang = self.stats.yaw_path_full / RobotConfig.v_ang_avg
+        t_lin = self.stats.path_full_length / RobotConfig.v_lin_avg
+        t_ang = self.stats.path_yaw_full / RobotConfig.v_ang_avg
         self.stats.trav_time_full = t_lin + t_ang
         # coverage travel time
-        t_lin = self.stats.coverage_length / RobotConfig.v_lin_avg
-        t_ang = self.stats.yaw_path_coverage / RobotConfig.v_ang_avg
+        t_lin = self.stats.path_coverage_length / RobotConfig.v_lin_avg
+        t_ang = self.stats.path_yaw_coverage / RobotConfig.v_ang_avg
         self.stats.trav_time_coverage = t_lin + t_ang
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -135,7 +135,7 @@ class ZoneEvaluation(ZoneEvaluationBase):
         # overlaped_area
         # calculate cleaned area based on the length of the path and cleaning width
         cleaning_width_m = 2 * PlanningConfig.cleaning_r
-        total_cleaned_area_m = self.stats.coverage_length * cleaning_width_m  # full_length or coverage_length # imp
+        total_cleaned_area_m = self.stats.path_coverage_length * cleaning_width_m  # path_full_length or path_coverage_length # imp
         self.stats.area_overlaped_m = total_cleaned_area_m - self.stats.area_cleaned_m
         area_overlap_pc = self.stats.area_overlaped_m / self.stats.area_cleaning_m * 100
         self.stats.area_overlap_pc = max(0.0, area_overlap_pc)  # avoid negative overlap due to rounding errors

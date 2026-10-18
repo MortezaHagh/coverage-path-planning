@@ -47,10 +47,10 @@ class ZoneStatsBase:
         self.seg_avg_compactness_b: float = None
 
         #
-        self.full_length = None
-        self.coverage_length = None
-        self.yaw_path_full = None
-        self.yaw_path_coverage = None
+        self.path_full_length = None
+        self.path_coverage_length = None
+        self.path_yaw_full = None
+        self.path_yaw_coverage = None
 
         #
         self.cleaning_area_px = None
@@ -86,10 +86,10 @@ class ZoneStatsBase:
             "seg_avg_free_perimeter": round(float(self.seg_avg_free_perimeter), 2),
             "seg_avg_compactness_a": round(float(self.seg_avg_compactness_a), 2),
             "seg_avg_compactness_b": round(float(self.seg_avg_compactness_b), 2),
-            "full_length": round(float(self.full_length), 2),
-            "coverage_length": round(float(self.coverage_length), 2),
-            "yaw_path_full": round(float(self.yaw_path_full), 2),
-            "yaw_path_coverage": round(float(self.yaw_path_coverage), 2),
+            "path_full_length": round(float(self.path_full_length), 2),
+            "path_coverage_length": round(float(self.path_coverage_length), 2),
+            "path_yaw_full": round(float(self.path_yaw_full), 2),
+            "path_yaw_coverage": round(float(self.path_yaw_coverage), 2),
             "cleaning_area_px": int(self.cleaning_area_px),
             "area_cleaning_m": round(float(self.area_cleaning_m), 2),
             "cleaned_area_px": int(self.cleaned_area_px),

@@ -97,10 +97,9 @@ class SegmentationHandler:
         self.segmentor.run()
         # ======================================================================
 
-        # process and merge resulting cells into PCell objects
-        self.process_cells()
-
-        # validate created cells
+        # post process
+        self.check_cells()
+        self.merge_cells()
         self.validate_cells()
 
         # evaluate segmentation metrics
@@ -109,28 +108,30 @@ class SegmentationHandler:
         # plot segmentation results
         self.add_cells_to_result_maps()
         self.save_segmentation_map()
+        # self.plot_cells()
+        # raise
 
-    def process_cells(self) -> None:
+    def check_cells(self) -> None:
+        """ If the configured segmentor produces no cells, the simple segmentor is
+                tried before processing continues. """
+
+        # if no cells were created, try simple segmentation
+        if self.segmentor.n_cells == 0:
+            self.lg.error("No cells were created by the segmentation algorithm.")
+            self.lg.warn("Trying simple segmentation.")
+            self.segmentor = SegmentationSimple(self.zmd, self.map_polygons)
+            self.segmentor.run()
+            if self.segmentor.n_cells == 0:
+                raise ValueError("No cells were created even by simple segmentation.")
+
+    def merge_cells(self) -> None:
         """Convert segmentor cells to planning cells, merging eligible neighbors first.
 
-        If the configured segmentor produces no cells, the simple segmentor is
-        tried before processing continues. Merging also rewrites cell IDs and
+        Merging also rewrites cell IDs and
         adjacency IDs so the resulting ``PCell`` list is sequentially indexed.
         """
         # resulting base cells from segmentor
         bcells = self.segmentor.cells
-        n_bcells = self.segmentor.n_cells
-
-        # if no cells were created, try simple segmentation
-        if n_bcells == 0:
-            self.lg.warn("No cells were created by the segmentation algorithm.")
-            self.lg.warn("Trying simple segmentation.")
-            self.segmentor = SegmentationSimple(self.zmd, self.map_polygons)
-            self.segmentor.run()
-            bcells = self.segmentor.cells
-            n_bcells = self.segmentor.n_cells
-            if n_bcells == 0:
-                raise ValueError("No cells were created even by simple segmentation.")
 
         # merge cells
         merger = MergeCells(bcells)
@@ -142,7 +143,7 @@ class SegmentationHandler:
         if len(cell_ids) != len(set(cell_ids)):
             raise ValueError("Cell IDs are not unique after merging.")
 
-        # create processed cells
+        # create planning cells
         self.cells = [PCell(cell, self.zmd) for cell in self.bcells]
         self.n_cells = len(self.bcells)
 
@@ -152,26 +153,29 @@ class SegmentationHandler:
         if len(self.cells) == 0 or self.cells is None:
             raise ValueError("No processed cells available for validation.")
 
+        self.lg.info(f"Validating {len(self.cells)} cells...")
+
         cell_validity = [cell.validate_cell() for cell in self.cells]
         if not all(cell_validity):
             raise ValueError("One or more cells failed validation checks.")
 
-    # def plot_segmentation(self) -> None:
-    #     """Plot segmentation results."""
-    #     from matplotlib import pyplot as plt
-    #     plt.close('all')
-    #     fig, ax = plt.subplots()
-    #     ax.set_aspect('equal')
-    #     for cell in self.cells:
-    #         poly = cell.poly
-    #         x, y = poly.exterior.xy
-    #         ax.plot(x, y)
-    #         # text at centroid
-    #         centroid = poly.centroid
-    #         ax.text(centroid.x, centroid.y, f"{cell.id}", fontsize=12, ha='center', va='center')
+    def plot_cells(self) -> None:
+        from matplotlib import pyplot as plt
+        plt.close('all')
+        fig, ax = plt.subplots(1, 1, figsize=(12, 12))
+        # ax.set_aspect('equal')
+        for cell in self.cells:
+            poly = cell.poly
+            x, y = poly.exterior.xy
+            ax.plot(x, y)
+            # text at centroid
+            centroid = poly.centroid
+            ax.text(centroid.x, centroid.y, f"{cell.id}", fontsize=6, ha='center', va='center')
+            # ax.text(centroid.x, centroid.y - 10, f"{cell.slim_type}", fontsize=6, ha='center', va='center')
+            # ax.text(centroid.x, centroid.y - 20, f"{cell.size_type}", fontsize=6, ha='center', va='center')
 
-    #     ax.set_title("Segmented Polygons")
-    #     plt.show()
+        ax.set_title("Segmented Polygons")
+        plt.show()
 
     def add_cells_to_result_maps(self) -> None:
         """ Add cell boundaries and fills to the zone's planning and segmentation maps for visualization. """
